@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<component name="org.eclipse.jface.databinding_1.7.0.v20150406-2148" version="1.2">
+    <plugin id="org.eclipse.jface.databinding_1.7.0.v20150406-2148"/>
+    <package name="org.eclipse.jface.databinding.dialog" visibility="1">
+        <type name="DialogPageSupport" restrictions="0">
+            <method name="&lt;init&gt;" restrictions="8" signature="(Lorg/eclipse/jface/dialogs/DialogPage;Lorg/eclipse/core/databinding/DataBindingContext;)V"/>
+            <method name="getDialogPage" restrictions="8" signature="()Lorg/eclipse/jface/dialogs/DialogPage;"/>
+            <method name="handleStatusChanged" restrictions="8" signature="()V"/>
+            <method name="handleStatusException" restrictions="8" signature="()V"/>
+            <method name="handleUIChanged" restrictions="8" signature="()V"/>
+            <method name="init" restrictions="8" signature="()V"/>
+        </type>
+        <type name="TitleAreaDialogSupport" restrictions="2"/>
+    </package>
+    <package name="org.eclipse.jface.databinding.preference" visibility="1">
+        <type name="PreferencePageSupport" restrictions="2"/>
+    </package>
+    <package name="org.eclipse.jface.databinding.swt" visibility="1">
+        <type name="IWidgetListProperty" restrictions="1"/>
+        <type name="IWidgetValueProperty" restrictions="1"/>
+    </package>
+    <package name="org.eclipse.jface.databinding.viewers" visibility="1">
+        <type name="IViewerListProperty" restrictions="1"/>
+        <type name="IViewerSetProperty" restrictions="1"/>
+        <type name="IViewerValueProperty" restrictions="1"/>
+        <type name="ObservableListContentProvider" restrictions="2"/>
+        <type name="ObservableListTreeContentProvider" restrictions="2"/>
+        <type name="ObservableSetContentProvider" restrictions="2"/>
+        <type name="ObservableSetTreeContentProvider" restrictions="2"/>
+    </package>
+    <package name="org.eclipse.jface.databinding.wizard" visibility="1">
+        <type name="WizardPageSupport" restrictions="2"/>
+    </package>
+</component>
