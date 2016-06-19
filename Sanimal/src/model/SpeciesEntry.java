@@ -29,6 +29,6 @@ public class SpeciesEntry
 	@Override
 	public String toString()
 	{
-		return this.getSpecies().getName();
+		return this.getSpecies().getName() + " (" + this.getAmount() + ")";
 	}
 }

@@ -27,6 +27,8 @@ import javax.swing.event.ListSelectionListener;
 import library.ComboBoxFullMenu;
 import model.ImageEntry;
 import model.Location;
+import model.Species;
+import model.SpeciesEntry;
 
 public class ImageImportView extends JFrame
 {
@@ -50,16 +52,21 @@ public class ImageImportView extends JFrame
 	private JLabel lblLocationElevation;
 	private JTextField txtElevation;
 	private JLabel lblSpecies;
-	private ComboBoxFullMenu<String> cbxSpecies;
+	private ComboBoxFullMenu<Species> cbxSpecies;
 	private JButton btnAddNewSpecies;
 	private JButton btnRemoveSpecies;
+	private JButton btnAddSpeciesToList;
+	private JPanel pnlSpeciesPresent;
+	private JLabel lblSpeciesEntries;
+	private JScrollPane pneSpeciesList;
+	private JList lstSpecies;
 
 	public ImageImportView()
 	{
 		this.getContentPane().setLayout(null);
 		this.setResizable(false);
 		this.setTitle("Image Importer");
-		this.setSize(748, 610);
+		this.setSize(748, 625);
 
 		lblThumbnail = new JLabel();
 		lblThumbnail.setBounds(10, 11, 434, 362);
@@ -89,7 +96,7 @@ public class ImageImportView extends JFrame
 
 		pnlPropertyList = new JPanel();
 		pnlPropertyList.setLayout(null);
-		pnlPropertyList.setBounds(10, 384, 722, 187);
+		pnlPropertyList.setBounds(10, 384, 434, 202);
 		pnlPropertyList.setBorder(new LineBorder(Color.BLACK));
 		this.getContentPane().add(pnlPropertyList);
 
@@ -111,18 +118,18 @@ public class ImageImportView extends JFrame
 
 		cbxLocation = new ComboBoxFullMenu<Location>();
 		cbxLocation.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		cbxLocation.setBounds(107, 36, 125, 23);
+		cbxLocation.setBounds(107, 36, 132, 23);
 		cbxLocation.setSelectedIndex(-1);
 		pnlPropertyList.add(cbxLocation);
 
 		btnAddNewLocation = new JButton("Add");
 		btnAddNewLocation.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnAddNewLocation.setBounds(242, 35, 72, 23);
+		btnAddNewLocation.setBounds(249, 35, 72, 23);
 		pnlPropertyList.add(btnAddNewLocation);
 
 		btnRemoveLocation = new JButton("Remove");
 		btnRemoveLocation.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnRemoveLocation.setBounds(324, 35, 100, 23);
+		btnRemoveLocation.setBounds(331, 35, 93, 23);
 		pnlPropertyList.add(btnRemoveLocation);
 
 		lblLocationLat = new JLabel("Latitude: ");
@@ -163,21 +170,47 @@ public class ImageImportView extends JFrame
 		lblSpecies.setBounds(10, 139, 87, 14);
 		pnlPropertyList.add(lblSpecies);
 
-		cbxSpecies = new ComboBoxFullMenu<String>();
+		cbxSpecies = new ComboBoxFullMenu<Species>();
 		cbxSpecies.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		cbxSpecies.setBounds(107, 135, 125, 23);
+		cbxSpecies.setBounds(107, 135, 317, 23);
 		cbxSpecies.setSelectedIndex(-1);
 		pnlPropertyList.add(cbxSpecies);
 
 		btnAddNewSpecies = new JButton("Add");
 		btnAddNewSpecies.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnAddNewSpecies.setBounds(242, 135, 72, 23);
+		btnAddNewSpecies.setBounds(107, 162, 72, 23);
+		btnAddNewSpecies.setToolTipText("Add a new species to the species dictionary");
 		pnlPropertyList.add(btnAddNewSpecies);
 
 		btnRemoveSpecies = new JButton("Remove");
 		btnRemoveSpecies.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnRemoveSpecies.setBounds(324, 135, 100, 23);
+		btnRemoveSpecies.setBounds(189, 162, 93, 23);
+		btnRemoveSpecies.setToolTipText("Remove the selected species from the species dictionary");
 		pnlPropertyList.add(btnRemoveSpecies);
+
+		btnAddSpeciesToList = new JButton("Add to Image");
+		btnAddSpeciesToList.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnAddSpeciesToList.setBounds(292, 162, 132, 23);
+		btnAddSpeciesToList.setToolTipText("Add the selected species to the selected image");
+		pnlPropertyList.add(btnAddSpeciesToList);
+
+		pnlSpeciesPresent = new JPanel();
+		pnlSpeciesPresent.setLayout(null);
+		pnlSpeciesPresent.setBounds(454, 384, 278, 202);
+		pnlSpeciesPresent.setBorder(new LineBorder(Color.BLACK));
+		this.getContentPane().add(pnlSpeciesPresent);
+
+		lblSpeciesEntries = new JLabel("Species in image:");
+		lblSpeciesEntries.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblSpeciesEntries.setBounds(10, 10, 258, 14);
+		pnlSpeciesPresent.add(lblSpeciesEntries);
+
+		pneSpeciesList = new JScrollPane();
+		lstSpecies = new JList();
+		lstSpecies.setModel(new DefaultListModel());
+		pneSpeciesList.setBounds(10, 35, 258, 156);
+		pneSpeciesList.setViewportView(lstSpecies);
+		pnlSpeciesPresent.add(pneSpeciesList);
 
 		this.setLocationRelativeTo(null);
 	}
@@ -202,9 +235,24 @@ public class ImageImportView extends JFrame
 		this.btnAddNewLocation.addActionListener(listener);
 	}
 
+	public void addALToAddNewSpecies(ActionListener listener)
+	{
+		this.btnAddNewSpecies.addActionListener(listener);
+	}
+
 	public void addALToRemoveLocation(ActionListener listener)
 	{
 		this.btnRemoveLocation.addActionListener(listener);
+	}
+
+	public void addALToRemoveSpecies(ActionListener listener)
+	{
+		this.btnRemoveSpecies.addActionListener(listener);
+	}
+
+	public void addALToAddSpeciesToList(ActionListener listener)
+	{
+		this.btnAddSpeciesToList.addActionListener(listener);
 	}
 
 	public int getMinSelectedImageIndex()
@@ -217,12 +265,20 @@ public class ImageImportView extends JFrame
 		return this.lstImages.getMaxSelectionIndex();
 	}
 
-	public String getSelectedLocation()
+	public Location getSelectedLocation()
 	{
 		if (this.cbxLocation.getSelectedIndex() == -1)
-			return "";
+			return null;
 		else
-			return this.cbxLocation.getSelectedItem().toString();
+			return (Location) this.cbxLocation.getSelectedItem();
+	}
+
+	public Species getSelectedSpecies()
+	{
+		if (this.cbxSpecies.getSelectedIndex() == -1)
+			return null;
+		else
+			return (Species) this.cbxSpecies.getSelectedItem();
 	}
 
 	public boolean searchSubdirectories()
@@ -252,6 +308,14 @@ public class ImageImportView extends JFrame
 		this.refreshLocationFields();
 	}
 
+	public void setSpecies(Species species)
+	{
+		if (species != null)
+			this.cbxSpecies.setSelectedItem(species);
+		else
+			this.cbxSpecies.setSelectedIndex(-1);
+	}
+
 	public void setLocationList(List<Location> locations)
 	{
 		if (!locations.contains((Location) this.cbxLocation.getSelectedItem()))
@@ -259,6 +323,28 @@ public class ImageImportView extends JFrame
 		this.cbxLocation.removeAllItems();
 		for (Location location : locations)
 			this.cbxLocation.addItem(location);
+	}
+
+	public void setSpeciesList(List<Species> species)
+	{
+		Species selectedSpecies = (Species) this.cbxSpecies.getSelectedItem();
+		this.cbxSpecies.removeAllItems();
+		for (Species species2 : species)
+			this.cbxSpecies.addItem(species2);
+		if (species.contains(selectedSpecies))
+			this.cbxSpecies.setSelectedItem(selectedSpecies);
+	}
+
+	public void setSpeciesEntryList(List<SpeciesEntry> speciesEntries)
+	{
+		if (this.lstSpecies.getModel() instanceof DefaultListModel<?>)
+		{
+			DefaultListModel<SpeciesEntry> items = (DefaultListModel<SpeciesEntry>) this.lstSpecies.getModel();
+			items.clear();
+			if (speciesEntries != null)
+				for (SpeciesEntry entry : speciesEntries)
+					items.addElement(entry);
+		}
 	}
 
 	public void setImageList(List<ImageEntry> imageList)
@@ -287,6 +373,18 @@ public class ImageImportView extends JFrame
 			txtLng.setText("");
 			txtElevation.setText("");
 		}
+	}
+
+	public Species askUserForNewSpecies()
+	{
+		String name = "";
+		while (name.isEmpty())
+		{
+			name = JOptionPane.showInputDialog("Enter the name of the new species");
+			if (name == null)
+				return null;
+		}
+		return new Species(name);
 	}
 
 	public Location askUserForNewLocation()

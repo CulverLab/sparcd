@@ -17,7 +17,12 @@ public class SpeciesData
 		this.species.add(species);
 	}
 
-	public List<Species> getSpecies()
+	public void removeSpecies(Species species)
+	{
+		this.species.remove(species);
+	}
+
+	public List<Species> getRegisteredSpecies()
 	{
 		return species;
 	}

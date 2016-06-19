@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.swing.ImageIcon;
 
@@ -64,6 +65,15 @@ public class ImageEntry
 
 	public void addSpecies(Species species, Integer amount)
 	{
+		// Remove any other occurrences of the species from the image
+		this.speciesPresent.removeIf(new Predicate<SpeciesEntry>()
+		{
+			@Override
+			public boolean test(SpeciesEntry entry)
+			{
+				return entry.getSpecies() == species;
+			}
+		});
 		this.speciesPresent.add(new SpeciesEntry(species, amount));
 	}
 

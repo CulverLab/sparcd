@@ -30,12 +30,9 @@ public class LocationData
 		});
 	}
 
-	public Location getLocationByName(String name)
+	public void removeLocation(Location location)
 	{
-		for (Location location : this.registeredLocations)
-			if (location.getName().equals(name))
-				return location;
-		return null;
+		this.registeredLocations.remove(location);
 	}
 
 	public List<Location> getRegisteredLocations()
