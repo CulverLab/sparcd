@@ -69,30 +69,9 @@ public class ImageImportView extends JFrame
 		this.setSize(748, 625);
 
 		lblThumbnail = new JLabel();
-		lblThumbnail.setBounds(10, 11, 434, 362);
+		lblThumbnail.setBounds(298, 11, 434, 362);
 		lblThumbnail.setBorder(new LineBorder(Color.BLACK));
 		this.getContentPane().add(lblThumbnail);
-
-		pnlImageBrowser = new JPanel();
-		pnlImageBrowser.setBounds(454, 11, 278, 362);
-		pnlImageBrowser.setBorder(new LineBorder(Color.BLACK));
-		pnlImageBrowser.setLayout(null);
-		this.getContentPane().add(pnlImageBrowser);
-
-		chxIncludeSubdirectories = new JCheckBox("Include Subdirectories");
-		chxIncludeSubdirectories.setBounds(137, 332, 131, 23);
-		pnlImageBrowser.add(chxIncludeSubdirectories);
-
-		btnBrowseForImages = new JButton("Select Images");
-		btnBrowseForImages.setBounds(6, 332, 125, 23);
-		pnlImageBrowser.add(btnBrowseForImages);
-
-		pneImageList = new JScrollPane();
-		lstImages = new JList();
-		lstImages.setModel(new DefaultListModel());
-		pneImageList.setBounds(10, 11, 258, 314);
-		pneImageList.setViewportView(lstImages);
-		pnlImageBrowser.add(pneImageList);
 
 		pnlPropertyList = new JPanel();
 		pnlPropertyList.setLayout(null);
@@ -211,6 +190,27 @@ public class ImageImportView extends JFrame
 		pneSpeciesList.setBounds(10, 35, 258, 156);
 		pneSpeciesList.setViewportView(lstSpecies);
 		pnlSpeciesPresent.add(pneSpeciesList);
+
+		pnlImageBrowser = new JPanel();
+		pnlImageBrowser.setBounds(10, 11, 278, 362);
+		getContentPane().add(pnlImageBrowser);
+		pnlImageBrowser.setBorder(new LineBorder(Color.BLACK));
+		pnlImageBrowser.setLayout(null);
+
+		chxIncludeSubdirectories = new JCheckBox("Include Subdirectories");
+		chxIncludeSubdirectories.setBounds(137, 332, 131, 23);
+		pnlImageBrowser.add(chxIncludeSubdirectories);
+
+		btnBrowseForImages = new JButton("Select Images");
+		btnBrowseForImages.setBounds(6, 332, 125, 23);
+		pnlImageBrowser.add(btnBrowseForImages);
+
+		pneImageList = new JScrollPane();
+		lstImages = new JList();
+		lstImages.setModel(new DefaultListModel());
+		pneImageList.setBounds(10, 11, 258, 314);
+		pneImageList.setViewportView(lstImages);
+		pnlImageBrowser.add(pneImageList);
 
 		this.setLocationRelativeTo(null);
 	}

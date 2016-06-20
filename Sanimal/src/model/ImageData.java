@@ -6,12 +6,12 @@
 package model;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.activation.MimetypesFileTypeMap;
 
 public class ImageData
 {
@@ -48,11 +48,18 @@ public class ImageData
 		List<File> resultList = readFiles(location, recursive);
 
 		Iterator<File> iterator = resultList.iterator();
-		MimetypesFileTypeMap mimeSelector = new MimetypesFileTypeMap();
 		while (iterator.hasNext())
 		{
 			File next = iterator.next();
-			if (!mimeSelector.getContentType(next).startsWith("image"))
+			String result = null;
+			try
+			{
+				result = Files.probeContentType(next.toPath());
+			}
+			catch (IOException e)
+			{
+			}
+			if (result == null || !result.startsWith("image"))
 				iterator.remove();
 		}
 

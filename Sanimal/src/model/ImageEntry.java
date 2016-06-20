@@ -18,7 +18,7 @@ import javax.swing.ImageIcon;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.ExifSubIFDDirectory;
+import com.drew.metadata.file.FileMetadataDirectory;
 
 public class ImageEntry
 {
@@ -33,14 +33,14 @@ public class ImageEntry
 		try
 		{
 			Metadata metadata = ImageMetadataReader.readMetadata(file);
-			ExifSubIFDDirectory fileMetadata = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-			this.dateTaken = fileMetadata.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+			FileMetadataDirectory fileMetadata = metadata.<FileMetadataDirectory> getFirstDirectoryOfType(FileMetadataDirectory.class);
+			if (fileMetadata != null)
+				dateTaken = fileMetadata.getDate(FileMetadataDirectory.TAG_FILE_MODIFIED_DATE);
 		}
 		catch (ImageProcessingException | IOException e)
 		{
 			System.out.println("Error reading file metadata: " + file.getAbsolutePath() + "\nError is:\n" + e.toString());
 		}
-		System.out.println("\n");
 	}
 
 	public File getImagePath()
