@@ -31,7 +31,7 @@ public class SanimalView extends JFrame
 		topBar.add(btnLoadImages);
 
 		this.setLocationRelativeTo(null);
-		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(true);
 	}
 
