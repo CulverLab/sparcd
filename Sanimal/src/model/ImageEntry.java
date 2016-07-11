@@ -87,4 +87,10 @@ public class ImageEntry
 		ImageIcon icon = new ImageIcon(this.imagePath.getAbsolutePath());
 		return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_FAST));
 	}
+
+	@Override
+	public String toString()
+	{
+		return "Image: " + this.imagePath.getName();
+	}
 }

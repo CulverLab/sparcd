@@ -9,6 +9,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.DefaultListModel;
@@ -21,10 +23,16 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.JTree;
 import javax.swing.border.LineBorder;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 
 import library.ComboBoxFullMenu;
+import model.ImageDirectory;
 import model.ImageEntry;
 import model.Location;
 import model.Species;
@@ -32,7 +40,7 @@ import model.SpeciesEntry;
 
 public class ImageImportView extends JFrame
 {
-	private JList lstImages;
+	private JTree treImages;
 	private JTextField txtDate;
 	private JLabel lblDate;
 	private JLabel lblThumbnail;
@@ -206,18 +214,17 @@ public class ImageImportView extends JFrame
 		pnlImageBrowser.add(btnBrowseForImages);
 
 		pneImageList = new JScrollPane();
-		lstImages = new JList();
-		lstImages.setModel(new DefaultListModel());
+		treImages = new JTree((TreeModel) null);
 		pneImageList.setBounds(10, 11, 258, 314);
-		pneImageList.setViewportView(lstImages);
+		pneImageList.setViewportView(treImages);
 		pnlImageBrowser.add(pneImageList);
 
 		this.setLocationRelativeTo(null);
 	}
 
-	public void addImageListValueChanged(ListSelectionListener listener)
+	public void addImageTreeValueChanged(TreeSelectionListener listener)
 	{
-		this.lstImages.addListSelectionListener(listener);
+		this.treImages.addTreeSelectionListener(listener);
 	}
 
 	public void addImageBrowseListener(ActionListener listener)
@@ -253,16 +260,6 @@ public class ImageImportView extends JFrame
 	public void addALToAddSpeciesToList(ActionListener listener)
 	{
 		this.btnAddSpeciesToList.addActionListener(listener);
-	}
-
-	public int getMinSelectedImageIndex()
-	{
-		return this.lstImages.getMinSelectionIndex();
-	}
-
-	public int getMaxSelectedImageIndex()
-	{
-		return this.lstImages.getMaxSelectionIndex();
 	}
 
 	public Location getSelectedLocation()
@@ -347,15 +344,57 @@ public class ImageImportView extends JFrame
 		}
 	}
 
-	public void setImageList(List<ImageEntry> imageList)
+	public void setImageList(ImageDirectory imageDirectory)
 	{
-		if (this.lstImages.getModel() instanceof DefaultListModel)
+		DefaultMutableTreeNode head = new DefaultMutableTreeNode(imageDirectory.getDirectory().getName());
+		this.createTreeFromImageDirectory(head, imageDirectory);
+		this.treImages.setModel(new DefaultTreeModel(head));
+	}
+
+	private void createTreeFromImageDirectory(DefaultMutableTreeNode headNode, ImageDirectory headDirectory)
+	{
+		for (ImageEntry image : headDirectory.getImages())
+			headNode.add(new DefaultMutableTreeNode(image));
+		for (ImageDirectory subDirectory : headDirectory.getSubDirectories())
 		{
-			DefaultListModel model = (DefaultListModel) this.lstImages.getModel();
-			model.removeAllElements();
-			for (ImageEntry file : imageList)
-				model.addElement(file.getImagePath().getName());
+			DefaultMutableTreeNode subDirectoryNode = new DefaultMutableTreeNode(subDirectory.getDirectory().getName());
+			this.createTreeFromImageDirectory(subDirectoryNode, subDirectory);
+			headNode.add(subDirectoryNode);
 		}
+	}
+
+	public List<ImageEntry> getSelectedImageEntries()
+	{
+		List<ImageEntry> entries = new ArrayList<ImageEntry>();
+		for (TreePath path : this.treImages.getSelectionModel().getSelectionPaths())
+		{
+			Object[] objects = path.getPath();
+			for (Object object : objects)
+			{
+				if (object instanceof DefaultMutableTreeNode)
+				{
+					if (((DefaultMutableTreeNode) object).getUserObject() instanceof ImageEntry)
+					{
+						ImageEntry current = (ImageEntry) ((DefaultMutableTreeNode) object).getUserObject();
+						entries.add(current);
+					}
+				}
+			}
+		}
+		return entries;
+	}
+
+	public List<ImageEntry> getAllTreeImageEntries()
+	{
+		List<ImageEntry> entries = new ArrayList<ImageEntry>();
+		if (this.treImages.getModel().getRoot() instanceof DefaultMutableTreeNode)
+		{
+			DefaultMutableTreeNode root = (DefaultMutableTreeNode) this.treImages.getModel().getRoot();
+			for (DefaultMutableTreeNode node : Collections.<DefaultMutableTreeNode> list(root.preorderEnumeration()))
+				if (node.getUserObject() instanceof ImageEntry)
+					entries.add((ImageEntry) node.getUserObject());
+		}
+		return entries;
 	}
 
 	public void refreshLocationFields()

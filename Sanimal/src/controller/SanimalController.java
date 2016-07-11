@@ -14,8 +14,8 @@ import java.util.List;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 
 import model.ImageEntry;
 import model.Location;
@@ -42,36 +42,40 @@ public class SanimalController
 			{
 				ImageImportView view = new ImageImportView();
 				// When the user clicks a new image in the image list on the right
-				view.addImageListValueChanged(new ListSelectionListener()
+				view.addImageTreeValueChanged(new TreeSelectionListener()
 				{
 					@Override
-					public void valueChanged(ListSelectionEvent event)
+					public void valueChanged(TreeSelectionEvent event)
 					{
-						if (view.getMinSelectedImageIndex() != -1)
+						ImageEntry first = null;
+						Location firstLocation = null;
+						String firstDate = null;
+						List<ImageEntry> selectedImages = view.getSelectedImageEntries();
+						for (ImageEntry current : selectedImages)
 						{
-							List<ImageEntry> images = sanimalData.getImageData().getImages();
-							ImageEntry first = images.get(view.getMinSelectedImageIndex());
-							Location firstLocation = first.getLocationTaken();
-							String firstDate = first.getDateTakenFormatted();
-							for (int i = view.getMinSelectedImageIndex(); i <= view.getMaxSelectedImageIndex(); i++)
+							if (first == null)
 							{
-								if (!images.get(i).getDateTakenFormatted().equals(firstDate))
-									firstDate = null;
-								if (images.get(i).getLocationTaken() != firstLocation)
-									firstLocation = null;
+								first = current;
+								firstLocation = first.getLocationTaken();
+								firstDate = first.getDateTakenFormatted();
+								continue;
 							}
-							view.setLocation(firstLocation);
-							view.setDate(firstDate);
-							if (view.getMinSelectedImageIndex() == view.getMaxSelectedImageIndex())
-							{
-								view.setThumbnailImage(first);
-								view.setSpeciesEntryList(first.getSpeciesPresent());
-							}
-							else
-							{
-								view.setThumbnailImage(null);
-								view.setSpeciesEntryList(null);
-							}
+							if (!current.getDateTakenFormatted().equals(firstDate))
+								firstDate = null;
+							if (current.getLocationTaken() != firstLocation)
+								firstLocation = null;
+						}
+						view.setLocation(firstLocation);
+						view.setDate(firstDate);
+						if (selectedImages.size() == 1)
+						{
+							view.setThumbnailImage(first);
+							view.setSpeciesEntryList(first.getSpeciesPresent());
+						}
+						else
+						{
+							view.setThumbnailImage(null);
+							view.setSpeciesEntryList(null);
 						}
 					}
 				});
@@ -87,7 +91,7 @@ public class SanimalController
 						if (returnVal == JFileChooser.APPROVE_OPTION)
 						{
 							sanimalData.getImageData().readAndAddImages(chooser.getSelectedFile(), view.searchSubdirectories());
-							view.setImageList(sanimalData.getImageData().getImages());
+							view.setImageList(sanimalData.getImageData().getHeadDirectory());
 						}
 					}
 				});
@@ -101,9 +105,8 @@ public class SanimalController
 						{
 							Location selected = ((Location) event.getItem());
 							if (selected != null)
-								if (view.getMinSelectedImageIndex() != -1)
-									for (int i = view.getMinSelectedImageIndex(); i <= view.getMaxSelectedImageIndex(); i++)
-										sanimalData.getImageData().getImages().get(i).setLocationTaken(selected);
+								for (ImageEntry selectedImage : view.getSelectedImageEntries())
+									selectedImage.setLocationTaken(selected);
 							view.setLocation(selected);
 						}
 					}
@@ -146,16 +149,16 @@ public class SanimalController
 						{
 							Location selected = view.getSelectedLocation();
 							int numberOfSelectedOccourances = 0;
-							for (ImageEntry image : sanimalData.getImageData().getImages())
+							// Count how many images have this location selected
+							for (ImageEntry image : view.getAllTreeImageEntries())
 								if (image.getLocationTaken() == selected)
 									numberOfSelectedOccourances++;
+							// If we have more than 1, ask the user if he'd like to continue
 							if (numberOfSelectedOccourances >= 1)
-							{
-								int response = JOptionPane.showConfirmDialog(view, "This location has already been set on multiple images, continue removing the location from all images?");
-								if (response != JOptionPane.YES_OPTION)
+								if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(view, "This location has already been set on multiple images, continue removing the location from all images?"))
 									return;
-							}
-							for (ImageEntry image : sanimalData.getImageData().getImages())
+							// Delete the location
+							for (ImageEntry image : view.getAllTreeImageEntries())
 								if (image.getLocationTaken() == selected)
 									image.setLocationTaken(null);
 							sanimalData.getLocationData().removeLocation(selected.toString());
@@ -173,30 +176,24 @@ public class SanimalController
 						{
 							Species selected = view.getSelectedSpecies();
 							int numberOfSelectedOccourances = 0;
-							for (ImageEntry image : sanimalData.getImageData().getImages())
+							// Count how many images have this species selected
+							for (ImageEntry image : view.getAllTreeImageEntries())
 								for (SpeciesEntry entry : image.getSpeciesPresent())
 									if (entry.getSpecies() == selected)
 										numberOfSelectedOccourances++;
+							// If we have more than 1, ask the user if he'd like to continue
 							if (numberOfSelectedOccourances >= 1)
-							{
-								int response = JOptionPane.showConfirmDialog(view, "This species has already been set on multiple images, continue removing the species from all images?");
-								if (response != JOptionPane.YES_OPTION)
+								if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(view, "This species has already been set on multiple images, continue removing the species from all images?"))
 									return;
-							}
-							for (ImageEntry image : sanimalData.getImageData().getImages())
+							for (ImageEntry image : view.getAllTreeImageEntries())
 							{
 								Iterator<SpeciesEntry> iterator = image.getSpeciesPresent().iterator();
 								while (iterator.hasNext())
-								{
-									SpeciesEntry current = iterator.next();
-									if (current.getSpecies() == selected)
+									if (iterator.next().getSpecies() == selected)
 										iterator.remove();
-								}
 							}
 							sanimalData.getSpeciesData().removeSpecies(selected);
 							view.setSpeciesList(sanimalData.getSpeciesData().getRegisteredSpecies());
-							if (view.getMinSelectedImageIndex() == view.getMaxSelectedImageIndex())
-								view.setSpeciesEntryList(sanimalData.getImageData().getImages().get(view.getMinSelectedImageIndex()).getSpeciesPresent());
 						}
 					}
 				});
@@ -221,18 +218,13 @@ public class SanimalController
 							}
 						}
 						Species selectedSpecies = view.getSelectedSpecies();
-						int minSelectedIndex = view.getMinSelectedImageIndex();
-						int maxSelectedIndex = view.getMaxSelectedImageIndex();
-						if (selectedSpecies != null && minSelectedIndex != -1)
+						List<ImageEntry> selectedImages = view.getSelectedImageEntries();
+						if (selectedSpecies != null)
 						{
-							List<ImageEntry> imageEntries = sanimalData.getImageData().getImages();
-							for (int i = minSelectedIndex; i <= maxSelectedIndex; i++)
-							{
-								ImageEntry current = imageEntries.get(i);
-								current.addSpecies(selectedSpecies, numberOfAnimals);
-							}
-							if (minSelectedIndex == maxSelectedIndex)
-								view.setSpeciesEntryList(imageEntries.get(minSelectedIndex).getSpeciesPresent());
+							for (ImageEntry imageEntry : selectedImages)
+								imageEntry.addSpecies(selectedSpecies, numberOfAnimals);
+							if (selectedImages.size() == 1)
+								view.setSpeciesEntryList(selectedImages.get(0).getSpeciesPresent());
 						}
 					}
 				});

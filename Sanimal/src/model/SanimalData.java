@@ -7,11 +7,11 @@ package model;
 
 public class SanimalData
 {
-	private ImageData imageData = new ImageData();
+	private ImageImporterData imageData = new ImageImporterData();
 	private LocationData locationData = new LocationData();
 	private SpeciesData speciesData = new SpeciesData();
 
-	public ImageData getImageData()
+	public ImageImporterData getImageData()
 	{
 		return imageData;
 	}
