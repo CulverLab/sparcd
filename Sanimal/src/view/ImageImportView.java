@@ -206,6 +206,7 @@ public class ImageImportView extends JFrame
 		pnlImageBrowser.setLayout(null);
 
 		chxIncludeSubdirectories = new JCheckBox("Include Subdirectories");
+		chxIncludeSubdirectories.setSelected(true);
 		chxIncludeSubdirectories.setBounds(137, 332, 131, 23);
 		pnlImageBrowser.add(chxIncludeSubdirectories);
 
@@ -346,7 +347,7 @@ public class ImageImportView extends JFrame
 
 	public void setImageList(ImageDirectory imageDirectory)
 	{
-		DefaultMutableTreeNode head = new DefaultMutableTreeNode(imageDirectory.getDirectory().getName());
+		DefaultMutableTreeNode head = new DefaultMutableTreeNode(imageDirectory);
 		this.createTreeFromImageDirectory(head, imageDirectory);
 		this.treImages.setModel(new DefaultTreeModel(head));
 	}
@@ -357,7 +358,7 @@ public class ImageImportView extends JFrame
 			headNode.add(new DefaultMutableTreeNode(image));
 		for (ImageDirectory subDirectory : headDirectory.getSubDirectories())
 		{
-			DefaultMutableTreeNode subDirectoryNode = new DefaultMutableTreeNode(subDirectory.getDirectory().getName());
+			DefaultMutableTreeNode subDirectoryNode = new DefaultMutableTreeNode(subDirectory);
 			this.createTreeFromImageDirectory(subDirectoryNode, subDirectory);
 			headNode.add(subDirectoryNode);
 		}
@@ -368,20 +369,32 @@ public class ImageImportView extends JFrame
 		List<ImageEntry> entries = new ArrayList<ImageEntry>();
 		for (TreePath path : this.treImages.getSelectionModel().getSelectionPaths())
 		{
-			Object[] objects = path.getPath();
-			for (Object object : objects)
+			Object selectedElement = path.getLastPathComponent();
+			if (selectedElement instanceof DefaultMutableTreeNode)
 			{
-				if (object instanceof DefaultMutableTreeNode)
+				Object selectedObject = ((DefaultMutableTreeNode) selectedElement).getUserObject();
+				if (selectedObject instanceof ImageEntry)
 				{
-					if (((DefaultMutableTreeNode) object).getUserObject() instanceof ImageEntry)
-					{
-						ImageEntry current = (ImageEntry) ((DefaultMutableTreeNode) object).getUserObject();
-						entries.add(current);
-					}
+					ImageEntry current = (ImageEntry) selectedObject;
+					entries.add(current);
+				}
+				if (selectedObject instanceof ImageDirectory)
+				{
+					ImageDirectory current = (ImageDirectory) selectedObject;
+					this.addAllImagesUnderDirectory(current, entries);
 				}
 			}
 		}
 		return entries;
+	}
+
+	private void addAllImagesUnderDirectory(ImageDirectory directory, List<ImageEntry> toAddTo)
+	{
+		for (ImageEntry entry : directory.getImages())
+			if (!toAddTo.contains(entry))
+				toAddTo.add(entry);
+		for (ImageDirectory subDirectory : directory.getSubDirectories())
+			this.addAllImagesUnderDirectory(subDirectory, toAddTo);
 	}
 
 	public List<ImageEntry> getAllTreeImageEntries()

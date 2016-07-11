@@ -8,6 +8,7 @@ package model;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -22,14 +23,15 @@ import com.drew.metadata.file.FileMetadataDirectory;
 
 public class ImageEntry
 {
-	private File imagePath;
+	private File imageFile;
 	private Date dateTaken;
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("YYYY MM dd hh mm ss");
 	private Location locationTaken;
 	private List<SpeciesEntry> speciesPresent = new ArrayList<SpeciesEntry>();
 
 	public ImageEntry(File file)
 	{
-		this.imagePath = file;
+		this.imageFile = file;
 		try
 		{
 			Metadata metadata = ImageMetadataReader.readMetadata(file);
@@ -43,9 +45,9 @@ public class ImageEntry
 		}
 	}
 
-	public File getImagePath()
+	public File getImageFile()
 	{
-		return this.imagePath;
+		return this.imageFile;
 	}
 
 	public String getDateTakenFormatted()
@@ -84,13 +86,31 @@ public class ImageEntry
 
 	public ImageIcon createIcon(int width, int height)
 	{
-		ImageIcon icon = new ImageIcon(this.imagePath.getAbsolutePath());
+		ImageIcon icon = new ImageIcon(this.imageFile.getAbsolutePath());
 		return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_FAST));
+	}
+
+	public void renameByDate()
+	{
+		String newFilePath = imageFile.getParentFile() + File.separator;
+		String newFileName = DATE_FORMAT.format(this.dateTaken);
+		String newFileExtension = imageFile.getName().substring(imageFile.getName().lastIndexOf('.'));
+		String newFileCompletePath = newFilePath + newFileName + newFileExtension;
+		File newFile = new File(newFileCompletePath);
+		int numberOfDuplicateFiles = 0;
+		while (newFile.exists())
+		{
+			newFileCompletePath = newFilePath + newFileName + " (" + numberOfDuplicateFiles++ + ")" + newFileExtension;
+			newFile = new File(newFileCompletePath);
+		}
+		boolean result = this.imageFile.renameTo(newFile);
+		if (result == false)
+			System.err.println("Error renaming file: " + this.imageFile.getAbsolutePath());
 	}
 
 	@Override
 	public String toString()
 	{
-		return "Image: " + this.imagePath.getName();
+		return this.imageFile.getName();
 	}
 }

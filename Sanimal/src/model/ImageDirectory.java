@@ -46,4 +46,10 @@ public class ImageDirectory
 	{
 		return images;
 	}
+
+	@Override
+	public String toString()
+	{
+		return this.directory.getName();
+	}
 }

@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -50,6 +51,7 @@ public class SanimalController
 						ImageEntry first = null;
 						Location firstLocation = null;
 						String firstDate = null;
+						List<SpeciesEntry> firstSpeciesEntries = null;
 						List<ImageEntry> selectedImages = view.getSelectedImageEntries();
 						for (ImageEntry current : selectedImages)
 						{
@@ -58,24 +60,31 @@ public class SanimalController
 								first = current;
 								firstLocation = first.getLocationTaken();
 								firstDate = first.getDateTakenFormatted();
+								firstSpeciesEntries = first.getSpeciesPresent();
+								Collections.sort(firstSpeciesEntries);
 								continue;
 							}
 							if (!current.getDateTakenFormatted().equals(firstDate))
 								firstDate = null;
 							if (current.getLocationTaken() != firstLocation)
 								firstLocation = null;
+							if (firstSpeciesEntries != null)
+							{
+								Collections.sort(current.getSpeciesPresent());
+								if (!current.getSpeciesPresent().equals(firstSpeciesEntries))
+									firstSpeciesEntries = null;
+							}
 						}
 						view.setLocation(firstLocation);
 						view.setDate(firstDate);
+						view.setSpeciesEntryList(firstSpeciesEntries);
 						if (selectedImages.size() == 1)
 						{
 							view.setThumbnailImage(first);
-							view.setSpeciesEntryList(first.getSpeciesPresent());
 						}
 						else
 						{
 							view.setThumbnailImage(null);
-							view.setSpeciesEntryList(null);
 						}
 					}
 				});

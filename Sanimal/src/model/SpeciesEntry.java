@@ -5,7 +5,7 @@
  */
 package model;
 
-public class SpeciesEntry
+public class SpeciesEntry implements Comparable<SpeciesEntry>
 {
 	private final Species species;
 	private final Integer amount;
@@ -30,5 +30,25 @@ public class SpeciesEntry
 	public String toString()
 	{
 		return this.getSpecies().getName() + " (" + this.getAmount() + ")";
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (obj instanceof SpeciesEntry)
+		{
+			SpeciesEntry other = (SpeciesEntry) obj;
+			return other.amount == this.amount && other.species.equals(this.species);
+		}
+		return false;
+	}
+
+	@Override
+	public int compareTo(SpeciesEntry other)
+	{
+		if (other.amount == this.amount && other.species.equals(this.species))
+			return 0;
+		else
+			return 1;
 	}
 }
