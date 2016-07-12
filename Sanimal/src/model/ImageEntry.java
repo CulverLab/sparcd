@@ -68,6 +68,12 @@ public class ImageEntry
 	public void addSpecies(Species species, Integer amount)
 	{
 		// Remove any other occurrences of the species from the image
+		this.removeSpecies(species);
+		this.speciesPresent.add(new SpeciesEntry(species, amount));
+	}
+
+	public void removeSpecies(Species species)
+	{
 		this.speciesPresent.removeIf(new Predicate<SpeciesEntry>()
 		{
 			@Override
@@ -76,7 +82,6 @@ public class ImageEntry
 				return entry.getSpecies() == species;
 			}
 		});
-		this.speciesPresent.add(new SpeciesEntry(species, amount));
 	}
 
 	public List<SpeciesEntry> getSpeciesPresent()
@@ -87,7 +92,7 @@ public class ImageEntry
 	public ImageIcon createIcon(int width, int height)
 	{
 		ImageIcon icon = new ImageIcon(this.imageFile.getAbsolutePath());
-		return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_FAST));
+		return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH));
 	}
 
 	public void renameByDate()

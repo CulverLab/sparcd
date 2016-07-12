@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,13 +26,25 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.border.LineBorder;
+import javax.swing.event.MouseInputListener;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
-import library.ComboBoxFullMenu;
+import org.jxmapviewer.JXMapViewer;
+import org.jxmapviewer.VirtualEarthTileFactoryInfo;
+import org.jxmapviewer.input.CenterMapListener;
+import org.jxmapviewer.input.PanKeyListener;
+import org.jxmapviewer.input.PanMouseInputListener;
+import org.jxmapviewer.input.ZoomMouseWheelListenerCursor;
+import org.jxmapviewer.viewer.DefaultTileFactory;
+import org.jxmapviewer.viewer.GeoPosition;
+import org.jxmapviewer.viewer.LocalResponseCache;
+import org.jxmapviewer.viewer.TileFactoryInfo;
+
+import library.comboBox.ComboBoxFullMenu;
 import model.ImageDirectory;
 import model.ImageEntry;
 import model.Location;
@@ -64,26 +77,30 @@ public class ImageImportView extends JFrame
 	private JButton btnAddNewSpecies;
 	private JButton btnRemoveSpecies;
 	private JButton btnAddSpeciesToList;
+	private JButton btnRemoveSpeciesFromList;
+	private JButton btnFinishImporting;
 	private JPanel pnlSpeciesPresent;
 	private JLabel lblSpeciesEntries;
 	private JScrollPane pneSpeciesList;
 	private JList lstSpecies;
+	private JPanel pnlMap;
+	private JXMapViewer mapViewer;
 
 	public ImageImportView()
 	{
 		this.getContentPane().setLayout(null);
-		this.setResizable(false);
+		//this.setResizable(false);
 		this.setTitle("Image Importer");
-		this.setSize(748, 625);
+		this.setSize(1504, 637);
 
 		lblThumbnail = new JLabel();
-		lblThumbnail.setBounds(298, 11, 434, 362);
+		lblThumbnail.setBounds(298, 11, 424, 362);
 		lblThumbnail.setBorder(new LineBorder(Color.BLACK));
 		this.getContentPane().add(lblThumbnail);
 
 		pnlPropertyList = new JPanel();
 		pnlPropertyList.setLayout(null);
-		pnlPropertyList.setBounds(10, 384, 434, 202);
+		pnlPropertyList.setBounds(10, 384, 462, 202);
 		pnlPropertyList.setBorder(new LineBorder(Color.BLACK));
 		this.getContentPane().add(pnlPropertyList);
 
@@ -94,7 +111,7 @@ public class ImageImportView extends JFrame
 
 		txtDate = new JTextField();
 		txtDate.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		txtDate.setBounds(107, 11, 317, 20);
+		txtDate.setBounds(107, 11, 340, 20);
 		txtDate.setEditable(false);
 		pnlPropertyList.add(txtDate);
 
@@ -105,18 +122,18 @@ public class ImageImportView extends JFrame
 
 		cbxLocation = new ComboBoxFullMenu<Location>();
 		cbxLocation.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		cbxLocation.setBounds(107, 36, 132, 23);
+		cbxLocation.setBounds(107, 36, 167, 23);
 		cbxLocation.setSelectedIndex(-1);
 		pnlPropertyList.add(cbxLocation);
 
 		btnAddNewLocation = new JButton("Add");
 		btnAddNewLocation.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnAddNewLocation.setBounds(249, 35, 72, 23);
+		btnAddNewLocation.setBounds(284, 35, 70, 23);
 		pnlPropertyList.add(btnAddNewLocation);
 
 		btnRemoveLocation = new JButton("Remove");
 		btnRemoveLocation.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnRemoveLocation.setBounds(331, 35, 93, 23);
+		btnRemoveLocation.setBounds(360, 36, 87, 23);
 		pnlPropertyList.add(btnRemoveLocation);
 
 		lblLocationLat = new JLabel("Latitude: ");
@@ -126,7 +143,7 @@ public class ImageImportView extends JFrame
 
 		txtLat = new JTextField();
 		txtLat.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		txtLat.setBounds(107, 61, 317, 20);
+		txtLat.setBounds(107, 61, 340, 20);
 		txtLat.setEditable(false);
 		pnlPropertyList.add(txtLat);
 
@@ -137,7 +154,7 @@ public class ImageImportView extends JFrame
 
 		txtLng = new JTextField();
 		txtLng.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		txtLng.setBounds(107, 86, 317, 20);
+		txtLng.setBounds(107, 86, 340, 20);
 		txtLng.setEditable(false);
 		pnlPropertyList.add(txtLng);
 
@@ -148,7 +165,7 @@ public class ImageImportView extends JFrame
 
 		txtElevation = new JTextField();
 		txtElevation.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		txtElevation.setBounds(107, 111, 317, 20);
+		txtElevation.setBounds(107, 111, 340, 20);
 		txtElevation.setEditable(false);
 		pnlPropertyList.add(txtElevation);
 
@@ -159,43 +176,54 @@ public class ImageImportView extends JFrame
 
 		cbxSpecies = new ComboBoxFullMenu<Species>();
 		cbxSpecies.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		cbxSpecies.setBounds(107, 135, 317, 23);
+		cbxSpecies.setBounds(107, 135, 167, 23);
 		cbxSpecies.setSelectedIndex(-1);
 		pnlPropertyList.add(cbxSpecies);
 
 		btnAddNewSpecies = new JButton("Add");
 		btnAddNewSpecies.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnAddNewSpecies.setBounds(107, 162, 72, 23);
+		btnAddNewSpecies.setBounds(284, 135, 70, 23);
 		btnAddNewSpecies.setToolTipText("Add a new species to the species dictionary");
 		pnlPropertyList.add(btnAddNewSpecies);
 
 		btnRemoveSpecies = new JButton("Remove");
 		btnRemoveSpecies.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnRemoveSpecies.setBounds(189, 162, 93, 23);
+		btnRemoveSpecies.setBounds(360, 135, 87, 23);
 		btnRemoveSpecies.setToolTipText("Remove the selected species from the species dictionary");
 		pnlPropertyList.add(btnRemoveSpecies);
 
-		btnAddSpeciesToList = new JButton("Add to Image");
+		btnAddSpeciesToList = new JButton("Add Species");
 		btnAddSpeciesToList.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnAddSpeciesToList.setBounds(292, 162, 132, 23);
+		btnAddSpeciesToList.setBounds(180, 164, 115, 23);
 		btnAddSpeciesToList.setToolTipText("Add the selected species to the selected image");
 		pnlPropertyList.add(btnAddSpeciesToList);
 
+		btnRemoveSpeciesFromList = new JButton("Remove Species");
+		btnRemoveSpeciesFromList.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnRemoveSpeciesFromList.setBounds(305, 164, 142, 23);
+		btnRemoveSpeciesFromList.setToolTipText("Remove the selected species from the selected image");
+		pnlPropertyList.add(btnRemoveSpeciesFromList);
+
+		btnFinishImporting = new JButton("Finish Importing");
+		btnFinishImporting.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnFinishImporting.setBounds(10, 164, 160, 23);
+		pnlPropertyList.add(btnFinishImporting);
+
 		pnlSpeciesPresent = new JPanel();
 		pnlSpeciesPresent.setLayout(null);
-		pnlSpeciesPresent.setBounds(454, 384, 278, 202);
+		pnlSpeciesPresent.setBounds(482, 384, 240, 202);
 		pnlSpeciesPresent.setBorder(new LineBorder(Color.BLACK));
 		this.getContentPane().add(pnlSpeciesPresent);
 
 		lblSpeciesEntries = new JLabel("Species in image:");
 		lblSpeciesEntries.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblSpeciesEntries.setBounds(10, 10, 258, 14);
+		lblSpeciesEntries.setBounds(10, 10, 220, 14);
 		pnlSpeciesPresent.add(lblSpeciesEntries);
 
 		pneSpeciesList = new JScrollPane();
 		lstSpecies = new JList();
 		lstSpecies.setModel(new DefaultListModel());
-		pneSpeciesList.setBounds(10, 35, 258, 156);
+		pneSpeciesList.setBounds(10, 35, 220, 156);
 		pneSpeciesList.setViewportView(lstSpecies);
 		pnlSpeciesPresent.add(pneSpeciesList);
 
@@ -219,6 +247,37 @@ public class ImageImportView extends JFrame
 		pneImageList.setBounds(10, 11, 258, 314);
 		pneImageList.setViewportView(treImages);
 		pnlImageBrowser.add(pneImageList);
+
+		pnlMap = new JPanel();
+		pnlMap.setBounds(732, 11, 746, 575);
+		getContentPane().add(pnlMap);
+		pnlMap.setBorder(new LineBorder(Color.BLACK));
+		pnlMap.setLayout(null);
+
+		TileFactoryInfo tileFactoryInfo = new VirtualEarthTileFactoryInfo(VirtualEarthTileFactoryInfo.HYBRID);
+		DefaultTileFactory tileFactory = new DefaultTileFactory(tileFactoryInfo);
+		tileFactory.setThreadPoolSize(8);
+		// ADDED
+		File cacheDir = new File(System.getProperty("user.home") + File.separator + "Sanimal Map Tiles");
+		LocalResponseCache.installResponseCache(tileFactoryInfo.getBaseURL(), cacheDir, false);
+
+		mapViewer = new JXMapViewer();
+		mapViewer.setLayout(null);
+		mapViewer.setBounds(0, 0, 746, 575);
+		mapViewer.setTileFactory(tileFactory);
+
+		GeoPosition tucson = new GeoPosition(32.2217, -110.9265);
+		mapViewer.setZoom(10);
+		mapViewer.setAddressLocation(tucson);
+
+		MouseInputListener listener = new PanMouseInputListener(mapViewer);
+		mapViewer.addMouseListener(listener);
+		mapViewer.addMouseMotionListener(listener);
+		mapViewer.addMouseListener(new CenterMapListener(mapViewer));
+		mapViewer.addMouseWheelListener(new ZoomMouseWheelListenerCursor(mapViewer));
+		mapViewer.addKeyListener(new PanKeyListener(mapViewer));
+
+		pnlMap.add(mapViewer);
 
 		this.setLocationRelativeTo(null);
 	}
@@ -261,6 +320,16 @@ public class ImageImportView extends JFrame
 	public void addALToAddSpeciesToList(ActionListener listener)
 	{
 		this.btnAddSpeciesToList.addActionListener(listener);
+	}
+
+	public void addALToFinishImporting(ActionListener listener)
+	{
+		this.btnFinishImporting.addActionListener(listener);
+	}
+
+	public void addALToRemoveSpeciesFromList(ActionListener listener)
+	{
+		this.btnRemoveSpeciesFromList.addActionListener(listener);
 	}
 
 	public Location getSelectedLocation()

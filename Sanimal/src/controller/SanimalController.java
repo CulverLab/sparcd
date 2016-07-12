@@ -48,44 +48,7 @@ public class SanimalController
 					@Override
 					public void valueChanged(TreeSelectionEvent event)
 					{
-						ImageEntry first = null;
-						Location firstLocation = null;
-						String firstDate = null;
-						List<SpeciesEntry> firstSpeciesEntries = null;
-						List<ImageEntry> selectedImages = view.getSelectedImageEntries();
-						for (ImageEntry current : selectedImages)
-						{
-							if (first == null)
-							{
-								first = current;
-								firstLocation = first.getLocationTaken();
-								firstDate = first.getDateTakenFormatted();
-								firstSpeciesEntries = first.getSpeciesPresent();
-								Collections.sort(firstSpeciesEntries);
-								continue;
-							}
-							if (!current.getDateTakenFormatted().equals(firstDate))
-								firstDate = null;
-							if (current.getLocationTaken() != firstLocation)
-								firstLocation = null;
-							if (firstSpeciesEntries != null)
-							{
-								Collections.sort(current.getSpeciesPresent());
-								if (!current.getSpeciesPresent().equals(firstSpeciesEntries))
-									firstSpeciesEntries = null;
-							}
-						}
-						view.setLocation(firstLocation);
-						view.setDate(firstDate);
-						view.setSpeciesEntryList(firstSpeciesEntries);
-						if (selectedImages.size() == 1)
-						{
-							view.setThumbnailImage(first);
-						}
-						else
-						{
-							view.setThumbnailImage(null);
-						}
+						SanimalController.this.selectedItemUpdated(view);
 					}
 				});
 				// When the user wants to load in images
@@ -172,6 +135,7 @@ public class SanimalController
 									image.setLocationTaken(null);
 							sanimalData.getLocationData().removeLocation(selected.toString());
 							view.setLocationList(sanimalData.getLocationData().getRegisteredLocations());
+							SanimalController.this.selectedItemUpdated(view);
 						}
 					}
 				});
@@ -203,6 +167,7 @@ public class SanimalController
 							}
 							sanimalData.getSpeciesData().removeSpecies(selected);
 							view.setSpeciesList(sanimalData.getSpeciesData().getRegisteredSpecies());
+							SanimalController.this.selectedItemUpdated(view);
 						}
 					}
 				});
@@ -235,10 +200,75 @@ public class SanimalController
 							if (selectedImages.size() == 1)
 								view.setSpeciesEntryList(selectedImages.get(0).getSpeciesPresent());
 						}
+						SanimalController.this.selectedItemUpdated(view);
+					}
+				});
+				// When the user removes an animal from an image
+				view.addALToRemoveSpeciesFromList(new ActionListener()
+				{
+					@Override
+					public void actionPerformed(ActionEvent event)
+					{
+						Species selectedSpecies = view.getSelectedSpecies();
+						List<ImageEntry> selectedImages = view.getSelectedImageEntries();
+						if (selectedSpecies != null)
+						{
+							for (ImageEntry imageEntry : selectedImages)
+								imageEntry.removeSpecies(selectedSpecies);
+						}
+						SanimalController.this.selectedItemUpdated(view);
+					}
+				});
+				// When the user is done with importing images
+				view.addALToFinishImporting(new ActionListener()
+				{
+					@Override
+					public void actionPerformed(ActionEvent event)
+					{
+
 					}
 				});
 				view.setVisible(true);
 			}
 		});
+	}
+
+	public void selectedItemUpdated(ImageImportView view)
+	{
+		ImageEntry first = null;
+		Location firstLocation = null;
+		String firstDate = null;
+		List<SpeciesEntry> firstSpeciesEntries = null;
+		List<ImageEntry> selectedImages = view.getSelectedImageEntries();
+		for (ImageEntry current : selectedImages)
+		{
+			if (first == null)
+			{
+				first = current;
+				firstLocation = first.getLocationTaken();
+				firstDate = first.getDateTakenFormatted();
+				firstSpeciesEntries = first.getSpeciesPresent();
+				Collections.sort(firstSpeciesEntries);
+				continue;
+			}
+			if (!current.getDateTakenFormatted().equals(firstDate))
+				firstDate = null;
+			if (current.getLocationTaken() != firstLocation)
+				firstLocation = null;
+			if (firstSpeciesEntries != null)
+			{
+				Collections.sort(current.getSpeciesPresent());
+				if (!current.getSpeciesPresent().equals(firstSpeciesEntries))
+					firstSpeciesEntries = null;
+			}
+		}
+		view.setLocation(firstLocation);
+		view.setDate(firstDate);
+		view.setSpeciesEntryList(firstSpeciesEntries);
+		view.refreshLocationFields();
+		if (selectedImages.size() == 1)
+			view.setThumbnailImage(first);
+		else
+			view.setThumbnailImage(null);
 	}
 }
