@@ -35,10 +35,6 @@ public class SanimalController
 	// Loc 2: 32.273057, -110.836507
 	// Loc 3: 32.273390, -110.836450
 
-	// Lat +/- 85
-	// Long +/- 180
-	// Feet elevation
-
 	public SanimalController(SanimalView sanimalView, SanimalData sanimalData)
 	{
 		this.sanimalView = sanimalView;
@@ -55,6 +51,13 @@ public class SanimalController
 			public void valueChanged(TreeSelectionEvent event)
 			{
 				SanimalController.this.selectedItemUpdated();
+				List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
+				if (selectedImages.size() == 1)
+				{
+					ImageEntry selected = selectedImages.get(0);
+					sanimalView.setOutputText("Image Name = " + selected.getImageFile().getName() + "\n" + "Image Location = " + (selected.getLocationTaken() == null ? "Unknown" : selected.getLocationTaken().formattedString()) + "\n" + "Image Date Taken = " + selected.getDateTakenFormatted() + "\n"
+							+ "Image Species = ");
+				}
 			}
 		});
 		// When the user wants to load in images

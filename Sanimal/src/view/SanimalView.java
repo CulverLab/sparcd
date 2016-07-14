@@ -3,13 +3,15 @@ package view;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -21,30 +23,22 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
-import javax.swing.event.MouseInputListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-
-import org.jxmapviewer.JXMapViewer;
-import org.jxmapviewer.OSMTileFactoryInfo;
-import org.jxmapviewer.VirtualEarthTileFactoryInfo;
-import org.jxmapviewer.input.CenterMapListener;
-import org.jxmapviewer.input.PanKeyListener;
-import org.jxmapviewer.input.PanMouseInputListener;
-import org.jxmapviewer.input.ZoomMouseWheelListenerCursor;
-import org.jxmapviewer.viewer.DefaultTileFactory;
-import org.jxmapviewer.viewer.GeoPosition;
-import org.jxmapviewer.viewer.TileFactory;
-import org.jxmapviewer.viewer.WaypointPainter;
 
 import library.ComboBoxFullMenu;
 import model.ImageDirectory;
@@ -52,20 +46,19 @@ import model.ImageEntry;
 import model.Location;
 import model.Species;
 import model.SpeciesEntry;
-import view.map.GoogleMapsTileFactoryInfo;
 import view.map.SwingComponentOverlay;
-import view.map.SwingComponentOverlayPainter;
 
 public class SanimalView extends JFrame
 {
+	private JPanel pnlImageBrowser;
 	private JTree treImages;
 	private JTextField txtDate;
 	private JLabel lblDate;
 	private JLabel lblThumbnail;
-	private JPanel pnlImageBrowser;
 	private JCheckBox chxIncludeSubdirectories;
 	private JButton btnBrowseForImages;
 	private JScrollPane pneImageList;
+
 	private JPanel pnlPropertyList;
 	private JLabel lblLocation;
 	private ComboBoxFullMenu<Location> cbxLocation;
@@ -87,10 +80,29 @@ public class SanimalView extends JFrame
 	private JLabel lblSpeciesEntries;
 	private JScrollPane pneSpeciesList;
 	private JList lstSpecies;
+
 	private JPanel pnlMap;
 	private JLabel lblMapProvider;
 	private ComboBoxFullMenu<String> cbxMapProviders;
-	private JXMapViewer mapViewer;
+	private SanimalMap mapViewer;
+	private JLabel lblZoomLevel;
+	private String zoomLevelBase = "Current Zoom Level: ";
+	private JLabel lblCurrentLat;
+	private String currentLatBase = "Current Latitude: ";
+	private JLabel lblCurrentLng;
+	private String currentLngBase = "Current Longitude: ";
+
+	private JButton btnTop;
+	private JButton btnBackwards;
+	private JButton btnPrevious;
+	private JButton btnStop;
+	private JButton btnNext;
+	private JButton btnForward;
+	private JButton btnBottom;
+	private JSlider sldSpeed;
+	private JLabel lblSpeed;
+	private JProgressBar prgDataShow;
+
 	private JTabbedPane tabOutputTabs;
 	private JScrollPane pneAllOutput;
 	private JTextArea tarAllOutput;
@@ -270,125 +282,162 @@ public class SanimalView extends JFrame
 		cbxMapProviders.setBounds(115, 6, 167, 23);
 		pnlMap.add(cbxMapProviders);
 
-		///
-		/// MAP CREATION
-		///
-
-		// Where to get map tiles from
-		List<DefaultTileFactory> factories = new ArrayList<DefaultTileFactory>();
-
-		// Google providers
-		factories.add(new DefaultTileFactory(new GoogleMapsTileFactoryInfo(GoogleMapsTileFactoryInfo.MapType.HYBRID)));
-		cbxMapProviders.addItem("Google Maps (Hybrid)");
-		factories.add(new DefaultTileFactory(new GoogleMapsTileFactoryInfo(GoogleMapsTileFactoryInfo.MapType.TERRAIN)));
-		cbxMapProviders.addItem("Google Maps (Terrain and roadmap)");
-		factories.add(new DefaultTileFactory(new GoogleMapsTileFactoryInfo(GoogleMapsTileFactoryInfo.MapType.TERRAIN_ONLY)));
-		cbxMapProviders.addItem("Google Maps (Terrain only)");
-		factories.add(new DefaultTileFactory(new GoogleMapsTileFactoryInfo(GoogleMapsTileFactoryInfo.MapType.ALTERED_ROADMAP)));
-		cbxMapProviders.addItem("Google Maps (Alternate roadmap)");
-		factories.add(new DefaultTileFactory(new GoogleMapsTileFactoryInfo(GoogleMapsTileFactoryInfo.MapType.STANDARD_ROADMAP)));
-		cbxMapProviders.addItem("Google Maps (Standard roadmap)");
-		factories.add(new DefaultTileFactory(new GoogleMapsTileFactoryInfo(GoogleMapsTileFactoryInfo.MapType.ROADS_ONLY)));
-		cbxMapProviders.addItem("Google Maps (Roads only)");
-
-		// Virtual earth tile factory
-		factories.add(new DefaultTileFactory(new VirtualEarthTileFactoryInfo(VirtualEarthTileFactoryInfo.HYBRID)));
-		cbxMapProviders.addItem("Virtual Earth (Hybrid)");
-		factories.add(new DefaultTileFactory(new VirtualEarthTileFactoryInfo(VirtualEarthTileFactoryInfo.MAP)));
-		cbxMapProviders.addItem("Virtual Earth (Map)");
-		factories.add(new DefaultTileFactory(new VirtualEarthTileFactoryInfo(VirtualEarthTileFactoryInfo.SATELLITE)));
-		cbxMapProviders.addItem("Virtual Earth (Satellite)");
-
-		// OSM
-		factories.add(new DefaultTileFactory(new OSMTileFactoryInfo()));
-		cbxMapProviders.addItem("Open Street Map");
-
-		for (DefaultTileFactory tileFactory : factories)
-			tileFactory.setThreadPoolSize(8);
-
-		cbxMapProviders.addItemListener(new ItemListener()
+		mapViewer = new SanimalMap(cbxMapProviders);
+		mapViewer.setLayout(null);
+		mapViewer.setBounds(0, 40, 942, 730);
+		mapViewer.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+		mapViewer.addMouseWheelListener(new MouseWheelListener()
 		{
 			@Override
-			public void itemStateChanged(ItemEvent event)
+			public void mouseWheelMoved(MouseWheelEvent event)
 			{
-				if (event.getStateChange() == ItemEvent.SELECTED)
-				{
-					TileFactory newFactory = factories.get(cbxMapProviders.getSelectedIndex());
-					TileFactory oldFactory = mapViewer.getTileFactory();
-					// Something -> Google maps
-					if (newFactory.getInfo().getName().equals("GoogleMaps") && !oldFactory.getInfo().getName().equals("GoogleMaps"))
-					{
-						GeoPosition old = mapViewer.getCenterPosition();
-						mapViewer.setTileFactory(newFactory);
-						mapViewer.setCenterPosition(old);
-						mapViewer.setZoom(mapViewer.getZoom() + 3);
-					}
-					// Google maps -> Something else
-					else if (!newFactory.getInfo().getName().equals("GoogleMaps") && oldFactory.getInfo().getName().equals("GoogleMaps"))
-					{
-						mapViewer.setZoom(mapViewer.getZoom() - 3);
-						GeoPosition old = mapViewer.getCenterPosition();
-						mapViewer.setTileFactory(newFactory);
-						mapViewer.setCenterPosition(old);
-					}
-					// Something -> Something or Google -> Google
-					else
-					{
-						GeoPosition old = mapViewer.getCenterPosition();
-						mapViewer.setTileFactory(newFactory);
-						mapViewer.setCenterPosition(old);
-					}
-				}
+				lblZoomLevel.setText(zoomLevelBase + mapViewer.getZoom());
+				lblCurrentLat.setText(currentLatBase + mapViewer.getCenterPosition().getLatitude());
+				lblCurrentLng.setText(currentLngBase + mapViewer.getCenterPosition().getLongitude());
+				double maxZoom = (double) mapViewer.getTileFactory().getInfo().getMaximumZoomLevel();
+				double currZoom = (double) mapViewer.getZoom();
+				mapViewer.setMarkerScale((maxZoom - currZoom) / maxZoom);
 			}
 		});
+		mapViewer.addMouseMotionListener(new MouseMotionListener()
+		{
+			@Override
+			public void mouseMoved(MouseEvent e)
+			{
+			}
 
-		// Cache files, completely optional
-		//File cacheDir = new File(System.getProperty("user.home") + File.separator + "Sanimal Map Tiles");
-		//LocalResponseCache.installResponseCache(tileFactoryInfo.getBaseURL(), cacheDir, false);
-
-		// Create the map
-		mapViewer = new JXMapViewer();
-		mapViewer.setLayout(null);
-		mapViewer.setBounds(10, 40, 922, 764);
-		mapViewer.setTileFactory(factories.get(0));
-
-		// Center on tucson
-		GeoPosition tucson = new GeoPosition(32.272951, -110.836367);
-		mapViewer.setZoom(5);
-		mapViewer.setAddressLocation(tucson);
-
-		// Allow map scrolling
-		MouseInputListener listener = new PanMouseInputListener(mapViewer);
-		mapViewer.addMouseListener(listener);
-		mapViewer.addMouseMotionListener(listener);
-		mapViewer.addMouseListener(new CenterMapListener(mapViewer));
-		mapViewer.addMouseWheelListener(new ZoomMouseWheelListenerCursor(mapViewer));
-		mapViewer.addKeyListener(new PanKeyListener(mapViewer));
-
-		JPanel test = new JPanel();
-		test.setLayout(null);
-		test.setBounds(0, 0, 50, 50);
-		test.setFont(new Font("Tahoma", Font.PLAIN, 30));
-		test.setBackground(Color.black);
-		test.setBorder(BorderFactory.createLineBorder(Color.white));
-		test.setVisible(true);
-
-		// Locations of waypoints
-		Set<SwingComponentOverlay> locations = new HashSet<SwingComponentOverlay>();
-		locations.add(new SwingComponentOverlay(new GeoPosition(32.2217, -110.9265), test));
-		WaypointPainter<SwingComponentOverlay> painter = new SwingComponentOverlayPainter();
-		painter.setWaypoints(locations);
-		mapViewer.setOverlayPainter(painter);
-
-		// Add locations to map
-		for (SwingComponentOverlay location : painter.getWaypoints())
-			mapViewer.add(location.getComponent());
-
+			@Override
+			public void mouseDragged(MouseEvent event)
+			{
+				SanimalView.this.lblCurrentLat.setText(currentLatBase + mapViewer.getCenterPosition().getLatitude());
+				SanimalView.this.lblCurrentLng.setText(currentLngBase + mapViewer.getCenterPosition().getLongitude());
+			}
+		});
 		pnlMap.add(mapViewer);
 
-		///
-		/// MAP CREATION
-		///		
+		lblZoomLevel = new JLabel(zoomLevelBase + mapViewer.getZoom());
+		lblZoomLevel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblZoomLevel.setBounds(292, 10, 160, 14);
+		pnlMap.add(lblZoomLevel);
+
+		lblCurrentLat = new JLabel(currentLatBase + mapViewer.getCenterPosition().getLatitude());
+		lblCurrentLat.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblCurrentLat.setBounds(454, 10, 223, 14);
+		pnlMap.add(lblCurrentLat);
+
+		lblCurrentLng = new JLabel(currentLngBase + mapViewer.getCenterPosition().getLongitude());
+		lblCurrentLng.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblCurrentLng.setBounds(709, 10, 223, 14);
+		pnlMap.add(lblCurrentLng);
+
+		btnTop = new JButton("");
+		btnTop.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnTop.setBounds(190, 784, 20, 20);
+		pnlMap.add(btnTop);
+
+		btnBackwards = new JButton("");
+		btnBackwards.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnBackwards.setBounds(40, 784, 20, 20);
+		pnlMap.add(btnBackwards);
+
+		btnPrevious = new JButton("");
+		btnPrevious.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnPrevious.setBounds(70, 784, 20, 20);
+		pnlMap.add(btnPrevious);
+
+		btnStop = new JButton("");
+		btnStop.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnStop.setBounds(100, 784, 20, 20);
+		pnlMap.add(btnStop);
+
+		btnNext = new JButton("");
+		btnNext.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnNext.setBounds(130, 784, 20, 20);
+		pnlMap.add(btnNext);
+
+		btnForward = new JButton("");
+		btnForward.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnForward.setBounds(160, 784, 20, 20);
+		pnlMap.add(btnForward);
+
+		btnBottom = new JButton("");
+		btnBottom.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnBottom.setBounds(10, 784, 20, 20);
+		pnlMap.add(btnBottom);
+
+		sldSpeed = new JSlider(SwingConstants.HORIZONTAL);
+		sldSpeed.setMinorTickSpacing(1);
+		sldSpeed.setValue(0);
+		sldSpeed.setPaintTicks(true);
+		sldSpeed.setSnapToTicks(true);
+		sldSpeed.setBounds(220, 781, 105, 23);
+		sldSpeed.setMinimum(0);
+		sldSpeed.setMaximum(5);
+		sldSpeed.addChangeListener(new ChangeListener()
+		{
+			@Override
+			public void stateChanged(ChangeEvent event)
+			{
+				lblSpeed.setText(sldSpeed.getValue() + "x");
+			}
+		});
+		pnlMap.add(sldSpeed);
+
+		lblSpeed = new JLabel("1x");
+		lblSpeed.setBounds(335, 781, 31, 23);
+		pnlMap.add(lblSpeed);
+		lblSpeed.setFont(new Font("Tahoma", Font.PLAIN, 16));
+
+		prgDataShow = new JProgressBar(SwingConstants.HORIZONTAL);
+		prgDataShow.setBounds(376, 781, 556, 23);
+		prgDataShow.setMinimum(0);
+		prgDataShow.setMaximum(100);
+		prgDataShow.addMouseListener(new MouseListener()
+		{
+			@Override
+			public void mouseReleased(MouseEvent e)
+			{
+			}
+
+			@Override
+			public void mousePressed(MouseEvent event)
+			{
+				double percentage = (double) event.getX() / (double) event.getComponent().getWidth();
+				int newLoc = (int) Math.floor(prgDataShow.getMaximum() * percentage);
+				prgDataShow.setValue(newLoc);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e)
+			{
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent e)
+			{
+			}
+		});
+		prgDataShow.addMouseMotionListener(new MouseMotionListener()
+		{
+			@Override
+			public void mouseMoved(MouseEvent e)
+			{
+			}
+
+			@Override
+			public void mouseDragged(MouseEvent event)
+			{
+				double percentage = (double) event.getX() / (double) event.getComponent().getWidth();
+				int newLoc = (int) Math.floor(prgDataShow.getMaximum() * percentage);
+				prgDataShow.setValue(newLoc);
+			}
+		});
+		pnlMap.add(prgDataShow);
 
 		tabOutputTabs = new JTabbedPane();
 		tabOutputTabs.setBounds(10, 597, 712, 229);
@@ -488,7 +537,10 @@ public class SanimalView extends JFrame
 	public void setLocation(Location imageLoc)
 	{
 		if (imageLoc != null)
+		{
 			this.cbxLocation.setSelectedItem(imageLoc);
+			mapViewer.setCenterPosition(imageLoc.toGeoPosition());
+		}
 		else
 			this.cbxLocation.setSelectedIndex(-1);
 		this.refreshLocationFields();
@@ -507,8 +559,12 @@ public class SanimalView extends JFrame
 		if (!locations.contains((Location) this.cbxLocation.getSelectedItem()))
 			this.cbxLocation.setSelectedIndex(-1);
 		this.cbxLocation.removeAllItems();
+		this.mapViewer.clearMarkers();
 		for (Location location : locations)
+		{
 			this.cbxLocation.addItem(location);
+			this.mapViewer.addMarker(new SwingComponentOverlay(location.toGeoPosition(), new SanimalMapMarker()));
+		}
 	}
 
 	public void setSpeciesList(List<Species> species)
@@ -550,6 +606,11 @@ public class SanimalView extends JFrame
 			this.createTreeFromImageDirectory(subDirectoryNode, subDirectory);
 			headNode.add(subDirectoryNode);
 		}
+	}
+
+	public void setOutputText(String text)
+	{
+		this.tarAllOutput.setText(text);
 	}
 
 	public List<ImageEntry> getSelectedImageEntries()
@@ -639,11 +700,11 @@ public class SanimalView extends JFrame
 				return null;
 		}
 		Double latitude = Double.MAX_VALUE;
-		while (latitude == Double.MAX_VALUE)
+		while (latitude > 85 || latitude < -85)
 		{
 			try
 			{
-				String latitudeString = JOptionPane.showInputDialog("Enter the latitude of location '" + name + "'");
+				String latitudeString = JOptionPane.showInputDialog("Enter the latitude (+/- 85) of location '" + name + "'");
 				if (latitudeString == null)
 					return null;
 				latitude = Double.parseDouble(latitudeString);
@@ -653,11 +714,11 @@ public class SanimalView extends JFrame
 			}
 		}
 		Double longitude = Double.MAX_VALUE;
-		while (longitude == Double.MAX_VALUE)
+		while (longitude > 180 || longitude < -180)
 		{
 			try
 			{
-				String longitudeString = JOptionPane.showInputDialog("Enter the longitude of location '" + name + "'");
+				String longitudeString = JOptionPane.showInputDialog("Enter the longitude (+/- 180) of location '" + name + "'");
 				if (longitudeString == null)
 					return null;
 				longitude = Double.parseDouble(longitudeString);
@@ -671,7 +732,7 @@ public class SanimalView extends JFrame
 		{
 			try
 			{
-				String elevationString = JOptionPane.showInputDialog("Enter the elevation of location '" + name + "'");
+				String elevationString = JOptionPane.showInputDialog("Enter the elevation (in feet) of location '" + name + "'");
 				if (elevationString == null)
 					return null;
 				elevation = Double.parseDouble(elevationString);

@@ -5,6 +5,8 @@
  */
 package model;
 
+import org.jxmapviewer.viewer.GeoPosition;
+
 public class Location
 {
 	private final String name;
@@ -44,5 +46,15 @@ public class Location
 	public String toString()
 	{
 		return this.getName();
+	}
+
+	public String formattedString()
+	{
+		return this.getName() + " Latitude: " + this.getLat() + ", Longitude: " + this.getLng() + ", Elevation: " + this.getElevation();
+	}
+
+	public GeoPosition toGeoPosition()
+	{
+		return new GeoPosition(lat, lng);
 	}
 }
