@@ -112,17 +112,17 @@ public class SanimalView extends JFrame
 		this.getContentPane().setLayout(null);
 		this.setResizable(false);
 		this.setTitle("Sanimal");
-		this.setSize(1481, 713);
+		this.setSize(1334, 713);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		lblThumbnail = new JLabel();
-		lblThumbnail.setBounds(319, 11, 403, 300);
+		lblThumbnail.setBounds(278, 11, 391, 300);
 		lblThumbnail.setBorder(new LineBorder(Color.BLACK));
 		this.getContentPane().add(lblThumbnail);
 
 		pnlPropertyList = new JPanel();
 		pnlPropertyList.setLayout(null);
-		pnlPropertyList.setBounds(10, 322, 462, 202);
+		pnlPropertyList.setBounds(10, 322, 425, 202);
 		pnlPropertyList.setBorder(new LineBorder(Color.BLACK));
 		this.getContentPane().add(pnlPropertyList);
 
@@ -133,7 +133,7 @@ public class SanimalView extends JFrame
 
 		txtDate = new JTextField();
 		txtDate.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		txtDate.setBounds(107, 11, 340, 20);
+		txtDate.setBounds(107, 11, 310, 20);
 		txtDate.setEditable(false);
 		pnlPropertyList.add(txtDate);
 
@@ -144,18 +144,18 @@ public class SanimalView extends JFrame
 
 		cbxLocation = new ComboBoxFullMenu<Location>();
 		cbxLocation.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		cbxLocation.setBounds(107, 36, 167, 23);
+		cbxLocation.setBounds(107, 36, 133, 23);
 		cbxLocation.setSelectedIndex(-1);
 		pnlPropertyList.add(cbxLocation);
 
 		btnAddNewLocation = new JButton("Add");
 		btnAddNewLocation.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnAddNewLocation.setBounds(284, 35, 70, 23);
+		btnAddNewLocation.setBounds(250, 35, 70, 23);
 		pnlPropertyList.add(btnAddNewLocation);
 
 		btnRemoveLocation = new JButton("Remove");
 		btnRemoveLocation.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnRemoveLocation.setBounds(360, 36, 87, 23);
+		btnRemoveLocation.setBounds(330, 35, 87, 23);
 		pnlPropertyList.add(btnRemoveLocation);
 
 		lblLocationLat = new JLabel("Latitude: ");
@@ -165,7 +165,7 @@ public class SanimalView extends JFrame
 
 		txtLat = new JTextField();
 		txtLat.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		txtLat.setBounds(107, 61, 340, 20);
+		txtLat.setBounds(107, 61, 310, 20);
 		txtLat.setEditable(false);
 		pnlPropertyList.add(txtLat);
 
@@ -176,7 +176,7 @@ public class SanimalView extends JFrame
 
 		txtLng = new JTextField();
 		txtLng.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		txtLng.setBounds(107, 86, 340, 20);
+		txtLng.setBounds(107, 86, 310, 20);
 		txtLng.setEditable(false);
 		pnlPropertyList.add(txtLng);
 
@@ -187,7 +187,7 @@ public class SanimalView extends JFrame
 
 		txtElevation = new JTextField();
 		txtElevation.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		txtElevation.setBounds(107, 111, 340, 20);
+		txtElevation.setBounds(107, 111, 310, 20);
 		txtElevation.setEditable(false);
 		pnlPropertyList.add(txtElevation);
 
@@ -198,76 +198,78 @@ public class SanimalView extends JFrame
 
 		cbxSpecies = new ComboBoxFullMenu<Species>();
 		cbxSpecies.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		cbxSpecies.setBounds(107, 135, 167, 23);
+		cbxSpecies.setBounds(107, 135, 133, 23);
 		cbxSpecies.setSelectedIndex(-1);
 		pnlPropertyList.add(cbxSpecies);
 
 		btnAddNewSpecies = new JButton("Add");
 		btnAddNewSpecies.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnAddNewSpecies.setBounds(284, 135, 70, 23);
+		btnAddNewSpecies.setBounds(250, 135, 70, 23);
 		btnAddNewSpecies.setToolTipText("Add a new species to the species dictionary");
 		pnlPropertyList.add(btnAddNewSpecies);
 
 		btnRemoveSpecies = new JButton("Remove");
 		btnRemoveSpecies.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnRemoveSpecies.setBounds(360, 135, 87, 23);
+		btnRemoveSpecies.setBounds(330, 135, 87, 23);
 		btnRemoveSpecies.setToolTipText("Remove the selected species from the species dictionary");
 		pnlPropertyList.add(btnRemoveSpecies);
 
 		pnlSpeciesPresent = new JPanel();
 		pnlSpeciesPresent.setLayout(null);
-		pnlSpeciesPresent.setBounds(482, 322, 240, 202);
+		pnlSpeciesPresent.setBounds(445, 322, 224, 202);
 		pnlSpeciesPresent.setBorder(new LineBorder(Color.BLACK));
 		this.getContentPane().add(pnlSpeciesPresent);
 
 		lblSpeciesEntries = new JLabel("Species in image:");
 		lblSpeciesEntries.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblSpeciesEntries.setBounds(10, 10, 220, 14);
+		lblSpeciesEntries.setBounds(10, 10, 207, 14);
 		pnlSpeciesPresent.add(lblSpeciesEntries);
 
 		pneSpeciesList = new JScrollPane();
 		lstSpecies = new JList();
 		lstSpecies.setModel(new DefaultListModel());
-		pneSpeciesList.setBounds(10, 35, 220, 88);
+		pneSpeciesList.setBounds(10, 35, 207, 88);
 		pneSpeciesList.setViewportView(lstSpecies);
 		pnlSpeciesPresent.add(pneSpeciesList);
 
 		btnAddSpeciesToList = new JButton("Add Species to Image");
-		btnAddSpeciesToList.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnAddSpeciesToList.setBounds(10, 134, 220, 23);
+		btnAddSpeciesToList.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		btnAddSpeciesToList.setBounds(10, 134, 207, 23);
 		btnAddSpeciesToList.setToolTipText("Add the selected species to the selected image");
 		pnlSpeciesPresent.add(btnAddSpeciesToList);
 
 		btnRemoveSpeciesFromList = new JButton("Remove Species from Image");
-		btnRemoveSpeciesFromList.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnRemoveSpeciesFromList.setBounds(10, 168, 220, 23);
+		btnRemoveSpeciesFromList.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		btnRemoveSpeciesFromList.setBounds(10, 168, 207, 23);
 		btnRemoveSpeciesFromList.setToolTipText("Remove the selected species from the selected image");
 		pnlSpeciesPresent.add(btnRemoveSpeciesFromList);
 
 		pnlImageBrowser = new JPanel();
-		pnlImageBrowser.setBounds(10, 11, 299, 300);
+		pnlImageBrowser.setBounds(10, 11, 258, 300);
 		getContentPane().add(pnlImageBrowser);
 		pnlImageBrowser.setBorder(new LineBorder(Color.BLACK));
 		pnlImageBrowser.setLayout(null);
 
 		chxIncludeSubdirectories = new JCheckBox("Include Subdirectories");
+		chxIncludeSubdirectories.setFont(new Font("Tahoma", Font.PLAIN, 10));
 		chxIncludeSubdirectories.setSelected(true);
-		chxIncludeSubdirectories.setBounds(131, 270, 158, 23);
+		chxIncludeSubdirectories.setBounds(111, 270, 141, 23);
 		chxIncludeSubdirectories.setToolTipText("Search sub-directories as well as the selected directory for images");
 		pnlImageBrowser.add(chxIncludeSubdirectories);
 
 		btnBrowseForImages = new JButton("Select Images");
-		btnBrowseForImages.setBounds(6, 270, 119, 23);
+		btnBrowseForImages.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		btnBrowseForImages.setBounds(6, 270, 99, 23);
 		pnlImageBrowser.add(btnBrowseForImages);
 
 		pneImageList = new JScrollPane();
 		treImages = new JTree((TreeModel) null);
-		pneImageList.setBounds(10, 11, 279, 252);
+		pneImageList.setBounds(10, 11, 237, 252);
 		pneImageList.setViewportView(treImages);
 		pnlImageBrowser.add(pneImageList);
 
 		pnlMap = new JPanel();
-		pnlMap.setBounds(732, 11, 736, 666);
+		pnlMap.setBounds(679, 11, 638, 666);
 		pnlMap.setBorder(new LineBorder(Color.BLACK));
 		pnlMap.setLayout(null);
 		getContentPane().add(pnlMap);
@@ -284,7 +286,7 @@ public class SanimalView extends JFrame
 
 		mapViewer = new SanimalMap(cbxMapProviders);
 		mapViewer.setLayout(null);
-		mapViewer.setBounds(0, 40, 734, 584);
+		mapViewer.setBounds(0, 60, 637, 564);
 		mapViewer.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 		mapViewer.addMouseWheelListener(new MouseWheelListener()
 		{
@@ -292,8 +294,8 @@ public class SanimalView extends JFrame
 			public void mouseWheelMoved(MouseWheelEvent event)
 			{
 				lblZoomLevel.setText(zoomLevelBase + mapViewer.getZoom());
-				lblCurrentLat.setText(currentLatBase + mapViewer.getCenterPosition().getLatitude());
-				lblCurrentLng.setText(currentLngBase + mapViewer.getCenterPosition().getLongitude());
+				lblCurrentLat.setText(currentLatBase + String.format("%7.6f", mapViewer.getCenterPosition().getLatitude()));
+				lblCurrentLng.setText(currentLngBase + String.format("%7.6f", mapViewer.getCenterPosition().getLongitude()));
 				double maxZoom = (double) mapViewer.getTileFactory().getInfo().getMaximumZoomLevel();
 				double currZoom = (double) mapViewer.getZoom();
 				mapViewer.setMarkerScale((maxZoom - currZoom) / maxZoom);
@@ -309,25 +311,25 @@ public class SanimalView extends JFrame
 			@Override
 			public void mouseDragged(MouseEvent event)
 			{
-				SanimalView.this.lblCurrentLat.setText(currentLatBase + mapViewer.getCenterPosition().getLatitude());
-				SanimalView.this.lblCurrentLng.setText(currentLngBase + mapViewer.getCenterPosition().getLongitude());
+				SanimalView.this.lblCurrentLat.setText(currentLatBase + String.format("%7.6f", mapViewer.getCenterPosition().getLatitude()));
+				SanimalView.this.lblCurrentLng.setText(currentLngBase + String.format("%7.6f", mapViewer.getCenterPosition().getLongitude()));
 			}
 		});
 		pnlMap.add(mapViewer);
 
 		lblZoomLevel = new JLabel(zoomLevelBase + mapViewer.getZoom());
 		lblZoomLevel.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblZoomLevel.setBounds(292, 10, 105, 14);
+		lblZoomLevel.setBounds(10, 35, 105, 14);
 		pnlMap.add(lblZoomLevel);
 
 		lblCurrentLat = new JLabel(currentLatBase + String.format("%7.6f", mapViewer.getCenterPosition().getLatitude()));
 		lblCurrentLat.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblCurrentLat.setBounds(407, 10, 150, 14);
+		lblCurrentLat.setBounds(292, 10, 159, 14);
 		pnlMap.add(lblCurrentLat);
 
 		lblCurrentLng = new JLabel(currentLngBase + String.format("%7.6f", mapViewer.getCenterPosition().getLongitude()));
 		lblCurrentLng.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblCurrentLng.setBounds(567, 10, 167, 14);
+		lblCurrentLng.setBounds(292, 35, 159, 14);
 		pnlMap.add(lblCurrentLng);
 
 		btnTop = new JButton("");
@@ -370,7 +372,7 @@ public class SanimalView extends JFrame
 		sldSpeed.setValue(0);
 		sldSpeed.setPaintTicks(true);
 		sldSpeed.setSnapToTicks(true);
-		sldSpeed.setBounds(220, 632, 105, 23);
+		sldSpeed.setBounds(220, 632, 68, 23);
 		sldSpeed.setMinimum(0);
 		sldSpeed.setMaximum(5);
 		sldSpeed.addChangeListener(new ChangeListener()
@@ -384,12 +386,12 @@ public class SanimalView extends JFrame
 		pnlMap.add(sldSpeed);
 
 		lblSpeed = new JLabel("1x");
-		lblSpeed.setBounds(335, 632, 31, 23);
+		lblSpeed.setBounds(292, 632, 26, 23);
 		pnlMap.add(lblSpeed);
 		lblSpeed.setFont(new Font("Tahoma", Font.PLAIN, 16));
 
 		prgDataShow = new JProgressBar(SwingConstants.HORIZONTAL);
-		prgDataShow.setBounds(376, 632, 350, 23);
+		prgDataShow.setBounds(328, 632, 300, 23);
 		prgDataShow.setMinimum(0);
 		prgDataShow.setMaximum(100);
 		prgDataShow.addMouseListener(new MouseListener()
@@ -440,7 +442,7 @@ public class SanimalView extends JFrame
 		pnlMap.add(prgDataShow);
 
 		tabOutputTabs = new JTabbedPane();
-		tabOutputTabs.setBounds(10, 535, 712, 142);
+		tabOutputTabs.setBounds(10, 535, 659, 142);
 		tabOutputTabs.setSelectedIndex(-1);
 		this.getContentPane().add(tabOutputTabs);
 
