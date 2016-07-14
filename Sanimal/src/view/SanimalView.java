@@ -332,37 +332,37 @@ public class SanimalView extends JFrame
 		lblCurrentLng.setBounds(292, 35, 159, 14);
 		pnlMap.add(lblCurrentLng);
 
-		btnTop = new JButton(new ImageIcon("images/Top2.png"));
+		btnTop = new JButton(new ImageIcon(SanimalView.class.getResource("/images/Top2.png")));
 		btnTop.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnTop.setBounds(10, 635, 20, 20);
 		pnlMap.add(btnTop);
 
-		btnBackwards = new JButton(new ImageIcon("images/Backward2.png"));
+		btnBackwards = new JButton(new ImageIcon(SanimalView.class.getResource("/images/Backward2.png")));
 		btnBackwards.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnBackwards.setBounds(40, 635, 20, 20);
 		pnlMap.add(btnBackwards);
 
-		btnPrevious = new JButton(new ImageIcon("images/Previous2.png"));
+		btnPrevious = new JButton(new ImageIcon(SanimalView.class.getResource("/images/Previous2.png")));
 		btnPrevious.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnPrevious.setBounds(70, 635, 20, 20);
 		pnlMap.add(btnPrevious);
 
-		btnStop = new JButton(new ImageIcon("images/Stop2.png"));
+		btnStop = new JButton(new ImageIcon(SanimalView.class.getResource("/images/Stop2.png")));
 		btnStop.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnStop.setBounds(100, 635, 20, 20);
 		pnlMap.add(btnStop);
 
-		btnNext = new JButton(new ImageIcon("images/Next2.png"));
+		btnNext = new JButton(new ImageIcon(SanimalView.class.getResource("/images/Next2.png")));
 		btnNext.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnNext.setBounds(130, 635, 20, 20);
 		pnlMap.add(btnNext);
 
-		btnForward = new JButton(new ImageIcon("images/Forward2.png"));
+		btnForward = new JButton(new ImageIcon(SanimalView.class.getResource("/images/Forward2.png")));
 		btnForward.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnForward.setBounds(160, 635, 20, 20);
 		pnlMap.add(btnForward);
 
-		btnBottom = new JButton(new ImageIcon("images/Bottom2.png"));
+		btnBottom = new JButton(new ImageIcon(SanimalView.class.getResource("/images/Bottom2.png")));
 		btnBottom.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnBottom.setBounds(190, 635, 20, 20);
 		pnlMap.add(btnBottom);
