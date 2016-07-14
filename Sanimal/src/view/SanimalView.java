@@ -86,11 +86,11 @@ public class SanimalView extends JFrame
 	private ComboBoxFullMenu<String> cbxMapProviders;
 	private SanimalMap mapViewer;
 	private JLabel lblZoomLevel;
-	private String zoomLevelBase = "Current Zoom Level: ";
+	private String zoomLevelBase = "Zoom Level: ";
 	private JLabel lblCurrentLat;
-	private String currentLatBase = "Current Latitude: ";
+	private String currentLatBase = "Latitude: ";
 	private JLabel lblCurrentLng;
-	private String currentLngBase = "Current Longitude: ";
+	private String currentLngBase = "Longitude: ";
 
 	private JButton btnTop;
 	private JButton btnBackwards;
@@ -112,7 +112,7 @@ public class SanimalView extends JFrame
 		this.getContentPane().setLayout(null);
 		this.setResizable(false);
 		this.setTitle("Sanimal");
-		this.setSize(1613, 713);
+		this.setSize(1481, 713);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		lblThumbnail = new JLabel();
@@ -267,7 +267,7 @@ public class SanimalView extends JFrame
 		pnlImageBrowser.add(pneImageList);
 
 		pnlMap = new JPanel();
-		pnlMap.setBounds(732, 11, 866, 666);
+		pnlMap.setBounds(732, 11, 736, 666);
 		pnlMap.setBorder(new LineBorder(Color.BLACK));
 		pnlMap.setLayout(null);
 		getContentPane().add(pnlMap);
@@ -284,7 +284,7 @@ public class SanimalView extends JFrame
 
 		mapViewer = new SanimalMap(cbxMapProviders);
 		mapViewer.setLayout(null);
-		mapViewer.setBounds(0, 40, 856, 584);
+		mapViewer.setBounds(0, 40, 734, 584);
 		mapViewer.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 		mapViewer.addMouseWheelListener(new MouseWheelListener()
 		{
@@ -317,17 +317,17 @@ public class SanimalView extends JFrame
 
 		lblZoomLevel = new JLabel(zoomLevelBase + mapViewer.getZoom());
 		lblZoomLevel.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblZoomLevel.setBounds(292, 10, 160, 14);
+		lblZoomLevel.setBounds(292, 10, 105, 14);
 		pnlMap.add(lblZoomLevel);
 
-		lblCurrentLat = new JLabel(currentLatBase + mapViewer.getCenterPosition().getLatitude());
+		lblCurrentLat = new JLabel(currentLatBase + String.format("%7.6f", mapViewer.getCenterPosition().getLatitude()));
 		lblCurrentLat.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblCurrentLat.setBounds(454, 10, 190, 14);
+		lblCurrentLat.setBounds(407, 10, 150, 14);
 		pnlMap.add(lblCurrentLat);
 
-		lblCurrentLng = new JLabel(currentLngBase + mapViewer.getCenterPosition().getLongitude());
+		lblCurrentLng = new JLabel(currentLngBase + String.format("%7.6f", mapViewer.getCenterPosition().getLongitude()));
 		lblCurrentLng.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblCurrentLng.setBounds(654, 10, 202, 14);
+		lblCurrentLng.setBounds(567, 10, 167, 14);
 		pnlMap.add(lblCurrentLng);
 
 		btnTop = new JButton("");
@@ -389,7 +389,7 @@ public class SanimalView extends JFrame
 		lblSpeed.setFont(new Font("Tahoma", Font.PLAIN, 16));
 
 		prgDataShow = new JProgressBar(SwingConstants.HORIZONTAL);
-		prgDataShow.setBounds(376, 632, 480, 23);
+		prgDataShow.setBounds(376, 632, 350, 23);
 		prgDataShow.setMinimum(0);
 		prgDataShow.setMaximum(100);
 		prgDataShow.addMouseListener(new MouseListener()
