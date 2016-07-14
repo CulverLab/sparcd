@@ -112,17 +112,17 @@ public class SanimalView extends JFrame
 		this.getContentPane().setLayout(null);
 		this.setResizable(false);
 		this.setTitle("Sanimal");
-		this.setSize(1700, 875);
+		this.setSize(1613, 713);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		lblThumbnail = new JLabel();
-		lblThumbnail.setBounds(319, 11, 403, 362);
+		lblThumbnail.setBounds(319, 11, 403, 300);
 		lblThumbnail.setBorder(new LineBorder(Color.BLACK));
 		this.getContentPane().add(lblThumbnail);
 
 		pnlPropertyList = new JPanel();
 		pnlPropertyList.setLayout(null);
-		pnlPropertyList.setBounds(10, 384, 462, 202);
+		pnlPropertyList.setBounds(10, 322, 462, 202);
 		pnlPropertyList.setBorder(new LineBorder(Color.BLACK));
 		this.getContentPane().add(pnlPropertyList);
 
@@ -216,7 +216,7 @@ public class SanimalView extends JFrame
 
 		pnlSpeciesPresent = new JPanel();
 		pnlSpeciesPresent.setLayout(null);
-		pnlSpeciesPresent.setBounds(482, 384, 240, 202);
+		pnlSpeciesPresent.setBounds(482, 322, 240, 202);
 		pnlSpeciesPresent.setBorder(new LineBorder(Color.BLACK));
 		this.getContentPane().add(pnlSpeciesPresent);
 
@@ -245,29 +245,29 @@ public class SanimalView extends JFrame
 		pnlSpeciesPresent.add(btnRemoveSpeciesFromList);
 
 		pnlImageBrowser = new JPanel();
-		pnlImageBrowser.setBounds(10, 11, 299, 362);
+		pnlImageBrowser.setBounds(10, 11, 299, 300);
 		getContentPane().add(pnlImageBrowser);
 		pnlImageBrowser.setBorder(new LineBorder(Color.BLACK));
 		pnlImageBrowser.setLayout(null);
 
 		chxIncludeSubdirectories = new JCheckBox("Include Subdirectories");
 		chxIncludeSubdirectories.setSelected(true);
-		chxIncludeSubdirectories.setBounds(131, 332, 158, 23);
+		chxIncludeSubdirectories.setBounds(131, 270, 158, 23);
 		chxIncludeSubdirectories.setToolTipText("Search sub-directories as well as the selected directory for images");
 		pnlImageBrowser.add(chxIncludeSubdirectories);
 
 		btnBrowseForImages = new JButton("Select Images");
-		btnBrowseForImages.setBounds(6, 332, 119, 23);
+		btnBrowseForImages.setBounds(6, 270, 119, 23);
 		pnlImageBrowser.add(btnBrowseForImages);
 
 		pneImageList = new JScrollPane();
 		treImages = new JTree((TreeModel) null);
-		pneImageList.setBounds(10, 11, 279, 314);
+		pneImageList.setBounds(10, 11, 279, 252);
 		pneImageList.setViewportView(treImages);
 		pnlImageBrowser.add(pneImageList);
 
 		pnlMap = new JPanel();
-		pnlMap.setBounds(732, 11, 942, 815);
+		pnlMap.setBounds(732, 11, 866, 666);
 		pnlMap.setBorder(new LineBorder(Color.BLACK));
 		pnlMap.setLayout(null);
 		getContentPane().add(pnlMap);
@@ -284,7 +284,7 @@ public class SanimalView extends JFrame
 
 		mapViewer = new SanimalMap(cbxMapProviders);
 		mapViewer.setLayout(null);
-		mapViewer.setBounds(0, 40, 942, 730);
+		mapViewer.setBounds(0, 40, 856, 584);
 		mapViewer.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 		mapViewer.addMouseWheelListener(new MouseWheelListener()
 		{
@@ -322,47 +322,47 @@ public class SanimalView extends JFrame
 
 		lblCurrentLat = new JLabel(currentLatBase + mapViewer.getCenterPosition().getLatitude());
 		lblCurrentLat.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblCurrentLat.setBounds(454, 10, 223, 14);
+		lblCurrentLat.setBounds(454, 10, 190, 14);
 		pnlMap.add(lblCurrentLat);
 
 		lblCurrentLng = new JLabel(currentLngBase + mapViewer.getCenterPosition().getLongitude());
 		lblCurrentLng.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblCurrentLng.setBounds(709, 10, 223, 14);
+		lblCurrentLng.setBounds(654, 10, 202, 14);
 		pnlMap.add(lblCurrentLng);
 
 		btnTop = new JButton("");
 		btnTop.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnTop.setBounds(190, 784, 20, 20);
+		btnTop.setBounds(190, 635, 20, 20);
 		pnlMap.add(btnTop);
 
 		btnBackwards = new JButton("");
 		btnBackwards.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnBackwards.setBounds(40, 784, 20, 20);
+		btnBackwards.setBounds(40, 635, 20, 20);
 		pnlMap.add(btnBackwards);
 
 		btnPrevious = new JButton("");
 		btnPrevious.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnPrevious.setBounds(70, 784, 20, 20);
+		btnPrevious.setBounds(70, 635, 20, 20);
 		pnlMap.add(btnPrevious);
 
 		btnStop = new JButton("");
 		btnStop.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnStop.setBounds(100, 784, 20, 20);
+		btnStop.setBounds(100, 635, 20, 20);
 		pnlMap.add(btnStop);
 
 		btnNext = new JButton("");
 		btnNext.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnNext.setBounds(130, 784, 20, 20);
+		btnNext.setBounds(130, 635, 20, 20);
 		pnlMap.add(btnNext);
 
 		btnForward = new JButton("");
 		btnForward.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnForward.setBounds(160, 784, 20, 20);
+		btnForward.setBounds(160, 635, 20, 20);
 		pnlMap.add(btnForward);
 
 		btnBottom = new JButton("");
 		btnBottom.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnBottom.setBounds(10, 784, 20, 20);
+		btnBottom.setBounds(10, 635, 20, 20);
 		pnlMap.add(btnBottom);
 
 		sldSpeed = new JSlider(SwingConstants.HORIZONTAL);
@@ -370,7 +370,7 @@ public class SanimalView extends JFrame
 		sldSpeed.setValue(0);
 		sldSpeed.setPaintTicks(true);
 		sldSpeed.setSnapToTicks(true);
-		sldSpeed.setBounds(220, 781, 105, 23);
+		sldSpeed.setBounds(220, 632, 105, 23);
 		sldSpeed.setMinimum(0);
 		sldSpeed.setMaximum(5);
 		sldSpeed.addChangeListener(new ChangeListener()
@@ -384,12 +384,12 @@ public class SanimalView extends JFrame
 		pnlMap.add(sldSpeed);
 
 		lblSpeed = new JLabel("1x");
-		lblSpeed.setBounds(335, 781, 31, 23);
+		lblSpeed.setBounds(335, 632, 31, 23);
 		pnlMap.add(lblSpeed);
 		lblSpeed.setFont(new Font("Tahoma", Font.PLAIN, 16));
 
 		prgDataShow = new JProgressBar(SwingConstants.HORIZONTAL);
-		prgDataShow.setBounds(376, 781, 556, 23);
+		prgDataShow.setBounds(376, 632, 480, 23);
 		prgDataShow.setMinimum(0);
 		prgDataShow.setMaximum(100);
 		prgDataShow.addMouseListener(new MouseListener()
@@ -440,7 +440,7 @@ public class SanimalView extends JFrame
 		pnlMap.add(prgDataShow);
 
 		tabOutputTabs = new JTabbedPane();
-		tabOutputTabs.setBounds(10, 597, 712, 229);
+		tabOutputTabs.setBounds(10, 535, 712, 142);
 		tabOutputTabs.setSelectedIndex(-1);
 		this.getContentPane().add(tabOutputTabs);
 
