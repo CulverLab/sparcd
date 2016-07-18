@@ -23,6 +23,7 @@ import model.Location;
 import model.SanimalData;
 import model.Species;
 import model.SpeciesEntry;
+import view.SanimalInput;
 import view.SanimalView;
 
 public class SanimalController
@@ -98,7 +99,7 @@ public class SanimalController
 			@Override
 			public void actionPerformed(ActionEvent event)
 			{
-				Location newLocation = sanimalView.askUserForNewLocation();
+				Location newLocation = SanimalInput.askUserForNewLocation();
 				if (newLocation != null)
 				{
 					sanimalData.getLocationData().addLocation(newLocation);
@@ -112,7 +113,7 @@ public class SanimalController
 			@Override
 			public void actionPerformed(ActionEvent event)
 			{
-				Species species = sanimalView.askUserForNewSpecies();
+				Species species = SanimalInput.askUserForNewSpecies();
 				if (species != null)
 				{
 					sanimalData.getSpeciesData().addSpecies(species);
@@ -237,6 +238,17 @@ public class SanimalController
 						imageEntry.removeSpecies(selectedSpecies);
 				}
 				SanimalController.this.selectedItemUpdated();
+			}
+		});
+		// When the user clicks "Perform Analysis"
+		sanimalView.addALToPerformAnalysis(new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent event)
+			{
+				Integer eventInterval = sanimalView.getAnalysisEventInterval();
+				if (eventInterval != -1)
+					sanimalView.setOutputText(sanimalData.getOutputFormatter().format(sanimalView.getSelectedImageEntries(), eventInterval));
 			}
 		});
 		sanimalView.setVisible(true);

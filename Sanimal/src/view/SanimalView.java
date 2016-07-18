@@ -4,16 +4,10 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -23,17 +17,12 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
-import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
-import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -74,6 +63,10 @@ public class SanimalView extends JFrame
 	private ComboBoxFullMenu<Species> cbxSpecies;
 	private JButton btnAddNewSpecies;
 	private JButton btnRemoveSpecies;
+	private JButton btnPerformAnalysis;
+	private JLabel lblAnalysisEventInterval;
+	private JTextField txtAnalysisEventInterval;
+
 	private JButton btnAddSpeciesToList;
 	private JButton btnRemoveSpeciesFromList;
 	private JPanel pnlSpeciesPresent;
@@ -81,27 +74,7 @@ public class SanimalView extends JFrame
 	private JScrollPane pneSpeciesList;
 	private JList lstSpecies;
 
-	private JPanel pnlMap;
-	private JLabel lblMapProvider;
-	private ComboBoxFullMenu<String> cbxMapProviders;
-	private SanimalMap mapViewer;
-	private JLabel lblZoomLevel;
-	private String zoomLevelBase = "Zoom Level: ";
-	private JLabel lblCurrentLat;
-	private String currentLatBase = "Latitude: ";
-	private JLabel lblCurrentLng;
-	private String currentLngBase = "Longitude: ";
-
-	private JButton btnTop;
-	private JButton btnBackwards;
-	private JButton btnPrevious;
-	private JButton btnStop;
-	private JButton btnNext;
-	private JButton btnForward;
-	private JButton btnBottom;
-	private JSlider sldSpeed;
-	private JLabel lblSpeed;
-	private JProgressBar prgDataShow;
+	private MapPanel map;
 
 	private JTabbedPane tabOutputTabs;
 	private JScrollPane pneAllOutput;
@@ -214,6 +187,21 @@ public class SanimalView extends JFrame
 		btnRemoveSpecies.setToolTipText("Remove the selected species from the species dictionary");
 		pnlPropertyList.add(btnRemoveSpecies);
 
+		btnPerformAnalysis = new JButton("Perform Analysis");
+		btnPerformAnalysis.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnPerformAnalysis.setBounds(10, 164, 138, 23);
+		pnlPropertyList.add(btnPerformAnalysis);
+
+		lblAnalysisEventInterval = new JLabel("Event Interval (minutes): ");
+		lblAnalysisEventInterval.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblAnalysisEventInterval.setBounds(153, 168, 167, 14);
+		pnlPropertyList.add(lblAnalysisEventInterval);
+
+		txtAnalysisEventInterval = new JTextField();
+		txtAnalysisEventInterval.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		txtAnalysisEventInterval.setBounds(330, 165, 87, 20);
+		pnlPropertyList.add(txtAnalysisEventInterval);
+
 		pnlSpeciesPresent = new JPanel();
 		pnlSpeciesPresent.setLayout(null);
 		pnlSpeciesPresent.setBounds(445, 322, 224, 202);
@@ -268,178 +256,8 @@ public class SanimalView extends JFrame
 		pneImageList.setViewportView(treImages);
 		pnlImageBrowser.add(pneImageList);
 
-		pnlMap = new JPanel();
-		pnlMap.setBounds(679, 11, 638, 666);
-		pnlMap.setBorder(new LineBorder(Color.BLACK));
-		pnlMap.setLayout(null);
-		getContentPane().add(pnlMap);
-
-		lblMapProvider = new JLabel("Map Provider:");
-		lblMapProvider.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblMapProvider.setBounds(10, 10, 95, 14);
-		pnlMap.add(lblMapProvider);
-
-		cbxMapProviders = new ComboBoxFullMenu<String>();
-		cbxMapProviders.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		cbxMapProviders.setBounds(115, 6, 167, 23);
-		pnlMap.add(cbxMapProviders);
-
-		mapViewer = new SanimalMap(cbxMapProviders);
-		mapViewer.setLayout(null);
-		mapViewer.setBounds(0, 60, 637, 564);
-		mapViewer.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
-		mapViewer.addMouseWheelListener(new MouseWheelListener()
-		{
-			@Override
-			public void mouseWheelMoved(MouseWheelEvent event)
-			{
-				lblZoomLevel.setText(zoomLevelBase + mapViewer.getZoom());
-				lblCurrentLat.setText(currentLatBase + String.format("%7.6f", mapViewer.getCenterPosition().getLatitude()));
-				lblCurrentLng.setText(currentLngBase + String.format("%7.6f", mapViewer.getCenterPosition().getLongitude()));
-				double maxZoom = (double) mapViewer.getTileFactory().getInfo().getMaximumZoomLevel();
-				double currZoom = (double) mapViewer.getZoom();
-				mapViewer.setMarkerScale((maxZoom - currZoom) / maxZoom);
-			}
-		});
-		mapViewer.addMouseMotionListener(new MouseMotionListener()
-		{
-			@Override
-			public void mouseMoved(MouseEvent e)
-			{
-			}
-
-			@Override
-			public void mouseDragged(MouseEvent event)
-			{
-				SanimalView.this.lblCurrentLat.setText(currentLatBase + String.format("%7.6f", mapViewer.getCenterPosition().getLatitude()));
-				SanimalView.this.lblCurrentLng.setText(currentLngBase + String.format("%7.6f", mapViewer.getCenterPosition().getLongitude()));
-			}
-		});
-		pnlMap.add(mapViewer);
-
-		lblZoomLevel = new JLabel(zoomLevelBase + mapViewer.getZoom());
-		lblZoomLevel.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblZoomLevel.setBounds(10, 35, 105, 14);
-		pnlMap.add(lblZoomLevel);
-
-		lblCurrentLat = new JLabel(currentLatBase + String.format("%7.6f", mapViewer.getCenterPosition().getLatitude()));
-		lblCurrentLat.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblCurrentLat.setBounds(292, 10, 159, 14);
-		pnlMap.add(lblCurrentLat);
-
-		lblCurrentLng = new JLabel(currentLngBase + String.format("%7.6f", mapViewer.getCenterPosition().getLongitude()));
-		lblCurrentLng.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblCurrentLng.setBounds(292, 35, 159, 14);
-		pnlMap.add(lblCurrentLng);
-
-		btnTop = new JButton(new ImageIcon(SanimalView.class.getResource("/images/Top2.png")));
-		btnTop.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnTop.setBounds(10, 635, 20, 20);
-		pnlMap.add(btnTop);
-
-		btnBackwards = new JButton(new ImageIcon(SanimalView.class.getResource("/images/Backward2.png")));
-		btnBackwards.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnBackwards.setBounds(40, 635, 20, 20);
-		pnlMap.add(btnBackwards);
-
-		btnPrevious = new JButton(new ImageIcon(SanimalView.class.getResource("/images/Previous2.png")));
-		btnPrevious.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnPrevious.setBounds(70, 635, 20, 20);
-		pnlMap.add(btnPrevious);
-
-		btnStop = new JButton(new ImageIcon(SanimalView.class.getResource("/images/Stop2.png")));
-		btnStop.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnStop.setBounds(100, 635, 20, 20);
-		pnlMap.add(btnStop);
-
-		btnNext = new JButton(new ImageIcon(SanimalView.class.getResource("/images/Next2.png")));
-		btnNext.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnNext.setBounds(130, 635, 20, 20);
-		pnlMap.add(btnNext);
-
-		btnForward = new JButton(new ImageIcon(SanimalView.class.getResource("/images/Forward2.png")));
-		btnForward.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnForward.setBounds(160, 635, 20, 20);
-		pnlMap.add(btnForward);
-
-		btnBottom = new JButton(new ImageIcon(SanimalView.class.getResource("/images/Bottom2.png")));
-		btnBottom.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnBottom.setBounds(190, 635, 20, 20);
-		pnlMap.add(btnBottom);
-
-		sldSpeed = new JSlider(SwingConstants.HORIZONTAL);
-		sldSpeed.setMinorTickSpacing(1);
-		sldSpeed.setValue(0);
-		sldSpeed.setPaintTicks(true);
-		sldSpeed.setSnapToTicks(true);
-		sldSpeed.setBounds(220, 632, 68, 23);
-		sldSpeed.setMinimum(0);
-		sldSpeed.setMaximum(5);
-		sldSpeed.addChangeListener(new ChangeListener()
-		{
-			@Override
-			public void stateChanged(ChangeEvent event)
-			{
-				lblSpeed.setText(sldSpeed.getValue() + "x");
-			}
-		});
-		pnlMap.add(sldSpeed);
-
-		lblSpeed = new JLabel("1x");
-		lblSpeed.setBounds(292, 632, 26, 23);
-		pnlMap.add(lblSpeed);
-		lblSpeed.setFont(new Font("Tahoma", Font.PLAIN, 16));
-
-		prgDataShow = new JProgressBar(SwingConstants.HORIZONTAL);
-		prgDataShow.setBounds(328, 632, 300, 23);
-		prgDataShow.setMinimum(0);
-		prgDataShow.setMaximum(100);
-		prgDataShow.addMouseListener(new MouseListener()
-		{
-			@Override
-			public void mouseReleased(MouseEvent e)
-			{
-			}
-
-			@Override
-			public void mousePressed(MouseEvent event)
-			{
-				double percentage = (double) event.getX() / (double) event.getComponent().getWidth();
-				int newLoc = (int) Math.floor(prgDataShow.getMaximum() * percentage);
-				prgDataShow.setValue(newLoc);
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e)
-			{
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e)
-			{
-			}
-
-			@Override
-			public void mouseClicked(MouseEvent e)
-			{
-			}
-		});
-		prgDataShow.addMouseMotionListener(new MouseMotionListener()
-		{
-			@Override
-			public void mouseMoved(MouseEvent e)
-			{
-			}
-
-			@Override
-			public void mouseDragged(MouseEvent event)
-			{
-				double percentage = (double) event.getX() / (double) event.getComponent().getWidth();
-				int newLoc = (int) Math.floor(prgDataShow.getMaximum() * percentage);
-				prgDataShow.setValue(newLoc);
-			}
-		});
-		pnlMap.add(prgDataShow);
+		map = new MapPanel();
+		getContentPane().add(map);
 
 		tabOutputTabs = new JTabbedPane();
 		tabOutputTabs.setBounds(10, 535, 659, 142);
@@ -447,6 +265,7 @@ public class SanimalView extends JFrame
 		this.getContentPane().add(tabOutputTabs);
 
 		tarAllOutput = new JTextArea();
+		tarAllOutput.setFont(new Font("Monospaced", Font.PLAIN, 13));
 		tarAllOutput.setBounds(10, 11, 100, 100);
 		tarAllOutput.setLayout(null);
 
@@ -492,6 +311,11 @@ public class SanimalView extends JFrame
 		this.btnRemoveSpecies.addActionListener(listener);
 	}
 
+	public void addALToPerformAnalysis(ActionListener listener)
+	{
+		this.btnPerformAnalysis.addActionListener(listener);
+	}
+
 	public void addALToAddSpeciesToList(ActionListener listener)
 	{
 		this.btnAddSpeciesToList.addActionListener(listener);
@@ -518,6 +342,25 @@ public class SanimalView extends JFrame
 			return (Species) this.cbxSpecies.getSelectedItem();
 	}
 
+	public Integer getAnalysisEventInterval()
+	{
+		String value = this.txtAnalysisEventInterval.getText();
+		Integer intValue = -1;
+		try
+		{
+			intValue = Integer.parseInt(value);
+		}
+		catch (NumberFormatException exception)
+		{
+		}
+		if (intValue < 1 || intValue > 10080)
+		{
+			JOptionPane.showMessageDialog(this, "Error invalid value for event interval '" + value + "'\nThe value must be in the range '1 <= value <= 10080'");
+			return -1;
+		}
+		return intValue;
+	}
+
 	public boolean searchSubdirectories()
 	{
 		return this.chxIncludeSubdirectories.isSelected();
@@ -541,7 +384,7 @@ public class SanimalView extends JFrame
 		if (imageLoc != null)
 		{
 			this.cbxLocation.setSelectedItem(imageLoc);
-			mapViewer.setCenterPosition(imageLoc.toGeoPosition());
+			this.map.getMapViewer().setCenterPosition(imageLoc.toGeoPosition());
 		}
 		else
 			this.cbxLocation.setSelectedIndex(-1);
@@ -561,11 +404,11 @@ public class SanimalView extends JFrame
 		if (!locations.contains((Location) this.cbxLocation.getSelectedItem()))
 			this.cbxLocation.setSelectedIndex(-1);
 		this.cbxLocation.removeAllItems();
-		this.mapViewer.clearMarkers();
+		this.map.getMapViewer().clearMarkers();
 		for (Location location : locations)
 		{
 			this.cbxLocation.addItem(location);
-			this.mapViewer.addMarker(new SwingComponentOverlay(location.toGeoPosition(), new SanimalMapMarker()));
+			this.map.getMapViewer().addMarker(new SwingComponentOverlay(location.toGeoPosition(), new SanimalMapMarker()));
 		}
 	}
 
@@ -678,71 +521,5 @@ public class SanimalView extends JFrame
 			txtLng.setText("");
 			txtElevation.setText("");
 		}
-	}
-
-	public Species askUserForNewSpecies()
-	{
-		String name = "";
-		while (name.isEmpty())
-		{
-			name = JOptionPane.showInputDialog("Enter the name of the new species");
-			if (name == null)
-				return null;
-		}
-		return new Species(name);
-	}
-
-	public Location askUserForNewLocation()
-	{
-		String name = "";
-		while (name.isEmpty())
-		{
-			name = JOptionPane.showInputDialog("Enter the name of the new location");
-			if (name == null)
-				return null;
-		}
-		Double latitude = Double.MAX_VALUE;
-		while (latitude > 85 || latitude < -85)
-		{
-			try
-			{
-				String latitudeString = JOptionPane.showInputDialog("Enter the latitude (+/- 85) of location '" + name + "'");
-				if (latitudeString == null)
-					return null;
-				latitude = Double.parseDouble(latitudeString);
-			}
-			catch (NumberFormatException exception)
-			{
-			}
-		}
-		Double longitude = Double.MAX_VALUE;
-		while (longitude > 180 || longitude < -180)
-		{
-			try
-			{
-				String longitudeString = JOptionPane.showInputDialog("Enter the longitude (+/- 180) of location '" + name + "'");
-				if (longitudeString == null)
-					return null;
-				longitude = Double.parseDouble(longitudeString);
-			}
-			catch (NumberFormatException exception)
-			{
-			}
-		}
-		Double elevation = Double.MAX_VALUE;
-		while (elevation == Double.MAX_VALUE)
-		{
-			try
-			{
-				String elevationString = JOptionPane.showInputDialog("Enter the elevation (in feet) of location '" + name + "'");
-				if (elevationString == null)
-					return null;
-				elevation = Double.parseDouble(elevationString);
-			}
-			catch (NumberFormatException exception)
-			{
-			}
-		}
-		return new Location(name, latitude, longitude, elevation);
 	}
 }

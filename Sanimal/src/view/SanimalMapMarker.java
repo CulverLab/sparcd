@@ -14,8 +14,8 @@ import javax.swing.JLabel;
 
 public class SanimalMapMarker extends JLabel
 {
-	private static final ImageIcon BASE_ICON_NORMAL = new ImageIcon("images/marker.png");
-	private static final ImageIcon BASE_ICON_HIGHLIGHT = new ImageIcon("images/markerHighlight.png");
+	private static final ImageIcon BASE_ICON_NORMAL = new ImageIcon(SanimalMapMarker.class.getResource("/images/marker.png"));
+	private static final ImageIcon BASE_ICON_HIGHLIGHT = new ImageIcon(SanimalMapMarker.class.getResource("/images/markerHighlight.png"));
 	private static final Integer BASE_WIDTH_HEIGHT = 75;
 	private ImageIcon normalIcon = BASE_ICON_NORMAL;
 	private ImageIcon highlightedIcon = BASE_ICON_HIGHLIGHT;

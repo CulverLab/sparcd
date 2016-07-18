@@ -10,6 +10,7 @@ public class SanimalData
 	private ImageImporterData imageData = new ImageImporterData();
 	private LocationData locationData = new LocationData();
 	private SpeciesData speciesData = new SpeciesData();
+	private TextOutputFormatter outputFormatter = new TextOutputFormatter();
 
 	public ImageImporterData getImageData()
 	{
@@ -24,5 +25,10 @@ public class SanimalData
 	public SpeciesData getSpeciesData()
 	{
 		return speciesData;
+	}
+
+	public TextOutputFormatter getOutputFormatter()
+	{
+		return outputFormatter;
 	}
 }

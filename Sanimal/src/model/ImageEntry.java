@@ -55,6 +55,11 @@ public class ImageEntry
 		return dateTaken.toString();
 	}
 
+	public Date getDateTaken()
+	{
+		return dateTaken;
+	}
+
 	public void setLocationTaken(Location location)
 	{
 		this.locationTaken = location;
