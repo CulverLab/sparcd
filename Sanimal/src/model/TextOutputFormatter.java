@@ -11,11 +11,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class TextOutputFormatter
 {
@@ -26,36 +23,21 @@ public class TextOutputFormatter
 		if (images.isEmpty())
 			return "No images found under directory";
 
+		DataAnalysis analysis = new DataAnalysis(images, eventInterval);
+
 		// location
 
-		List<Location> locationsInList = new ArrayList<Location>();
-		boolean nullLocationFound = false;
-		for (ImageEntry imageEntry : images)
-			if (imageEntry.getLocationTaken() != null)
-			{
-				if (!locationsInList.contains(imageEntry.getLocationTaken()))
-					locationsInList.add(imageEntry.getLocationTaken());
-			}
-			else
-				nullLocationFound = true;
-
-		toReturn = toReturn + "LOCATIONS " + locationsInList.size() + "\n";
-		for (Location location : locationsInList)
+		toReturn = toReturn + "LOCATIONS " + analysis.getAllImageLocations().size() + "\n";
+		for (Location location : analysis.getAllImageLocations())
 			toReturn = toReturn + location.getName() + " ";
-		if (nullLocationFound)
+		if (analysis.nullLocationsFound())
 			toReturn = toReturn + "Unknown ";
 		toReturn = toReturn + "\n\n";
 
 		// species
 
-		List<Species> speciesInList = new ArrayList<Species>();
-		for (ImageEntry imageEntry : images)
-			for (SpeciesEntry speciesEntry : imageEntry.getSpeciesPresent())
-				if (!speciesInList.contains(speciesEntry.getSpecies()))
-					speciesInList.add(speciesEntry.getSpecies());
-
-		toReturn = toReturn + "SPECIES " + speciesInList.size() + "\n";
-		for (Species species : speciesInList)
+		toReturn = toReturn + "SPECIES " + analysis.getAllImageSpecies().size() + "\n";
+		for (Species species : analysis.getAllImageSpecies())
 			toReturn = toReturn + species.getName() + " ";
 		toReturn = toReturn + "\n";
 
@@ -70,26 +52,11 @@ public class TextOutputFormatter
 
 		// First/Last pic difference
 
-		Date firstImageDate = null;
-		Date lastImageDate = null;
-
-		if (!images.isEmpty())
-		{
-			firstImageDate = images.get(0).getDateTaken();
-			lastImageDate = images.get(0).getDateTaken();
-		}
-		for (ImageEntry imageEntry : images)
-		{
-			Date current = imageEntry.getDateTaken();
-			if (current.before(firstImageDate))
-				firstImageDate = current;
-			else if (current.after(lastImageDate))
-				lastImageDate = current;
-		}
+		Date firstImageDate = analysis.getImagesSortedByDate().get(0).getDateTaken();
+		Date lastImageDate = analysis.getImagesSortedByDate().get(analysis.getImagesSortedByDate().size() - 1).getDateTaken();
 
 		toReturn = toReturn + "NUMBER OF DAYS IN CAMERA TRAP PROGRAM = " + daysBetween(firstImageDate, lastImageDate) + "\n";
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(firstImageDate);
+		Calendar calendar = analysis.getCalendar(firstImageDate);
 		toReturn = toReturn + "First picture: Year = " + calendar.get(Calendar.YEAR) + " Month = " + calendar.get(Calendar.MONTH) + " Day = " + calendar.get(Calendar.DAY_OF_MONTH) + "\n";
 		calendar.setTime(lastImageDate);
 		toReturn = toReturn + "Last picture: Year = " + calendar.get(Calendar.YEAR) + " Month = " + calendar.get(Calendar.MONTH) + " Day = " + calendar.get(Calendar.DAY_OF_MONTH) + "\n";
@@ -97,67 +64,36 @@ public class TextOutputFormatter
 
 		// First pic of each species
 
-		Map<Species, ImageEntry> speciesToDateFirst = new HashMap<Species, ImageEntry>();
-		Map<Species, ImageEntry> speciesToDateLast = new HashMap<Species, ImageEntry>();
-		for (ImageEntry imageEntry : images)
-			for (SpeciesEntry speciesEntry : imageEntry.getSpeciesPresent())
-			{
-				Species currentSpeices = speciesEntry.getSpecies();
-				// Check first date
-				if (!speciesToDateFirst.containsKey(currentSpeices))
-					speciesToDateFirst.put(currentSpeices, imageEntry);
-				else
-				{
-					Date currentFirst = speciesToDateFirst.get(currentSpeices).getDateTaken();
-					if (imageEntry.getDateTaken().before(currentFirst))
-					{
-						speciesToDateFirst.remove(currentSpeices);
-						speciesToDateFirst.put(currentSpeices, imageEntry);
-					}
-				}
-				// Check last date
-				if (!speciesToDateLast.containsKey(currentSpeices))
-					speciesToDateLast.put(currentSpeices, imageEntry);
-				else
-				{
-					Date currentLast = speciesToDateLast.get(currentSpeices).getDateTaken();
-					if (imageEntry.getDateTaken().after(currentLast))
-					{
-						speciesToDateLast.remove(currentSpeices);
-						speciesToDateLast.put(currentSpeices, imageEntry);
-					}
-				}
-			}
+		Map<Species, ImageEntry> speciesToFirstImage = analysis.getSpeciesToFirstImage();
+		Map<Species, ImageEntry> speciesToLastImage = analysis.getSpeciesToLastImage();
 
 		toReturn = toReturn + "FIRST PICTURE OF EACH SPECIES\n";
 		toReturn = toReturn + "Species                      Days  Year Month Day Hour Minute Second Location\n";
-		for (Map.Entry<Species, ImageEntry> entry : speciesToDateFirst.entrySet())
+		for (Map.Entry<Species, ImageEntry> entry : speciesToFirstImage.entrySet())
 		{
 			Species speciesToPrint = entry.getKey();
 			ImageEntry imageToPrint = entry.getValue();
-			Calendar dateToPrint = Calendar.getInstance();
-			dateToPrint.setTime(imageToPrint.getDateTaken());
+			Calendar dateToPrint = analysis.getCalendar(imageToPrint.getDateTaken());
 			toReturn = toReturn + String.format("%-28s %4d  %4d %4d %4d %3d %5d %6d   %-28s\n", speciesToPrint, daysBetween(firstImageDate, dateToPrint.getTime()), dateToPrint.get(Calendar.YEAR), dateToPrint.get(Calendar.MONTH), dateToPrint.get(Calendar.DAY_OF_MONTH), dateToPrint.get(Calendar.HOUR),
 					dateToPrint.get(Calendar.MINUTE), dateToPrint.get(Calendar.SECOND), (imageToPrint.getLocationTaken() == null ? "Unknown" : imageToPrint.getLocationTaken().getName()));
 		}
 		toReturn = toReturn + "\n";
 		toReturn = toReturn + "LAST PICTURE OF EACH SPECIES\n";
 		toReturn = toReturn + "Species                      Days  Year Month Day Hour Minute Second Location                   Duration\n";
-		for (Map.Entry<Species, ImageEntry> entry : speciesToDateLast.entrySet())
+		for (Map.Entry<Species, ImageEntry> entry : speciesToLastImage.entrySet())
 		{
 			Species speciesToPrint = entry.getKey();
 			ImageEntry imageToPrint = entry.getValue();
-			Calendar dateToPrint = Calendar.getInstance();
-			dateToPrint.setTime(imageToPrint.getDateTaken());
+			Calendar dateToPrint = analysis.getCalendar(imageToPrint.getDateTaken());
 			toReturn = toReturn + String.format("%-28s %4d  %4d %4d %4d %3d %5d %6d   %-28s %4d\n", speciesToPrint, daysBetween(firstImageDate, dateToPrint.getTime()), dateToPrint.get(Calendar.YEAR), dateToPrint.get(Calendar.MONTH), dateToPrint.get(Calendar.DAY_OF_MONTH), dateToPrint.get(
-					Calendar.HOUR), dateToPrint.get(Calendar.MINUTE), dateToPrint.get(Calendar.SECOND), (imageToPrint.getLocationTaken() == null ? "Unknown" : imageToPrint.getLocationTaken().getName()), daysBetween(speciesToDateFirst.get(speciesToPrint).getDateTaken(), dateToPrint.getTime()));
+					Calendar.HOUR), dateToPrint.get(Calendar.MINUTE), dateToPrint.get(Calendar.SECOND), (imageToPrint.getLocationTaken() == null ? "Unknown" : imageToPrint.getLocationTaken().getName()), daysBetween(speciesToFirstImage.get(speciesToPrint).getDateTaken(), dateToPrint.getTime()));
 		}
 
 		toReturn = toReturn + "\n";
 
 		// ACCUMULATION CURVE
 
-		List<Map.Entry<Species, ImageEntry>> firstImageEntriesSorted = new ArrayList<Map.Entry<Species, ImageEntry>>(speciesToDateFirst.entrySet());
+		List<Map.Entry<Species, ImageEntry>> firstImageEntriesSorted = new ArrayList<Map.Entry<Species, ImageEntry>>(analysis.getSpeciesToFirstImage().entrySet());
 		Collections.<Map.Entry<Species, ImageEntry>> sort(firstImageEntriesSorted, new Comparator<Map.Entry<Species, ImageEntry>>()
 		{
 			@Override
@@ -176,6 +112,7 @@ public class TextOutputFormatter
 		toReturn = toReturn + "\n";
 
 		// NUMBER OF PICTURES AND FILTERED PICTURES PER YEAR
+
 		// Jim's program added 1 to counts greater than 1 in activity count, fixed the issue
 		// Jim's program added 1 to counts greater than 1 in period count, fixed the issue
 		// Jim's program calculations for Abundance were completely wrong and made no sense
@@ -185,258 +122,82 @@ public class TextOutputFormatter
 		// PERIOD = Consecutive images that are less than "period" apart where period comes from user input
 		// ABUNDANCE = Maximum number of animals photographed in a single image in each period
 
-		Map<Integer, Integer> yearToNumberImages = new HashMap<Integer, Integer>();
-		Map<Integer, Integer> yearToActivity = new HashMap<Integer, Integer>();
-		Map<Integer, Integer> yearToPeriod = new HashMap<Integer, Integer>();
-		Map<Integer, Integer> yearToAbundance = new HashMap<Integer, Integer>();
-		Map<Integer, List<Location>> yearToLocations = new HashMap<Integer, List<Location>>();
-
 		toReturn = toReturn + "NUMBER OF PICTURES AND FILTERED PICTURES PER YEAR\n";
 		toReturn = toReturn + "        Year       All Activity   Period Abundance Locations\n";
-
-		for (ImageEntry entry : images)
-		{
-			calendar.setTime(entry.getDateTaken());
-			int year = calendar.get(Calendar.YEAR);
-			yearToNumberImages.put(year, yearToNumberImages.getOrDefault(year, 0) + 1);
-		}
-
-		Collections.sort(images, new Comparator<ImageEntry>()
-		{
-			@Override
-			public int compare(ImageEntry entry1, ImageEntry entry2)
-			{
-				return entry1.getDateTaken().compareTo(entry2.getDateTaken());
-			}
-		});
-
-		int oldHour = -1;
-		int oldDay = -1;
-		int oldYear = -1;
-		for (ImageEntry entry : images)
-		{
-			calendar.setTime(entry.getDateTaken());
-			int hour = calendar.get(Calendar.HOUR_OF_DAY);
-			int day = calendar.get(Calendar.DAY_OF_YEAR);
-			int year = calendar.get(Calendar.YEAR);
-			if ((hour != oldHour) || (oldDay != day) || (oldYear != year))
-			{
-				yearToActivity.put(year, yearToActivity.getOrDefault(year, 0) + 1);
-				oldHour = hour;
-				oldDay = day;
-				oldYear = year;
-			}
-		}
-
-		long lastImageTimeMillis = 0;
-		for (ImageEntry entry : images)
-		{
-			long imageTimeMillis = entry.getDateTaken().getTime();
-			long differenceMillis = imageTimeMillis - lastImageTimeMillis;
-			long differenceMinutes = differenceMillis / 1000 / 60;
-			if (differenceMinutes >= eventInterval)
-			{
-				calendar.setTime(entry.getDateTaken());
-				int year = calendar.get(Calendar.YEAR);
-				yearToPeriod.put(year, yearToPeriod.getOrDefault(year, 0) + 1);
-			}
-			lastImageTimeMillis = imageTimeMillis;
-		}
-
-		//yearToAbundance
-		lastImageTimeMillis = 0;
-		Integer maxAnimalsInEvent = 0;
-		for (ImageEntry entry : images)
-		{
-			long imageTimeMillis = entry.getDateTaken().getTime();
-			long differenceMillis = imageTimeMillis - lastImageTimeMillis;
-			long differenceMinutes = differenceMillis / 1000 / 60;
-			if (differenceMinutes >= eventInterval)
-			{
-				for (SpeciesEntry speciesEntry : entry.getSpeciesPresent())
-					maxAnimalsInEvent = Math.max(maxAnimalsInEvent, speciesEntry.getAmount());
-				calendar.setTime(entry.getDateTaken());
-				int year = calendar.get(Calendar.YEAR);
-				yearToAbundance.put(year, yearToAbundance.getOrDefault(year, 0) + maxAnimalsInEvent);
-				maxAnimalsInEvent = 0;
-			}
-			lastImageTimeMillis = imageTimeMillis;
-		}
-
-		for (ImageEntry entry : images)
-		{
-			calendar.setTime(entry.getDateTaken());
-			int year = calendar.get(Calendar.YEAR);
-			List<Location> current = yearToLocations.getOrDefault(year, new ArrayList<Location>());
-			if (!current.contains(entry.getLocationTaken()))
-			{
-				current.add(entry.getLocationTaken());
-				yearToLocations.put(year, current);
-			}
-		}
 
 		int imageTotal = 0;
 		int activityTotal = 0;
 		int periodTotal = 0;
 		int abundanceTotal = 0;
 		int locationTotal = 0;
-		for (Integer year : yearToNumberImages.keySet())
+		for (Integer year : analysis.getAllImageYears())
 		{
-			imageTotal = imageTotal + yearToNumberImages.getOrDefault(year, -1);
-			activityTotal = activityTotal + yearToActivity.getOrDefault(year, -1);
-			periodTotal = periodTotal + yearToPeriod.getOrDefault(year, -1);
-			abundanceTotal = abundanceTotal + yearToAbundance.getOrDefault(year, -1);
-			locationTotal = locationTotal + yearToLocations.getOrDefault(year, new ArrayList<Location>()).size();
-			toReturn = toReturn + String.format("        %4d   %7d  %7d  %7d  %7d  %7d\n", year, yearToNumberImages.getOrDefault(year, -1), yearToActivity.getOrDefault(year, -1), yearToPeriod.getOrDefault(year, -1), yearToAbundance.getOrDefault(year, -1), yearToLocations.getOrDefault(year,
-					new ArrayList<Location>()).size());
+			int yearImageTotal = 0;
+			int yearActivityTotal = 0;
+			int yearPeriodTotal = 0;
+			int yearAbundanceTotal = 0;
+			int yearLocationTotal = 0;
+			for (Species species : analysis.getAllImageSpecies())
+			{
+				yearImageTotal = yearImageTotal + analysis.getYearToNumberImages().get(species).getOrDefault(year, -1);
+				yearActivityTotal = yearActivityTotal + analysis.getYearToActivity().get(species).getOrDefault(year, -1);
+				yearPeriodTotal = yearPeriodTotal + analysis.getYearToPeriod().get(species).getOrDefault(year, -1);
+				yearAbundanceTotal = yearAbundanceTotal + analysis.getYearToAbundance().get(species).getOrDefault(year, -1);
+				yearLocationTotal = yearLocationTotal + analysis.getYearToLocations().get(species).getOrDefault(year, new ArrayList<Location>()).size();
+			}
+			imageTotal = imageTotal + yearImageTotal;
+			activityTotal = activityTotal + yearActivityTotal;
+			periodTotal = periodTotal + yearPeriodTotal;
+			abundanceTotal = abundanceTotal + yearAbundanceTotal;
+			locationTotal = locationTotal + yearLocationTotal;
+			toReturn = toReturn + String.format("        %4d   %7d  %7d  %7d  %7d  %7d\n", year, yearImageTotal, yearActivityTotal, yearPeriodTotal, yearAbundanceTotal, yearLocationTotal);
 		}
-
 		toReturn = toReturn + String.format("        Total  %7d  %7d  %7d  %7d  %7d\n", imageTotal, activityTotal, periodTotal, abundanceTotal, locationTotal);
+
 		toReturn = toReturn + "\n";
 
+		// NUMBER OF PICTURES BY SPECIES BY YEAR
+
 		toReturn = toReturn + "NUMBER OF PICTURES BY SPECIES BY YEAR\n";
-
-		for (Species species : speciesInList)
+		for (Species species : analysis.getAllImageSpecies())
 		{
-			yearToNumberImages.clear();
-			yearToActivity.clear();
-			yearToPeriod.clear();
-			yearToAbundance.clear();
-			yearToLocations.clear();
-
-			List<ImageEntry> imagesWithSpecies = images.stream().filter(new Predicate<ImageEntry>()
-			{
-				@Override
-				public boolean test(ImageEntry entry)
-				{
-					for (SpeciesEntry speciesEntry : entry.getSpeciesPresent())
-						if (speciesEntry.getSpecies().equals(species))
-							return true;
-					return false;
-				}
-			}).collect(Collectors.<ImageEntry> toList());
-
 			toReturn = toReturn + "  " + species.getName() + "\n";
 			toReturn = toReturn + "        Year       All Activity   Period Abundance Locations\n";
-
-			// COPY + PASTE BEGIN
-
-			for (ImageEntry entry : imagesWithSpecies)
+			int speciesImageTotal = 0;
+			int speciesActivityTotal = 0;
+			int speciesPeriodTotal = 0;
+			int speciesAbundanceTotal = 0;
+			int speciesLocationTotal = 0;
+			for (Integer year : analysis.getYearToNumberImages().get(species).keySet())
 			{
-				calendar.setTime(entry.getDateTaken());
-				int year = calendar.get(Calendar.YEAR);
-				yearToNumberImages.put(year, yearToNumberImages.getOrDefault(year, 0) + 1);
+				speciesImageTotal = speciesImageTotal + analysis.getYearToNumberImages().get(species).getOrDefault(year, -1);
+				speciesActivityTotal = speciesActivityTotal + analysis.getYearToActivity().get(species).getOrDefault(year, -1);
+				speciesPeriodTotal = speciesPeriodTotal + analysis.getYearToPeriod().get(species).getOrDefault(year, -1);
+				speciesAbundanceTotal = speciesAbundanceTotal + analysis.getYearToAbundance().get(species).getOrDefault(year, -1);
+				speciesLocationTotal = speciesLocationTotal + analysis.getYearToLocations().get(species).getOrDefault(year, new ArrayList<Location>()).size();
+				toReturn = toReturn + String.format("        %4d   %7d  %7d  %7d  %7d  %7d\n", year, analysis.getYearToNumberImages().get(species).getOrDefault(year, -1), analysis.getYearToActivity().get(species).getOrDefault(year, -1), analysis.getYearToPeriod().get(species).getOrDefault(year, -1),
+						analysis.getYearToAbundance().get(species).getOrDefault(year, -1), analysis.getYearToLocations().get(species).getOrDefault(year, new ArrayList<Location>()).size());
 			}
 
-			oldHour = -1;
-			oldDay = -1;
-			oldYear = -1;
-			for (ImageEntry entry : imagesWithSpecies)
-			{
-				calendar.setTime(entry.getDateTaken());
-				int hour = calendar.get(Calendar.HOUR_OF_DAY);
-				int day = calendar.get(Calendar.DAY_OF_YEAR);
-				int year = calendar.get(Calendar.YEAR);
-				if ((hour != oldHour) || (oldDay != day) || (oldYear != year))
-				{
-					yearToActivity.put(year, yearToActivity.getOrDefault(year, 0) + 1);
-					oldHour = hour;
-					oldDay = day;
-					oldYear = year;
-				}
-			}
-
-			lastImageTimeMillis = 0;
-			for (ImageEntry entry : imagesWithSpecies)
-			{
-				long imageTimeMillis = entry.getDateTaken().getTime();
-				long differenceMillis = imageTimeMillis - lastImageTimeMillis;
-				long differenceMinutes = differenceMillis / 1000 / 60;
-				if (differenceMinutes >= eventInterval)
-				{
-					calendar.setTime(entry.getDateTaken());
-					int year = calendar.get(Calendar.YEAR);
-					yearToPeriod.put(year, yearToPeriod.getOrDefault(year, 0) + 1);
-				}
-				lastImageTimeMillis = imageTimeMillis;
-			}
-
-			lastImageTimeMillis = 0;
-			maxAnimalsInEvent = 0;
-			for (ImageEntry entry : imagesWithSpecies)
-			{
-				long imageTimeMillis = entry.getDateTaken().getTime();
-				long differenceMillis = imageTimeMillis - lastImageTimeMillis;
-				long differenceMinutes = differenceMillis / 1000 / 60;
-				if (differenceMinutes >= eventInterval)
-				{
-					for (SpeciesEntry speciesEntry : entry.getSpeciesPresent())
-						maxAnimalsInEvent = Math.max(maxAnimalsInEvent, speciesEntry.getAmount());
-					calendar.setTime(entry.getDateTaken());
-					int year = calendar.get(Calendar.YEAR);
-					yearToAbundance.put(year, yearToAbundance.getOrDefault(year, 0) + maxAnimalsInEvent);
-					maxAnimalsInEvent = 0;
-				}
-				lastImageTimeMillis = imageTimeMillis;
-			}
-
-			for (ImageEntry entry : imagesWithSpecies)
-			{
-				calendar.setTime(entry.getDateTaken());
-				int year = calendar.get(Calendar.YEAR);
-				List<Location> current = yearToLocations.getOrDefault(year, new ArrayList<Location>());
-				if (!current.contains(entry.getLocationTaken()))
-				{
-					current.add(entry.getLocationTaken());
-					yearToLocations.put(year, current);
-				}
-			}
-
-			imageTotal = 0;
-			activityTotal = 0;
-			periodTotal = 0;
-			abundanceTotal = 0;
-			locationTotal = 0;
-			for (Integer year : yearToNumberImages.keySet())
-			{
-				imageTotal = imageTotal + yearToNumberImages.getOrDefault(year, -1);
-				activityTotal = activityTotal + yearToActivity.getOrDefault(year, -1);
-				periodTotal = periodTotal + yearToPeriod.getOrDefault(year, -1);
-				abundanceTotal = abundanceTotal + yearToAbundance.getOrDefault(year, -1);
-				locationTotal = locationTotal + yearToLocations.getOrDefault(year, new ArrayList<Location>()).size();
-				toReturn = toReturn + String.format("        %4d   %7d  %7d  %7d  %7d  %7d\n", year, yearToNumberImages.getOrDefault(year, -1), yearToActivity.getOrDefault(year, -1), yearToPeriod.getOrDefault(year, -1), yearToAbundance.getOrDefault(year, -1), yearToLocations.getOrDefault(year,
-						new ArrayList<Location>()).size());
-			}
-
-			toReturn = toReturn + String.format("        Total  %7d  %7d  %7d  %7d  %7d\n", imageTotal, activityTotal, periodTotal, abundanceTotal, locationTotal);
-			toReturn = toReturn + "\n";
-
-			// COPY + PASTE END
+			toReturn = toReturn + String.format("        Total  %7d  %7d  %7d  %7d  %7d\n", speciesImageTotal, speciesActivityTotal, speciesPeriodTotal, speciesAbundanceTotal, speciesLocationTotal);
 		}
+		toReturn = toReturn + "\n";
 
-		//		Map<Integer, Map<Species, Integer>> yearToSpeciesToNumberPhotographed = new HashMap<Integer, Map<Species, Integer>>();
-		//		for (ImageEntry entry : images)
-		//			for (SpeciesEntry speciesEntry : entry.getSpeciesPresent())
-		//			{
-		//				Species currentSpecies = speciesEntry.getSpecies();
-		//				calendar.setTime(entry.getDateTaken());
-		//				// Get the map for the current year
-		//				Map<Species, Integer> speciesToNumberPhotographed = yearToSpeciesToNumberPhotographed.getOrDefault(calendar.get(Calendar.YEAR), new HashMap<Species, Integer>());
-		//				// Put the species -> number mapping into the map
-		//				speciesToNumberPhotographed.put(currentSpecies, speciesToNumberPhotographed.getOrDefault(currentSpecies, 0) + 1);
-		//				// Put the map for the year back into the mapping from year -> species -> number of species
-		//				yearToSpeciesToNumberPhotographed.put(calendar.get(Calendar.YEAR), speciesToNumberPhotographed);
-		//			}
+		// SPECIES RANKED BY NUMBER OF INDEPENDENT PICTURES AND PERCENT OF TOTAL
+		toReturn = toReturn + "SPECIES RANKED BY NUMBER OF INDEPENDENT PICTURES AND PERCENT OF TOTAL\n";
 
-		//		for (Map.Entry<Integer, Map<Species, Integer>> year : yearToSpeciesToNumberPhotographed.entrySet())
-		//		{
-		//			int imageTotalInYear = 0;
-		//			for (Map.Entry<Species, Integer> entryInYear : year.getValue().entrySet())
-		//			{
-		//				imageTotalInYear = imageTotalInYear + entryInYear.getValue();
-		//			}
-		//			toReturn = toReturn + String.format("        %4d   %7d\n", year.getKey(), imageTotalInYear);
-		//		}
+		toReturn = toReturn + "     Species                   Total  Percent\n";
+
+		// Map species to period
+
+		for (Species species : analysis.getAllImageSpecies())
+		{
+			Integer speciesPeriodTotal = 0;
+			for (Integer year : analysis.getAllImageYears())
+				speciesPeriodTotal = speciesPeriodTotal + analysis.getYearToPeriod().get(species).get(year);
+			toReturn = toReturn + String.format("  %-28s %5d  %7.2f\n", species.getName(), speciesPeriodTotal, (speciesPeriodTotal.doubleValue() / periodTotal) * 100.0);
+		}
+		toReturn = toReturn + String.format("  Total pictures               %5d   100.00\n", periodTotal);
 
 		return toReturn;
 	}
