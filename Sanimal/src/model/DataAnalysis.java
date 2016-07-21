@@ -11,8 +11,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -25,6 +27,8 @@ public class DataAnalysis
 	private List<ImageEntry> imagesSortedByDate;
 	private Map<Species, ImageEntry> speciesToFirstImage = new HashMap<Species, ImageEntry>();
 	private Map<Species, ImageEntry> speciesToLastImage = new HashMap<Species, ImageEntry>();
+	private Map<Location, ImageEntry> locationToFirstImage = new HashMap<Location, ImageEntry>();
+	private Map<Location, ImageEntry> locationToLastImage = new HashMap<Location, ImageEntry>();
 	private Map<Species, List<ImageEntry>> speciesToImageList = new HashMap<Species, List<ImageEntry>>();
 
 	private Map<Species, Map<Integer, Integer>> yearToNumberImages = new HashMap<Species, Map<Integer, Integer>>();
@@ -32,6 +36,10 @@ public class DataAnalysis
 	private Map<Species, Map<Integer, Integer>> yearToPeriod = new HashMap<Species, Map<Integer, Integer>>();
 	private Map<Species, Map<Integer, Integer>> yearToAbundance = new HashMap<Species, Map<Integer, Integer>>();
 	private Map<Species, Map<Integer, List<Location>>> yearToLocations = new HashMap<Species, Map<Integer, List<Location>>>();
+
+	private Map<Integer, Map<Location, Set<Integer>[]>> yearToLocationAndPicsPerMonth = new HashMap<Integer, Map<Location, Set<Integer>[]>>();
+	private Map<Location, Set<Integer>[]> locationToPicsPerMonth = new HashMap<Location, Set<Integer>[]>();
+	private Map<Integer, Set<Location>> yearToLocationList = new HashMap<Integer, Set<Location>>();
 
 	public DataAnalysis(List<ImageEntry> images, Integer eventInterval)
 	{
@@ -55,6 +63,8 @@ public class DataAnalysis
 			if (!allImageYears.contains(year))
 				allImageYears.add(year);
 		}
+
+		Collections.sort(allImageYears);
 
 		imagesSortedByDate = new ArrayList<ImageEntry>(images);
 		Collections.sort(imagesSortedByDate, new Comparator<ImageEntry>()
@@ -180,6 +190,64 @@ public class DataAnalysis
 			}
 			yearToLocations.put(entry.getKey(), currentMapLocation);
 		}
+
+		for (ImageEntry entry : images)
+		{
+			Location location = entry.getLocationTaken();
+			if (location != null)
+			{
+				// Check first date
+				ImageEntry firstEntry = this.locationToFirstImage.getOrDefault(location, entry);
+				if (entry.getDateTaken().before(firstEntry.getDateTaken()) || entry.getDateTaken().equals(firstEntry.getDateTaken()))
+					locationToFirstImage.put(location, entry);
+
+				ImageEntry lastEntry = this.locationToLastImage.getOrDefault(location, entry);
+				if (entry.getDateTaken().before(lastEntry.getDateTaken()) || entry.getDateTaken().equals(lastEntry.getDateTaken()))
+					locationToLastImage.put(location, entry);
+			}
+		}
+
+		for (ImageEntry imageEntry : images)
+		{
+			if (imageEntry.getLocationTaken() != null)
+			{
+				int day = this.getCalendar(imageEntry.getDateTaken()).get(Calendar.DAY_OF_MONTH);
+				int month = this.getCalendar(imageEntry.getDateTaken()).get(Calendar.MONTH);
+				int year = this.getCalendar(imageEntry.getDateTaken()).get(Calendar.YEAR);
+				Map<Location, Set<Integer>[]> locationToPicNumber = this.yearToLocationAndPicsPerMonth.getOrDefault(year, new HashMap<Location, Set<Integer>[]>());
+				Set<Integer>[] picsPerMonth = locationToPicNumber.getOrDefault(imageEntry.getLocationTaken(), new HashSet[12]);
+				if (picsPerMonth[month] == null)
+					picsPerMonth[month] = new HashSet<Integer>();
+				picsPerMonth[month].add(day);
+				locationToPicNumber.put(imageEntry.getLocationTaken(), picsPerMonth);
+				yearToLocationAndPicsPerMonth.put(year, locationToPicNumber);
+			}
+		}
+
+		for (ImageEntry imageEntry : images)
+		{
+			if (imageEntry.getLocationTaken() != null)
+			{
+				int day = this.getCalendar(imageEntry.getDateTaken()).get(Calendar.DAY_OF_MONTH);
+				int month = this.getCalendar(imageEntry.getDateTaken()).get(Calendar.MONTH);
+				Set<Integer>[] picsPerMonth = locationToPicsPerMonth.getOrDefault(imageEntry.getLocationTaken(), new HashSet[12]);
+				if (picsPerMonth[month] == null)
+					picsPerMonth[month] = new HashSet<Integer>();
+				picsPerMonth[month].add(day);
+				locationToPicsPerMonth.put(imageEntry.getLocationTaken(), picsPerMonth);
+			}
+		}
+
+		for (ImageEntry imageEntry : images)
+		{
+			if (imageEntry.getLocationTaken() != null)
+			{
+				int year = this.getCalendar(imageEntry.getDateTaken()).get(Calendar.YEAR);
+				Set<Location> locations = yearToLocationList.getOrDefault(year, new HashSet<Location>());
+				locations.add(imageEntry.getLocationTaken());
+				yearToLocationList.put(year, locations);
+			}
+		}
 	}
 
 	public List<Location> getAllImageLocations()
@@ -217,6 +285,16 @@ public class DataAnalysis
 		return speciesToLastImage;
 	}
 
+	public Map<Location, ImageEntry> getLocationToFirstImage()
+	{
+		return locationToFirstImage;
+	}
+
+	public Map<Location, ImageEntry> getLocationToLastImage()
+	{
+		return locationToLastImage;
+	}
+
 	public Calendar getCalendar(Date date)
 	{
 		Calendar calendar = Calendar.getInstance();
@@ -252,5 +330,20 @@ public class DataAnalysis
 	public Map<Species, Map<Integer, Integer>> getYearToPeriod()
 	{
 		return yearToPeriod;
+	}
+
+	public Map<Integer, Map<Location, Set<Integer>[]>> getYearToLocationAndPicsPerMonth()
+	{
+		return yearToLocationAndPicsPerMonth;
+	}
+
+	public Map<Integer, Set<Location>> getYearToLocationList()
+	{
+		return yearToLocationList;
+	}
+
+	public Map<Location, Set<Integer>[]> getLocationToPicsPerMonth()
+	{
+		return locationToPicsPerMonth;
 	}
 }

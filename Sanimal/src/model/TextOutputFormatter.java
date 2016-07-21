@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class TextOutputFormatter
 {
@@ -188,8 +189,6 @@ public class TextOutputFormatter
 
 		toReturn = toReturn + "     Species                   Total  Percent\n";
 
-		// Map species to period
-
 		for (Species species : analysis.getAllImageSpecies())
 		{
 			Integer speciesPeriodTotal = 0;
@@ -198,6 +197,113 @@ public class TextOutputFormatter
 			toReturn = toReturn + String.format("  %-28s %5d  %7.2f\n", species.getName(), speciesPeriodTotal, (speciesPeriodTotal.doubleValue() / periodTotal) * 100.0);
 		}
 		toReturn = toReturn + String.format("  Total pictures               %5d   100.00\n", periodTotal);
+		toReturn = toReturn + "\n";
+
+		// CAMERA TRAP DAYS
+
+		toReturn = toReturn + "CAMERA TRAP DAYS\n";
+		toReturn = toReturn + "Location                    Start date  Stop date   Duration   First pic   Species\n";
+
+		long durationTotal = 0;
+		for (Location location : analysis.getAllImageLocations())
+		{
+			ImageEntry firstEntry = analysis.getLocationToFirstImage().get(location);
+			ImageEntry lastEntry = analysis.getLocationToLastImage().get(location);
+			Calendar firstCal = analysis.getCalendar(firstEntry.getDateTaken());
+			Calendar lastCal = analysis.getCalendar(lastEntry.getDateTaken());
+			long currentDuration = daysBetween(firstImageDate, lastImageDate);
+			durationTotal = durationTotal + currentDuration;
+
+			String speciesPresent = "";
+			for (SpeciesEntry entry : firstEntry.getSpeciesPresent())
+				speciesPresent = speciesPresent + entry.getSpecies().getName() + " ";
+
+			toReturn = toReturn + String.format("%-27s %4s %2d %2d  %4s %2d %2d %9d   %4s %2d %2d  %s\n", location.getName(), firstCal.get(Calendar.YEAR), firstCal.get(Calendar.MONTH), firstCal.get(Calendar.DAY_OF_MONTH), lastCal.get(Calendar.YEAR), lastCal.get(Calendar.MONTH), lastCal.get(
+					Calendar.DAY_OF_MONTH), currentDuration, firstCal.get(Calendar.YEAR), firstCal.get(Calendar.MONTH), firstCal.get(Calendar.DAY_OF_MONTH), speciesPresent);
+		}
+
+		toReturn = toReturn + String.format("Total camera trap days                             %9d\n", durationTotal);
+
+		toReturn = toReturn + "\n";
+
+		//CAMERA TRAP EFFORT
+
+		toReturn = toReturn + "CAMERA TRAP EFFORT\n";
+
+		for (Integer year : analysis.getAllImageYears())
+		{
+			toReturn = toReturn + "Year " + year + "\n";
+			toReturn = toReturn + String.format("Location (%3d)              Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec    Total\n", analysis.getYearToLocationList().get(year).size());
+
+			for (Map.Entry<Location, Set<Integer>[]> entry : analysis.getYearToLocationAndPicsPerMonth().get(year).entrySet())
+			{
+				toReturn = toReturn + String.format("%-28s", entry.getKey().getName());
+				int monthTotal = 0;
+				for (Set<Integer> monthValueSet : entry.getValue())
+				{
+					int monthValue = monthValueSet == null ? 0 : monthValueSet.size();
+					toReturn = toReturn + String.format(" %2d    ", monthValue);
+					monthTotal = monthTotal + monthValue;
+				}
+				toReturn = toReturn + monthTotal + "\n";
+			}
+
+			toReturn = toReturn + "\n";
+		}
+
+		// CAMERA TRAP EFFORT SUMMARY
+
+		toReturn = toReturn + "CAMERA TRAP EFFORT SUMMARY\n";
+		int numYears = analysis.getAllImageYears().size();
+		if (numYears != 0)
+			toReturn = toReturn + "Years " + analysis.getAllImageYears().get(0) + " to " + analysis.getAllImageYears().get(numYears - 1) + "\n";
+
+		toReturn = toReturn + "Location                    Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec    Total\n";
+
+		for (Map.Entry<Location, Set<Integer>[]> entry : analysis.getLocationToPicsPerMonth().entrySet())
+		{
+			toReturn = toReturn + String.format("%-28s", entry.getKey().getName());
+			int monthTotal = 0;
+			for (Set<Integer> monthValueSet : entry.getValue())
+			{
+				int monthValue = monthValueSet == null ? 0 : monthValueSet.size();
+				toReturn = toReturn + String.format(" %2d    ", monthValue);
+				monthTotal = monthTotal + monthValue;
+			}
+			toReturn = toReturn + monthTotal + "\n";
+		}
+		toReturn = toReturn + "\n";
+
+		// FOR EACH LOCATION TOTAL NUMBER AND PERCENT OF EACH SPECIES
+		toReturn = toReturn + "FOR EACH LOCATION TOTAL NUMBER AND PERCENT OF EACH SPECIES\n";
+		toReturn = toReturn + "  Use independent picture\n";
+
+		for (Location location : analysis.getAllImageLocations())
+			toReturn = toReturn + String.format("%30s ", location.getName());
+		toReturn = toReturn + "\n";
+		toReturn = toReturn + "Species";
+		for (Location location : analysis.getAllImageLocations())
+			toReturn = toReturn + "                   Total Percent";
+		toReturn = toReturn + "\n";
+
+		for (Species species : analysis.getAllImageSpecies())
+		{
+			toReturn = toReturn + String.format("%-26s", species.getName());
+			for (Location location : analysis.getAllImageLocations())
+			{
+				int imagesAtLoc = new ImageQuery(images).locationOnly(location).anyValidSpecies().query().size();
+				List<ImageEntry> filtered = new ImageQuery(images).locationOnly(location).speciesOnly(species).query();
+				toReturn = toReturn + String.format("%5d %7.2f                   ", filtered.size(), (filtered.size() / (double) imagesAtLoc) * 100);
+			}
+			toReturn = toReturn + "\n";
+		}
+
+		toReturn = toReturn + "Total pictures            ";
+
+		for (Location location : analysis.getAllImageLocations())
+			toReturn = toReturn + String.format("%5d  100.00                   ", new ImageQuery(images).locationOnly(location).query().size());
+
+		toReturn = toReturn + "\n";
 
 		return toReturn;
 	}

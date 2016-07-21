@@ -13,6 +13,11 @@ public class ImageImporterData
 {
 	private ImageDirectory head;
 
+	public ImageDirectory getHeadDirectory()
+	{
+		return this.head;
+	}
+
 	public void readAndAddImages(File imageOrLocation, boolean recursive)
 	{
 		if (!imageOrLocation.isDirectory())
@@ -27,16 +32,12 @@ public class ImageImporterData
 		}
 	}
 
-	public ImageDirectory getHeadDirectory()
-	{
-		return this.head;
-	}
-
 	private void createDirectoryAndImageTree(ImageDirectory current, boolean recursive)
 	{
+		if (current.getDirectory().listFiles().length > 20)
+			System.out.println("Files in dir: " + current.getDirectory().listFiles().length);
 		// Get all files in the directory
-		File[] subfiles = current.getDirectory().listFiles();
-		for (File file : subfiles)
+		for (File file : current.getDirectory().listFiles())
 		{
 			// Add all image files to the directory
 			if (fileIsImage(file))
