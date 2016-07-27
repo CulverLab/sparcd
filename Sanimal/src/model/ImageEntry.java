@@ -8,6 +8,8 @@ package model;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,11 +17,6 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import javax.swing.ImageIcon;
-
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.file.FileMetadataDirectory;
 
 public class ImageEntry
 {
@@ -34,14 +31,10 @@ public class ImageEntry
 		this.imageFile = file;
 		try
 		{
-			Metadata metadata = ImageMetadataReader.readMetadata(file);
-			FileMetadataDirectory fileMetadata = metadata.<FileMetadataDirectory> getFirstDirectoryOfType(FileMetadataDirectory.class);
-			if (fileMetadata != null)
-				dateTaken = fileMetadata.getDate(FileMetadataDirectory.TAG_FILE_MODIFIED_DATE);
+			this.dateTaken = new Date(Files.readAttributes(file.toPath(), BasicFileAttributes.class).lastModifiedTime().toMillis());
 		}
-		catch (ImageProcessingException | IOException e)
+		catch (IOException e)
 		{
-			System.out.println("Error reading file metadata: " + file.getAbsolutePath() + "\nError is:\n" + e.toString());
 		}
 	}
 
@@ -52,11 +45,13 @@ public class ImageEntry
 
 	public String getDateTakenFormatted()
 	{
+		//this.validateDate();
 		return dateTaken.toString();
 	}
 
 	public Date getDateTaken()
 	{
+		//this.validateDate();
 		return dateTaken;
 	}
 
@@ -102,6 +97,7 @@ public class ImageEntry
 
 	public void renameByDate()
 	{
+		//this.validateDate();
 		String newFilePath = imageFile.getParentFile() + File.separator;
 		String newFileName = DATE_FORMAT.format(this.dateTaken);
 		String newFileExtension = imageFile.getName().substring(imageFile.getName().lastIndexOf('.'));
@@ -123,4 +119,22 @@ public class ImageEntry
 	{
 		return this.imageFile.getName();
 	}
+
+	//	private void validateDate()
+	//	{
+	//		if (this.dateTaken == null)
+	//		{
+	//			try
+	//			{
+	//				Metadata metadata = ImageMetadataReader.readMetadata(this.imageFile);
+	//				FileMetadataDirectory fileMetadata = metadata.<FileMetadataDirectory> getFirstDirectoryOfType(FileMetadataDirectory.class);
+	//				if (fileMetadata != null)
+	//					dateTaken = fileMetadata.getDate(FileMetadataDirectory.TAG_FILE_MODIFIED_DATE);
+	//			}
+	//			catch (ImageProcessingException | IOException e)
+	//			{
+	//				System.out.println("Error reading file metadata: " + this.imageFile.getAbsolutePath() + "\nError is:\n" + e.toString());
+	//			}
+	//		}
+	//	}
 }

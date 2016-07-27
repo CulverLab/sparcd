@@ -79,6 +79,8 @@ public class SanimalView extends JFrame
 	private JTabbedPane tabOutputTabs;
 	private JScrollPane pneAllOutput;
 	private JTextArea tarAllOutput;
+	private JPanel pnlExcelOutput;
+	private JButton btnToExcel;
 
 	public SanimalView()
 	{
@@ -198,6 +200,7 @@ public class SanimalView extends JFrame
 		pnlPropertyList.add(lblAnalysisEventInterval);
 
 		txtAnalysisEventInterval = new JTextField();
+		txtAnalysisEventInterval.setText("60");
 		txtAnalysisEventInterval.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		txtAnalysisEventInterval.setBounds(330, 165, 87, 20);
 		pnlPropertyList.add(txtAnalysisEventInterval);
@@ -269,9 +272,21 @@ public class SanimalView extends JFrame
 		tarAllOutput.setBounds(10, 11, 100, 100);
 		tarAllOutput.setLayout(null);
 
+		pnlExcelOutput = new JPanel();
+		pnlExcelOutput.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		pnlExcelOutput.setLayout(null);
+
+		btnToExcel = new JButton("Create excel file");
+		btnToExcel.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		btnToExcel.setBounds(10, 11, 145, 23);
+		btnToExcel.setLayout(null);
+		pnlExcelOutput.add(btnToExcel);
+
 		pneAllOutput = new JScrollPane();
 		pneAllOutput.setViewportView(tarAllOutput);
-		tabOutputTabs.insertTab("All Output", new ImageIcon(""), pneAllOutput, "All Output from the analysis", 0);
+		tabOutputTabs.insertTab("Excel Output", new ImageIcon(""), pnlExcelOutput, "Excel output testing", 0);
+		tabOutputTabs.insertTab("Text Output", new ImageIcon(""), pneAllOutput, "All Output from the analysis", 0);
+		tabOutputTabs.setSelectedIndex(0);
 
 		this.setLocationRelativeTo(null);
 	}
@@ -324,6 +339,11 @@ public class SanimalView extends JFrame
 	public void addALToRemoveSpeciesFromList(ActionListener listener)
 	{
 		this.btnRemoveSpeciesFromList.addActionListener(listener);
+	}
+
+	public void addALToCreateExcel(ActionListener listener)
+	{
+		this.btnToExcel.addActionListener(listener);
 	}
 
 	public Location getSelectedLocation()

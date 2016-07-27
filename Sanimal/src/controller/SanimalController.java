@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +18,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import model.ImageEntry;
 import model.Location;
@@ -249,6 +251,29 @@ public class SanimalController
 				Integer eventInterval = sanimalView.getAnalysisEventInterval();
 				if (eventInterval != -1)
 					sanimalView.setOutputText(sanimalData.getOutputFormatter().format(sanimalView.getSelectedImageEntries(), eventInterval));
+			}
+		});
+		// When the user clicks to create an excel file
+		sanimalView.addALToCreateExcel(new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent event)
+			{
+				JFileChooser chooser = new JFileChooser();
+				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				chooser.setDialogTitle("Select the location to save the excel file to");
+				chooser.setFileFilter(new FileNameExtensionFilter("Excel files (.xlsx)", "xlsx"));
+				chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+				chooser.setSelectedFile(new File("Sanimal.xlsx"));
+				int response = chooser.showSaveDialog(sanimalView);
+				if (response == JFileChooser.APPROVE_OPTION)
+				{
+					File directory = chooser.getSelectedFile();
+					if (sanimalData.getExcelFormatter().format(directory, sanimalView.getSelectedImageEntries()))
+						JOptionPane.showMessageDialog(sanimalView, "Excel file saved sucessfully!");
+					else
+						JOptionPane.showMessageDialog(sanimalView, "There was an error when saving the excel file.");
+				}
 			}
 		});
 		sanimalView.setVisible(true);

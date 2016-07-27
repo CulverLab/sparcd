@@ -34,8 +34,6 @@ public class ImageImporterData
 
 	private void createDirectoryAndImageTree(ImageDirectory current, boolean recursive)
 	{
-		if (current.getDirectory().listFiles().length > 20)
-			System.out.println("Files in dir: " + current.getDirectory().listFiles().length);
 		// Get all files in the directory
 		for (File file : current.getDirectory().listFiles())
 		{
