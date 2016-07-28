@@ -6,14 +6,14 @@
 package model;
 
 import model.analysis.ExcelFormatter;
-import model.analysis.TextOutputFormatter;
+import model.analysis.SanimalTextOutputFormatter;
 
 public class SanimalData
 {
 	private ImageImporterData imageData = new ImageImporterData();
 	private LocationData locationData = new LocationData();
 	private SpeciesData speciesData = new SpeciesData();
-	private TextOutputFormatter outputFormatter = new TextOutputFormatter();
+	private SanimalTextOutputFormatter outputFormatter = new SanimalTextOutputFormatter();
 	private ExcelFormatter excelFormatter = new ExcelFormatter();
 
 	public ImageImporterData getImageData()
@@ -31,7 +31,7 @@ public class SanimalData
 		return speciesData;
 	}
 
-	public TextOutputFormatter getOutputFormatter()
+	public SanimalTextOutputFormatter getOutputFormatter()
 	{
 		return outputFormatter;
 	}

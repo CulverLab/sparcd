@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.time.DateUtils;
+
 import library.MoonCalculation;
 import library.MoonCalculator;
 import model.ImageEntry;
@@ -69,7 +71,7 @@ public class DataAnalysis
 
 		for (ImageEntry imageEntry : images)
 		{
-			Integer year = this.getCalendar(imageEntry.getDateTaken()).get(Calendar.YEAR);
+			Integer year = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.YEAR);
 			if (!allImageYears.contains(year))
 				allImageYears.add(year);
 		}
@@ -122,7 +124,7 @@ public class DataAnalysis
 			Map<Integer, Integer> currentMap = yearToNumberImages.getOrDefault(entry.getKey(), new HashMap<Integer, Integer>());
 			for (ImageEntry image : entry.getValue())
 			{
-				int year = this.getCalendar(image.getDateTaken()).get(Calendar.YEAR);
+				int year = DateUtils.toCalendar(image.getDateTaken()).get(Calendar.YEAR);
 				currentMap.put(year, currentMap.getOrDefault(year, 0) + 1);
 			}
 			yearToNumberImages.put(entry.getKey(), currentMap);
@@ -134,7 +136,7 @@ public class DataAnalysis
 			int oldYear = -1;
 			for (ImageEntry image : entry.getValue())
 			{
-				Calendar calendar = this.getCalendar(image.getDateTaken());
+				Calendar calendar = DateUtils.toCalendar(image.getDateTaken());
 				int hour = calendar.get(Calendar.HOUR_OF_DAY);
 				int day = calendar.get(Calendar.DAY_OF_YEAR);
 				int year = calendar.get(Calendar.YEAR);
@@ -158,7 +160,7 @@ public class DataAnalysis
 				long differenceMinutes = differenceMillis / 1000 / 60;
 				if (differenceMinutes >= eventInterval)
 				{
-					int year = this.getCalendar(image.getDateTaken()).get(Calendar.YEAR);
+					int year = DateUtils.toCalendar(image.getDateTaken()).get(Calendar.YEAR);
 					currentMap.put(year, currentMap.getOrDefault(year, 0) + 1);
 				}
 				lastImageTimeMillis = imageTimeMillis;
@@ -178,7 +180,7 @@ public class DataAnalysis
 				{
 					for (SpeciesEntry speciesEntry : image.getSpeciesPresent())
 						maxAnimalsInEvent = Math.max(maxAnimalsInEvent, speciesEntry.getAmount());
-					int year = this.getCalendar(image.getDateTaken()).get(Calendar.YEAR);
+					int year = DateUtils.toCalendar(image.getDateTaken()).get(Calendar.YEAR);
 					currentMap.put(year, currentMap.getOrDefault(year, 0) + maxAnimalsInEvent);
 					maxAnimalsInEvent = 0;
 				}
@@ -190,7 +192,7 @@ public class DataAnalysis
 			Map<Integer, List<Location>> currentMapLocation = yearToLocations.getOrDefault(entry.getKey(), new HashMap<Integer, List<Location>>());
 			for (ImageEntry image : entry.getValue())
 			{
-				int year = this.getCalendar(image.getDateTaken()).get(Calendar.YEAR);
+				int year = DateUtils.toCalendar(image.getDateTaken()).get(Calendar.YEAR);
 				List<Location> currentLocations = currentMapLocation.getOrDefault(year, new ArrayList<Location>());
 				if (!currentLocations.contains(image.getLocationTaken()))
 				{
@@ -221,9 +223,9 @@ public class DataAnalysis
 		{
 			if (imageEntry.getLocationTaken() != null)
 			{
-				int day = this.getCalendar(imageEntry.getDateTaken()).get(Calendar.DAY_OF_MONTH);
-				int month = this.getCalendar(imageEntry.getDateTaken()).get(Calendar.MONTH);
-				int year = this.getCalendar(imageEntry.getDateTaken()).get(Calendar.YEAR);
+				int day = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.DAY_OF_MONTH);
+				int month = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.MONTH);
+				int year = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.YEAR);
 				Map<Location, Set<Integer>[]> locationToPicNumber = this.yearToLocationAndPicsPerMonth.getOrDefault(year, new HashMap<Location, Set<Integer>[]>());
 				Set<Integer>[] picsPerMonth = locationToPicNumber.getOrDefault(imageEntry.getLocationTaken(), new HashSet[12]);
 				if (picsPerMonth[month] == null)
@@ -238,8 +240,8 @@ public class DataAnalysis
 		{
 			if (imageEntry.getLocationTaken() != null)
 			{
-				int day = this.getCalendar(imageEntry.getDateTaken()).get(Calendar.DAY_OF_MONTH);
-				int month = this.getCalendar(imageEntry.getDateTaken()).get(Calendar.MONTH);
+				int day = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.DAY_OF_MONTH);
+				int month = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.MONTH);
 				Set<Integer>[] picsPerMonth = locationToPicsPerMonth.getOrDefault(imageEntry.getLocationTaken(), new HashSet[12]);
 				if (picsPerMonth[month] == null)
 					picsPerMonth[month] = new HashSet<Integer>();
@@ -252,7 +254,7 @@ public class DataAnalysis
 		{
 			if (imageEntry.getLocationTaken() != null)
 			{
-				int year = this.getCalendar(imageEntry.getDateTaken()).get(Calendar.YEAR);
+				int year = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.YEAR);
 				Set<Location> locations = yearToLocationList.getOrDefault(year, new HashSet<Location>());
 				locations.add(imageEntry.getLocationTaken());
 				yearToLocationList.put(year, locations);
@@ -332,13 +334,6 @@ public class DataAnalysis
 	public Map<Location, ImageEntry> getLocationToLastImage()
 	{
 		return locationToLastImage;
-	}
-
-	public Calendar getCalendar(Date date)
-	{
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(date);
-		return calendar;
 	}
 
 	public Map<Species, List<ImageEntry>> getSpeciesToImageList()
