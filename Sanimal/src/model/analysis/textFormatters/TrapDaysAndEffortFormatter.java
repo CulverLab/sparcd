@@ -39,7 +39,7 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 			ImageEntry lastEntry = analysis.getLocationToLastImage().get(location);
 			Calendar firstCal = DateUtils.toCalendar(firstEntry.getDateTaken());
 			Calendar lastCal = DateUtils.toCalendar(lastEntry.getDateTaken());
-			long currentDuration = SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), analysis.getImagesSortedByDate().get(analysis.getImagesSortedByDate().size() - 1).getDateTaken());
+			long currentDuration = SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), analysis.getImagesSortedByDate().get(analysis.getImagesSortedByDate().size() - 1).getDateTaken()) + 1;
 			durationTotal = durationTotal + currentDuration;
 
 			String speciesPresent = "";

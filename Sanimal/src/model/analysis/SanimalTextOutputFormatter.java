@@ -210,6 +210,22 @@ public class SanimalTextOutputFormatter
 
 		toReturn = toReturn + totalDayFormatter.printAbundanceByMonthSpeciesLocElevation();
 
+		// SPECIES BY LOCATION SORTED BY ELEVATION AND NORMALIZED BY EFFORT
+
+		toReturn = toReturn + totalDayFormatter.printSpeciesByLocElevationAndEffort();
+
+		// SPECIES BY LOCATION SORTED BY ELEVATION AND NORMALIZED BY EFFORT TABLE
+
+		toReturn = toReturn + totalDayFormatter.printSpeciesByLocElevationAndEffortTable();
+
+		// SPECIES AVERAGE ABUNDANCE BY YEAR AND SITE
+
+		toReturn = toReturn + actPerAbuLocFormatter.printSpeciesAbundanceYearSite();
+
+		// SPECIES AVERAGE ABUNDANCE BY SITE ALL YEARS
+
+		toReturn = toReturn + actPerAbuLocFormatter.printSpeciesAbundanceSite();
+
 		return toReturn;
 
 	}

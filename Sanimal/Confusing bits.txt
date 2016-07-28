@@ -15,8 +15,19 @@ LOCATION-SPECIES COMPOSITION SIMILARITY (Jaccard Similarity Index)
 
   TOP 10 LOCATION PAIRS MOST DIFFERENT IN SPECIES COMPOSITION
   
-  Lat/Lng vs UTM?
+Lat/Lng vs UTM?
+
+CHI-SQUARE ANALYSIS OF PAIRED SITES SPECIES FREQUENCIES
+H0: Species frequencies are independent of site
+Reject null hypothesis = R, Accept null hypothesis = -
   
-  CHI-SQUARE ANALYSIS OF PAIRED SITES SPECIES FREQUENCIES
-  H0: Species frequencies are independent of site
-  Reject null hypothesis = R, Accept null hypothesis = -
+MONTHLY DETECTION RATE TREND
+
+
+PICTURES FOR EACH LOCATION BY MONTH AND YEAR SUMMARY
+  One record of each species per location per PERIOD
+  
+  should read
+
+PICTURES FOR EACH LOCATION BY MONTH AND YEAR SUMMARY
+  Number of independent pictures per location

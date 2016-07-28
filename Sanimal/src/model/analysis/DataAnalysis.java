@@ -291,6 +291,50 @@ public class DataAnalysis
 		}
 	}
 
+	public Integer periodForImageList(List<ImageEntry> images, Integer eventInterval)
+	{
+		Integer period = 0;
+
+		long lastImageTimeMillis = 0;
+		for (ImageEntry image : images)
+		{
+			long imageTimeMillis = image.getDateTaken().getTime();
+			long differenceMillis = imageTimeMillis - lastImageTimeMillis;
+			long differenceMinutes = differenceMillis / 1000 / 60;
+			if (differenceMinutes >= eventInterval)
+			{
+				period++;
+			}
+			lastImageTimeMillis = imageTimeMillis;
+		}
+
+		return period;
+	}
+
+	public Integer abundanceForImageList(List<ImageEntry> images, Integer eventInterval)
+	{
+		Integer abundance = 0;
+
+		long lastImageTimeMillis = 0;
+		Integer maxAnimalsInEvent = 0;
+		for (ImageEntry image : images)
+		{
+			long imageTimeMillis = image.getDateTaken().getTime();
+			long differenceMillis = imageTimeMillis - lastImageTimeMillis;
+			long differenceMinutes = differenceMillis / 1000 / 60;
+			if (differenceMinutes >= eventInterval)
+			{
+				for (SpeciesEntry speciesEntry : image.getSpeciesPresent())
+					maxAnimalsInEvent = Math.max(maxAnimalsInEvent, speciesEntry.getAmount());
+				abundance = abundance + maxAnimalsInEvent;
+				maxAnimalsInEvent = 0;
+			}
+			lastImageTimeMillis = imageTimeMillis;
+		}
+
+		return abundance;
+	}
+
 	public List<Location> getAllImageLocations()
 	{
 		return allImageLocations;

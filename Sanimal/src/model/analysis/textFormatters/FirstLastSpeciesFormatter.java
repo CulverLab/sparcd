@@ -34,7 +34,7 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 		Date firstImageDate = analysis.getImagesSortedByDate().get(0).getDateTaken();
 		Date lastImageDate = analysis.getImagesSortedByDate().get(analysis.getImagesSortedByDate().size() - 1).getDateTaken();
 
-		toReturn = toReturn + "NUMBER OF DAYS IN CAMERA TRAP PROGRAM = " + SanimalAnalysisUtils.daysBetween(firstImageDate, lastImageDate) + "\n";
+		toReturn = toReturn + "NUMBER OF DAYS IN CAMERA TRAP PROGRAM = " + (SanimalAnalysisUtils.daysBetween(firstImageDate, lastImageDate) + 1) + "\n";
 		Calendar calendar = DateUtils.toCalendar(firstImageDate);
 		toReturn = toReturn + "First picture: Year = " + calendar.get(Calendar.YEAR) + " Month = " + calendar.get(Calendar.MONTH) + " Day = " + calendar.get(Calendar.DAY_OF_MONTH) + "\n";
 		calendar.setTime(lastImageDate);
@@ -57,8 +57,8 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 			Species speciesToPrint = entry.getKey();
 			ImageEntry imageToPrint = entry.getValue();
 			Calendar dateToPrint = DateUtils.toCalendar(imageToPrint.getDateTaken());
-			toReturn = toReturn + String.format("%-28s %4d  %4d %4d %4d %3d %5d %6d   %-28s\n", speciesToPrint, SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), dateToPrint.getTime()), dateToPrint.get(Calendar.YEAR), dateToPrint.get(Calendar.MONTH), dateToPrint
-					.get(Calendar.DAY_OF_MONTH), dateToPrint.get(Calendar.HOUR), dateToPrint.get(Calendar.MINUTE), dateToPrint.get(Calendar.SECOND), (imageToPrint.getLocationTaken() == null ? "Unknown" : imageToPrint.getLocationTaken().getName()));
+			toReturn = toReturn + String.format("%-28s %4d  %4d %4d %4d %3d %5d %6d   %-28s\n", speciesToPrint, SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), dateToPrint.getTime()) + 1, dateToPrint.get(Calendar.YEAR), dateToPrint.get(Calendar.MONTH),
+					dateToPrint.get(Calendar.DAY_OF_MONTH), dateToPrint.get(Calendar.HOUR), dateToPrint.get(Calendar.MINUTE), dateToPrint.get(Calendar.SECOND), (imageToPrint.getLocationTaken() == null ? "Unknown" : imageToPrint.getLocationTaken().getName()));
 		}
 		toReturn = toReturn + "\n";
 
@@ -78,7 +78,7 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 			Species speciesToPrint = entry.getKey();
 			ImageEntry imageToPrint = entry.getValue();
 			Calendar dateToPrint = DateUtils.toCalendar(imageToPrint.getDateTaken());
-			toReturn = toReturn + String.format("%-28s %4d  %4d %4d %4d %3d %5d %6d   %-28s %4d\n", speciesToPrint, SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), dateToPrint.getTime()), dateToPrint.get(Calendar.YEAR), dateToPrint.get(Calendar.MONTH),
+			toReturn = toReturn + String.format("%-28s %4d  %4d %4d %4d %3d %5d %6d   %-28s %4d\n", speciesToPrint, SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), dateToPrint.getTime()) + 1, dateToPrint.get(Calendar.YEAR), dateToPrint.get(Calendar.MONTH),
 					dateToPrint.get(Calendar.DAY_OF_MONTH), dateToPrint.get(Calendar.HOUR), dateToPrint.get(Calendar.MINUTE), dateToPrint.get(Calendar.SECOND), (imageToPrint.getLocationTaken() == null ? "Unknown" : imageToPrint.getLocationTaken().getName()), SanimalAnalysisUtils.daysBetween(analysis
 							.getSpeciesToFirstImage().get(speciesToPrint).getDateTaken(), dateToPrint.getTime()));
 		}

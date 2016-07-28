@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import model.ImageEntry;
 import model.Location;
 import model.Species;
@@ -165,6 +167,77 @@ public class ActPerAbuLocFormatter extends TextFormatter
 		toReturn = toReturn + String.format("Total                        %7d                100.00", periodOverAllSpecies);
 
 		toReturn = toReturn + "\n\n";
+
+		return toReturn;
+	}
+
+	public String printSpeciesAbundanceYearSite()
+	{
+		String toReturn = "";
+
+		toReturn = toReturn + "SPECIES AVERAGE ABUNDANCE BY YEAR AND SITE\n";
+		toReturn = toReturn + "One record of each species per location per PERIOD\n";
+		toReturn = toReturn + "               Use maximum number of individuals per PERIOD\n";
+		toReturn = toReturn + "\n";
+
+		for (Integer year : analysis.getAllImageYears())
+		{
+			List<ImageEntry> withYear = new PredicateBuilder().yearOnly(year).query(images);
+			toReturn = toReturn + year + "\n";
+			toReturn = toReturn + "Species                     ";
+			for (Location location : analysis.getAllImageLocations())
+				toReturn = toReturn + String.format("%-5s ", StringUtils.left(location.getName(), 5));
+			toReturn = toReturn + "\n";
+			for (Species species : analysis.getAllImageSpecies())
+			{
+				List<ImageEntry> withYearSpecies = new PredicateBuilder().speciesOnly(species).query(withYear);
+				toReturn = toReturn + String.format("%-28s", species.getName());
+				for (Location location : analysis.getAllImageLocations())
+				{
+					List<ImageEntry> withYearSpeciesLoc = new PredicateBuilder().locationOnly(location).query(withYearSpecies);
+					Integer abundance = analysis.abundanceForImageList(withYearSpeciesLoc, eventInterval);
+					Integer period = analysis.periodForImageList(new PredicateBuilder().locationOnly(location).speciesOnly(species).query(images), eventInterval);
+					toReturn = toReturn + String.format("%5.2f ", period == 0 ? 0 : (double) abundance / period);
+				}
+				toReturn = toReturn + "\n";
+			}
+
+			toReturn = toReturn + "\n";
+		}
+
+		return toReturn;
+	}
+
+	public String printSpeciesAbundanceSite()
+	{
+		String toReturn = "";
+
+		toReturn = toReturn + "SPECIES AVERAGE ABUNDANCE BY SITE ALL YEARS\n";
+
+		Integer numYears = analysis.getAllImageYears().size();
+		if (!analysis.getAllImageYears().isEmpty())
+			toReturn = toReturn + "Years " + analysis.getAllImageYears().get(0) + " to " + analysis.getAllImageYears().get(numYears - 1) + "\n";
+
+		toReturn = toReturn + "Species                     ";
+		for (Location location : analysis.getAllImageLocations())
+			toReturn = toReturn + String.format("%-5s ", StringUtils.left(location.getName(), 5));
+		toReturn = toReturn + "\n";
+
+		for (Species species : analysis.getAllImageSpecies())
+		{
+			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(images);
+			toReturn = toReturn + String.format("%-28s", species.getName());
+			for (Location location : analysis.getAllImageLocations())
+			{
+				List<ImageEntry> withSpeciesLoc = new PredicateBuilder().locationOnly(location).query(withSpecies);
+				Integer abundance = analysis.abundanceForImageList(withSpeciesLoc, eventInterval);
+				Integer period = analysis.periodForImageList(new PredicateBuilder().locationOnly(location).speciesOnly(species).query(images), eventInterval);
+				toReturn = toReturn + String.format("%5.2f ", period == 0 ? 0 : (double) abundance / period);
+			}
+			toReturn = toReturn + "\n";
+		}
+
+		toReturn = toReturn + "\n";
 
 		return toReturn;
 	}

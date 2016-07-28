@@ -314,7 +314,7 @@ public class ActivityPatternFormatter extends TextFormatter
 				{
 					Date first = seasonWithSpecies.get(0).getDateTaken();
 					Date last = seasonWithSpecies.get(seasonWithSpecies.size() - 1).getDateTaken();
-					difference = SanimalAnalysisUtils.daysBetween(first, last);
+					difference = SanimalAnalysisUtils.daysBetween(first, last) + 1;
 				}
 				lengthPerSeason[i] = (int) difference;
 				toReturn = toReturn + String.format("%7d               ", difference);
@@ -348,7 +348,7 @@ public class ActivityPatternFormatter extends TextFormatter
 				if (total != 0)
 					toReturn = toReturn + String.format("%5.4f                ", ratios[i] / total);
 				else
-					toReturn = toReturn + String.format("%5.4f                ", 0);
+					toReturn = toReturn + String.format("%5.4f                ", 0f);
 			}
 
 			toReturn = toReturn + "\n";
