@@ -10,7 +10,7 @@ import java.util.List;
 import model.ImageEntry;
 import model.analysis.DataAnalysis;
 
-public class TextFormatter
+public abstract class TextFormatter
 {
 	protected final List<ImageEntry> images;
 	protected final DataAnalysis analysis;

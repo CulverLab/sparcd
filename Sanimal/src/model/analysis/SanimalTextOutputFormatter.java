@@ -10,10 +10,12 @@ import java.util.List;
 import model.ImageEntry;
 import model.analysis.textFormatters.ActPerAbuLocFormatter;
 import model.analysis.textFormatters.ActivityPatternFormatter;
+import model.analysis.textFormatters.DetectionRateFormatter;
 import model.analysis.textFormatters.FirstLastSpeciesFormatter;
 import model.analysis.textFormatters.HeaderFormatter;
 import model.analysis.textFormatters.LocationStatFormatter;
 import model.analysis.textFormatters.LunarActivityFormatter;
+import model.analysis.textFormatters.OccouranceFormatter;
 import model.analysis.textFormatters.RichnessFormatter;
 import model.analysis.textFormatters.SpeciesLocCoordFormatter;
 import model.analysis.textFormatters.TotalDayFormatter;
@@ -28,6 +30,8 @@ public class SanimalTextOutputFormatter
 		if (images.isEmpty())
 			return "No images found under directory";
 
+		long elapsedTime = System.currentTimeMillis();
+
 		DataAnalysis analysis = new DataAnalysis(images, eventInterval);
 		HeaderFormatter headerFormatter = new HeaderFormatter(images, analysis, eventInterval);
 		FirstLastSpeciesFormatter firstLastSpeciesFormatter = new FirstLastSpeciesFormatter(images, analysis, eventInterval);
@@ -39,6 +43,8 @@ public class SanimalTextOutputFormatter
 		RichnessFormatter richnessFormatter = new RichnessFormatter(images, analysis, eventInterval);
 		SpeciesLocCoordFormatter speciesLocCoordFormatter = new SpeciesLocCoordFormatter(images, analysis, eventInterval);
 		TotalDayFormatter totalDayFormatter = new TotalDayFormatter(images, analysis, eventInterval);
+		OccouranceFormatter occouranceFormatter = new OccouranceFormatter(images, analysis, eventInterval);
+		DetectionRateFormatter detectionRateFormatter = new DetectionRateFormatter(images, analysis, eventInterval);
 
 		// LOCATIONS 
 
@@ -145,21 +151,12 @@ public class SanimalTextOutputFormatter
 		toReturn = toReturn + richnessFormatter.printLocationSpeciesRichness();
 
 		// LOCATION SPECIES FREQUENCY SIMILARITY (LOWER IS MORE SIMILAR)
-		//		toReturn = toReturn + "LOCATION SPECIES FREQUENCY SIMILARITY (LOWER IS MORE SIMILAR)\n";
-		//		toReturn = toReturn + "   One picture of each species per camera per PERIOD\n";
-		//		toReturn = toReturn + "   Square root of sums of squared difference in frequency\n\n";
-		//		toReturn = toReturn + "  TOP 10 LOCATION PAIRS MOST SIMILAR IN SPECIES FREQUENCY\n\n";
-		//		toReturn = toReturn + "  TOP 10 LOCATION PAIRS MOST DIFFERENT IN SPECIES FREQUENCY\n\n";
-		//      ???
+
+		toReturn = toReturn + locationStatFormatter.printLocSpeciesFrequencySimiliarity();
 
 		// LOCATION-SPECIES COMPOSITION SIMILARITY (Jaccard Similarity Index)
-		//		toReturn = toReturn + "LOCATION-SPECIES COMPOSITION SIMILARITY (Jaccard Similarity Index)\n";
-		//		toReturn = toReturn + "  Is species present at this location? yes=1, no=0\n";
-		//		toReturn = toReturn + "  1.00 means locations are identical; 0.00 means locations have no species in common\n";
-		//		toReturn = toReturn + "  Location, location, JSI, number of species at each location, and number of species in common\n\n";
-		//		toReturn = toReturn + "  TOP 10 LOCATION PAIRS MOST SIMILAR IN SPECIES COMPOSITION\n\n";
-		//		toReturn = toReturn + "  TOP 10 LOCATION PAIRS MOST DIFFERENT IN SPECIES COMPOSITION\n\n";
-		//      ???
+
+		toReturn = toReturn + locationStatFormatter.printLocSpeciesCompositionSimiliarity();
 
 		// SPECIES BY LOCATION WITH UTM AND ELEVATION
 
@@ -170,21 +167,8 @@ public class SanimalTextOutputFormatter
 		toReturn = toReturn + locationStatFormatter.printSpeciesOverlapAtLoc();
 
 		// CHI-SQUARE ANALYSIS OF PAIRED SITES SPECIES FREQUENCIES
-		toReturn = toReturn + "CHI-SQUARE ANALYSIS OF PAIRED SITES SPECIES FREQUENCIES\n";
-		toReturn = toReturn + "  H0: Species frequencies are independent of site\n";
-		toReturn = toReturn + "  Reject null hypothesis = R, Accept null hypothesis = -\n";
-		toReturn = toReturn + "Sites                      ";
-		//		for (Location location : analysis.getAllImageLocations())
-		//			toReturn = toReturn + String.format("%-8s", StringUtils.left(location.getName(), 8));
-		//		toReturn = toReturn + "\n";
-		//		for (Location location : analysis.getAllImageLocations())
-		//		{
-		//			toReturn = toReturn + String.format("%-28s", location.getName());
-		//
-		//			toReturn = toReturn + "\n";
-		//		}
-		// ???
-		toReturn = toReturn + "\n";
+
+		toReturn = toReturn + occouranceFormatter.printCHISqAnalysisOfPairedSpecieFreq();
 
 		// PICTURES FOR EACH LOCATION BY MONTH AND YEAR
 
@@ -225,6 +209,50 @@ public class SanimalTextOutputFormatter
 		// SPECIES AVERAGE ABUNDANCE BY SITE ALL YEARS
 
 		toReturn = toReturn + actPerAbuLocFormatter.printSpeciesAbundanceSite();
+
+		// SPECIES CO-OCCURRENCE MATRIX
+
+		toReturn = toReturn + occouranceFormatter.printCoOccuranceMatrix();
+
+		// ABSENCE-PRESENCE MATRIX
+
+		toReturn = toReturn + occouranceFormatter.printAbsensePresenceMatrix();
+
+		// SPECIES MIN AND MAX ELEVATION
+
+		toReturn = toReturn + occouranceFormatter.printMaxMinSpeciesElevation();
+
+		// DETECTION RATE FOR EACH SPECIES PER YEAR
+
+		toReturn = toReturn + detectionRateFormatter.printDetectionRateSpeciesYear();
+
+		// DETECTION RATE SUMMARY FOR EACH SPECIES
+
+		toReturn = toReturn + detectionRateFormatter.printDetectionRateSummary();
+
+		// DETECTION RATE FOR EACH LOCATION BY MONTH
+
+		toReturn = toReturn + detectionRateFormatter.printDetectionRateLocationMonth();
+
+		// DETECTION RATE SUMMARY FOR EACH LOCATION BY MONTH
+
+		toReturn = toReturn + detectionRateFormatter.printDetectionRateLocationMonthSummary();
+
+		// MONTHLY DETECTION RATE TREND
+
+		toReturn = toReturn + detectionRateFormatter.printDetectionRateTrend();
+
+		// NATIVE OCCUPANCY
+
+		toReturn = toReturn + occouranceFormatter.printNativeOccupancy();
+
+		// AREA COVERED BY CAMERA TRAPS
+
+		toReturn = toReturn + locationStatFormatter.printAreaCoveredByTraps();
+
+		// ELAPSED TIME
+
+		toReturn = toReturn + "ELAPSED TIME " + String.format("%10.3f ", (double) (System.currentTimeMillis() - elapsedTime)) + "SECONDS";
 
 		return toReturn;
 

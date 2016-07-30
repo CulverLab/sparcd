@@ -292,4 +292,48 @@ public class LocationStatFormatter extends TextFormatter
 
 		return toReturn;
 	}
+
+	public String printAreaCoveredByTraps()
+	{
+		String toReturn = "";
+
+		toReturn = toReturn + "AREA COVERED BY CAMERA TRAPS\n";
+		toReturn = toReturn + "  List of locations forming convex polygon\n";
+		toReturn = toReturn + "No idea what these numbers are\n\n";
+
+		return toReturn;
+	}
+
+	public String printLocSpeciesFrequencySimiliarity()
+	{
+		String toReturn = "";
+
+		toReturn = toReturn + "LOCATION SPECIES FREQUENCY SIMILARITY (LOWER IS MORE SIMILAR)\n";
+		toReturn = toReturn + "   One picture of each species per camera per PERIOD\n";
+		toReturn = toReturn + "   Square root of sums of squared difference in frequency\n\n";
+		toReturn = toReturn + "  TOP 10 LOCATION PAIRS MOST SIMILAR IN SPECIES FREQUENCY\n";
+		toReturn = toReturn + "No idea what these numbers are\n\n";
+		toReturn = toReturn + "  TOP 10 LOCATION PAIRS MOST DIFFERENT IN SPECIES FREQUENCY\n";
+		toReturn = toReturn + "No idea what these numbers are\n\n";
+		//      ???
+
+		return toReturn;
+	}
+
+	public String printLocSpeciesCompositionSimiliarity()
+	{
+		String toReturn = "";
+
+		toReturn = toReturn + "LOCATION-SPECIES COMPOSITION SIMILARITY (Jaccard Similarity Index)\n";
+		toReturn = toReturn + "  Is species present at this location? yes=1, no=0\n";
+		toReturn = toReturn + "  1.00 means locations are identical; 0.00 means locations have no species in common\n";
+		toReturn = toReturn + "  Location, location, JSI, number of species at each location, and number of species in common\n\n";
+		toReturn = toReturn + "  TOP 10 LOCATION PAIRS MOST SIMILAR IN SPECIES COMPOSITION\n";
+		toReturn = toReturn + "No idea what these numbers are\n\n";
+		toReturn = toReturn + "  TOP 10 LOCATION PAIRS MOST DIFFERENT IN SPECIES COMPOSITION\n";
+		toReturn = toReturn + "No idea what these numbers are\n\n";
+		//      ???
+
+		return toReturn;
+	}
 }
