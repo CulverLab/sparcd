@@ -56,31 +56,34 @@ public class DetectionRateFormatter extends TextFormatter
 
 				List<ImageEntry> byYearLocation = new PredicateBuilder().locationOnly(location).query(byYear);
 
-				ImageEntry first = byYearLocation.get(0);
-				ImageEntry last = byYearLocation.get(byYearLocation.size() - 1);
-				Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-				Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-				Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-				Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-				Integer firstMonth = firstCal.get(Calendar.MONTH);
-				Integer lastMonth = lastCal.get(Calendar.MONTH);
-				Calendar calendar = Calendar.getInstance();
 				Integer totalDaysForLoc = 0;
-				if (firstMonth == lastMonth)
-					totalDaysForLoc = totalDaysForLoc + lastDay - firstDay + 1;
-				else
+				if (!byYearLocation.isEmpty())
 				{
-					totalDaysForLoc = totalDaysForLoc + firstDaysInMonth - (firstDay - 1);
-					firstMonth++;
-					while (firstMonth < lastMonth)
+					ImageEntry first = byYearLocation.get(0);
+					ImageEntry last = byYearLocation.get(byYearLocation.size() - 1);
+					Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
+					Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
+					Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
+					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
+					Integer firstMonth = firstCal.get(Calendar.MONTH);
+					Integer lastMonth = lastCal.get(Calendar.MONTH);
+					Calendar calendar = Calendar.getInstance();
+					if (firstMonth == lastMonth)
+						totalDaysForLoc = totalDaysForLoc + lastDay - firstDay + 1;
+					else
 					{
-						calendar.set(year, firstMonth, 1);
-						totalDaysForLoc = totalDaysForLoc + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+						totalDaysForLoc = totalDaysForLoc + firstDaysInMonth - (firstDay - 1);
 						firstMonth++;
+						while (firstMonth < lastMonth)
+						{
+							calendar.set(year, firstMonth, 1);
+							totalDaysForLoc = totalDaysForLoc + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							firstMonth++;
+						}
+						totalDaysForLoc = totalDaysForLoc + lastDay;
 					}
-					totalDaysForLoc = totalDaysForLoc + lastDay;
 				}
 
 				totalDays = totalDays + totalDaysForLoc;
@@ -152,30 +155,33 @@ public class DetectionRateFormatter extends TextFormatter
 			{
 				List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(byLocation);
 
-				ImageEntry first = yearsPics.get(0);
-				ImageEntry last = yearsPics.get(yearsPics.size() - 1);
-				Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-				Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-				Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-				Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-				Integer firstMonth = firstCal.get(Calendar.MONTH);
-				Integer lastMonth = lastCal.get(Calendar.MONTH);
-				Calendar calendar = Calendar.getInstance();
-				if (firstMonth == lastMonth)
-					totalDaysLoc = totalDaysLoc + (lastDay - firstDay + 1);
-				else
+				if (!yearsPics.isEmpty())
 				{
-					totalDaysLoc = totalDaysLoc + (firstDaysInMonth - (firstDay - 1));
-					firstMonth++;
-					while (firstMonth < lastMonth)
+					ImageEntry first = yearsPics.get(0);
+					ImageEntry last = yearsPics.get(yearsPics.size() - 1);
+					Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
+					Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
+					Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
+					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
+					Integer firstMonth = firstCal.get(Calendar.MONTH);
+					Integer lastMonth = lastCal.get(Calendar.MONTH);
+					Calendar calendar = Calendar.getInstance();
+					if (firstMonth == lastMonth)
+						totalDaysLoc = totalDaysLoc + (lastDay - firstDay + 1);
+					else
 					{
-						calendar.set(year, firstMonth, 1);
-						totalDaysLoc = totalDaysLoc + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+						totalDaysLoc = totalDaysLoc + (firstDaysInMonth - (firstDay - 1));
 						firstMonth++;
+						while (firstMonth < lastMonth)
+						{
+							calendar.set(year, firstMonth, 1);
+							totalDaysLoc = totalDaysLoc + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							firstMonth++;
+						}
+						totalDaysLoc = totalDaysLoc + lastDay;
 					}
-					totalDaysLoc = totalDaysLoc + lastDay;
 				}
 			}
 
@@ -239,31 +245,34 @@ public class DetectionRateFormatter extends TextFormatter
 
 				List<ImageEntry> byYearLocation = new PredicateBuilder().locationOnly(location).query(byYear);
 
-				ImageEntry first = byYearLocation.get(0);
-				ImageEntry last = byYearLocation.get(byYearLocation.size() - 1);
-				Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-				Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-				Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-				Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-				Integer firstMonth = firstCal.get(Calendar.MONTH);
-				Integer lastMonth = lastCal.get(Calendar.MONTH);
-				Calendar calendar = Calendar.getInstance();
 				Integer totalDaysForLoc = 0;
-				if (firstMonth == lastMonth)
-					totalDaysForLoc = totalDaysForLoc + lastDay - firstDay + 1;
-				else
+				if (!byYearLocation.isEmpty())
 				{
-					totalDaysForLoc = totalDaysForLoc + firstDaysInMonth - (firstDay - 1);
-					firstMonth++;
-					while (firstMonth < lastMonth)
+					ImageEntry first = byYearLocation.get(0);
+					ImageEntry last = byYearLocation.get(byYearLocation.size() - 1);
+					Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
+					Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
+					Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
+					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
+					Integer firstMonth = firstCal.get(Calendar.MONTH);
+					Integer lastMonth = lastCal.get(Calendar.MONTH);
+					Calendar calendar = Calendar.getInstance();
+					if (firstMonth == lastMonth)
+						totalDaysForLoc = totalDaysForLoc + lastDay - firstDay + 1;
+					else
 					{
-						calendar.set(year, firstMonth, 1);
-						totalDaysForLoc = totalDaysForLoc + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+						totalDaysForLoc = totalDaysForLoc + firstDaysInMonth - (firstDay - 1);
 						firstMonth++;
+						while (firstMonth < lastMonth)
+						{
+							calendar.set(year, firstMonth, 1);
+							totalDaysForLoc = totalDaysForLoc + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							firstMonth++;
+						}
+						totalDaysForLoc = totalDaysForLoc + lastDay;
 					}
-					totalDaysForLoc = totalDaysForLoc + lastDay;
 				}
 
 				totalDays = totalDays + totalDaysForLoc;
@@ -329,30 +338,33 @@ public class DetectionRateFormatter extends TextFormatter
 			{
 				List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(byLocation);
 
-				ImageEntry first = yearsPics.get(0);
-				ImageEntry last = yearsPics.get(yearsPics.size() - 1);
-				Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-				Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-				Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-				Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-				Integer firstMonth = firstCal.get(Calendar.MONTH);
-				Integer lastMonth = lastCal.get(Calendar.MONTH);
-				Calendar calendar = Calendar.getInstance();
-				if (firstMonth == lastMonth)
-					totalDaysLoc = totalDaysLoc + (lastDay - firstDay + 1);
-				else
+				if (!yearsPics.isEmpty())
 				{
-					totalDaysLoc = totalDaysLoc + (firstDaysInMonth - (firstDay - 1));
-					firstMonth++;
-					while (firstMonth < lastMonth)
+					ImageEntry first = yearsPics.get(0);
+					ImageEntry last = yearsPics.get(yearsPics.size() - 1);
+					Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
+					Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
+					Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
+					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
+					Integer firstMonth = firstCal.get(Calendar.MONTH);
+					Integer lastMonth = lastCal.get(Calendar.MONTH);
+					Calendar calendar = Calendar.getInstance();
+					if (firstMonth == lastMonth)
+						totalDaysLoc = totalDaysLoc + (lastDay - firstDay + 1);
+					else
 					{
-						calendar.set(year, firstMonth, 1);
-						totalDaysLoc = totalDaysLoc + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+						totalDaysLoc = totalDaysLoc + (firstDaysInMonth - (firstDay - 1));
 						firstMonth++;
+						while (firstMonth < lastMonth)
+						{
+							calendar.set(year, firstMonth, 1);
+							totalDaysLoc = totalDaysLoc + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							firstMonth++;
+						}
+						totalDaysLoc = totalDaysLoc + lastDay;
 					}
-					totalDaysLoc = totalDaysLoc + lastDay;
 				}
 			}
 

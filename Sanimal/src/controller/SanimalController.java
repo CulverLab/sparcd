@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.Collections;
 import java.util.Iterator;
@@ -19,6 +21,8 @@ import javax.swing.JOptionPane;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.apache.commons.lang3.time.DateUtils;
 
 import model.ImageEntry;
 import model.Location;
@@ -55,12 +59,13 @@ public class SanimalController
 			{
 				SanimalController.this.selectedItemUpdated();
 				List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
-				if (selectedImages.size() == 1)
-				{
-					ImageEntry selected = selectedImages.get(0);
-					sanimalView.setOutputText("Image Name = " + selected.getImageFile().getName() + "\n" + "Image Location = " + (selected.getLocationTaken() == null ? "Unknown" : selected.getLocationTaken().formattedString()) + "\n" + "Image Date Taken = " + selected.getDateTakenFormatted() + "\n"
-							+ "Image Species = ");
-				}
+				//				if (selectedImages.size() == 1)
+				//				{
+				//					ImageEntry selected = selectedImages.get(0);
+				//					sanimalView.setOutputText("Image Name = " + selected.getImageFile().getName() + "\n" + "Image Location = " + (selected.getLocationTaken() == null ? "Unknown" : selected.getLocationTaken().formattedString()) + "\n" + "Image Date Taken = " + selected.getDateTakenFormatted() + "\n"
+				//							+ "Image Species = ");
+				//				}
+				sanimalData.getTimelineData().updateList(selectedImages);
 			}
 		});
 		// When the user wants to load in images
@@ -274,6 +279,41 @@ public class SanimalController
 					else
 						JOptionPane.showMessageDialog(sanimalView, "There was an error when saving the excel file.");
 				}
+			}
+		});
+		// When the user selects the timeline
+		sanimalView.addALToPrgDataShow(new MouseListener()
+		{
+			@Override
+			public void mouseReleased(MouseEvent event)
+			{
+				double percentage = (double) event.getX() / (double) event.getComponent().getWidth();
+				if (percentage < 0)
+					percentage = 0;
+				if (percentage > 1)
+					percentage = 1;
+				List<ImageEntry> images = sanimalData.getTimelineData().imageListByPercent(percentage, DateUtils.MILLIS_PER_DAY * 10);
+				sanimalView.setImagesDrawnOnMap(images);
+			}
+
+			@Override
+			public void mousePressed(MouseEvent event)
+			{
+			}
+
+			@Override
+			public void mouseExited(MouseEvent event)
+			{
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent event)
+			{
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent event)
+			{
 			}
 		});
 		sanimalView.setVisible(true);

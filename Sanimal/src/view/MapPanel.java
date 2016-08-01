@@ -228,4 +228,9 @@ public class MapPanel extends JPanel
 	{
 		return this.mapViewer;
 	}
+
+	public JProgressBar getPrgDataShow()
+	{
+		return this.prgDataShow;
+	}
 }

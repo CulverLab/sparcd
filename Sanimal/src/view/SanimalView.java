@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +37,7 @@ import model.ImageEntry;
 import model.Location;
 import model.Species;
 import model.SpeciesEntry;
-import view.map.SwingComponentOverlay;
+import view.map.SanimalMapMarkerOverlay;
 
 public class SanimalView extends JFrame
 {
@@ -346,6 +348,16 @@ public class SanimalView extends JFrame
 		this.btnToExcel.addActionListener(listener);
 	}
 
+	public void addALToPrgDataShow(MouseListener listener)
+	{
+		this.map.getPrgDataShow().addMouseListener(listener);
+	}
+
+	public void addALToPrgDataShow(MouseMotionListener listener)
+	{
+		this.map.getPrgDataShow().addMouseMotionListener(listener);
+	}
+
 	public Location getSelectedLocation()
 	{
 		if (this.cbxLocation.getSelectedIndex() == -1)
@@ -428,7 +440,7 @@ public class SanimalView extends JFrame
 		for (Location location : locations)
 		{
 			this.cbxLocation.addItem(location);
-			this.map.getMapViewer().addMarker(new SwingComponentOverlay(location.toGeoPosition(), new SanimalMapMarker()));
+			this.map.getMapViewer().addMarker(new SanimalMapMarkerOverlay(location, new SanimalMapMarker()));
 		}
 	}
 
@@ -452,6 +464,11 @@ public class SanimalView extends JFrame
 				for (SpeciesEntry entry : speciesEntries)
 					items.addElement(entry);
 		}
+	}
+
+	public void setImagesDrawnOnMap(List<ImageEntry> images)
+	{
+		this.map.getMapViewer().setImagesDrawnOnMap(images);
 	}
 
 	public void setImageList(ImageDirectory imageDirectory)

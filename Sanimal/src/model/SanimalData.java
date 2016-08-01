@@ -15,6 +15,7 @@ public class SanimalData
 	private SpeciesData speciesData = new SpeciesData();
 	private SanimalTextOutputFormatter outputFormatter = new SanimalTextOutputFormatter();
 	private ExcelFormatter excelFormatter = new ExcelFormatter();
+	private TimelineData timelineData = new TimelineData();
 
 	public ImageImporterData getImageData()
 	{
@@ -39,5 +40,10 @@ public class SanimalData
 	public ExcelFormatter getExcelFormatter()
 	{
 		return excelFormatter;
+	}
+
+	public TimelineData getTimelineData()
+	{
+		return timelineData;
 	}
 }

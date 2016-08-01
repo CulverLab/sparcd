@@ -5,73 +5,69 @@
  */
 package view;
 
-import java.awt.Image;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.Graphics;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
+import javax.swing.JPanel;
 
-public class SanimalMapMarker extends JLabel
+public class SanimalMapMarker extends JPanel
 {
-	private static final ImageIcon BASE_ICON_NORMAL = new ImageIcon(SanimalMapMarker.class.getResource("/images/marker.png"));
-	private static final ImageIcon BASE_ICON_HIGHLIGHT = new ImageIcon(SanimalMapMarker.class.getResource("/images/markerHighlight.png"));
-	private static final Integer BASE_WIDTH_HEIGHT = 75;
-	private ImageIcon normalIcon = BASE_ICON_NORMAL;
-	private ImageIcon highlightedIcon = BASE_ICON_HIGHLIGHT;
-	private boolean hovered = false;
+	private static final Integer BASE_WIDTH_HEIGHT = 300;
+	private List<SanimalMapImageMarker> imageMarkers = new ArrayList<SanimalMapImageMarker>();
+	private SanimalMapLocationMarker centerMarker;
 
 	public SanimalMapMarker()
 	{
 		super();
 		this.setLayout(null);
 		this.setBounds(0, 0, BASE_WIDTH_HEIGHT, BASE_WIDTH_HEIGHT);
-		this.updateIconsByScale(1.0);
-		this.addMouseListener(new MouseListener()
+
+		centerMarker = new SanimalMapLocationMarker();
+		centerMarker.setLocation(BASE_WIDTH_HEIGHT / 2 - centerMarker.getWidth() / 2, BASE_WIDTH_HEIGHT / 2 - centerMarker.getHeight() / 2);
+		this.add(centerMarker);
+	}
+
+	public void clearMarkers()
+	{
+		for (SanimalMapImageMarker marker : imageMarkers)
+			this.remove(marker);
+		imageMarkers.clear();
+	}
+
+	public void addMarker(SanimalMapImageMarker marker)
+	{
+		this.add(marker);
+		this.imageMarkers.add(marker);
+	}
+
+	public void refreshLayout()
+	{
+		Integer numMarkers = imageMarkers.size();
+		Double temp = 360.0 / numMarkers;
+		for (int i = 0; i < numMarkers; i++)
 		{
-			@Override
-			public void mouseReleased(MouseEvent e)
-			{
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e)
-			{
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e)
-			{
-				SanimalMapMarker.this.setIcon(normalIcon);
-				hovered = false;
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e)
-			{
-				SanimalMapMarker.this.setIcon(highlightedIcon);
-				hovered = true;
-			}
-
-			@Override
-			public void mouseClicked(MouseEvent e)
-			{
-			}
-		});
-		this.setVisible(true);
+			SanimalMapImageMarker current = imageMarkers.get(i);
+			Double degrees = i * temp;
+			Integer newX = (int) Math.round(BASE_WIDTH_HEIGHT / 2 - current.getWidth() / 2 + BASE_WIDTH_HEIGHT / 3 * Math.sin(Math.toRadians(degrees)));
+			Integer newY = (int) Math.round(BASE_WIDTH_HEIGHT / 2 - current.getHeight() / 2 + BASE_WIDTH_HEIGHT / 3 * -Math.cos(Math.toRadians(degrees)));
+			current.setLocation(newX, newY);
+		}
 	}
 
 	public void updateIconsByScale(double scale)
 	{
-		if (scale <= 1.0 && scale > 0.0)
-		{
-			normalIcon = new ImageIcon(BASE_ICON_NORMAL.getImage().getScaledInstance((int) Math.round(BASE_WIDTH_HEIGHT * scale), (int) Math.round(BASE_WIDTH_HEIGHT * scale), Image.SCALE_SMOOTH));
-			highlightedIcon = new ImageIcon(BASE_ICON_HIGHLIGHT.getImage().getScaledInstance((int) Math.round(BASE_WIDTH_HEIGHT * scale), (int) Math.round(BASE_WIDTH_HEIGHT * scale), Image.SCALE_SMOOTH));
-		}
-		if (hovered)
-			this.setIcon(normalIcon);
-		else
-			this.setIcon(highlightedIcon);
-		this.setBounds((int) Math.round(this.getBounds().getX()), (int) Math.round(this.getBounds().getY()), (int) Math.round(BASE_WIDTH_HEIGHT * scale), (int) Math.round(BASE_WIDTH_HEIGHT * scale));
+		//this.centerMarker.updateIconsByScale(scale);
+	}
+
+	public SanimalMapLocationMarker getCenterMarker()
+	{
+		return centerMarker;
+	}
+
+	@Override
+	protected void paintComponent(Graphics g)
+	{
+		//super.paintComponent(g);
 	}
 }

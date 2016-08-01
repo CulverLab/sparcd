@@ -14,7 +14,7 @@ import javax.swing.JComponent;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.viewer.WaypointPainter;
 
-public class SwingComponentOverlayPainter extends WaypointPainter<SwingComponentOverlay>
+public class SanimalMapMarkerOverlayPainter extends WaypointPainter<SanimalMapMarkerOverlay>
 {
 	@Override
 	protected void doPaint(Graphics2D g, JXMapViewer jxMapViewer, int width, int height)
@@ -26,7 +26,7 @@ public class SwingComponentOverlayPainter extends WaypointPainter<SwingComponent
 			int componentX = (int) (point.getX() - rectangle.getX());
 			int componentY = (int) (point.getY() - rectangle.getY());
 			JComponent component = cameraTrap.getComponent();
-			component.setLocation(componentX - component.getWidth() / 2, componentY - component.getHeight() / 2);
+			component.setLocation(componentX - component.getWidth() / 2, componentY - component.getHeight());
 		}
 	}
 }

@@ -38,36 +38,32 @@ public class ActPerAbuLocFormatter extends TextFormatter
 		String toReturn = "";
 
 		toReturn = toReturn + "NUMBER OF PICTURES AND FILTERED PICTURES PER YEAR\n";
-		toReturn = toReturn + "        Year       All Activity   Period Abundance Locations\n";
+		toReturn = toReturn + "        Year       All Activity   Period Abundance\n";
 
 		int imageTotal = 0;
 		int activityTotal = 0;
 		int periodTotal = 0;
 		int abundanceTotal = 0;
-		int locationTotal = 0;
 		for (Integer year : analysis.getAllImageYears())
 		{
 			int yearImageTotal = 0;
 			int yearActivityTotal = 0;
 			int yearPeriodTotal = 0;
 			int yearAbundanceTotal = 0;
-			int yearLocationTotal = 0;
 			for (Species species : analysis.getAllImageSpecies())
 			{
 				yearImageTotal = yearImageTotal + analysis.getYearToNumberImages().get(species).getOrDefault(year, -1);
 				yearActivityTotal = yearActivityTotal + analysis.getYearToActivity().get(species).getOrDefault(year, -1);
 				yearPeriodTotal = yearPeriodTotal + analysis.getYearToPeriod().get(species).getOrDefault(year, -1);
 				yearAbundanceTotal = yearAbundanceTotal + analysis.getYearToAbundance().get(species).getOrDefault(year, -1);
-				yearLocationTotal = yearLocationTotal + analysis.getYearToLocations().get(species).getOrDefault(year, new ArrayList<Location>()).size();
 			}
 			imageTotal = imageTotal + yearImageTotal;
 			activityTotal = activityTotal + yearActivityTotal;
 			periodTotal = periodTotal + yearPeriodTotal;
 			abundanceTotal = abundanceTotal + yearAbundanceTotal;
-			locationTotal = locationTotal + yearLocationTotal;
-			toReturn = toReturn + String.format("        %4d   %7d  %7d  %7d  %7d  %7d\n", year, yearImageTotal, yearActivityTotal, yearPeriodTotal, yearAbundanceTotal, yearLocationTotal);
+			toReturn = toReturn + String.format("        %4d   %7d  %7d  %7d  %7d\n", year, yearImageTotal, yearActivityTotal, yearPeriodTotal, yearAbundanceTotal);
 		}
-		toReturn = toReturn + String.format("        Total  %7d  %7d  %7d  %7d  %7d\n", imageTotal, activityTotal, periodTotal, abundanceTotal, locationTotal);
+		toReturn = toReturn + String.format("        Total  %7d  %7d  %7d  %7d\n", imageTotal, activityTotal, periodTotal, abundanceTotal);
 
 		toReturn = toReturn + "\n";
 
@@ -127,7 +123,7 @@ public class ActPerAbuLocFormatter extends TextFormatter
 		{
 			Integer speciesPeriodTotal = 0;
 			for (Integer year : analysis.getAllImageYears())
-				speciesPeriodTotal = speciesPeriodTotal + analysis.getYearToPeriod().get(species).get(year);
+				speciesPeriodTotal = speciesPeriodTotal + analysis.getYearToPeriod().get(species).getOrDefault(year, 0);
 			toReturn = toReturn + String.format("  %-28s %5d  %7.2f\n", species.getName(), speciesPeriodTotal, (speciesPeriodTotal.doubleValue() / periodTotal) * 100.0);
 		}
 		toReturn = toReturn + String.format("  Total pictures               %5d   100.00\n", periodTotal);

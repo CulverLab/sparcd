@@ -27,14 +27,16 @@ import org.jxmapviewer.viewer.TileFactory;
 import org.jxmapviewer.viewer.WaypointPainter;
 
 import library.ComboBoxFullMenu;
+import model.ImageEntry;
 import view.map.GoogleMapsTileFactoryInfo;
+import view.map.SanimalMapMarkerOverlay;
+import view.map.SanimalMapMarkerOverlayPainter;
 import view.map.SwingComponentOverlay;
-import view.map.SwingComponentOverlayPainter;
 
 public class SanimalMap extends JXMapViewer
 {
-	private WaypointPainter<SwingComponentOverlay> painter = new SwingComponentOverlayPainter();
-	private Set<SwingComponentOverlay> locations = new HashSet<SwingComponentOverlay>();
+	private WaypointPainter<SanimalMapMarkerOverlay> painter = new SanimalMapMarkerOverlayPainter();
+	private Set<SanimalMapMarkerOverlay> locations = new HashSet<SanimalMapMarkerOverlay>();
 
 	public SanimalMap(ComboBoxFullMenu<String> cbxMapProviders)
 	{
@@ -128,7 +130,7 @@ public class SanimalMap extends JXMapViewer
 		this.setOverlayPainter(painter);
 	}
 
-	public void addMarker(SwingComponentOverlay marker)
+	public void addMarker(SanimalMapMarkerOverlay marker)
 	{
 		// If we can add the marker, add it, then add the component to the screen. Then set the waypoint painter
 		if (locations.add(marker))
@@ -139,7 +141,7 @@ public class SanimalMap extends JXMapViewer
 		}
 	}
 
-	public void removeMarker(SwingComponentOverlay marker)
+	public void removeMarker(SanimalMapMarkerOverlay marker)
 	{
 		// IF we can remove this marker remove it, then remove the component from the screen
 		if (locations.remove(marker))
@@ -162,13 +164,23 @@ public class SanimalMap extends JXMapViewer
 	public void setMarkerScale(double scale)
 	{
 		if (scale <= 1.0 && scale >= 0.0)
+			for (SanimalMapMarkerOverlay overlay : locations)
+				overlay.getComponent().updateIconsByScale(scale);
+	}
+
+	public void setImagesDrawnOnMap(List<ImageEntry> images)
+	{
+		for (SanimalMapMarkerOverlay mapMarkerOverlay : locations)
 		{
-			for (SwingComponentOverlay overlay : locations)
-				if (overlay.getComponent() instanceof SanimalMapMarker)
-				{
-					SanimalMapMarker marker = (SanimalMapMarker) overlay.getComponent();
-					marker.updateIconsByScale(scale);
-				}
+			SanimalMapMarker marker = mapMarkerOverlay.getComponent();
+			marker.clearMarkers();
+		}
+		for (SanimalMapMarkerOverlay mapMarkerOverlay : locations)
+		{
+			SanimalMapMarker marker = mapMarkerOverlay.getComponent();
+			for (ImageEntry image : images)
+				marker.addMarker(new SanimalMapImageMarker(image));
+			marker.refreshLayout();
 		}
 	}
 }

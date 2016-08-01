@@ -252,7 +252,7 @@ public class SanimalTextOutputFormatter
 
 		// ELAPSED TIME
 
-		toReturn = toReturn + "ELAPSED TIME " + String.format("%10.3f ", (double) (System.currentTimeMillis() - elapsedTime)) + "SECONDS";
+		toReturn = toReturn + "ELAPSED TIME " + String.format("%10.3f ", ((System.currentTimeMillis() - elapsedTime) / 1000D)) + "SECONDS";
 
 		return toReturn;
 

@@ -214,7 +214,7 @@ public class OccouranceFormatter extends TextFormatter
 		toReturn = toReturn + "  Species naive location occupancy proportion\n";
 		toReturn = toReturn + "  To create occupancy matrix run program OccupancyMatrix\n";
 		toReturn = toReturn + "                               Fraction of locations   Number of locations\n";
-		toReturn = toReturn + "Species                              Occupied             Occupied (" + String.format("%3d", analysis.getAllImageLocations().size()) + ")";
+		toReturn = toReturn + "Species                              Occupied             Occupied (" + String.format("%3d", analysis.getAllImageLocations().size()) + ")\n";
 
 		Integer totalLocations = analysis.getAllImageLocations().size();
 
@@ -230,7 +230,7 @@ public class OccouranceFormatter extends TextFormatter
 					locationsWithSpecies = locationsWithSpecies + 1;
 			}
 
-			toReturn = toReturn + String.format("%-28s     %5.3f       3d\n", species.getName(), (double) locationsWithSpecies / totalLocations + locationsWithSpecies);
+			toReturn = toReturn + String.format("%-28s           %5.3f                  %3d\n", species.getName(), (double) locationsWithSpecies / totalLocations, locationsWithSpecies);
 		}
 
 		toReturn = toReturn + "\n";

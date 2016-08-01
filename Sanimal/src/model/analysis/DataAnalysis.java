@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.DateUtils;
 
-import library.MoonCalculation;
 import library.MoonCalculator;
 import model.ImageEntry;
 import model.Location;
@@ -51,7 +50,6 @@ public class DataAnalysis
 	private Map<Integer, Set<Location>> yearToLocationList = new HashMap<Integer, Set<Location>>();
 	private List<Date> fullMoons = new ArrayList<Date>();
 	private List<Date> newMoons = new ArrayList<Date>();
-	private static final MoonCalculation MOON_CALC = new MoonCalculation();
 
 	public DataAnalysis(List<ImageEntry> images, Integer eventInterval)
 	{

@@ -12,7 +12,7 @@ import org.jxmapviewer.viewer.GeoPosition;
 
 public class SwingComponentOverlay extends DefaultWaypoint
 {
-	private final JComponent component;
+	protected final JComponent component;
 
 	public SwingComponentOverlay(GeoPosition coord, JComponent component)
 	{
