@@ -5,17 +5,17 @@
  */
 package view;
 
-import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 
-public class SanimalMapMarker extends JPanel
+public class SanimalMapMarker extends JComponent
 {
 	private static final Integer BASE_WIDTH_HEIGHT = 300;
 	private List<SanimalMapImageMarker> imageMarkers = new ArrayList<SanimalMapImageMarker>();
 	private SanimalMapLocationMarker centerMarker;
+	private Double prevScale = 1.0;
 
 	public SanimalMapMarker()
 	{
@@ -31,7 +31,10 @@ public class SanimalMapMarker extends JPanel
 	public void clearMarkers()
 	{
 		for (SanimalMapImageMarker marker : imageMarkers)
+		{
+			marker.noLongerNeedsIcon();
 			this.remove(marker);
+		}
 		imageMarkers.clear();
 	}
 
@@ -57,17 +60,31 @@ public class SanimalMapMarker extends JPanel
 
 	public void updateIconsByScale(double scale)
 	{
-		//this.centerMarker.updateIconsByScale(scale);
+		if (scale <= 1.0 && scale > 0.1)
+		{
+			// Sanimal map scale
+			Integer originalX = (int) Math.round(1.0 / prevScale * this.getX());
+			Integer originalY = (int) Math.round(1.0 / prevScale * this.getY());
+			this.setBounds((int) Math.round(originalX * scale), (int) Math.round(originalY * scale), (int) Math.round(BASE_WIDTH_HEIGHT * scale), (int) Math.round(BASE_WIDTH_HEIGHT * scale));
+
+			// Update center marker 
+			this.centerMarker.updateIconsByScale(scale);
+
+			// Update icon sizes
+			for (SanimalMapImageMarker imageMarker : imageMarkers)
+				imageMarker.updateIconsByScale(scale);
+
+			prevScale = scale;
+			this.setVisible(true);
+		}
+		else
+		{
+			this.setVisible(false);
+		}
 	}
 
 	public SanimalMapLocationMarker getCenterMarker()
 	{
 		return centerMarker;
-	}
-
-	@Override
-	protected void paintComponent(Graphics g)
-	{
-		//super.paintComponent(g);
 	}
 }

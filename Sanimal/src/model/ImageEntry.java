@@ -91,8 +91,7 @@ public class ImageEntry
 
 	public ImageIcon createIcon(int width, int height)
 	{
-		ImageIcon icon = new ImageIcon(this.imageFile.getAbsolutePath());
-		return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH));
+		return ImageLoadingUtils.createImageIcon(imageFile, width, height, Image.SCALE_SMOOTH);
 	}
 
 	public void renameByDate()

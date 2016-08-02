@@ -182,5 +182,6 @@ public class SanimalMap extends JXMapViewer
 				marker.addMarker(new SanimalMapImageMarker(image));
 			marker.refreshLayout();
 		}
+		this.repaint();
 	}
 }

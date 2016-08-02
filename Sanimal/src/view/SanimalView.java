@@ -2,10 +2,12 @@ package view;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,9 +33,12 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import org.jxmapviewer.viewer.GeoPosition;
+
 import library.ComboBoxFullMenu;
 import model.ImageDirectory;
 import model.ImageEntry;
+import model.ImageLoadingUtils;
 import model.Location;
 import model.Species;
 import model.SpeciesEntry;
@@ -41,6 +46,8 @@ import view.map.SanimalMapMarkerOverlay;
 
 public class SanimalView extends JFrame
 {
+	private static ImageIcon DEFAULT_ICON = null;
+
 	private JPanel pnlImageBrowser;
 	private JTree treImages;
 	private JTextField txtDate;
@@ -96,6 +103,9 @@ public class SanimalView extends JFrame
 		lblThumbnail.setBounds(278, 11, 391, 300);
 		lblThumbnail.setBorder(new LineBorder(Color.BLACK));
 		this.getContentPane().add(lblThumbnail);
+
+		if (DEFAULT_ICON == null)
+			DEFAULT_ICON = ImageLoadingUtils.createImageIcon(new File(SanimalMapImageMarker.class.getResource("/images/loadingImageIcon.png").getFile()), this.lblThumbnail.getWidth(), this.lblThumbnail.getHeight(), Image.SCALE_SMOOTH);
 
 		pnlPropertyList = new JPanel();
 		pnlPropertyList.setLayout(null);
@@ -401,7 +411,13 @@ public class SanimalView extends JFrame
 	public void setThumbnailImage(ImageEntry image)
 	{
 		if (image != null)
-			this.lblThumbnail.setIcon(image.createIcon(this.lblThumbnail.getWidth(), this.lblThumbnail.getHeight()));
+		{
+			//this.lblThumbnail.setIcon(DEFAULT_ICON);
+			SanimalIconLoader.getInstance().scheduleTask(() ->
+			{
+				this.lblThumbnail.setIcon(image.createIcon(this.lblThumbnail.getWidth(), this.lblThumbnail.getHeight()));
+			});
+		}
 		else
 			this.lblThumbnail.setIcon(null);
 	}
@@ -414,10 +430,7 @@ public class SanimalView extends JFrame
 	public void setLocation(Location imageLoc)
 	{
 		if (imageLoc != null)
-		{
 			this.cbxLocation.setSelectedItem(imageLoc);
-			this.map.getMapViewer().setCenterPosition(imageLoc.toGeoPosition());
-		}
 		else
 			this.cbxLocation.setSelectedIndex(-1);
 		this.refreshLocationFields();
@@ -469,6 +482,11 @@ public class SanimalView extends JFrame
 	public void setImagesDrawnOnMap(List<ImageEntry> images)
 	{
 		this.map.getMapViewer().setImagesDrawnOnMap(images);
+	}
+
+	public void centerMapOn(GeoPosition geoPosition)
+	{
+		this.map.getMapViewer().setCenterPosition(geoPosition);
 	}
 
 	public void setImageList(ImageDirectory imageDirectory)

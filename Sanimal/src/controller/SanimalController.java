@@ -11,6 +11,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.util.Collections;
 import java.util.Iterator;
@@ -23,6 +24,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.lang3.time.StopWatch;
 
 import model.ImageEntry;
 import model.Location;
@@ -36,6 +38,7 @@ public class SanimalController
 {
 	private final SanimalView sanimalView;
 	private final SanimalData sanimalData;
+	private static final long MILLIS_BETWEEN_CHECKS = 500;
 
 	// DEBUG
 	// Loc 1: 32.273302, -110.836417
@@ -97,6 +100,7 @@ public class SanimalController
 						for (ImageEntry selectedImage : sanimalView.getSelectedImageEntries())
 							selectedImage.setLocationTaken(selected);
 					sanimalView.setLocation(selected);
+					sanimalView.centerMapOn(selected.toGeoPosition());
 				}
 			}
 		});
@@ -292,7 +296,7 @@ public class SanimalController
 					percentage = 0;
 				if (percentage > 1)
 					percentage = 1;
-				List<ImageEntry> images = sanimalData.getTimelineData().imageListByPercent(percentage, DateUtils.MILLIS_PER_DAY * 10);
+				List<ImageEntry> images = sanimalData.getTimelineData().imageListByPercent(percentage, DateUtils.MILLIS_PER_DAY / 2);
 				sanimalView.setImagesDrawnOnMap(images);
 			}
 
@@ -314,6 +318,33 @@ public class SanimalController
 			@Override
 			public void mouseClicked(MouseEvent event)
 			{
+			}
+		});
+		// When the user drags the timeline
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
+		sanimalView.addALToPrgDataShow(new MouseMotionListener()
+		{
+			@Override
+			public void mouseMoved(MouseEvent event)
+			{
+			}
+
+			@Override
+			public void mouseDragged(MouseEvent event)
+			{
+				if (stopWatch.getTime() > MILLIS_BETWEEN_CHECKS)
+				{
+					double percentage = (double) event.getX() / (double) event.getComponent().getWidth();
+					if (percentage < 0)
+						percentage = 0;
+					if (percentage > 1)
+						percentage = 1;
+					List<ImageEntry> images = sanimalData.getTimelineData().imageListByPercent(percentage, DateUtils.MILLIS_PER_DAY / 2);
+					sanimalView.setImagesDrawnOnMap(images);
+					stopWatch.reset();
+					stopWatch.start();
+				}
 			}
 		});
 		sanimalView.setVisible(true);
