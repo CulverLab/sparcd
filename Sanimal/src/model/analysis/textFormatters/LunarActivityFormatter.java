@@ -53,6 +53,8 @@ public class LunarActivityFormatter extends TextFormatter
 
 			double totalDifference = 0;
 
+			String toAdd = "";
+
 			// 24 hrs
 			for (int i = 0; i < 24; i++)
 			{
@@ -73,18 +75,19 @@ public class LunarActivityFormatter extends TextFormatter
 				double difference = frequencyFull - frequencyNew;
 				totalDifference = totalDifference + difference * difference;
 
-				toReturn = toReturn + String.format("%02d:00-%02d:00      %5d      %5.3f      %5d      %5.3f\n", i, i + 1, numImagesFull, frequencyFull, numImagesNew, frequencyNew);
+				toAdd = toAdd + String.format("%02d:00-%02d:00      %5d      %5.3f      %5d      %5.3f\n", i, i + 1, numImagesFull, frequencyFull, numImagesNew, frequencyNew);
 			}
 
 			totalDifference = Math.sqrt(totalDifference);
 
-			toReturn = toReturn + String.format("Total            %5d                 %5d\n", numImagesTotalFull, numImagesTotalNew);
-			toReturn = toReturn + String.format("Difference       %5.2f\n", totalDifference);
+			toAdd = toAdd + String.format("Total            %5d                 %5d\n", numImagesTotalFull, numImagesTotalNew);
+			toAdd = toAdd + String.format("Difference       %5.2f\n", totalDifference);
 
-			toReturn = toReturn + "\n";
+			toAdd = toAdd + "\n";
+
+			if (totalDifference != 0)
+				toReturn = toReturn + toAdd;
 		}
-
-		toReturn = toReturn + "\n";
 
 		return toReturn;
 	}

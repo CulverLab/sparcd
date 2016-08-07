@@ -10,13 +10,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.DateUtils;
 
@@ -28,31 +22,18 @@ import model.SpeciesEntry;
 
 public class DataAnalysis
 {
-	private List<Location> allImageLocations = new ArrayList<Location>();
 	private boolean nullLocationsFound = false;
+	private List<Location> allImageLocations = new ArrayList<Location>();
 	private List<Species> allImageSpecies = new ArrayList<Species>();
 	private List<Integer> allImageYears = new ArrayList<Integer>();
 	private List<ImageEntry> imagesSortedByDate;
-	private Map<Species, ImageEntry> speciesToFirstImage = new HashMap<Species, ImageEntry>();
-	private Map<Species, ImageEntry> speciesToLastImage = new HashMap<Species, ImageEntry>();
-	private Map<Location, ImageEntry> locationToFirstImage = new HashMap<Location, ImageEntry>();
-	private Map<Location, ImageEntry> locationToLastImage = new HashMap<Location, ImageEntry>();
-	private Map<Species, List<ImageEntry>> speciesToImageList = new HashMap<Species, List<ImageEntry>>();
-
-	private Map<Species, Map<Integer, Integer>> yearToNumberImages = new HashMap<Species, Map<Integer, Integer>>();
-	private Map<Species, Map<Integer, Integer>> yearToActivity = new HashMap<Species, Map<Integer, Integer>>();
-	private Map<Species, Map<Integer, Integer>> yearToPeriod = new HashMap<Species, Map<Integer, Integer>>();
-	private Map<Species, Map<Integer, Integer>> yearToAbundance = new HashMap<Species, Map<Integer, Integer>>();
-	private Map<Species, Map<Integer, List<Location>>> yearToLocations = new HashMap<Species, Map<Integer, List<Location>>>();
-
-	private Map<Integer, Map<Location, Set<Integer>[]>> yearToLocationAndPicsPerMonth = new HashMap<Integer, Map<Location, Set<Integer>[]>>();
-	private Map<Location, Set<Integer>[]> locationToPicsPerMonth = new HashMap<Location, Set<Integer>[]>();
-	private Map<Integer, Set<Location>> yearToLocationList = new HashMap<Integer, Set<Location>>();
+	private Integer eventInterval = 60;
 	private List<Date> fullMoons = new ArrayList<Date>();
 	private List<Date> newMoons = new ArrayList<Date>();
 
 	public DataAnalysis(List<ImageEntry> images, Integer eventInterval)
 	{
+		this.eventInterval = eventInterval;
 		for (ImageEntry entry : images)
 			if (entry.getLocationTaken() != null)
 			{
@@ -62,10 +43,28 @@ public class DataAnalysis
 			else
 				nullLocationsFound = true;
 
+		Collections.sort(allImageLocations, new Comparator<Location>()
+		{
+			@Override
+			public int compare(Location loc1, Location loc2)
+			{
+				return loc1.getName().compareTo(loc2.getName());
+			}
+		});
+
 		for (ImageEntry imageEntry : images)
 			for (SpeciesEntry speciesEntry : imageEntry.getSpeciesPresent())
 				if (!allImageSpecies.contains(speciesEntry.getSpecies()))
 					allImageSpecies.add(speciesEntry.getSpecies());
+
+		Collections.sort(allImageSpecies, new Comparator<Species>()
+		{
+			@Override
+			public int compare(Species species1, Species species2)
+			{
+				return species1.getName().compareTo(species2.getName());
+			}
+		});
 
 		for (ImageEntry imageEntry : images)
 		{
@@ -85,179 +84,6 @@ public class DataAnalysis
 				return entry1.getDateTaken().compareTo(entry2.getDateTaken());
 			}
 		});
-
-		for (ImageEntry imageEntry : images)
-			for (SpeciesEntry speciesEntry : imageEntry.getSpeciesPresent())
-			{
-				Species currentSpeices = speciesEntry.getSpecies();
-				// Check first date				
-				Date currentFirst = speciesToFirstImage.getOrDefault(currentSpeices, imageEntry).getDateTaken();
-				if (imageEntry.getDateTaken().before(currentFirst) || imageEntry.getDateTaken().equals(currentFirst))
-					speciesToFirstImage.put(currentSpeices, imageEntry);
-
-				// Check last date
-				Date currentLast = speciesToLastImage.getOrDefault(currentSpeices, imageEntry).getDateTaken();
-				if (imageEntry.getDateTaken().after(currentLast) || imageEntry.getDateTaken().equals(currentLast))
-					speciesToLastImage.put(currentSpeices, imageEntry);
-			}
-
-		for (Species species : this.allImageSpecies)
-		{
-			this.speciesToImageList.put(species, images.stream().filter(new Predicate<ImageEntry>()
-			{
-				@Override
-				public boolean test(ImageEntry entry)
-				{
-					for (SpeciesEntry speciesEntry : entry.getSpeciesPresent())
-						if (speciesEntry.getSpecies().equals(species))
-							return true;
-					return false;
-				}
-			}).collect(Collectors.<ImageEntry> toList()));
-		}
-
-		for (Map.Entry<Species, List<ImageEntry>> entry : speciesToImageList.entrySet())
-		{
-			// ALL images
-			Map<Integer, Integer> currentMap = yearToNumberImages.getOrDefault(entry.getKey(), new HashMap<Integer, Integer>());
-			for (ImageEntry image : entry.getValue())
-			{
-				int year = DateUtils.toCalendar(image.getDateTaken()).get(Calendar.YEAR);
-				currentMap.put(year, currentMap.getOrDefault(year, 0) + 1);
-			}
-			yearToNumberImages.put(entry.getKey(), currentMap);
-
-			// Activity
-			currentMap = yearToActivity.getOrDefault(entry.getKey(), new HashMap<Integer, Integer>());
-			int oldHour = -1;
-			int oldDay = -1;
-			int oldYear = -1;
-			for (ImageEntry image : entry.getValue())
-			{
-				Calendar calendar = DateUtils.toCalendar(image.getDateTaken());
-				int hour = calendar.get(Calendar.HOUR_OF_DAY);
-				int day = calendar.get(Calendar.DAY_OF_YEAR);
-				int year = calendar.get(Calendar.YEAR);
-				if ((hour != oldHour) || (oldDay != day) || (oldYear != year))
-				{
-					currentMap.put(year, currentMap.getOrDefault(year, 0) + 1);
-					oldHour = hour;
-					oldDay = day;
-					oldYear = year;
-				}
-			}
-			yearToActivity.put(entry.getKey(), currentMap);
-
-			// Period
-			currentMap = yearToPeriod.getOrDefault(entry.getKey(), new HashMap<Integer, Integer>());
-			long lastImageTimeMillis = 0;
-			for (ImageEntry image : entry.getValue())
-			{
-				long imageTimeMillis = image.getDateTaken().getTime();
-				long differenceMillis = imageTimeMillis - lastImageTimeMillis;
-				long differenceMinutes = differenceMillis / 1000 / 60;
-				if (differenceMinutes >= eventInterval)
-				{
-					int year = DateUtils.toCalendar(image.getDateTaken()).get(Calendar.YEAR);
-					currentMap.put(year, currentMap.getOrDefault(year, 0) + 1);
-				}
-				lastImageTimeMillis = imageTimeMillis;
-			}
-			yearToPeriod.put(entry.getKey(), currentMap);
-
-			// Abundance
-			currentMap = yearToAbundance.getOrDefault(entry.getKey(), new HashMap<Integer, Integer>());
-			lastImageTimeMillis = 0;
-			Integer maxAnimalsInEvent = 0;
-			for (ImageEntry image : entry.getValue())
-			{
-				long imageTimeMillis = image.getDateTaken().getTime();
-				long differenceMillis = imageTimeMillis - lastImageTimeMillis;
-				long differenceMinutes = differenceMillis / 1000 / 60;
-				if (differenceMinutes >= eventInterval)
-				{
-					for (SpeciesEntry speciesEntry : image.getSpeciesPresent())
-						maxAnimalsInEvent = Math.max(maxAnimalsInEvent, speciesEntry.getAmount());
-					int year = DateUtils.toCalendar(image.getDateTaken()).get(Calendar.YEAR);
-					currentMap.put(year, currentMap.getOrDefault(year, 0) + maxAnimalsInEvent);
-					maxAnimalsInEvent = 0;
-				}
-				lastImageTimeMillis = imageTimeMillis;
-			}
-			yearToAbundance.put(entry.getKey(), currentMap);
-
-			// Location
-			Map<Integer, List<Location>> currentMapLocation = yearToLocations.getOrDefault(entry.getKey(), new HashMap<Integer, List<Location>>());
-			for (ImageEntry image : entry.getValue())
-			{
-				int year = DateUtils.toCalendar(image.getDateTaken()).get(Calendar.YEAR);
-				List<Location> currentLocations = currentMapLocation.getOrDefault(year, new ArrayList<Location>());
-				if (!currentLocations.contains(image.getLocationTaken()))
-				{
-					currentLocations.add(image.getLocationTaken());
-					currentMapLocation.put(year, currentLocations);
-				}
-			}
-			yearToLocations.put(entry.getKey(), currentMapLocation);
-		}
-
-		for (ImageEntry entry : images)
-		{
-			Location location = entry.getLocationTaken();
-			if (location != null)
-			{
-				// Check first date
-				ImageEntry firstEntry = this.locationToFirstImage.getOrDefault(location, entry);
-				if (entry.getDateTaken().before(firstEntry.getDateTaken()) || entry.getDateTaken().equals(firstEntry.getDateTaken()))
-					locationToFirstImage.put(location, entry);
-
-				ImageEntry lastEntry = this.locationToLastImage.getOrDefault(location, entry);
-				if (entry.getDateTaken().before(lastEntry.getDateTaken()) || entry.getDateTaken().equals(lastEntry.getDateTaken()))
-					locationToLastImage.put(location, entry);
-			}
-		}
-
-		for (ImageEntry imageEntry : images)
-		{
-			if (imageEntry.getLocationTaken() != null)
-			{
-				int day = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.DAY_OF_MONTH);
-				int month = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.MONTH);
-				int year = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.YEAR);
-				Map<Location, Set<Integer>[]> locationToPicNumber = this.yearToLocationAndPicsPerMonth.getOrDefault(year, new HashMap<Location, Set<Integer>[]>());
-				Set<Integer>[] picsPerMonth = locationToPicNumber.getOrDefault(imageEntry.getLocationTaken(), new HashSet[12]);
-				if (picsPerMonth[month] == null)
-					picsPerMonth[month] = new HashSet<Integer>();
-				picsPerMonth[month].add(day);
-				locationToPicNumber.put(imageEntry.getLocationTaken(), picsPerMonth);
-				yearToLocationAndPicsPerMonth.put(year, locationToPicNumber);
-			}
-		}
-
-		for (ImageEntry imageEntry : images)
-		{
-			if (imageEntry.getLocationTaken() != null)
-			{
-				int day = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.DAY_OF_MONTH);
-				int month = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.MONTH);
-				Set<Integer>[] picsPerMonth = locationToPicsPerMonth.getOrDefault(imageEntry.getLocationTaken(), new HashSet[12]);
-				if (picsPerMonth[month] == null)
-					picsPerMonth[month] = new HashSet<Integer>();
-				picsPerMonth[month].add(day);
-				locationToPicsPerMonth.put(imageEntry.getLocationTaken(), picsPerMonth);
-			}
-		}
-
-		for (ImageEntry imageEntry : images)
-		{
-			if (imageEntry.getLocationTaken() != null)
-			{
-				int year = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.YEAR);
-				Set<Location> locations = yearToLocationList.getOrDefault(year, new HashSet<Location>());
-				locations.add(imageEntry.getLocationTaken());
-				yearToLocationList.put(year, locations);
-			}
-		}
 
 		if (imagesSortedByDate.size() > 0)
 		{
@@ -289,7 +115,71 @@ public class DataAnalysis
 		}
 	}
 
-	public Integer periodForImageList(List<ImageEntry> images, Integer eventInterval)
+	public ImageEntry getFirstImageInList(List<ImageEntry> images)
+	{
+		ImageEntry first = images.size() == 0 ? null : images.get(0);
+		for (ImageEntry imageEntry : images)
+			if (imageEntry.getDateTaken().before(first.getDateTaken()))
+				first = imageEntry;
+		return first;
+	}
+
+	public ImageEntry getLastImageInList(List<ImageEntry> images)
+	{
+		ImageEntry last = images.size() == 0 ? null : images.get(0);
+		for (ImageEntry imageEntry : images)
+			if (imageEntry.getDateTaken().after(last.getDateTaken()))
+				last = imageEntry;
+		return last;
+	}
+
+	public List<Location> locationsForImageList(List<ImageEntry> images)
+	{
+		List<Location> locations = new ArrayList<Location>();
+
+		for (ImageEntry image : images)
+			if (image.getLocationTaken() != null)
+				if (!locations.contains(image.getLocationTaken()))
+					locations.add(image.getLocationTaken());
+
+		Collections.sort(locations, new Comparator<Location>()
+		{
+			@Override
+			public int compare(Location loc1, Location loc2)
+			{
+				return loc1.getName().compareTo(loc2.getName());
+			}
+		});
+
+		return locations;
+	}
+
+	public Integer activityForImageList(List<ImageEntry> images)
+	{
+		Integer activity = 0;
+
+		int oldHour = -1;
+		int oldDay = -1;
+		int oldYear = -1;
+		for (ImageEntry image : images)
+		{
+			Calendar calendar = DateUtils.toCalendar(image.getDateTaken());
+			int hour = calendar.get(Calendar.HOUR_OF_DAY);
+			int day = calendar.get(Calendar.DAY_OF_YEAR);
+			int year = calendar.get(Calendar.YEAR);
+			if ((hour != oldHour) || (oldDay != day) || (oldYear != year))
+			{
+				activity = activity + 1;
+				oldHour = hour;
+				oldDay = day;
+				oldYear = year;
+			}
+		}
+
+		return activity;
+	}
+
+	public Integer periodForImageList(List<ImageEntry> images)
 	{
 		Integer period = 0;
 
@@ -309,7 +199,16 @@ public class DataAnalysis
 		return period;
 	}
 
-	public Integer abundanceForImageList(List<ImageEntry> images, Integer eventInterval)
+	/**
+	 * Get the abundance value for a list of images
+	 * 
+	 * @param images
+	 *            The list of images to search through (must be sorted)
+	 * @param speciesFilter
+	 *            The species for which to look for. May be null for any species
+	 * @return The abundance value for "images"
+	 */
+	public Integer abundanceForImageList(List<ImageEntry> images, Species speciesFilter)
 	{
 		Integer abundance = 0;
 
@@ -320,15 +219,21 @@ public class DataAnalysis
 			long imageTimeMillis = image.getDateTaken().getTime();
 			long differenceMillis = imageTimeMillis - lastImageTimeMillis;
 			long differenceMinutes = differenceMillis / 1000 / 60;
+
 			if (differenceMinutes >= eventInterval)
 			{
-				for (SpeciesEntry speciesEntry : image.getSpeciesPresent())
-					maxAnimalsInEvent = Math.max(maxAnimalsInEvent, speciesEntry.getAmount());
 				abundance = abundance + maxAnimalsInEvent;
 				maxAnimalsInEvent = 0;
 			}
+
+			for (SpeciesEntry speciesEntry : image.getSpeciesPresent())
+				if (speciesFilter == null || speciesEntry.getSpecies() == speciesFilter)
+					maxAnimalsInEvent = Math.max(maxAnimalsInEvent, speciesEntry.getAmount());
+
 			lastImageTimeMillis = imageTimeMillis;
 		}
+
+		abundance = abundance + maxAnimalsInEvent;
 
 		return abundance;
 	}
@@ -356,71 +261,6 @@ public class DataAnalysis
 	public List<ImageEntry> getImagesSortedByDate()
 	{
 		return imagesSortedByDate;
-	}
-
-	public Map<Species, ImageEntry> getSpeciesToFirstImage()
-	{
-		return speciesToFirstImage;
-	}
-
-	public Map<Species, ImageEntry> getSpeciesToLastImage()
-	{
-		return speciesToLastImage;
-	}
-
-	public Map<Location, ImageEntry> getLocationToFirstImage()
-	{
-		return locationToFirstImage;
-	}
-
-	public Map<Location, ImageEntry> getLocationToLastImage()
-	{
-		return locationToLastImage;
-	}
-
-	public Map<Species, List<ImageEntry>> getSpeciesToImageList()
-	{
-		return speciesToImageList;
-	}
-
-	public Map<Species, Map<Integer, Integer>> getYearToAbundance()
-	{
-		return yearToAbundance;
-	}
-
-	public Map<Species, Map<Integer, Integer>> getYearToActivity()
-	{
-		return yearToActivity;
-	}
-
-	public Map<Species, Map<Integer, List<Location>>> getYearToLocations()
-	{
-		return yearToLocations;
-	}
-
-	public Map<Species, Map<Integer, Integer>> getYearToNumberImages()
-	{
-		return yearToNumberImages;
-	}
-
-	public Map<Species, Map<Integer, Integer>> getYearToPeriod()
-	{
-		return yearToPeriod;
-	}
-
-	public Map<Integer, Map<Location, Set<Integer>[]>> getYearToLocationAndPicsPerMonth()
-	{
-		return yearToLocationAndPicsPerMonth;
-	}
-
-	public Map<Integer, Set<Location>> getYearToLocationList()
-	{
-		return yearToLocationList;
-	}
-
-	public Map<Location, Set<Integer>[]> getLocationToPicsPerMonth()
-	{
-		return locationToPicsPerMonth;
 	}
 
 	public List<Date> getFullMoons()

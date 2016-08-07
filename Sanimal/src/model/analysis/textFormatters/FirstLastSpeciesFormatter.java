@@ -11,13 +11,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import model.ImageEntry;
 import model.Species;
 import model.analysis.DataAnalysis;
+import model.analysis.PredicateBuilder;
 import model.analysis.SanimalAnalysisUtils;
 
 public class FirstLastSpeciesFormatter extends TextFormatter
@@ -48,14 +49,12 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 	{
 		String toReturn = "";
 
-		Map<Species, ImageEntry> speciesToFirstImage = analysis.getSpeciesToFirstImage();
-
 		toReturn = toReturn + "FIRST PICTURE OF EACH SPECIES\n";
 		toReturn = toReturn + "Species                      Days  Year Month Day Hour Minute Second Location\n";
-		for (Map.Entry<Species, ImageEntry> entry : speciesToFirstImage.entrySet())
+
+		for (Species speciesToPrint : analysis.getAllImageSpecies())
 		{
-			Species speciesToPrint = entry.getKey();
-			ImageEntry imageToPrint = entry.getValue();
+			ImageEntry imageToPrint = analysis.getFirstImageInList(new PredicateBuilder().speciesOnly(speciesToPrint).query(images));
 			Calendar dateToPrint = DateUtils.toCalendar(imageToPrint.getDateTaken());
 			toReturn = toReturn + String.format("%-28s %4d  %4d %4d %4d %3d %5d %6d   %-28s\n", speciesToPrint, SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), dateToPrint.getTime()) + 1, dateToPrint.get(Calendar.YEAR), (dateToPrint.get(Calendar.MONTH) + 1),
 					dateToPrint.get(Calendar.DAY_OF_MONTH), dateToPrint.get(Calendar.HOUR_OF_DAY), dateToPrint.get(Calendar.MINUTE), dateToPrint.get(Calendar.SECOND), (imageToPrint.getLocationTaken() == null ? "Unknown" : imageToPrint.getLocationTaken().getName()));
@@ -69,18 +68,17 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 	{
 		String toReturn = "";
 
-		Map<Species, ImageEntry> speciesToLastImage = analysis.getSpeciesToLastImage();
-
 		toReturn = toReturn + "LAST PICTURE OF EACH SPECIES\n";
 		toReturn = toReturn + "Species                      Days  Year Month Day Hour Minute Second Location                   Duration\n";
-		for (Map.Entry<Species, ImageEntry> entry : speciesToLastImage.entrySet())
+		for (Species speciesToPrint : analysis.getAllImageSpecies())
 		{
-			Species speciesToPrint = entry.getKey();
-			ImageEntry imageToPrint = entry.getValue();
+			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(speciesToPrint).query(images);
+			ImageEntry imageToPrint = analysis.getLastImageInList(withSpecies);
+			ImageEntry firstImage = analysis.getFirstImageInList(withSpecies);
 			Calendar dateToPrint = DateUtils.toCalendar(imageToPrint.getDateTaken());
 			toReturn = toReturn + String.format("%-28s %4d  %4d %4d %4d %3d %5d %6d   %-28s %4d\n", speciesToPrint, SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), dateToPrint.getTime()) + 1, dateToPrint.get(Calendar.YEAR), (dateToPrint.get(Calendar.MONTH)
 					+ 1), dateToPrint.get(Calendar.DAY_OF_MONTH), dateToPrint.get(Calendar.HOUR_OF_DAY), dateToPrint.get(Calendar.MINUTE), dateToPrint.get(Calendar.SECOND), (imageToPrint.getLocationTaken() == null ? "Unknown" : imageToPrint.getLocationTaken().getName()), SanimalAnalysisUtils
-							.daysBetween(analysis.getSpeciesToFirstImage().get(speciesToPrint).getDateTaken(), dateToPrint.getTime()));
+							.daysBetween(firstImage.getDateTaken(), imageToPrint.getDateTaken()) + 1);
 		}
 
 		toReturn = toReturn + "\n";
@@ -92,20 +90,28 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 	{
 		String toReturn = "";
 
-		List<Map.Entry<Species, ImageEntry>> firstImageEntriesSorted = new ArrayList<Map.Entry<Species, ImageEntry>>(analysis.getSpeciesToFirstImage().entrySet());
-		Collections.<Map.Entry<Species, ImageEntry>> sort(firstImageEntriesSorted, new Comparator<Map.Entry<Species, ImageEntry>>()
+		List<Pair<Species, ImageEntry>> speciesFirstImage = new ArrayList<Pair<Species, ImageEntry>>();
+
+		for (Species species : analysis.getAllImageSpecies())
+		{
+			List<ImageEntry> imagesWithSpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
+			if (!imagesWithSpecies.isEmpty())
+				speciesFirstImage.add(Pair.of(species, imagesWithSpecies.get(0)));
+		}
+
+		Collections.sort(speciesFirstImage, new Comparator<Pair<Species, ImageEntry>>()
 		{
 			@Override
-			public int compare(Map.Entry<Species, ImageEntry> entry1, Map.Entry<Species, ImageEntry> entry2)
+			public int compare(Pair<Species, ImageEntry> pair1, Pair<Species, ImageEntry> pair2)
 			{
-				return entry1.getValue().getDateTaken().compareTo(entry2.getValue().getDateTaken());
+				return pair1.getRight().getDateTaken().compareTo(pair2.getRight().getDateTaken());
 			}
 		});
 
 		toReturn = toReturn + "SPECIES ACCUMULATION CURVE\n";
 		toReturn = toReturn + "  DAY    NUMBER    SPECIES\n";
 		int number = 0;
-		for (Map.Entry<Species, ImageEntry> entry : firstImageEntriesSorted)
+		for (Pair<Species, ImageEntry> entry : speciesFirstImage)
 			toReturn = toReturn + String.format("%5d     %3d      %s\n", SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), entry.getValue().getDateTaken()) + 1, ++number, entry.getKey().getName());
 
 		toReturn = toReturn + "\n";

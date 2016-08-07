@@ -36,19 +36,24 @@ public class TotalDayFormatter extends TextFormatter
 		{
 			toReturn = toReturn + year + "\n";
 			toReturn = toReturn + "Location                      Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   Total\n";
+
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> imagesByLocationAndYear = new PredicateBuilder().yearOnly(year).locationOnly(location).query(images);
-				toReturn = toReturn + String.format("%-28s", location.getName());
-				Integer total = 0;
-				for (int i = 0; i < 12; i++)
+				List<ImageEntry> imagesByLocationAndYear = new PredicateBuilder().yearOnly(year).locationOnly(location).query(analysis.getImagesSortedByDate());
+				if (!imagesByLocationAndYear.isEmpty())
 				{
-					List<ImageEntry> imagesByLocationYearAndMonth = new PredicateBuilder().monthOnly(i).query(imagesByLocationAndYear);
-					total = total + imagesByLocationYearAndMonth.size();
-					toReturn = toReturn + String.format("%5d ", imagesByLocationYearAndMonth.size());
+					toReturn = toReturn + String.format("%-28s", location.getName());
+					Integer total = 0;
+					for (int i = 0; i < 12; i++)
+					{
+						List<ImageEntry> imagesByLocationYearAndMonth = new PredicateBuilder().monthOnly(i).query(imagesByLocationAndYear);
+						Integer period = analysis.periodForImageList(imagesByLocationYearAndMonth);
+						total = total + period;
+						toReturn = toReturn + String.format("%5d ", period);
+					}
+					toReturn = toReturn + String.format("%7d", total);
+					toReturn = toReturn + "\n";
 				}
-				toReturn = toReturn + String.format("%7d", total);
-				toReturn = toReturn + "\n";
 			}
 			toReturn = toReturn + "Total pictures              ";
 
@@ -56,42 +61,56 @@ public class TotalDayFormatter extends TextFormatter
 			int[] totalPics = new int[12];
 			for (int i = 0; i < 12; i++)
 			{
-				List<ImageEntry> imagesByYearAndMonth = new PredicateBuilder().monthOnly(i).yearOnly(year).query(images);
-				totalPic = totalPic + imagesByYearAndMonth.size();
-				totalPics[i] = imagesByYearAndMonth.size();
-				toReturn = toReturn + String.format("%5d ", imagesByYearAndMonth.size());
+				Integer totalPeriod = 0;
+				for (Location location : analysis.getAllImageLocations())
+				{
+					List<ImageEntry> imagesByLocationYearAndMonth = new PredicateBuilder().locationOnly(location).monthOnly(i).yearOnly(year).query(analysis.getImagesSortedByDate());
+					Integer period = analysis.periodForImageList(imagesByLocationYearAndMonth);
+					totalPic = totalPic + period;
+					totalPeriod = totalPeriod + period;
+					totalPics[i] = totalPics[i] + period;
+				}
+				toReturn = toReturn + String.format("%5d ", totalPeriod);
 			}
 			toReturn = toReturn + String.format("%7d", totalPic);
 			toReturn = toReturn + "\n";
 
 			toReturn = toReturn + "Total days                     ";
+
 			List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
 
-			ImageEntry first = yearsPics.get(0);
-			ImageEntry last = yearsPics.get(yearsPics.size() - 1);
-			Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-			Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-			Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-			Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-			Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-			Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-			Integer firstMonth = firstCal.get(Calendar.MONTH);
-			Integer lastMonth = lastCal.get(Calendar.MONTH);
-			Calendar calendar = Calendar.getInstance();
 			int[] daysUsed = new int[12];
-			if (firstMonth == lastMonth)
-				daysUsed[firstMonth] = lastDay - firstDay + 1;
-			else
+			for (Location location : analysis.getAllImageLocations())
 			{
-				daysUsed[firstMonth] = firstDaysInMonth - (firstDay - 1);
-				firstMonth++;
-				while (firstMonth < lastMonth)
+				List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+				if (!yearLocPics.isEmpty())
 				{
-					calendar.set(year, firstMonth, 1);
-					daysUsed[firstMonth] = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-					firstMonth++;
+					ImageEntry first = yearLocPics.get(0);
+					ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
+					Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
+					Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
+					Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
+					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
+					Integer firstMonth = firstCal.get(Calendar.MONTH);
+					Integer lastMonth = lastCal.get(Calendar.MONTH);
+					Calendar calendar = Calendar.getInstance();
+					if (firstMonth == lastMonth)
+						daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
+					else
+					{
+						daysUsed[firstMonth] = daysUsed[firstMonth] + (firstDaysInMonth - (firstDay - 1));
+						firstMonth++;
+						while (firstMonth < lastMonth)
+						{
+							calendar.set(year, firstMonth, 1);
+							daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							firstMonth++;
+						}
+						daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
+					}
 				}
-				daysUsed[lastMonth] = lastDay;
 			}
 			Integer totalDays = 0;
 			for (Integer month : daysUsed)
@@ -111,9 +130,9 @@ public class TotalDayFormatter extends TextFormatter
 				toReturn = toReturn + String.format("%6.2f", daysUsed[i] == 0 ? 0D : ((double) totalPics[i] / daysUsed[i]));
 			}
 			toReturn = toReturn + String.format("  %6.2f", totalDays == 0 ? 0 : ((double) totalPic / totalDays));
-		}
 
-		toReturn = toReturn + "\n\n";
+			toReturn = toReturn + "\n\n";
+		}
 
 		return toReturn;
 	}
@@ -134,14 +153,15 @@ public class TotalDayFormatter extends TextFormatter
 		{
 			toReturn = toReturn + String.format("%-28s", location.getName());
 
-			List<ImageEntry> imagesAtLoc = new PredicateBuilder().locationOnly(location).query(images);
+			List<ImageEntry> imagesAtLoc = new PredicateBuilder().locationOnly(location).query(analysis.getImagesSortedByDate());
 
 			Integer picsInYear = 0;
 			for (int i = 0; i < 12; i++)
 			{
 				List<ImageEntry> imagesAtLocWithMonth = new PredicateBuilder().monthOnly(i).query(imagesAtLoc);
-				picsInYear = picsInYear + imagesAtLocWithMonth.size();
-				toReturn = toReturn + String.format("%5d ", imagesAtLocWithMonth.size());
+				Integer period = analysis.periodForImageList(imagesAtLocWithMonth);
+				picsInYear = picsInYear + period;
+				toReturn = toReturn + String.format("%5d ", period);
 			}
 
 			toReturn = toReturn + String.format("  %5d", picsInYear);
@@ -155,46 +175,57 @@ public class TotalDayFormatter extends TextFormatter
 		int[] totalPics = new int[12];
 		for (int i = 0; i < 12; i++)
 		{
-			List<ImageEntry> imagesByYearAndMonth = new PredicateBuilder().monthOnly(i).query(images);
-			totalPic = totalPic + imagesByYearAndMonth.size();
-			totalPics[i] = imagesByYearAndMonth.size();
-			toReturn = toReturn + String.format("%5d ", imagesByYearAndMonth.size());
+			Integer totalPeriod = 0;
+			for (Location location : analysis.getAllImageLocations())
+			{
+				List<ImageEntry> imagesByMonthAndLoc = new PredicateBuilder().monthOnly(i).locationOnly(location).query(analysis.getImagesSortedByDate());
+				Integer period = analysis.periodForImageList(imagesByMonthAndLoc);
+				totalPic = totalPic + period;
+				totalPeriod = totalPeriod + period;
+				totalPics[i] = totalPics[i] + period;
+			}
+			toReturn = toReturn + String.format("%5d ", totalPeriod);
 		}
 		toReturn = toReturn + String.format("%7d", totalPic);
 		toReturn = toReturn + "\n";
 
 		toReturn = toReturn + "Total days                     ";
 
-		int[] daysUsed = new int[]
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		int[] daysUsed = new int[12];
 		for (Integer year : analysis.getAllImageYears())
 		{
 			List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
-
-			ImageEntry first = yearsPics.get(0);
-			ImageEntry last = yearsPics.get(yearsPics.size() - 1);
-			Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-			Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-			Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-			Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-			Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-			Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-			Integer firstMonth = firstCal.get(Calendar.MONTH);
-			Integer lastMonth = lastCal.get(Calendar.MONTH);
-			Calendar calendar = Calendar.getInstance();
-			if (firstMonth == lastMonth)
-				daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
-			else
+			for (Location location : analysis.getAllImageLocations())
 			{
-				daysUsed[firstMonth] = daysUsed[firstMonth] + (firstDaysInMonth - (firstDay - 1));
-				firstMonth++;
-				while (firstMonth < lastMonth)
+				List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+				if (!yearLocPics.isEmpty())
 				{
-					calendar.set(year, firstMonth, 1);
-					daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-					firstMonth++;
+					ImageEntry first = yearLocPics.get(0);
+					ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
+					Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
+					Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
+					Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
+					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
+					Integer firstMonth = firstCal.get(Calendar.MONTH);
+					Integer lastMonth = lastCal.get(Calendar.MONTH);
+					Calendar calendar = Calendar.getInstance();
+					if (firstMonth == lastMonth)
+						daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
+					else
+					{
+						daysUsed[firstMonth] = daysUsed[firstMonth] + (firstDaysInMonth - (firstDay - 1));
+						firstMonth++;
+						while (firstMonth < lastMonth)
+						{
+							calendar.set(year, firstMonth, 1);
+							daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							firstMonth++;
+						}
+						daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
+					}
 				}
-				daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
 			}
 		}
 		Integer totalDays = 0;
@@ -236,19 +267,22 @@ public class TotalDayFormatter extends TextFormatter
 			int[] totalRichness = new int[12];
 			for (Species species : analysis.getAllImageSpecies())
 			{
-				List<ImageEntry> imagesBySpeciesAndYear = new PredicateBuilder().yearOnly(year).speciesOnly(species).query(images);
-				toReturn = toReturn + String.format("%-28s", species.getName());
-				Integer total = 0;
-				for (int i = 0; i < 12; i++)
+				List<ImageEntry> imagesBySpeciesAndYear = new PredicateBuilder().yearOnly(year).speciesOnly(species).query(analysis.getImagesSortedByDate());
+				if (!imagesBySpeciesAndYear.isEmpty())
 				{
-					List<ImageEntry> imagesBySpeciesYearAndMonth = new PredicateBuilder().monthOnly(i).query(imagesBySpeciesAndYear);
-					Integer period = analysis.periodForImageList(imagesBySpeciesYearAndMonth, eventInterval);
-					total = total + period;
-					toReturn = toReturn + String.format("%5d ", period);
-					totalRichness[i] = totalRichness[i] + (period == 0 ? 0 : 1);
+					toReturn = toReturn + String.format("%-28s", species.getName());
+					Integer total = 0;
+					for (int i = 0; i < 12; i++)
+					{
+						List<ImageEntry> imagesBySpeciesYearAndMonth = new PredicateBuilder().monthOnly(i).query(imagesBySpeciesAndYear);
+						Integer period = analysis.periodForImageList(imagesBySpeciesYearAndMonth);
+						total = total + period;
+						toReturn = toReturn + String.format("%5d ", period);
+						totalRichness[i] = totalRichness[i] + (period == 0 ? 0 : 1);
+					}
+					toReturn = toReturn + String.format("%7d", total);
+					toReturn = toReturn + "\n";
 				}
-				toReturn = toReturn + String.format("%7d", total);
-				toReturn = toReturn + "\n";
 			}
 			toReturn = toReturn + "Total pictures              ";
 
@@ -256,11 +290,17 @@ public class TotalDayFormatter extends TextFormatter
 			int[] totalPics = new int[12];
 			for (int i = 0; i < 12; i++)
 			{
-				List<ImageEntry> imagesByYearAndMonth = new PredicateBuilder().monthOnly(i).yearOnly(year).query(images);
-				Integer period = analysis.periodForImageList(imagesByYearAndMonth, eventInterval);
-				totalPic = totalPic + period;
-				totalPics[i] = period;
-				toReturn = toReturn + String.format("%5d ", period);
+				List<ImageEntry> imagesByYearAndMonth = new PredicateBuilder().monthOnly(i).yearOnly(year).query(analysis.getImagesSortedByDate());
+				Integer totalPeriod = 0;
+				for (Location location : analysis.getAllImageLocations())
+				{
+					List<ImageEntry> imagesByYearMonthAndLocation = new PredicateBuilder().locationOnly(location).query(imagesByYearAndMonth);
+					Integer period = analysis.periodForImageList(imagesByYearMonthAndLocation);
+					totalPic = totalPic + period;
+					totalPeriod = totalPeriod + period;
+					totalPics[i] = totalPics[i] + period;
+				}
+				toReturn = toReturn + String.format("%5d ", totalPeriod);
 			}
 			toReturn = toReturn + String.format("%7d", totalPic);
 			toReturn = toReturn + "\n";
@@ -268,31 +308,38 @@ public class TotalDayFormatter extends TextFormatter
 			toReturn = toReturn + "Total days                     ";
 			List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
 
-			ImageEntry first = yearsPics.get(0);
-			ImageEntry last = yearsPics.get(yearsPics.size() - 1);
-			Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-			Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-			Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-			Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-			Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-			Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-			Integer firstMonth = firstCal.get(Calendar.MONTH);
-			Integer lastMonth = lastCal.get(Calendar.MONTH);
-			Calendar calendar = Calendar.getInstance();
 			int[] daysUsed = new int[12];
-			if (firstMonth == lastMonth)
-				daysUsed[firstMonth] = lastDay - firstDay + 1;
-			else
+			for (Location location : analysis.getAllImageLocations())
 			{
-				daysUsed[firstMonth] = firstDaysInMonth - (firstDay - 1);
-				firstMonth++;
-				while (firstMonth < lastMonth)
+				List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+				if (!yearLocPics.isEmpty())
 				{
-					calendar.set(year, firstMonth, 1);
-					daysUsed[firstMonth] = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-					firstMonth++;
+					ImageEntry first = yearLocPics.get(0);
+					ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
+					Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
+					Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
+					Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
+					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
+					Integer firstMonth = firstCal.get(Calendar.MONTH);
+					Integer lastMonth = lastCal.get(Calendar.MONTH);
+					Calendar calendar = Calendar.getInstance();
+					if (firstMonth == lastMonth)
+						daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
+					else
+					{
+						daysUsed[firstMonth] = daysUsed[firstMonth] + (firstDaysInMonth - (firstDay - 1));
+						firstMonth++;
+						while (firstMonth < lastMonth)
+						{
+							calendar.set(year, firstMonth, 1);
+							daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							firstMonth++;
+						}
+						daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
+					}
 				}
-				daysUsed[lastMonth] = lastDay;
 			}
 			Integer totalDays = 0;
 			for (Integer month : daysUsed)
@@ -320,9 +367,9 @@ public class TotalDayFormatter extends TextFormatter
 			{
 				toReturn = toReturn + String.format("%5d ", totalRichness[i]);
 			}
-		}
 
-		toReturn = toReturn + "\n\n";
+			toReturn = toReturn + "\n\n";
+		}
 
 		return toReturn;
 	}
@@ -339,12 +386,12 @@ public class TotalDayFormatter extends TextFormatter
 		{
 			toReturn = toReturn + String.format("%-28s", species.getName());
 
-			List<ImageEntry> imagesBySpecies = new PredicateBuilder().speciesOnly(species).query(images);
+			List<ImageEntry> imagesBySpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
 			Integer total = 0;
 			for (int i = 0; i < 12; i++)
 			{
 				List<ImageEntry> imagesBySpeciesAndMonth = new PredicateBuilder().monthOnly(i).query(imagesBySpecies);
-				Integer period = analysis.periodForImageList(imagesBySpeciesAndMonth, eventInterval);
+				Integer period = analysis.periodForImageList(imagesBySpeciesAndMonth);
 				total = total + period;
 				toReturn = toReturn + String.format("%5d ", period);
 				totalRichness[i] = totalRichness[i] + (period == 0 ? 0 : 1);
@@ -360,47 +407,62 @@ public class TotalDayFormatter extends TextFormatter
 		int[] totalPics = new int[12];
 		for (int i = 0; i < 12; i++)
 		{
-			List<ImageEntry> imagesByMonth = new PredicateBuilder().monthOnly(i).query(images);
-			Integer period = analysis.periodForImageList(imagesByMonth, eventInterval);
-			totalPic = totalPic + period;
-			totalPics[i] = period;
-			toReturn = toReturn + String.format("%5d ", period);
+			List<ImageEntry> imagesByMonth = new PredicateBuilder().monthOnly(i).query(analysis.getImagesSortedByDate());
+			Integer totalPeriod = 0;
+			for (Location location : analysis.getAllImageLocations())
+			{
+				for (Integer year : analysis.getAllImageYears())
+				{
+					List<ImageEntry> imagesByYearMonthAndLocation = new PredicateBuilder().yearOnly(year).locationOnly(location).query(imagesByMonth);
+					Integer period = analysis.periodForImageList(imagesByYearMonthAndLocation);
+					totalPic = totalPic + period;
+					totalPeriod = totalPeriod + period;
+					totalPics[i] = totalPics[i] + period;
+				}
+			}
+			toReturn = toReturn + String.format("%5d ", totalPeriod);
 		}
 		toReturn = toReturn + String.format("%7d", totalPic);
 		toReturn = toReturn + "\n";
 
 		toReturn = toReturn + "Total days                     ";
 
-		int[] daysUsed = new int[]
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		int[] daysUsed = new int[12];
 		for (Integer year : analysis.getAllImageYears())
 		{
 			List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
-
-			ImageEntry first = yearsPics.get(0);
-			ImageEntry last = yearsPics.get(yearsPics.size() - 1);
-			Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-			Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-			Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-			Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-			Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-			Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-			Integer firstMonth = firstCal.get(Calendar.MONTH);
-			Integer lastMonth = lastCal.get(Calendar.MONTH);
-			Calendar calendar = Calendar.getInstance();
-			if (firstMonth == lastMonth)
-				daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
-			else
+			for (Location location : analysis.getAllImageLocations())
 			{
-				daysUsed[firstMonth] = daysUsed[firstMonth] + (firstDaysInMonth - (firstDay - 1));
-				firstMonth++;
-				while (firstMonth < lastMonth)
+				List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+				if (!yearLocPics.isEmpty())
 				{
-					calendar.set(year, firstMonth, 1);
-					daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-					firstMonth++;
+
+					ImageEntry first = yearLocPics.get(0);
+					ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
+					Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
+					Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
+					Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
+					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
+					Integer firstMonth = firstCal.get(Calendar.MONTH);
+					Integer lastMonth = lastCal.get(Calendar.MONTH);
+					Calendar calendar = Calendar.getInstance();
+					if (firstMonth == lastMonth)
+						daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
+					else
+					{
+						daysUsed[firstMonth] = daysUsed[firstMonth] + (firstDaysInMonth - (firstDay - 1));
+						firstMonth++;
+						while (firstMonth < lastMonth)
+						{
+							calendar.set(year, firstMonth, 1);
+							daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							firstMonth++;
+						}
+						daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
+					}
 				}
-				daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
 			}
 		}
 		Integer totalDays = 0;
@@ -448,89 +510,112 @@ public class TotalDayFormatter extends TextFormatter
 
 			for (Integer year : analysis.getAllImageYears())
 			{
-				toReturn = toReturn + year + "\n";
+				List<ImageEntry> imagesBySpeciesAndYear = new PredicateBuilder().speciesOnly(species).yearOnly(year).query(analysis.getImagesSortedByDate());
 
-				toReturn = toReturn + "Location                  Elevation  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   Total\n";
-
-				for (Location location : analysis.getAllImageLocations())
+				if (!imagesBySpeciesAndYear.isEmpty())
 				{
-					List<ImageEntry> imagesBySpeciesLocationAndYear = new PredicateBuilder().yearOnly(year).locationOnly(location).speciesOnly(species).query(images);
-					toReturn = toReturn + String.format("%-28s %6d", location.getName(), (int) location.getElevation());
-					Integer total = 0;
+					toReturn = toReturn + year + "\n";
+
+					toReturn = toReturn + "Location                  Elevation  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   Total\n";
+
+					for (Location location : analysis.getAllImageLocations())
+					{
+						List<ImageEntry> imagesBySpeciesLocationAndYear = new PredicateBuilder().locationOnly(location).query(imagesBySpeciesAndYear);
+						if (!imagesBySpeciesLocationAndYear.isEmpty())
+						{
+							toReturn = toReturn + String.format("%-28s %6d", location.getName(), (int) location.getElevation());
+							Integer total = 0;
+							for (int i = 0; i < 12; i++)
+							{
+								List<ImageEntry> imagesBySpeciesYearLocationAndMonth = new PredicateBuilder().monthOnly(i).query(imagesBySpeciesLocationAndYear);
+								Integer period = analysis.periodForImageList(imagesBySpeciesYearLocationAndMonth);
+								total = total + period;
+								toReturn = toReturn + String.format("%5d ", period);
+							}
+							toReturn = toReturn + String.format("%7d", total);
+							toReturn = toReturn + "\n";
+						}
+					}
+					toReturn = toReturn + "Total pictures                     ";
+
+					Integer totalPic = 0;
+					int[] totalPics = new int[12];
 					for (int i = 0; i < 12; i++)
 					{
-						List<ImageEntry> imagesBySpeciesYearLocationAndMonth = new PredicateBuilder().monthOnly(i).query(imagesBySpeciesLocationAndYear);
-						Integer period = analysis.periodForImageList(imagesBySpeciesYearLocationAndMonth, eventInterval);
-						total = total + period;
-						toReturn = toReturn + String.format("%5d ", period);
+						List<ImageEntry> imagesByYearSpeciesAndMonth = new PredicateBuilder().speciesOnly(species).monthOnly(i).yearOnly(year).query(images);
+						Integer totalPeriod = 0;
+						for (Location location : analysis.getAllImageLocations())
+						{
+							List<ImageEntry> imagesByYearSpeciesMonthLocation = new PredicateBuilder().locationOnly(location).query(imagesByYearSpeciesAndMonth);
+							Integer period = analysis.periodForImageList(imagesByYearSpeciesMonthLocation);
+							totalPic = totalPic + period;
+							totalPeriod = totalPeriod + period;
+							totalPics[i] = totalPics[i] + period;
+						}
+						toReturn = toReturn + String.format("%5d ", totalPeriod);
 					}
-					toReturn = toReturn + String.format("%7d", total);
+					toReturn = toReturn + String.format("%7d", totalPic);
 					toReturn = toReturn + "\n";
-				}
-				toReturn = toReturn + "Total pictures                     ";
 
-				Integer totalPic = 0;
-				int[] totalPics = new int[12];
-				for (int i = 0; i < 12; i++)
-				{
-					List<ImageEntry> imagesByYearSpeciesAndMonth = new PredicateBuilder().speciesOnly(species).monthOnly(i).yearOnly(year).query(images);
-					Integer period = analysis.periodForImageList(imagesByYearSpeciesAndMonth, eventInterval);
-					totalPic = totalPic + period;
-					totalPics[i] = period;
-					toReturn = toReturn + String.format("%5d ", period);
-				}
-				toReturn = toReturn + String.format("%7d", totalPic);
-				toReturn = toReturn + "\n";
+					toReturn = toReturn + "Total days                            ";
 
-				toReturn = toReturn + "Total days                            ";
-				List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
+					int[] daysUsed = new int[12];
+					List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
 
-				ImageEntry first = yearsPics.get(0);
-				ImageEntry last = yearsPics.get(yearsPics.size() - 1);
-				Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-				Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-				Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-				Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-				Integer firstMonth = firstCal.get(Calendar.MONTH);
-				Integer lastMonth = lastCal.get(Calendar.MONTH);
-				Calendar calendar = Calendar.getInstance();
-				int[] daysUsed = new int[12];
-				if (firstMonth == lastMonth)
-					daysUsed[firstMonth] = lastDay - firstDay + 1;
-				else
-				{
-					daysUsed[firstMonth] = firstDaysInMonth - (firstDay - 1);
-					firstMonth++;
-					while (firstMonth < lastMonth)
+					for (Location location : analysis.getAllImageLocations())
 					{
-						calendar.set(year, firstMonth, 1);
-						daysUsed[firstMonth] = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-						firstMonth++;
+						List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+
+						if (!yearLocPics.isEmpty())
+						{
+							ImageEntry first = yearLocPics.get(0);
+							ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
+							Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
+							Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
+							Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+							Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+							Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
+							Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
+							Integer firstMonth = firstCal.get(Calendar.MONTH);
+							Integer lastMonth = lastCal.get(Calendar.MONTH);
+							Calendar calendar = Calendar.getInstance();
+							if (firstMonth == lastMonth)
+								daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
+							else
+							{
+								daysUsed[firstMonth] = daysUsed[firstMonth] + (firstDaysInMonth - (firstDay - 1));
+								firstMonth++;
+								while (firstMonth < lastMonth)
+								{
+									calendar.set(year, firstMonth, 1);
+									daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+									firstMonth++;
+								}
+								daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
+							}
+						}
 					}
-					daysUsed[lastMonth] = lastDay;
+					Integer totalDays = 0;
+					for (Integer month : daysUsed)
+					{
+						toReturn = toReturn + String.format("%2d    ", month);
+						totalDays = totalDays + month;
+					}
+
+					toReturn = toReturn + String.format(" %3d", totalDays);
+
+					toReturn = toReturn + "\n";
+
+					toReturn = toReturn + "10*Pic/effort                     ";
+
+					for (int i = 0; i < 12; i++)
+					{
+						toReturn = toReturn + String.format("%6.2f", daysUsed[i] == 0 ? 0D : 10D * ((double) totalPics[i] / daysUsed[i]));
+					}
+
+					toReturn = toReturn + "\n\n";
 				}
-				Integer totalDays = 0;
-				for (Integer month : daysUsed)
-				{
-					toReturn = toReturn + String.format("%2d    ", month);
-					totalDays = totalDays + month;
-				}
-
-				toReturn = toReturn + String.format(" %3d", totalDays);
-
-				toReturn = toReturn + "\n";
-
-				toReturn = toReturn + "10*Pic/effort                     ";
-
-				for (int i = 0; i < 12; i++)
-				{
-					toReturn = toReturn + String.format("%6.2f", daysUsed[i] == 0 ? 0D : 10D * ((double) totalPics[i] / daysUsed[i]));
-				}
-
 			}
-			toReturn = toReturn + "\n\n";
 
 			toReturn = toReturn + "SUMMARY ALL YEARS\n";
 
@@ -542,17 +627,27 @@ public class TotalDayFormatter extends TextFormatter
 
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> imagesBySpeciesLocation = new PredicateBuilder().locationOnly(location).speciesOnly(species).query(images);
-				toReturn = toReturn + String.format("%-28s %6d", location.getName(), (int) location.getElevation());
-				Integer total = 0;
-				for (int i = 0; i < 12; i++)
+				List<ImageEntry> imagesBySpeciesLocation = new PredicateBuilder().locationOnly(location).speciesOnly(species).query(analysis.getImagesSortedByDate());
+				if (!imagesBySpeciesLocation.isEmpty())
 				{
-					List<ImageEntry> imagesBySpeciesLocationAndMonth = new PredicateBuilder().monthOnly(i).query(imagesBySpeciesLocation);
-					total = total + imagesBySpeciesLocationAndMonth.size();
-					toReturn = toReturn + String.format("%5d ", imagesBySpeciesLocationAndMonth.size());
+					toReturn = toReturn + String.format("%-28s %6d", location.getName(), (int) location.getElevation());
+					Integer total = 0;
+					for (int i = 0; i < 12; i++)
+					{
+						List<ImageEntry> imagesBySpeciesLocationAndMonth = new PredicateBuilder().monthOnly(i).query(imagesBySpeciesLocation);
+						Integer totalPeriod = 0;
+						for (Integer year : analysis.getAllImageYears())
+						{
+							List<ImageEntry> imagesBySpeciesLocationMonthAndYear = new PredicateBuilder().yearOnly(year).query(imagesBySpeciesLocationAndMonth);
+							Integer period = analysis.periodForImageList(imagesBySpeciesLocationMonthAndYear);
+							totalPeriod = totalPeriod + period;
+							total = total + period;
+						}
+						toReturn = toReturn + String.format("%5d ", totalPeriod);
+					}
+					toReturn = toReturn + String.format("%7d", total);
+					toReturn = toReturn + "\n";
 				}
-				toReturn = toReturn + String.format("%7d", total);
-				toReturn = toReturn + "\n";
 			}
 
 			toReturn = toReturn + "Total pictures                     ";
@@ -561,46 +656,62 @@ public class TotalDayFormatter extends TextFormatter
 			int[] totalPics = new int[12];
 			for (int i = 0; i < 12; i++)
 			{
-				List<ImageEntry> imagesByMonthSpecies = new PredicateBuilder().speciesOnly(species).monthOnly(i).query(images);
-				totalPic = totalPic + imagesByMonthSpecies.size();
-				totalPics[i] = imagesByMonthSpecies.size();
-				toReturn = toReturn + String.format("%5d ", imagesByMonthSpecies.size());
+				List<ImageEntry> imagesByMonthSpecies = new PredicateBuilder().speciesOnly(species).monthOnly(i).query(analysis.getImagesSortedByDate());
+				Integer totalPeriod = 0;
+				for (Integer year : analysis.getAllImageYears())
+				{
+					for (Location location : analysis.getAllImageLocations())
+					{
+						List<ImageEntry> imagesByYearSpeciesMonthLocation = new PredicateBuilder().yearOnly(year).locationOnly(location).query(imagesByMonthSpecies);
+						Integer period = analysis.periodForImageList(imagesByYearSpeciesMonthLocation);
+						totalPic = totalPic + period;
+						totalPeriod = totalPeriod + period;
+						totalPics[i] = totalPics[i] + period;
+					}
+				}
+				toReturn = toReturn + String.format("%5d ", totalPeriod);
 			}
 			toReturn = toReturn + String.format("%7d", totalPic);
 			toReturn = toReturn + "\n";
 
 			toReturn = toReturn + "Total days                            ";
 
-			int[] daysUsed = new int[]
-			{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+			int[] daysUsed = new int[12];
 			for (Integer year : analysis.getAllImageYears())
 			{
 				List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
-
-				ImageEntry first = yearsPics.get(0);
-				ImageEntry last = yearsPics.get(yearsPics.size() - 1);
-				Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-				Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-				Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-				Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-				Integer firstMonth = firstCal.get(Calendar.MONTH);
-				Integer lastMonth = lastCal.get(Calendar.MONTH);
-				Calendar calendar = Calendar.getInstance();
-				if (firstMonth == lastMonth)
-					daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
-				else
+				for (Location location : analysis.getAllImageLocations())
 				{
-					daysUsed[firstMonth] = daysUsed[firstMonth] + (firstDaysInMonth - (firstDay - 1));
-					firstMonth++;
-					while (firstMonth < lastMonth)
+					List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+
+					if (!yearLocPics.isEmpty())
 					{
-						calendar.set(year, firstMonth, 1);
-						daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-						firstMonth++;
+						ImageEntry first = yearLocPics.get(0);
+						ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
+						Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
+						Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
+						Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+						Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+						Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
+						Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
+						Integer firstMonth = firstCal.get(Calendar.MONTH);
+						Integer lastMonth = lastCal.get(Calendar.MONTH);
+						Calendar calendar = Calendar.getInstance();
+						if (firstMonth == lastMonth)
+							daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
+						else
+						{
+							daysUsed[firstMonth] = daysUsed[firstMonth] + (firstDaysInMonth - (firstDay - 1));
+							firstMonth++;
+							while (firstMonth < lastMonth)
+							{
+								calendar.set(year, firstMonth, 1);
+								daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+								firstMonth++;
+							}
+							daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
+						}
 					}
-					daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
 				}
 			}
 			Integer totalDays = 0;
@@ -640,99 +751,157 @@ public class TotalDayFormatter extends TextFormatter
 		{
 			toReturn = toReturn + species.getName() + "\n";
 
-			List<ImageEntry> withSpecices = new PredicateBuilder().speciesOnly(species).query(images);
+			List<ImageEntry> withSpecices = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
 
 			for (Integer year : analysis.getAllImageYears())
 			{
-				toReturn = toReturn + year + "\n";
-
-				toReturn = toReturn + "Location                 Elevation   Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   Total\n";
-
 				List<ImageEntry> withSpeciesYear = new PredicateBuilder().yearOnly(year).query(withSpecices);
 
-				for (Location location : analysis.getAllImageLocations())
+				if (!withSpeciesYear.isEmpty())
 				{
-					List<ImageEntry> withSpeciesYearLocation = new PredicateBuilder().locationOnly(location).query(withSpeciesYear);
+					toReturn = toReturn + year + "\n";
 
-					toReturn = toReturn + String.format("%-28s %6d", location.getName(), (int) location.getElevation());
-					Integer total = 0;
+					toReturn = toReturn + "Location                  Elevation  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   Total\n";
+
+					for (Location location : analysis.getAllImageLocations())
+					{
+						List<ImageEntry> withSpeciesYearLocation = new PredicateBuilder().locationOnly(location).query(withSpeciesYear);
+
+						if (!withSpeciesYearLocation.isEmpty())
+						{
+							toReturn = toReturn + String.format("%-28s %6d", location.getName(), (int) location.getElevation());
+							Integer total = 0;
+							for (int i = 0; i < 12; i++)
+							{
+								List<ImageEntry> withSpeciesYearLocationMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesYearLocation);
+								Integer period = analysis.periodForImageList(withSpeciesYearLocationMonth);
+								total = total + period;
+								toReturn = toReturn + String.format("%5d ", period);
+							}
+							toReturn = toReturn + String.format("%7d", total);
+							toReturn = toReturn + "\n";
+						}
+					}
+
+					toReturn = toReturn + "Total pictures                     ";
+
+					Integer totalPic = 0;
+					int[] totalPics = new int[12];
 					for (int i = 0; i < 12; i++)
 					{
-						List<ImageEntry> withSpeciesYearLocationMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesYearLocation);
-						Integer abundance = analysis.abundanceForImageList(withSpeciesYearLocationMonth, eventInterval);
-						total = total + abundance;
-						toReturn = toReturn + String.format("%5d ", abundance);
+						List<ImageEntry> withSpeciesYearMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesYear);
+						Integer totalPeriod = 0;
+						for (Location location : analysis.getAllImageLocations())
+						{
+							List<ImageEntry> withSpeciesYearMonthLocation = new PredicateBuilder().locationOnly(location).query(withSpeciesYearMonth);
+							Integer period = analysis.periodForImageList(withSpeciesYearMonthLocation);
+							totalPic = totalPic + period;
+							totalPeriod = totalPeriod + period;
+							totalPics[i] = totalPics[i] + period;
+						}
+						toReturn = toReturn + String.format("%5d ", totalPeriod);
 					}
-					toReturn = toReturn + String.format("%7d", total);
+					toReturn = toReturn + String.format("%7d", totalPic);
 					toReturn = toReturn + "\n";
-				}
 
-				toReturn = toReturn + "Total pictures                     ";
-
-				Integer totalPic = 0;
-				int[] totalPics = new int[12];
-				for (int i = 0; i < 12; i++)
-				{
-					List<ImageEntry> withSpeciesYearMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesYear);
-					Integer abundance = analysis.abundanceForImageList(withSpeciesYearMonth, eventInterval);
-					totalPic = totalPic + abundance;
-					totalPics[i] = abundance;
-					toReturn = toReturn + String.format("%5d ", abundance);
-				}
-				toReturn = toReturn + String.format("%7d", totalPic);
-				toReturn = toReturn + "\n";
-
-				toReturn = toReturn + "Total days                            ";
-				List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
-
-				ImageEntry first = yearsPics.get(0);
-				ImageEntry last = yearsPics.get(yearsPics.size() - 1);
-				Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-				Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-				Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-				Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-				Integer firstMonth = firstCal.get(Calendar.MONTH);
-				Integer lastMonth = lastCal.get(Calendar.MONTH);
-				Calendar calendar = Calendar.getInstance();
-				int[] daysUsed = new int[12];
-				if (firstMonth == lastMonth)
-					daysUsed[firstMonth] = lastDay - firstDay + 1;
-				else
-				{
-					daysUsed[firstMonth] = firstDaysInMonth - (firstDay - 1);
-					firstMonth++;
-					while (firstMonth < lastMonth)
+					toReturn = toReturn + "Total abundance                    ";
+					Integer totalAbundancePics = 0;
+					int[] totalAbundances = new int[12];
+					for (int i = 0; i < 12; i++)
 					{
-						calendar.set(year, firstMonth, 1);
-						daysUsed[firstMonth] = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-						firstMonth++;
+						List<ImageEntry> withSpeciesYearMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesYear);
+						Integer totalAbundance = 0;
+						for (Location location : analysis.getAllImageLocations())
+						{
+							List<ImageEntry> withSpeciesYearMonthLocation = new PredicateBuilder().locationOnly(location).query(withSpeciesYearMonth);
+							Integer abundance = analysis.abundanceForImageList(withSpeciesYearMonthLocation, species);
+							totalAbundancePics = totalAbundancePics + abundance;
+							totalAbundance = totalAbundance + abundance;
+						}
+						toReturn = toReturn + String.format("%5d ", totalAbundance);
 					}
-					daysUsed[lastMonth] = lastDay;
+					toReturn = toReturn + String.format("%7d", totalAbundancePics);
+					toReturn = toReturn + "\n";
+
+					toReturn = toReturn + "Avg abundance                      ";
+					Integer totalNumLocations = 0;
+					for (int i = 0; i < 12; i++)
+					{
+						List<ImageEntry> withSpeciesYearMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesYear);
+						Integer totalAbundance = 0;
+						Integer numLocations = 0;
+						for (Location location : analysis.getAllImageLocations())
+						{
+							List<ImageEntry> withSpeciesYearMonthLocation = new PredicateBuilder().locationOnly(location).query(withSpeciesYearMonth);
+							Integer abundance = analysis.abundanceForImageList(withSpeciesYearMonthLocation, species);
+							if (!withSpeciesYearMonthLocation.isEmpty())
+								numLocations++;
+							totalAbundance = totalAbundance + abundance;
+						}
+						totalNumLocations = totalNumLocations + numLocations;
+						toReturn = toReturn + String.format("%5.2f ", numLocations == 0 ? 0 : (double) totalAbundance / numLocations);
+					}
+					toReturn = toReturn + String.format("%7.2f", totalNumLocations == 0 ? 0 : (double) totalAbundancePics / totalNumLocations);
+					toReturn = toReturn + "\n";
+
+					toReturn = toReturn + "Total days                            ";
+					int[] daysUsed = new int[12];
+					List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
+
+					for (Location location : analysis.getAllImageLocations())
+					{
+						List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+
+						if (!yearLocPics.isEmpty())
+						{
+							ImageEntry first = yearLocPics.get(0);
+							ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
+							Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
+							Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
+							Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+							Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+							Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
+							Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
+							Integer firstMonth = firstCal.get(Calendar.MONTH);
+							Integer lastMonth = lastCal.get(Calendar.MONTH);
+							Calendar calendar = Calendar.getInstance();
+							if (firstMonth == lastMonth)
+								daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
+							else
+							{
+								daysUsed[firstMonth] = daysUsed[firstMonth] + (firstDaysInMonth - (firstDay - 1));
+								firstMonth++;
+								while (firstMonth < lastMonth)
+								{
+									calendar.set(year, firstMonth, 1);
+									daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+									firstMonth++;
+								}
+								daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
+							}
+						}
+					}
+					Integer totalDays = 0;
+					for (Integer month : daysUsed)
+					{
+						toReturn = toReturn + String.format("%2d    ", month);
+						totalDays = totalDays + month;
+					}
+
+					toReturn = toReturn + String.format(" %3d", totalDays);
+
+					toReturn = toReturn + "\n";
+
+					toReturn = toReturn + "10*Pic/effort                     ";
+
+					for (int i = 0; i < 12; i++)
+					{
+						toReturn = toReturn + String.format("%6.2f", daysUsed[i] == 0 ? 0D : 10D * ((double) totalPics[i] / daysUsed[i]));
+					}
+
+					toReturn = toReturn + "\n\n";
 				}
-				Integer totalDays = 0;
-				for (Integer month : daysUsed)
-				{
-					toReturn = toReturn + String.format("%2d    ", month);
-					totalDays = totalDays + month;
-				}
-
-				toReturn = toReturn + String.format(" %3d", totalDays);
-
-				toReturn = toReturn + "\n";
-
-				toReturn = toReturn + "10*Pic/effort                     ";
-
-				for (int i = 0; i < 12; i++)
-				{
-					toReturn = toReturn + String.format("%6.2f", daysUsed[i] == 0 ? 0D : 10D * ((double) totalPics[i] / daysUsed[i]));
-				}
-
-				toReturn = toReturn + "\n";
 			}
-
-			toReturn = toReturn + "\n";
 
 			toReturn = toReturn + "SUMMARY ALL YEARS\n";
 
@@ -740,23 +909,32 @@ public class TotalDayFormatter extends TextFormatter
 			if (!analysis.getAllImageYears().isEmpty())
 				toReturn = toReturn + "Years " + analysis.getAllImageYears().get(0) + " to " + analysis.getAllImageYears().get(numYears - 1) + "\n";
 
-			toReturn = toReturn + "Location                 Elevation   Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   Total\n";
+			toReturn = toReturn + "Location                  Elevation  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   Total\n";
 
+			List<ImageEntry> withSpecies = new PredicateBuilder().query(withSpecices);
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> withSpeciesLocation = new PredicateBuilder().locationOnly(location).query(withSpecices);
+				List<ImageEntry> withSpeciesLocation = new PredicateBuilder().locationOnly(location).query(withSpecies);
 
-				toReturn = toReturn + String.format("%-28s %6d", location.getName(), (int) location.getElevation());
-				Integer total = 0;
-				for (int i = 0; i < 12; i++)
+				if (!withSpeciesLocation.isEmpty())
 				{
-					List<ImageEntry> withSpeciesLocationMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesLocation);
-					Integer abundance = analysis.abundanceForImageList(withSpeciesLocationMonth, eventInterval);
-					total = total + abundance;
-					toReturn = toReturn + String.format("%5d ", abundance);
+					toReturn = toReturn + String.format("%-28s %6d", location.getName(), (int) location.getElevation());
+					Integer total = 0;
+					for (int i = 0; i < 12; i++)
+					{
+						List<ImageEntry> withSpeciesLocationMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesLocation);
+						Integer period = 0;
+						for (Integer year : analysis.getAllImageYears())
+						{
+							List<ImageEntry> withSpeciesLocationMonthYear = new PredicateBuilder().yearOnly(year).query(withSpeciesLocationMonth);
+							period = period + analysis.periodForImageList(withSpeciesLocationMonthYear);
+							total = total + period;
+						}
+						toReturn = toReturn + String.format("%5d ", period);
+					}
+					toReturn = toReturn + String.format("%7d", total);
+					toReturn = toReturn + "\n";
 				}
-				toReturn = toReturn + String.format("%7d", total);
-				toReturn = toReturn + "\n";
 			}
 
 			toReturn = toReturn + "Total pictures                     ";
@@ -766,7 +944,7 @@ public class TotalDayFormatter extends TextFormatter
 			for (int i = 0; i < 12; i++)
 			{
 				List<ImageEntry> withSpeciesYearMonth = new PredicateBuilder().monthOnly(i).query(withSpecices);
-				Integer abundance = analysis.abundanceForImageList(withSpeciesYearMonth, eventInterval);
+				Integer abundance = analysis.abundanceForImageList(withSpeciesYearMonth, species);
 				totalPic = totalPic + abundance;
 				totalPics[i] = abundance;
 				toReturn = toReturn + String.format("%5d ", abundance);
@@ -774,38 +952,95 @@ public class TotalDayFormatter extends TextFormatter
 			toReturn = toReturn + String.format("%7d", totalPic);
 			toReturn = toReturn + "\n";
 
+			toReturn = toReturn + "Total abundance                    ";
+			Integer totalAbundancePics = 0;
+			for (int i = 0; i < 12; i++)
+			{
+				List<ImageEntry> withSpeciesMonth = new PredicateBuilder().monthOnly(i).query(withSpecies);
+				Integer totalAbundance = 0;
+				for (Location location : analysis.getAllImageLocations())
+				{
+					List<ImageEntry> withSpeciesMonthLocation = new PredicateBuilder().locationOnly(location).query(withSpeciesMonth);
+					Integer abundance = 0;
+					for (Integer year : analysis.getAllImageYears())
+					{
+						List<ImageEntry> withSpeciesMonthLocationYear = new PredicateBuilder().yearOnly(year).query(withSpeciesMonthLocation);
+						abundance = abundance + analysis.abundanceForImageList(withSpeciesMonthLocationYear, species);
+					}
+					totalAbundancePics = totalAbundancePics + abundance;
+					totalAbundance = totalAbundance + abundance;
+				}
+				toReturn = toReturn + String.format("%5d ", totalAbundance);
+			}
+			toReturn = toReturn + String.format("%7d", totalAbundancePics);
+			toReturn = toReturn + "\n";
+
+			toReturn = toReturn + "Avg abundance                      ";
+			Integer totalNumLocations = 0;
+			for (int i = 0; i < 12; i++)
+			{
+				List<ImageEntry> withSpeciesMonth = new PredicateBuilder().monthOnly(i).query(withSpecies);
+				Integer totalAbundance = 0;
+				Integer numLocations = 0;
+				for (Location location : analysis.getAllImageLocations())
+				{
+					List<ImageEntry> withSpeciesMonthLocation = new PredicateBuilder().locationOnly(location).query(withSpeciesMonth);
+					if (!withSpeciesMonthLocation.isEmpty())
+						numLocations++;
+					Integer abundance = 0;
+
+					for (Integer year : analysis.getAllImageYears())
+					{
+						List<ImageEntry> withSpeciesMonthYearLocation = new PredicateBuilder().yearOnly(year).query(withSpeciesMonthLocation);
+						abundance = abundance + analysis.abundanceForImageList(withSpeciesMonthYearLocation, species);
+					}
+
+					totalAbundance = totalAbundance + abundance;
+				}
+				totalNumLocations = totalNumLocations + numLocations;
+				toReturn = toReturn + String.format("%5.2f ", numLocations == 0 ? 0 : (double) totalAbundance / numLocations);
+			}
+			toReturn = toReturn + String.format("%7.2f", totalNumLocations == 0 ? 0 : (double) totalAbundancePics / totalNumLocations);
+			toReturn = toReturn + "\n";
+
 			toReturn = toReturn + "Total days                            ";
 
-			int[] daysUsed = new int[]
-			{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+			int[] daysUsed = new int[12];
 			for (Integer year : analysis.getAllImageYears())
 			{
 				List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
 
-				ImageEntry first = yearsPics.get(0);
-				ImageEntry last = yearsPics.get(yearsPics.size() - 1);
-				Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-				Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-				Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-				Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-				Integer firstMonth = firstCal.get(Calendar.MONTH);
-				Integer lastMonth = lastCal.get(Calendar.MONTH);
-				Calendar calendar = Calendar.getInstance();
-				if (firstMonth == lastMonth)
-					daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
-				else
+				for (Location location : analysis.getAllImageLocations())
 				{
-					daysUsed[firstMonth] = daysUsed[firstMonth] + (firstDaysInMonth - (firstDay - 1));
-					firstMonth++;
-					while (firstMonth < lastMonth)
+					List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+					if (!yearLocPics.isEmpty())
 					{
-						calendar.set(year, firstMonth, 1);
-						daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-						firstMonth++;
+						ImageEntry first = yearLocPics.get(0);
+						ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
+						Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
+						Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
+						Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+						Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+						Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
+						Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
+						Integer firstMonth = firstCal.get(Calendar.MONTH);
+						Integer lastMonth = lastCal.get(Calendar.MONTH);
+						Calendar calendar = Calendar.getInstance();
+						if (firstMonth == lastMonth)
+							daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
+						else
+						{
+							daysUsed[firstMonth] = daysUsed[firstMonth] + (firstDaysInMonth - (firstDay - 1));
+							firstMonth++;
+							while (firstMonth < lastMonth)
+							{
+								calendar.set(year, firstMonth, 1);
+								daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+								firstMonth++;
+							}
+							daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
+						}
 					}
-					daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
 				}
 			}
 			Integer totalDays = 0;
@@ -826,7 +1061,7 @@ public class TotalDayFormatter extends TextFormatter
 				toReturn = toReturn + String.format("%6.2f", daysUsed[i] == 0 ? 0D : 10D * ((double) totalPics[i] / daysUsed[i]));
 			}
 
-			toReturn = toReturn + "\n";
+			toReturn = toReturn + "\n\n";
 		}
 
 		return toReturn;

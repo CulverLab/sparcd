@@ -5,10 +5,7 @@
  */
 package controller;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -19,8 +16,6 @@ import java.util.List;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.lang3.time.DateUtils;
@@ -55,234 +50,190 @@ public class SanimalController
 		///
 
 		// When the user clicks a new image in the image list on the right
-		sanimalView.addImageTreeValueChanged(new TreeSelectionListener()
+		sanimalView.addImageTreeValueChanged(event ->
 		{
-			@Override
-			public void valueChanged(TreeSelectionEvent event)
-			{
-				SanimalController.this.selectedItemUpdated();
-				List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
-				//				if (selectedImages.size() == 1)
-				//				{
-				//					ImageEntry selected = selectedImages.get(0);
-				//					sanimalView.setOutputText("Image Name = " + selected.getImageFile().getName() + "\n" + "Image Location = " + (selected.getLocationTaken() == null ? "Unknown" : selected.getLocationTaken().formattedString()) + "\n" + "Image Date Taken = " + selected.getDateTakenFormatted() + "\n"
-				//							+ "Image Species = ");
-				//				}
-				sanimalData.getTimelineData().updateList(selectedImages);
-			}
+			SanimalController.this.selectedItemUpdated();
+			List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
+			//				if (selectedImages.size() == 1)
+			//				{
+			//					ImageEntry selected = selectedImages.get(0);
+			//					sanimalView.setOutputText("Image Name = " + selected.getImageFile().getName() + "\n" + "Image Location = " + (selected.getLocationTaken() == null ? "Unknown" : selected.getLocationTaken().formattedString()) + "\n" + "Image Date Taken = " + selected.getDateTakenFormatted() + "\n"
+			//							+ "Image Species = ");
+			//				}
+			sanimalData.getTimelineData().updateList(selectedImages);
 		});
 		// When the user wants to load in images
-		sanimalView.addImageBrowseListener(new ActionListener()
+		sanimalView.addImageBrowseListener(event ->
 		{
-			@Override
-			public void actionPerformed(ActionEvent e)
+			JFileChooser chooser = new JFileChooser();
+			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+			int returnVal = chooser.showOpenDialog(null);
+			if (returnVal == JFileChooser.APPROVE_OPTION)
 			{
-				JFileChooser chooser = new JFileChooser();
-				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-				int returnVal = chooser.showOpenDialog(null);
-				if (returnVal == JFileChooser.APPROVE_OPTION)
-				{
-					sanimalData.getImageData().readAndAddImages(chooser.getSelectedFile(), sanimalView.searchSubdirectories());
-					sanimalView.setImageList(sanimalData.getImageData().getHeadDirectory());
-				}
+				sanimalData.getImageData().readAndAddImages(chooser.getSelectedFile(), sanimalView.searchSubdirectories());
+				sanimalView.setImageList(sanimalData.getImageData().getHeadDirectory());
 			}
 		});
 		// When the user selects a new location from the drop down
-		sanimalView.addLocationSelectedListener(new ItemListener()
+		sanimalView.addLocationSelectedListener(event ->
 		{
-			@Override
-			public void itemStateChanged(ItemEvent event)
+			if (event.getStateChange() == ItemEvent.SELECTED)
 			{
-				if (event.getStateChange() == ItemEvent.SELECTED)
-				{
-					Location selected = ((Location) event.getItem());
-					if (selected != null)
-						for (ImageEntry selectedImage : sanimalView.getSelectedImageEntries())
-							selectedImage.setLocationTaken(selected);
-					sanimalView.setLocation(selected);
-					sanimalView.centerMapOn(selected.toGeoPosition());
-				}
+				Location selected = ((Location) event.getItem());
+				if (selected != null)
+					for (ImageEntry selectedImage : sanimalView.getSelectedImageEntries())
+						selectedImage.setLocationTaken(selected);
+				sanimalView.setLocation(selected);
+				sanimalView.centerMapOn(selected.toGeoPosition());
 			}
 		});
 		// When the user wants to add a new location
-		sanimalView.addALToAddNewLocation(new ActionListener()
+		sanimalView.addALToAddNewLocation(event ->
 		{
-			@Override
-			public void actionPerformed(ActionEvent event)
+			Location newLocation = SanimalInput.askUserForNewLocation();
+			if (newLocation != null)
 			{
-				Location newLocation = SanimalInput.askUserForNewLocation();
-				if (newLocation != null)
-				{
-					sanimalData.getLocationData().addLocation(newLocation);
-					sanimalView.setLocationList(sanimalData.getLocationData().getRegisteredLocations());
-				}
+				sanimalData.getLocationData().addLocation(newLocation);
+				sanimalView.setLocationList(sanimalData.getLocationData().getRegisteredLocations());
 			}
 		});
 		// When the user wants to add a new species
-		sanimalView.addALToAddNewSpecies(new ActionListener()
+		sanimalView.addALToAddNewSpecies(event ->
 		{
-			@Override
-			public void actionPerformed(ActionEvent event)
+			Species species = SanimalInput.askUserForNewSpecies();
+			if (species != null)
 			{
-				Species species = SanimalInput.askUserForNewSpecies();
-				if (species != null)
-				{
-					sanimalData.getSpeciesData().addSpecies(species);
-					sanimalView.setSpeciesList(sanimalData.getSpeciesData().getRegisteredSpecies());
-				}
+				sanimalData.getSpeciesData().addSpecies(species);
+				sanimalView.setSpeciesList(sanimalData.getSpeciesData().getRegisteredSpecies());
 			}
 		});
 		// When the user wants to remove a location
-		sanimalView.addALToRemoveLocation(new ActionListener()
+		sanimalView.addALToRemoveLocation(event ->
 		{
-			@Override
-			public void actionPerformed(ActionEvent event)
+			if (sanimalView.getSelectedLocation() != null)
 			{
-				if (sanimalView.getSelectedLocation() != null)
-				{
-					Location selected = sanimalView.getSelectedLocation();
-					int numberOfSelectedOccourances = 0;
-					// Count how many images have this location selected
-					for (ImageEntry image : sanimalView.getAllTreeImageEntries())
-						if (image.getLocationTaken() == selected)
-							numberOfSelectedOccourances++;
-					// If we have more than 1, ask the user if he'd like to continue
-					if (numberOfSelectedOccourances >= 1)
-						if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(sanimalView, "This location has already been set on multiple images, continue removing the location from all images?"))
-							return;
-					// Delete the location
-					for (ImageEntry image : sanimalView.getAllTreeImageEntries())
-						if (image.getLocationTaken() == selected)
-							image.setLocationTaken(null);
-					sanimalData.getLocationData().removeLocation(selected.toString());
-					sanimalView.setLocationList(sanimalData.getLocationData().getRegisteredLocations());
-					SanimalController.this.selectedItemUpdated();
-				}
+				Location selected = sanimalView.getSelectedLocation();
+				int numberOfSelectedOccourances = 0;
+				// Count how many images have this location selected
+				for (ImageEntry image : sanimalView.getAllTreeImageEntries())
+					if (image.getLocationTaken() == selected)
+						numberOfSelectedOccourances++;
+				// If we have more than 1, ask the user if he'd like to continue
+				if (numberOfSelectedOccourances >= 1)
+					if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(sanimalView, "This location has already been set on multiple images, continue removing the location from all images?"))
+						return;
+				// Delete the location
+				for (ImageEntry image : sanimalView.getAllTreeImageEntries())
+					if (image.getLocationTaken() == selected)
+						image.setLocationTaken(null);
+				sanimalData.getLocationData().removeLocation(selected.toString());
+				sanimalView.setLocationList(sanimalData.getLocationData().getRegisteredLocations());
+				SanimalController.this.selectedItemUpdated();
 			}
 		});
 		// When the user wants to remove a species
-		sanimalView.addALToRemoveSpecies(new ActionListener()
+		sanimalView.addALToRemoveSpecies(event ->
 		{
-			@Override
-			public void actionPerformed(ActionEvent event)
+			if (sanimalView.getSelectedSpecies() != null)
 			{
-				if (sanimalView.getSelectedSpecies() != null)
+				Species selected = sanimalView.getSelectedSpecies();
+				int numberOfSelectedOccourances = 0;
+				// Count how many images have this species selected
+				for (ImageEntry image : sanimalView.getAllTreeImageEntries())
+					for (SpeciesEntry entry : image.getSpeciesPresent())
+						if (entry.getSpecies() == selected)
+							numberOfSelectedOccourances++;
+				// If we have more than 1, ask the user if he'd like to continue
+				if (numberOfSelectedOccourances >= 1)
+					if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(sanimalView, "This species has already been set on multiple images, continue removing the species from all images?"))
+						return;
+				for (ImageEntry image : sanimalView.getAllTreeImageEntries())
 				{
-					Species selected = sanimalView.getSelectedSpecies();
-					int numberOfSelectedOccourances = 0;
-					// Count how many images have this species selected
-					for (ImageEntry image : sanimalView.getAllTreeImageEntries())
-						for (SpeciesEntry entry : image.getSpeciesPresent())
-							if (entry.getSpecies() == selected)
-								numberOfSelectedOccourances++;
-					// If we have more than 1, ask the user if he'd like to continue
-					if (numberOfSelectedOccourances >= 1)
-						if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(sanimalView, "This species has already been set on multiple images, continue removing the species from all images?"))
-							return;
-					for (ImageEntry image : sanimalView.getAllTreeImageEntries())
-					{
-						Iterator<SpeciesEntry> iterator = image.getSpeciesPresent().iterator();
-						while (iterator.hasNext())
-							if (iterator.next().getSpecies() == selected)
-								iterator.remove();
-					}
-					sanimalData.getSpeciesData().removeSpecies(selected);
-					sanimalView.setSpeciesList(sanimalData.getSpeciesData().getRegisteredSpecies());
-					SanimalController.this.selectedItemUpdated();
+					Iterator<SpeciesEntry> iterator = image.getSpeciesPresent().iterator();
+					while (iterator.hasNext())
+						if (iterator.next().getSpecies() == selected)
+							iterator.remove();
 				}
+				sanimalData.getSpeciesData().removeSpecies(selected);
+				sanimalView.setSpeciesList(sanimalData.getSpeciesData().getRegisteredSpecies());
+				SanimalController.this.selectedItemUpdated();
 			}
 		});
 		// When the user adds a new species to the image
-		sanimalView.addALToAddSpeciesToList(new ActionListener()
+		sanimalView.addALToAddSpeciesToList(event ->
 		{
-			@Override
-			public void actionPerformed(ActionEvent event)
+			Species selectedSpecies = sanimalView.getSelectedSpecies();
+			if (selectedSpecies != null)
 			{
-				Species selectedSpecies = sanimalView.getSelectedSpecies();
-				if (selectedSpecies != null)
+				if (!sanimalView.getSelectedImageEntries().isEmpty())
 				{
-					if (!sanimalView.getSelectedImageEntries().isEmpty())
+					Integer numberOfAnimals = Integer.MAX_VALUE;
+					while (numberOfAnimals == Integer.MAX_VALUE)
 					{
-						Integer numberOfAnimals = Integer.MAX_VALUE;
-						while (numberOfAnimals == Integer.MAX_VALUE)
+						try
 						{
-							try
-							{
-								String numberOfAnimalsString = JOptionPane.showInputDialog("How many animals of this species are in the image?");
-								if (numberOfAnimalsString == null)
-									return;
-								numberOfAnimals = Integer.parseInt(numberOfAnimalsString);
-							}
-							catch (NumberFormatException exception)
-							{
-							}
+							String numberOfAnimalsString = JOptionPane.showInputDialog("How many animals of this species are in the image?");
+							if (numberOfAnimalsString == null)
+								return;
+							numberOfAnimals = Integer.parseInt(numberOfAnimalsString);
 						}
-						List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
-						for (ImageEntry imageEntry : selectedImages)
-							imageEntry.addSpecies(selectedSpecies, numberOfAnimals);
-						if (selectedImages.size() == 1)
-							sanimalView.setSpeciesEntryList(selectedImages.get(0).getSpeciesPresent());
+						catch (NumberFormatException exception)
+						{
+						}
 					}
-					else
-					{
-						JOptionPane.showConfirmDialog(sanimalView, "You must select an image(s) to apply this species to!", "Error adding species to Image", JOptionPane.DEFAULT_OPTION);
-					}
+					List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
+					for (ImageEntry imageEntry : selectedImages)
+						imageEntry.addSpecies(selectedSpecies, numberOfAnimals);
+					if (selectedImages.size() == 1)
+						sanimalView.setSpeciesEntryList(selectedImages.get(0).getSpeciesPresent());
 				}
 				else
 				{
-					JOptionPane.showConfirmDialog(sanimalView, "You must select a species from the drop down first!", "Error adding species to Image", JOptionPane.DEFAULT_OPTION);
+					JOptionPane.showConfirmDialog(sanimalView, "You must select an image(s) to apply this species to!", "Error adding species to Image", JOptionPane.DEFAULT_OPTION);
 				}
-				SanimalController.this.selectedItemUpdated();
 			}
+			else
+			{
+				JOptionPane.showConfirmDialog(sanimalView, "You must select a species from the drop down first!", "Error adding species to Image", JOptionPane.DEFAULT_OPTION);
+			}
+			SanimalController.this.selectedItemUpdated();
 		});
 		// When the user removes an animal from an image
-		sanimalView.addALToRemoveSpeciesFromList(new ActionListener()
+		sanimalView.addALToRemoveSpeciesFromList(event ->
 		{
-			@Override
-			public void actionPerformed(ActionEvent event)
+			Species selectedSpecies = sanimalView.getSelectedSpecies();
+			List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
+			if (selectedSpecies != null)
 			{
-				Species selectedSpecies = sanimalView.getSelectedSpecies();
-				List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
-				if (selectedSpecies != null)
-				{
-					for (ImageEntry imageEntry : selectedImages)
-						imageEntry.removeSpecies(selectedSpecies);
-				}
-				SanimalController.this.selectedItemUpdated();
+				for (ImageEntry imageEntry : selectedImages)
+					imageEntry.removeSpecies(selectedSpecies);
 			}
+			SanimalController.this.selectedItemUpdated();
 		});
 		// When the user clicks "Perform Analysis"
-		sanimalView.addALToPerformAnalysis(new ActionListener()
+		sanimalView.addALToPerformAnalysis(event ->
 		{
-			@Override
-			public void actionPerformed(ActionEvent event)
-			{
-				Integer eventInterval = sanimalView.getAnalysisEventInterval();
-				if (eventInterval != -1)
-					sanimalView.setOutputText(sanimalData.getOutputFormatter().format(sanimalView.getSelectedImageEntries(), eventInterval));
-			}
+			Integer eventInterval = sanimalView.getAnalysisEventInterval();
+			if (eventInterval != -1)
+				sanimalView.setOutputText(sanimalData.getOutputFormatter().format(sanimalView.getSelectedImageEntries(), eventInterval));
 		});
 		// When the user clicks to create an excel file
-		sanimalView.addALToCreateExcel(new ActionListener()
+		sanimalView.addALToCreateExcel(event ->
 		{
-			@Override
-			public void actionPerformed(ActionEvent event)
+			JFileChooser chooser = new JFileChooser();
+			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			chooser.setDialogTitle("Select the location to save the excel file to");
+			chooser.setFileFilter(new FileNameExtensionFilter("Excel files (.xlsx)", "xlsx"));
+			chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+			chooser.setSelectedFile(new File("Sanimal.xlsx"));
+			int response = chooser.showSaveDialog(sanimalView);
+			if (response == JFileChooser.APPROVE_OPTION)
 			{
-				JFileChooser chooser = new JFileChooser();
-				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				chooser.setDialogTitle("Select the location to save the excel file to");
-				chooser.setFileFilter(new FileNameExtensionFilter("Excel files (.xlsx)", "xlsx"));
-				chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
-				chooser.setSelectedFile(new File("Sanimal.xlsx"));
-				int response = chooser.showSaveDialog(sanimalView);
-				if (response == JFileChooser.APPROVE_OPTION)
-				{
-					File directory = chooser.getSelectedFile();
-					if (sanimalData.getExcelFormatter().format(directory, sanimalView.getSelectedImageEntries()))
-						JOptionPane.showMessageDialog(sanimalView, "Excel file saved sucessfully!");
-					else
-						JOptionPane.showMessageDialog(sanimalView, "There was an error when saving the excel file.");
-				}
+				File directory = chooser.getSelectedFile();
+				if (sanimalData.getExcelFormatter().format(directory, sanimalView.getSelectedImageEntries()))
+					JOptionPane.showMessageDialog(sanimalView, "Excel file saved sucessfully!");
+				else
+					JOptionPane.showMessageDialog(sanimalView, "There was an error when saving the excel file.");
 			}
 		});
 		// When the user selects the timeline
@@ -346,6 +297,13 @@ public class SanimalController
 					stopWatch.start();
 				}
 			}
+		});
+		// When the user creates "All Pictures" output
+		sanimalView.addALToAllPictures(event ->
+		{
+			Integer eventInterval = sanimalView.getAnalysisEventInterval();
+			if (eventInterval != -1)
+				sanimalView.setOutputText(sanimalData.getOutputFormatter().createAllPictures(sanimalView.getSelectedImageEntries(), eventInterval));
 		});
 		sanimalView.setVisible(true);
 

@@ -10,6 +10,7 @@ import java.util.List;
 import model.ImageEntry;
 import model.analysis.textFormatters.ActPerAbuLocFormatter;
 import model.analysis.textFormatters.ActivityPatternFormatter;
+import model.analysis.textFormatters.AllPicturesFormatter;
 import model.analysis.textFormatters.DetectionRateFormatter;
 import model.analysis.textFormatters.FirstLastSpeciesFormatter;
 import model.analysis.textFormatters.HeaderFormatter;
@@ -256,5 +257,16 @@ public class SanimalTextOutputFormatter
 
 		return toReturn;
 
+	}
+
+	public String createAllPictures(List<ImageEntry> images, Integer eventInterval)
+	{
+		String toReturn = "";
+
+		DataAnalysis analysis = new DataAnalysis(images, eventInterval);
+		AllPicturesFormatter allPicturesFormatter = new AllPicturesFormatter(images, analysis, eventInterval);
+		toReturn = toReturn + allPicturesFormatter.createAllPictures();
+
+		return toReturn;
 	}
 }

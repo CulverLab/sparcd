@@ -5,9 +5,7 @@
  */
 package model.analysis.textFormatters;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -50,12 +48,14 @@ public class ActPerAbuLocFormatter extends TextFormatter
 			int yearActivityTotal = 0;
 			int yearPeriodTotal = 0;
 			int yearAbundanceTotal = 0;
+			List<ImageEntry> withYear = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
 			for (Species species : analysis.getAllImageSpecies())
 			{
-				yearImageTotal = yearImageTotal + analysis.getYearToNumberImages().get(species).getOrDefault(year, -1);
-				yearActivityTotal = yearActivityTotal + analysis.getYearToActivity().get(species).getOrDefault(year, -1);
-				yearPeriodTotal = yearPeriodTotal + analysis.getYearToPeriod().get(species).getOrDefault(year, -1);
-				yearAbundanceTotal = yearAbundanceTotal + analysis.getYearToAbundance().get(species).getOrDefault(year, -1);
+				List<ImageEntry> withYearSpecies = new PredicateBuilder().speciesOnly(species).query(withYear);
+				yearImageTotal = yearImageTotal + withYearSpecies.size();
+				yearActivityTotal = yearActivityTotal + analysis.activityForImageList(withYearSpecies);
+				yearPeriodTotal = yearPeriodTotal + analysis.periodForImageList(withYearSpecies);
+				yearAbundanceTotal = yearAbundanceTotal + analysis.abundanceForImageList(withYearSpecies, species);
 			}
 			imageTotal = imageTotal + yearImageTotal;
 			activityTotal = activityTotal + yearActivityTotal;
@@ -84,20 +84,27 @@ public class ActPerAbuLocFormatter extends TextFormatter
 			int speciesPeriodTotal = 0;
 			int speciesAbundanceTotal = 0;
 			int speciesLocationTotal = 0;
-			for (Integer year : analysis.getYearToNumberImages().get(species).keySet())
+			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
+			for (Integer year : analysis.getAllImageYears())
 			{
-				speciesImageTotal = speciesImageTotal + analysis.getYearToNumberImages().get(species).getOrDefault(year, -1);
-				speciesActivityTotal = speciesActivityTotal + analysis.getYearToActivity().get(species).getOrDefault(year, -1);
-				speciesPeriodTotal = speciesPeriodTotal + analysis.getYearToPeriod().get(species).getOrDefault(year, -1);
-				speciesAbundanceTotal = speciesAbundanceTotal + analysis.getYearToAbundance().get(species).getOrDefault(year, -1);
-				speciesLocationTotal = speciesLocationTotal + analysis.getYearToLocations().get(species).getOrDefault(year, new ArrayList<Location>()).size();
-				toReturn = toReturn + String.format("        %4d   %7d  %7d  %7d  %7d  %7d\n", year, analysis.getYearToNumberImages().get(species).getOrDefault(year, -1), analysis.getYearToActivity().get(species).getOrDefault(year, -1), analysis.getYearToPeriod().get(species).getOrDefault(year, -1),
-						analysis.getYearToAbundance().get(species).getOrDefault(year, -1), analysis.getYearToLocations().get(species).getOrDefault(year, new ArrayList<Location>()).size());
+				List<ImageEntry> withSpeciesYear = new PredicateBuilder().yearOnly(year).query(withSpecies);
+				Integer speciesImage = withSpeciesYear.size();
+				Integer speciesActivity = analysis.activityForImageList(withSpeciesYear);
+				Integer speciesPeriod = analysis.periodForImageList(withSpeciesYear);
+				Integer speciesAbundance = analysis.abundanceForImageList(withSpeciesYear, species);
+				Integer speciesLocation = analysis.locationsForImageList(withSpeciesYear).size();
+				speciesImageTotal = speciesImageTotal + speciesImage;
+				speciesActivityTotal = speciesActivityTotal + speciesActivity;
+				speciesPeriodTotal = speciesPeriodTotal + speciesPeriod;
+				speciesAbundanceTotal = speciesAbundanceTotal + speciesAbundance;
+				speciesLocationTotal = speciesLocationTotal + speciesLocation;
+				toReturn = toReturn + String.format("        %4d   %7d  %7d  %7d  %7d  %7d\n", year, speciesImage, speciesActivity, speciesPeriod, speciesAbundance, speciesLocation);
 			}
 
 			toReturn = toReturn + String.format("        Total  %7d  %7d  %7d  %7d  %7d\n", speciesImageTotal, speciesActivityTotal, speciesPeriodTotal, speciesAbundanceTotal, speciesLocationTotal);
+
+			toReturn = toReturn + "\n";
 		}
-		toReturn = toReturn + "\n";
 
 		return toReturn;
 	}
@@ -110,20 +117,22 @@ public class ActPerAbuLocFormatter extends TextFormatter
 
 		toReturn = toReturn + "     Species                   Total  Percent\n";
 
-		int periodTotal = 0;
+		Integer periodTotal = 0;
 		for (Integer year : analysis.getAllImageYears())
 		{
-			int yearPeriodTotal = 0;
+			Integer yearPeriodTotal = 0;
+			List<ImageEntry> withYear = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
 			for (Species species : analysis.getAllImageSpecies())
-				yearPeriodTotal = yearPeriodTotal + analysis.getYearToPeriod().get(species).getOrDefault(year, -1);
+				yearPeriodTotal = yearPeriodTotal + analysis.periodForImageList(new PredicateBuilder().speciesOnly(species).query(withYear));
 			periodTotal = periodTotal + yearPeriodTotal;
 		}
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
 			Integer speciesPeriodTotal = 0;
+			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
 			for (Integer year : analysis.getAllImageYears())
-				speciesPeriodTotal = speciesPeriodTotal + analysis.getYearToPeriod().get(species).getOrDefault(year, 0);
+				speciesPeriodTotal = speciesPeriodTotal + analysis.periodForImageList(new PredicateBuilder().yearOnly(year).query(withSpecies));
 			toReturn = toReturn + String.format("  %-28s %5d  %7.2f\n", species.getName(), speciesPeriodTotal, (speciesPeriodTotal.doubleValue() / periodTotal) * 100.0);
 		}
 		toReturn = toReturn + String.format("  Total pictures               %5d   100.00\n", periodTotal);
@@ -141,23 +150,27 @@ public class ActPerAbuLocFormatter extends TextFormatter
 		toReturn = toReturn + "SPECIES                      NUMBER PICS      RELATIVE ABUNDANCE     AVG NUM INDIVS     ABUNDANCE OF INDIVS\n";
 		Integer periodOverAllSpecies = 0;
 		Integer numAnimalsPhotographed = 0;
-		for (Map<Integer, Integer> map : analysis.getYearToActivity().values())
-			for (Integer integer : map.values())
-				periodOverAllSpecies = periodOverAllSpecies + integer;
-		for (Species species : analysis.getAllImageSpecies())
-			for (Integer abundance : analysis.getYearToAbundance().get(species).values())
-				numAnimalsPhotographed = numAnimalsPhotographed + abundance;
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			List<ImageEntry> picsWithSpecies = new PredicateBuilder().speciesOnly(species).query(images);
-			Map<Integer, Integer> yearToAbundance = analysis.getYearToAbundance().get(species);
-			Map<Integer, Integer> yearToPeriod = analysis.getYearToPeriod().get(species);
+			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
+			for (Integer year : analysis.getAllImageYears())
+			{
+				List<ImageEntry> withSpeciesYear = new PredicateBuilder().yearOnly(year).query(withSpecies);
+				periodOverAllSpecies = periodOverAllSpecies + analysis.periodForImageList(withSpeciesYear);
+				numAnimalsPhotographed = numAnimalsPhotographed + analysis.abundanceForImageList(withSpeciesYear, species);
+			}
+		}
+		for (Species species : analysis.getAllImageSpecies())
+		{
+			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
 			Integer abundanceTotal = 0;
 			Integer periodTotal = 0;
-			for (Integer abundance : yearToAbundance.values())
-				abundanceTotal = abundanceTotal + abundance;
-			for (Integer period : yearToPeriod.values())
-				periodTotal = periodTotal + period;
+			for (Integer year : analysis.getAllImageYears())
+			{
+				List<ImageEntry> withSpeciesYear = new PredicateBuilder().yearOnly(year).query(withSpecies);
+				abundanceTotal = abundanceTotal + analysis.abundanceForImageList(withSpeciesYear, species);
+				periodTotal = periodTotal + analysis.periodForImageList(withSpeciesYear);
+			}
 			toReturn = toReturn + String.format("%-28s %7d               %7.2f             %7.2f             %7.2f\n", species.getName(), periodTotal, 100.0D * (double) periodTotal / periodOverAllSpecies, (double) abundanceTotal / periodTotal, (double) abundanceTotal / numAnimalsPhotographed * 100);
 		}
 		toReturn = toReturn + String.format("Total                        %7d                100.00", periodOverAllSpecies);
@@ -178,7 +191,7 @@ public class ActPerAbuLocFormatter extends TextFormatter
 
 		for (Integer year : analysis.getAllImageYears())
 		{
-			List<ImageEntry> withYear = new PredicateBuilder().yearOnly(year).query(images);
+			List<ImageEntry> withYear = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
 			toReturn = toReturn + year + "\n";
 			toReturn = toReturn + "Species                     ";
 			for (Location location : analysis.getAllImageLocations())
@@ -191,8 +204,8 @@ public class ActPerAbuLocFormatter extends TextFormatter
 				for (Location location : analysis.getAllImageLocations())
 				{
 					List<ImageEntry> withYearSpeciesLoc = new PredicateBuilder().locationOnly(location).query(withYearSpecies);
-					Integer abundance = analysis.abundanceForImageList(withYearSpeciesLoc, eventInterval);
-					Integer period = analysis.periodForImageList(new PredicateBuilder().locationOnly(location).speciesOnly(species).query(images), eventInterval);
+					Integer abundance = analysis.abundanceForImageList(withYearSpeciesLoc, species);
+					Integer period = analysis.periodForImageList(new PredicateBuilder().locationOnly(location).speciesOnly(species).query(images));
 					toReturn = toReturn + String.format("%5.2f ", period == 0 ? 0 : (double) abundance / period);
 				}
 				toReturn = toReturn + "\n";
@@ -221,13 +234,13 @@ public class ActPerAbuLocFormatter extends TextFormatter
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(images);
+			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
 			toReturn = toReturn + String.format("%-28s", species.getName());
 			for (Location location : analysis.getAllImageLocations())
 			{
 				List<ImageEntry> withSpeciesLoc = new PredicateBuilder().locationOnly(location).query(withSpecies);
-				Integer abundance = analysis.abundanceForImageList(withSpeciesLoc, eventInterval);
-				Integer period = analysis.periodForImageList(new PredicateBuilder().locationOnly(location).speciesOnly(species).query(images), eventInterval);
+				Integer abundance = analysis.abundanceForImageList(withSpeciesLoc, species);
+				Integer period = analysis.periodForImageList(new PredicateBuilder().locationOnly(location).speciesOnly(species).query(images));
 				toReturn = toReturn + String.format("%5.2f ", period == 0 ? 0 : (double) abundance / period);
 			}
 			toReturn = toReturn + "\n";

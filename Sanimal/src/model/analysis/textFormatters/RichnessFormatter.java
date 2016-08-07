@@ -36,14 +36,15 @@ public class RichnessFormatter extends TextFormatter
 		for (Location location : analysis.getAllImageLocations())
 		{
 			toReturn = toReturn + String.format("%-28s       ", location.getName());
-			List<ImageEntry> imagesAtLoc = new PredicateBuilder().locationOnly(location).query(images);
+			List<ImageEntry> imagesAtLoc = new PredicateBuilder().locationOnly(location).query(analysis.getImagesSortedByDate());
 
 			Integer horizontalRichness = 0;
 			for (Species species : analysis.getAllImageSpecies())
 			{
 				List<ImageEntry> imagesAtLocWithSpecies = new PredicateBuilder().speciesOnly(species).query(imagesAtLoc);
-				horizontalRichness = horizontalRichness + (imagesAtLocWithSpecies.size() == 0 ? 0 : 1);
-				toReturn = toReturn + String.format("%5d  ", imagesAtLocWithSpecies.size());
+				Integer period = analysis.periodForImageList(imagesAtLocWithSpecies);
+				horizontalRichness = horizontalRichness + (period == 0 ? 0 : 1);
+				toReturn = toReturn + String.format("%5d  ", period);
 			}
 			toReturn = toReturn + String.format("%5d  ", horizontalRichness);
 

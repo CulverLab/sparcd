@@ -90,6 +90,7 @@ public class SanimalView extends JFrame
 	private JTextArea tarAllOutput;
 	private JPanel pnlExcelOutput;
 	private JButton btnToExcel;
+	private JButton btnAllPictures;
 
 	public SanimalView()
 	{
@@ -294,6 +295,12 @@ public class SanimalView extends JFrame
 		btnToExcel.setLayout(null);
 		pnlExcelOutput.add(btnToExcel);
 
+		btnAllPictures = new JButton("Create all pictures output");
+		btnAllPictures.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		btnAllPictures.setBounds(165, 11, 145, 23);
+		btnAllPictures.setLayout(null);
+		pnlExcelOutput.add(btnAllPictures);
+
 		pneAllOutput = new JScrollPane();
 		pneAllOutput.setViewportView(tarAllOutput);
 		tabOutputTabs.insertTab("Excel Output", new ImageIcon(""), pnlExcelOutput, "Excel output testing", 0);
@@ -356,6 +363,11 @@ public class SanimalView extends JFrame
 	public void addALToCreateExcel(ActionListener listener)
 	{
 		this.btnToExcel.addActionListener(listener);
+	}
+
+	public void addALToAllPictures(ActionListener listener)
+	{
+		this.btnAllPictures.addActionListener(listener);
 	}
 
 	public void addALToPrgDataShow(MouseListener listener)
