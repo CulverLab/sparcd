@@ -774,9 +774,9 @@ public class TotalDayFormatter extends TextFormatter
 							for (int i = 0; i < 12; i++)
 							{
 								List<ImageEntry> withSpeciesYearLocationMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesYearLocation);
-								Integer period = analysis.periodForImageList(withSpeciesYearLocationMonth);
-								total = total + period;
-								toReturn = toReturn + String.format("%5d ", period);
+								Integer abundance = analysis.abundanceForImageList(withSpeciesYearLocationMonth, species);
+								total = total + abundance;
+								toReturn = toReturn + String.format("%5d ", abundance);
 							}
 							toReturn = toReturn + String.format("%7d", total);
 							toReturn = toReturn + "\n";
@@ -818,30 +818,18 @@ public class TotalDayFormatter extends TextFormatter
 							totalAbundancePics = totalAbundancePics + abundance;
 							totalAbundance = totalAbundance + abundance;
 						}
+						totalAbundances[i] = totalAbundances[i] + totalAbundance;
 						toReturn = toReturn + String.format("%5d ", totalAbundance);
 					}
 					toReturn = toReturn + String.format("%7d", totalAbundancePics);
 					toReturn = toReturn + "\n";
 
 					toReturn = toReturn + "Avg abundance                      ";
-					Integer totalNumLocations = 0;
 					for (int i = 0; i < 12; i++)
 					{
-						List<ImageEntry> withSpeciesYearMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesYear);
-						Integer totalAbundance = 0;
-						Integer numLocations = 0;
-						for (Location location : analysis.getAllImageLocations())
-						{
-							List<ImageEntry> withSpeciesYearMonthLocation = new PredicateBuilder().locationOnly(location).query(withSpeciesYearMonth);
-							Integer abundance = analysis.abundanceForImageList(withSpeciesYearMonthLocation, species);
-							if (!withSpeciesYearMonthLocation.isEmpty())
-								numLocations++;
-							totalAbundance = totalAbundance + abundance;
-						}
-						totalNumLocations = totalNumLocations + numLocations;
-						toReturn = toReturn + String.format("%5.2f ", numLocations == 0 ? 0 : (double) totalAbundance / numLocations);
+						toReturn = toReturn + String.format("%5.2f ", totalPics[i] == 0 ? 0 : (double) totalAbundances[i] / totalPics[i]);
 					}
-					toReturn = toReturn + String.format("%7.2f", totalNumLocations == 0 ? 0 : (double) totalAbundancePics / totalNumLocations);
+					toReturn = toReturn + String.format("%7.2f", totalPic == 0 ? 0 : (double) totalAbundancePics / totalPic);
 					toReturn = toReturn + "\n";
 
 					toReturn = toReturn + "Total days                            ";
@@ -896,7 +884,7 @@ public class TotalDayFormatter extends TextFormatter
 
 					for (int i = 0; i < 12; i++)
 					{
-						toReturn = toReturn + String.format("%6.2f", daysUsed[i] == 0 ? 0D : 10D * ((double) totalPics[i] / daysUsed[i]));
+						toReturn = toReturn + String.format("%6.2f", daysUsed[i] == 0 ? 0D : 10D * ((double) totalAbundances[i] / daysUsed[i]));
 					}
 
 					toReturn = toReturn + "\n\n";
@@ -923,14 +911,14 @@ public class TotalDayFormatter extends TextFormatter
 					for (int i = 0; i < 12; i++)
 					{
 						List<ImageEntry> withSpeciesLocationMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesLocation);
-						Integer period = 0;
+						Integer abundance = 0;
 						for (Integer year : analysis.getAllImageYears())
 						{
 							List<ImageEntry> withSpeciesLocationMonthYear = new PredicateBuilder().yearOnly(year).query(withSpeciesLocationMonth);
-							period = period + analysis.periodForImageList(withSpeciesLocationMonthYear);
-							total = total + period;
+							abundance = abundance + analysis.abundanceForImageList(withSpeciesLocationMonthYear, species);
+							total = total + abundance;
 						}
-						toReturn = toReturn + String.format("%5d ", period);
+						toReturn = toReturn + String.format("%5d ", abundance);
 					}
 					toReturn = toReturn + String.format("%7d", total);
 					toReturn = toReturn + "\n";
@@ -944,16 +932,17 @@ public class TotalDayFormatter extends TextFormatter
 			for (int i = 0; i < 12; i++)
 			{
 				List<ImageEntry> withSpeciesYearMonth = new PredicateBuilder().monthOnly(i).query(withSpecices);
-				Integer abundance = analysis.abundanceForImageList(withSpeciesYearMonth, species);
-				totalPic = totalPic + abundance;
-				totalPics[i] = abundance;
-				toReturn = toReturn + String.format("%5d ", abundance);
+				Integer period = analysis.periodForImageList(withSpeciesYearMonth);
+				totalPic = totalPic + period;
+				totalPics[i] = period;
+				toReturn = toReturn + String.format("%5d ", period);
 			}
 			toReturn = toReturn + String.format("%7d", totalPic);
 			toReturn = toReturn + "\n";
 
 			toReturn = toReturn + "Total abundance                    ";
 			Integer totalAbundancePics = 0;
+			int[] totalAbundances = new int[12];
 			for (int i = 0; i < 12; i++)
 			{
 				List<ImageEntry> withSpeciesMonth = new PredicateBuilder().monthOnly(i).query(withSpecies);
@@ -971,36 +960,17 @@ public class TotalDayFormatter extends TextFormatter
 					totalAbundance = totalAbundance + abundance;
 				}
 				toReturn = toReturn + String.format("%5d ", totalAbundance);
+				totalAbundances[i] = totalAbundances[i] + totalAbundance;
 			}
 			toReturn = toReturn + String.format("%7d", totalAbundancePics);
 			toReturn = toReturn + "\n";
 
 			toReturn = toReturn + "Avg abundance                      ";
-			Integer totalNumLocations = 0;
 			for (int i = 0; i < 12; i++)
 			{
-				List<ImageEntry> withSpeciesMonth = new PredicateBuilder().monthOnly(i).query(withSpecies);
-				Integer totalAbundance = 0;
-				Integer numLocations = 0;
-				for (Location location : analysis.getAllImageLocations())
-				{
-					List<ImageEntry> withSpeciesMonthLocation = new PredicateBuilder().locationOnly(location).query(withSpeciesMonth);
-					if (!withSpeciesMonthLocation.isEmpty())
-						numLocations++;
-					Integer abundance = 0;
-
-					for (Integer year : analysis.getAllImageYears())
-					{
-						List<ImageEntry> withSpeciesMonthYearLocation = new PredicateBuilder().yearOnly(year).query(withSpeciesMonthLocation);
-						abundance = abundance + analysis.abundanceForImageList(withSpeciesMonthYearLocation, species);
-					}
-
-					totalAbundance = totalAbundance + abundance;
-				}
-				totalNumLocations = totalNumLocations + numLocations;
-				toReturn = toReturn + String.format("%5.2f ", numLocations == 0 ? 0 : (double) totalAbundance / numLocations);
+				toReturn = toReturn + String.format("%5.2f ", totalPics[i] == 0 ? 0 : (double) totalAbundances[i] / totalPics[i]);
 			}
-			toReturn = toReturn + String.format("%7.2f", totalNumLocations == 0 ? 0 : (double) totalAbundancePics / totalNumLocations);
+			toReturn = toReturn + String.format("%7.2f", totalPic == 0 ? 0 : (double) totalAbundancePics / totalPic);
 			toReturn = toReturn + "\n";
 
 			toReturn = toReturn + "Total days                            ";
@@ -1058,7 +1028,7 @@ public class TotalDayFormatter extends TextFormatter
 
 			for (int i = 0; i < 12; i++)
 			{
-				toReturn = toReturn + String.format("%6.2f", daysUsed[i] == 0 ? 0D : 10D * ((double) totalPics[i] / daysUsed[i]));
+				toReturn = toReturn + String.format("%6.2f", daysUsed[i] == 0 ? 0D : 10D * ((double) totalAbundances[i] / daysUsed[i]));
 			}
 
 			toReturn = toReturn + "\n\n";
