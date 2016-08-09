@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import model.ImageEntry;
 import model.Location;
@@ -218,6 +219,8 @@ public class OccouranceFormatter extends TextFormatter
 
 		Integer totalLocations = analysis.getAllImageLocations().size();
 
+		List<Pair<Double, String>> pairsToPrint = new ArrayList<Pair<Double, String>>(analysis.getAllImageSpecies().size());
+
 		for (Species species : analysis.getAllImageSpecies())
 		{
 			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(images);
@@ -230,8 +233,21 @@ public class OccouranceFormatter extends TextFormatter
 					locationsWithSpecies = locationsWithSpecies + 1;
 			}
 
-			toReturn = toReturn + String.format("%-28s           %5.3f                  %3d\n", species.getName(), (double) locationsWithSpecies / totalLocations, locationsWithSpecies);
+			pairsToPrint.add(Pair.of((double) locationsWithSpecies / totalLocations, String.format("%-28s           %5.3f                  %3d\n", species.getName(), (double) locationsWithSpecies / totalLocations, locationsWithSpecies)));
 		}
+
+		Collections.sort(pairsToPrint, new Comparator<Pair<Double, String>>()
+		{
+
+			@Override
+			public int compare(Pair<Double, String> pair1, Pair<Double, String> pair2)
+			{
+				return pair2.getLeft().compareTo(pair1.getLeft());
+			}
+		});
+
+		for (Pair<Double, String> toPrint : pairsToPrint)
+			toReturn = toReturn + toPrint.getRight();
 
 		toReturn = toReturn + "\n";
 

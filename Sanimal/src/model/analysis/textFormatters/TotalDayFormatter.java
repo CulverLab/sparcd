@@ -6,7 +6,6 @@
 package model.analysis.textFormatters;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +16,6 @@ import model.Location;
 import model.Species;
 import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
-import model.analysis.SanimalAnalysisUtils;
 
 public class TotalDayFormatter extends TextFormatter
 {
@@ -1060,21 +1058,54 @@ public class TotalDayFormatter extends TextFormatter
 			for (Location location : analysis.getAllImageLocations())
 			{
 				List<ImageEntry> withSpeciesLoc = new PredicateBuilder().locationOnly(location).query(withSpecies);
-				Integer numPics = withSpeciesLoc.size();
 
-				Integer effort = 0;
+				Integer periodTotal = 0;
 				for (Integer year : analysis.getAllImageYears())
 				{
 					List<ImageEntry> withSpeciesLocYear = new PredicateBuilder().yearOnly(year).query(withSpeciesLoc);
 					if (!withSpeciesLocYear.isEmpty())
 					{
-						Date first = withSpeciesLocYear.get(0).getDateTaken();
-						Date last = withSpeciesLocYear.get(withSpeciesLocYear.size() - 1).getDateTaken();
-						effort = effort + Math.toIntExact(SanimalAnalysisUtils.daysBetween(first, last)) + 1;
+						periodTotal = periodTotal + analysis.periodForImageList(withSpeciesLocYear);
 					}
 				}
 
-				Double picsOverEffort = (double) numPics / effort;
+				Integer effortTotal = 0;
+				for (Integer year : analysis.getAllImageYears())
+				{
+					List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
+					List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+
+					if (!yearLocPics.isEmpty())
+					{
+						ImageEntry first = yearLocPics.get(0);
+						ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
+						Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
+						Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
+						Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+						Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+						Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
+						Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
+						Integer firstMonth = firstCal.get(Calendar.MONTH);
+						Integer lastMonth = lastCal.get(Calendar.MONTH);
+						Calendar calendar = Calendar.getInstance();
+						if (firstMonth == lastMonth)
+							effortTotal = effortTotal + (lastDay - firstDay + 1);
+						else
+						{
+							effortTotal = effortTotal + (firstDaysInMonth - (firstDay - 1));
+							firstMonth++;
+							while (firstMonth < lastMonth)
+							{
+								calendar.set(year, firstMonth, 1);
+								effortTotal = effortTotal + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+								firstMonth++;
+							}
+							effortTotal = effortTotal + lastDay;
+						}
+					}
+				}
+
+				Double picsOverEffort = (effortTotal == 0 ? 0 : (double) periodTotal / effortTotal);
 
 				picsOverEffortTotal = picsOverEffortTotal + picsOverEffort;
 				picsOverEffortTotals[analysis.getAllImageLocations().indexOf(location)] = picsOverEffort;
@@ -1083,10 +1114,9 @@ public class TotalDayFormatter extends TextFormatter
 			for (Location location : analysis.getAllImageLocations())
 			{
 				Integer index = analysis.getAllImageLocations().indexOf(location);
-				toReturn = toReturn + String.format("%-28s %6.0f        %5.3f       %5.2f\n", location.getName(), location.getElevation(), picsOverEffortTotals[index], picsOverEffortTotals[index] / picsOverEffortTotal * 100.0D);
+				if (picsOverEffortTotals[index] != 0)
+					toReturn = toReturn + String.format("%-28s %6.0f        %5.3f       %5.2f\n", location.getName(), location.getElevation(), picsOverEffortTotals[index], picsOverEffortTotals[index] / picsOverEffortTotal * 100.0D);
 			}
-
-			toReturn = toReturn + "\n";
 		}
 
 		return toReturn;
@@ -1123,8 +1153,20 @@ public class TotalDayFormatter extends TextFormatter
 			{
 				List<ImageEntry> bySpecies = new PredicateBuilder().speciesOnly(species).query(images);
 				List<ImageEntry> bySpeciesAndLoc = new PredicateBuilder().locationOnly(location).query(bySpecies);
+				Integer bySpeciesPeriod = 0;
+				Integer bySpeciesAndLocPeriod = 0;
 
-				toReturn = toReturn + String.format("%6.2f ", bySpecies.size() == 0 ? 0 : 100.0D * (double) bySpeciesAndLoc.size() / bySpecies.size());
+				for (Integer year : analysis.getAllImageYears())
+				{
+					List<ImageEntry> bySpeciesYear = new PredicateBuilder().yearOnly(year).query(bySpecies);
+					for (Location location2 : analysis.getAllImageLocations())
+						bySpeciesPeriod = bySpeciesPeriod + analysis.periodForImageList(new PredicateBuilder().locationOnly(location2).query(bySpeciesYear));
+
+					List<ImageEntry> bySpeciesLocYear = new PredicateBuilder().yearOnly(year).query(bySpeciesAndLoc);
+					bySpeciesAndLocPeriod = bySpeciesAndLocPeriod + analysis.periodForImageList(bySpeciesLocYear);
+				}
+
+				toReturn = toReturn + String.format("%6.2f ", bySpeciesPeriod == 0 ? 0 : 100.0D * (double) bySpeciesAndLocPeriod / bySpeciesPeriod);
 			}
 
 			toReturn = toReturn + "\n";

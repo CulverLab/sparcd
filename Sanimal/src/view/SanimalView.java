@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -21,6 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
@@ -88,9 +90,15 @@ public class SanimalView extends JFrame
 	private JTabbedPane tabOutputTabs;
 	private JScrollPane pneAllOutput;
 	private JTextArea tarAllOutput;
+	private JScrollPane pneExcelOutput;
 	private JPanel pnlExcelOutput;
 	private JButton btnToExcel;
 	private JButton btnAllPictures;
+	private JRadioButton radNumPictures;
+	private JRadioButton radAbundance;
+	private JRadioButton radPeriod;
+	private JRadioButton radActivity;
+	private ButtonGroup grpDataType;
 
 	public SanimalView()
 	{
@@ -289,21 +297,52 @@ public class SanimalView extends JFrame
 		pnlExcelOutput.setFont(new Font("Tahoma", Font.PLAIN, 10));
 		pnlExcelOutput.setLayout(null);
 
+		pneExcelOutput = new JScrollPane();
+		pneExcelOutput.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		pneExcelOutput.setViewportView(pnlExcelOutput);
+
 		btnToExcel = new JButton("Create excel file");
 		btnToExcel.setFont(new Font("Tahoma", Font.PLAIN, 10));
-		btnToExcel.setBounds(10, 11, 145, 23);
+		btnToExcel.setBounds(482, 44, 160, 23);
 		btnToExcel.setLayout(null);
 		pnlExcelOutput.add(btnToExcel);
 
 		btnAllPictures = new JButton("Create all pictures output");
 		btnAllPictures.setFont(new Font("Tahoma", Font.PLAIN, 10));
-		btnAllPictures.setBounds(165, 11, 145, 23);
+		btnAllPictures.setBounds(482, 78, 160, 23);
 		btnAllPictures.setLayout(null);
 		pnlExcelOutput.add(btnAllPictures);
 
+		radNumPictures = new JRadioButton("Picture Count");
+		radNumPictures.setSelected(true);
+		radNumPictures.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		radNumPictures.setBounds(6, 7, 170, 23);
+		pnlExcelOutput.add(radNumPictures);
+
+		radActivity = new JRadioButton("Picture Activity");
+		radActivity.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		radActivity.setBounds(6, 33, 170, 23);
+		pnlExcelOutput.add(radActivity);
+
+		radAbundance = new JRadioButton("Picture Abundance");
+		radAbundance.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		radAbundance.setBounds(6, 59, 170, 23);
+		pnlExcelOutput.add(radAbundance);
+
+		radPeriod = new JRadioButton("Picture Period");
+		radPeriod.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		radPeriod.setBounds(6, 85, 170, 23);
+		pnlExcelOutput.add(radPeriod);
+
+		grpDataType = new ButtonGroup();
+		grpDataType.add(radNumPictures);
+		grpDataType.add(radActivity);
+		grpDataType.add(radAbundance);
+		grpDataType.add(radPeriod);
+
 		pneAllOutput = new JScrollPane();
 		pneAllOutput.setViewportView(tarAllOutput);
-		tabOutputTabs.insertTab("Excel Output", new ImageIcon(""), pnlExcelOutput, "Excel output testing", 0);
+		tabOutputTabs.insertTab("Excel Output", new ImageIcon(""), pneExcelOutput, "Excel output testing", 0);
 		tabOutputTabs.insertTab("Text Output", new ImageIcon(""), pneAllOutput, "All Output from the analysis", 0);
 		tabOutputTabs.setSelectedIndex(0);
 
@@ -394,6 +433,14 @@ public class SanimalView extends JFrame
 			return null;
 		else
 			return (Species) this.cbxSpecies.getSelectedItem();
+	}
+
+	/**
+	 * @return 0 for number of pictures, 1 for abundance, 2 for activity, and 3 for period
+	 */
+	public Integer getSelectedDataTypeRadioButton()
+	{
+		return radNumPictures.isSelected() ? 0 : radAbundance.isSelected() ? 1 : radActivity.isSelected() ? 2 : 3;
 	}
 
 	public Integer getAnalysisEventInterval()

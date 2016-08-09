@@ -45,20 +45,17 @@ public class DetectionRateFormatter extends TextFormatter
 
 			List<ImageEntry> byYear = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
 
-			Integer totalPics = byYear.size();
+			Integer totalPics = 0;
 			Integer totalDays = 0;
 			double[] averageRate = new double[analysis.getAllImageSpecies().size()];
-			int[] numberLocations = new int[analysis.getAllImageSpecies().size()];
-
 			for (Location location : analysis.getAllImageLocations())
 			{
-				toReturn = toReturn + String.format("%-28s", location.getName());
-
 				List<ImageEntry> byYearLocation = new PredicateBuilder().locationOnly(location).query(byYear);
-
-				Integer totalDaysForLoc = 0;
 				if (!byYearLocation.isEmpty())
 				{
+					toReturn = toReturn + String.format("%-28s", location.getName());
+
+					Integer totalDaysForLoc = 0;
 					ImageEntry first = byYearLocation.get(0);
 					ImageEntry last = byYearLocation.get(byYearLocation.size() - 1);
 					Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
@@ -84,33 +81,39 @@ public class DetectionRateFormatter extends TextFormatter
 						}
 						totalDaysForLoc = totalDaysForLoc + lastDay;
 					}
-				}
 
-				totalDays = totalDays + totalDaysForLoc;
+					totalDays = totalDays + totalDaysForLoc;
 
-				toReturn = toReturn + String.format("  %3d %7d    %7.2f   ", totalDaysForLoc, byYearLocation.size(), 100D * (double) byYearLocation.size() / totalDaysForLoc);
+					Integer periodTotal = 0;
 
-				for (Species species : analysis.getAllImageSpecies())
-				{
-					List<ImageEntry> byYearLocSpecies = new PredicateBuilder().speciesOnly(species).query(byYearLocation);
-					toReturn = toReturn + String.format(" %5.2f", (double) byYearLocSpecies.size() / totalDaysForLoc);
-					if (!byYearLocSpecies.isEmpty())
+					for (Species species : analysis.getAllImageSpecies())
 					{
-						averageRate[analysis.getAllImageSpecies().indexOf(species)] = averageRate[analysis.getAllImageSpecies().indexOf(species)] + (double) byYearLocSpecies.size() / totalDaysForLoc;
-						numberLocations[analysis.getAllImageSpecies().indexOf(species)]++;
+						periodTotal = periodTotal + analysis.periodForImageList(new PredicateBuilder().speciesOnly(species).query(byYearLocation));
 					}
-				}
 
-				toReturn = toReturn + "\n";
+					totalPics = totalPics + periodTotal;
+
+					toReturn = toReturn + String.format("  %3d %7d    %7.2f   ", totalDaysForLoc, periodTotal, (totalDaysForLoc == 0 ? 0 : 100D * (double) periodTotal / totalDaysForLoc));
+
+					for (Species species : analysis.getAllImageSpecies())
+					{
+						Integer period = analysis.periodForImageList(new PredicateBuilder().speciesOnly(species).query(byYearLocation));
+						toReturn = toReturn + String.format(" %5.2f", 100D * (double) period / totalDaysForLoc);
+						Integer index = analysis.getAllImageSpecies().indexOf(species);
+						averageRate[index] = averageRate[index] + (double) period;
+					}
+
+					toReturn = toReturn + "\n";
+				}
 			}
 
 			toReturn = toReturn + "Total days pics; Avg rate   ";
 
-			toReturn = toReturn + String.format("  %3d %7d    %7.2f   ", totalDays, totalPics, (double) totalPics / totalDays);
+			toReturn = toReturn + String.format("  %3d %7d    %7.2f   ", totalDays, totalPics, 100D * (double) totalPics / totalDays);
 
 			for (Integer species = 0; species < analysis.getAllImageSpecies().size(); species++)
 			{
-				toReturn = toReturn + String.format(" %5.2f", numberLocations[species] == 0 ? 0 : averageRate[species] / numberLocations[species]);
+				toReturn = toReturn + String.format(" %5.2f", totalDays == 0 ? 0 : (100D * averageRate[species] / totalDays));
 			}
 
 			toReturn = toReturn + "\n\n";
@@ -143,7 +146,6 @@ public class DetectionRateFormatter extends TextFormatter
 		Integer totalPics = 0;
 
 		double[] averageRate = new double[analysis.getAllImageSpecies().size()];
-		int[] numberLocations = new int[analysis.getAllImageSpecies().size()];
 
 		for (Location location : analysis.getAllImageLocations())
 		{
@@ -185,24 +187,31 @@ public class DetectionRateFormatter extends TextFormatter
 				}
 			}
 
-			toReturn = toReturn + String.format("  %3d %7d  %7.2f  ", totalDaysLoc, byLocation.size(), totalDaysLoc == 0 ? 0 : 100D * (double) byLocation.size() / totalDaysLoc);
+			totalDays = totalDays + totalDaysLoc;
 
-			totalPics = totalPics + byLocation.size();
+			Integer periodTotal = 0;
 
 			for (Species species : analysis.getAllImageSpecies())
 			{
-				List<ImageEntry> byLocSpecies = new PredicateBuilder().speciesOnly(species).query(byLocation);
-				toReturn = toReturn + String.format(" %5.2f", (double) byLocSpecies.size() / totalDaysLoc);
-				if (!byLocSpecies.isEmpty())
-				{
-					averageRate[analysis.getAllImageSpecies().indexOf(species)] = averageRate[analysis.getAllImageSpecies().indexOf(species)] + (double) byLocSpecies.size() / totalDaysLoc;
-					numberLocations[analysis.getAllImageSpecies().indexOf(species)]++;
-				}
+				for (Integer year : analysis.getAllImageYears())
+					periodTotal = periodTotal + analysis.periodForImageList(new PredicateBuilder().speciesOnly(species).yearOnly(year).query(byLocation));
+			}
+
+			totalPics = totalPics + periodTotal;
+
+			toReturn = toReturn + String.format("  %3d %7d  %7.2f  ", totalDaysLoc, periodTotal, totalDaysLoc == 0 ? 0 : 100D * (double) periodTotal / totalDaysLoc);
+
+			for (Species species : analysis.getAllImageSpecies())
+			{
+				Integer period = 0;
+				for (Integer year : analysis.getAllImageYears())
+					period = period + analysis.periodForImageList(new PredicateBuilder().speciesOnly(species).yearOnly(year).query(byLocation));
+				toReturn = toReturn + String.format(" %5.2f", (double) period / totalDaysLoc);
+				Integer index = analysis.getAllImageSpecies().indexOf(species);
+				averageRate[index] = averageRate[index] + (double) period;
 			}
 
 			toReturn = toReturn + "\n";
-
-			totalDays = totalDays + totalDaysLoc;
 		}
 
 		toReturn = toReturn + "Total days pics; Avg rate   ";
@@ -211,7 +220,7 @@ public class DetectionRateFormatter extends TextFormatter
 
 		for (Integer species = 0; species < analysis.getAllImageSpecies().size(); species++)
 		{
-			toReturn = toReturn + String.format(" %5.2f", numberLocations[species] == 0 ? 0 : averageRate[species] / numberLocations[species]);
+			toReturn = toReturn + String.format(" %5.2f", totalDays == 0 ? 0 : 100D * averageRate[species] / totalDays);
 		}
 
 		toReturn = toReturn + "\n\n";
@@ -234,20 +243,18 @@ public class DetectionRateFormatter extends TextFormatter
 
 			List<ImageEntry> byYear = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
 
-			Integer totalPics = byYear.size();
+			Integer totalPics = 0;
 			Integer totalDays = 0;
 			double[] averageRate = new double[12];
-			int[] numberLocations = new int[12];
 
 			for (Location location : analysis.getAllImageLocations())
 			{
-				toReturn = toReturn + String.format("%-28s", location.getName());
-
 				List<ImageEntry> byYearLocation = new PredicateBuilder().locationOnly(location).query(byYear);
-
-				Integer totalDaysForLoc = 0;
 				if (!byYearLocation.isEmpty())
 				{
+					Integer totalDaysForLoc = 0;
+					toReturn = toReturn + String.format("%-28s", location.getName());
+
 					ImageEntry first = byYearLocation.get(0);
 					ImageEntry last = byYearLocation.get(byYearLocation.size() - 1);
 					Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
@@ -273,33 +280,42 @@ public class DetectionRateFormatter extends TextFormatter
 						}
 						totalDaysForLoc = totalDaysForLoc + lastDay;
 					}
-				}
 
-				totalDays = totalDays + totalDaysForLoc;
+					totalDays = totalDays + totalDaysForLoc;
 
-				toReturn = toReturn + String.format("  %3d %7d    %7.2f    ", totalDaysForLoc, byYearLocation.size(), 100D * (double) byYearLocation.size() / totalDaysForLoc);
+					Integer periodTotal = 0;
 
-				for (int i = 0; i < 12; i++)
-				{
-					List<ImageEntry> byYearLocMonth = new PredicateBuilder().monthOnly(i).query(byYearLocation);
-					toReturn = toReturn + String.format(" %5.2f  ", (double) byYearLocMonth.size() / totalDaysForLoc);
-					if (!byYearLocMonth.isEmpty())
+					for (Species species : analysis.getAllImageSpecies())
 					{
-						averageRate[i] = averageRate[i] + (double) byYearLocMonth.size() / totalDaysForLoc;
-						numberLocations[i]++;
+						periodTotal = periodTotal + analysis.periodForImageList(new PredicateBuilder().speciesOnly(species).query(byYearLocation));
 					}
-				}
 
-				toReturn = toReturn + "\n";
+					totalPics = totalPics + periodTotal;
+
+					toReturn = toReturn + String.format("  %3d %7d    %7.2f    ", totalDaysForLoc, periodTotal, (double) periodTotal / totalDaysForLoc);
+
+					for (int i = 0; i < 12; i++)
+					{
+						// Go through species here?
+						Integer period = 0;
+						for (Species species : analysis.getAllImageSpecies())
+							period = period + analysis.periodForImageList(new PredicateBuilder().monthOnly(i).speciesOnly(species).query(byYearLocation));
+						toReturn = toReturn + String.format(" %5.2f  ", (double) period / totalDaysForLoc);
+
+						averageRate[i] = averageRate[i] + (double) period;
+					}
+
+					toReturn = toReturn + "\n";
+				}
 			}
 
 			toReturn = toReturn + "Total days pics; Avg rate   ";
 
-			toReturn = toReturn + String.format("  %3d %7d    %7.2f    ", totalDays, totalPics, 100D * (double) totalPics / totalDays);
+			toReturn = toReturn + String.format("  %3d %7d    %7.2f    ", totalDays, totalPics, (double) totalPics / totalDays);
 
 			for (int i = 0; i < 12; i++)
 			{
-				toReturn = toReturn + String.format(" %5.2f  ", numberLocations[i] == 0 ? 0 : averageRate[i] / numberLocations[i]);
+				toReturn = toReturn + String.format(" %5.2f  ", totalDays == 0 ? 0 : averageRate[i] / totalDays);
 			}
 
 			toReturn = toReturn + "\n\n";
@@ -322,10 +338,9 @@ public class DetectionRateFormatter extends TextFormatter
 		toReturn = toReturn + "                            Total   Total       Pics          Months \n";
 		toReturn = toReturn + "Location                     days    pics       /prd       Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec\n";
 
-		Integer totalPics = analysis.getImagesSortedByDate().size();
+		Integer totalPics = 0;
 		Integer totalDays = 0;
 		double[] averageRate = new double[12];
-		int[] numberLocations = new int[12];
 
 		for (Location location : analysis.getAllImageLocations())
 		{
@@ -370,17 +385,27 @@ public class DetectionRateFormatter extends TextFormatter
 
 			totalDays = totalDays + totalDaysLoc;
 
-			toReturn = toReturn + String.format("  %3d %7d    %7.2f    ", totalDaysLoc, byLocation.size(), 100D * (double) byLocation.size() / totalDaysLoc);
+			Integer periodTotal = 0;
+
+			for (Species species : analysis.getAllImageSpecies())
+			{
+				for (Integer year : analysis.getAllImageYears())
+					periodTotal = periodTotal + analysis.periodForImageList(new PredicateBuilder().speciesOnly(species).yearOnly(year).query(byLocation));
+			}
+
+			totalPics = totalPics + periodTotal;
+
+			toReturn = toReturn + String.format("  %3d %7d    %7.2f    ", totalDaysLoc, periodTotal, (double) periodTotal / totalDaysLoc);
 
 			for (int i = 0; i < 12; i++)
 			{
-				List<ImageEntry> byLocMonth = new PredicateBuilder().monthOnly(i).query(byLocation);
-				toReturn = toReturn + String.format(" %5.2f  ", (double) byLocMonth.size() / totalDaysLoc);
-				if (!byLocMonth.isEmpty())
-				{
-					averageRate[i] = averageRate[i] + (double) byLocMonth.size() / totalDaysLoc;
-					numberLocations[i]++;
-				}
+				Integer period = 0;
+				for (Species species : analysis.getAllImageSpecies())
+					for (Integer year : analysis.getAllImageYears())
+						period = period + analysis.periodForImageList(new PredicateBuilder().monthOnly(i).speciesOnly(species).yearOnly(year).query(byLocation));
+				toReturn = toReturn + String.format(" %5.2f  ", (double) period / totalDaysLoc);
+
+				averageRate[i] = averageRate[i] + (double) period;
 			}
 
 			toReturn = toReturn + "\n";
@@ -388,11 +413,11 @@ public class DetectionRateFormatter extends TextFormatter
 
 		toReturn = toReturn + "Total days pics; Avg rate   ";
 
-		toReturn = toReturn + String.format("  %3d %7d    %7.2f    ", totalDays, totalPics, 100D * (double) totalPics / totalDays);
+		toReturn = toReturn + String.format("  %3d %7d    %7.2f    ", totalDays, totalPics, (double) totalPics / totalDays);
 
 		for (int i = 0; i < 12; i++)
 		{
-			toReturn = toReturn + String.format(" %5.2f  ", numberLocations[i] == 0 ? 0 : averageRate[i] / numberLocations[i]);
+			toReturn = toReturn + String.format(" %5.2f  ", totalDays == 0 ? 0 : averageRate[i] / totalDays);
 		}
 
 		toReturn = toReturn + "\n\n";

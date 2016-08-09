@@ -187,7 +187,6 @@ public class ActPerAbuLocFormatter extends TextFormatter
 		toReturn = toReturn + "SPECIES AVERAGE ABUNDANCE BY YEAR AND SITE\n";
 		toReturn = toReturn + "One record of each species per location per PERIOD\n";
 		toReturn = toReturn + "               Use maximum number of individuals per PERIOD\n";
-		toReturn = toReturn + "\n";
 
 		for (Integer year : analysis.getAllImageYears())
 		{
