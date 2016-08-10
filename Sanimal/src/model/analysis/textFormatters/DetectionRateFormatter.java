@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis.textFormatters;
 
 import java.util.Calendar;
@@ -17,13 +12,26 @@ import model.Species;
 import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
 
+/**
+ * The text formatter for detection rates of species at locations
+ * 
+ * @author David Slovikosky
+ */
 public class DetectionRateFormatter extends TextFormatter
 {
-	public DetectionRateFormatter(List<ImageEntry> images, DataAnalysis analysis, Integer eventInterval)
+	public DetectionRateFormatter(List<ImageEntry> images, DataAnalysis analysis)
 	{
-		super(images, analysis, eventInterval);
+		super(images, analysis);
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printDetectionRateSpeciesYear()
 	{
 		String toReturn = "";
@@ -122,6 +130,14 @@ public class DetectionRateFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printDetectionRateSummary()
 	{
 		String toReturn = "";
@@ -228,6 +244,14 @@ public class DetectionRateFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printDetectionRateLocationMonth()
 	{
 		String toReturn = "";
@@ -324,6 +348,14 @@ public class DetectionRateFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printDetectionRateLocationMonthSummary()
 	{
 		String toReturn = "";
@@ -425,6 +457,14 @@ public class DetectionRateFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printDetectionRateTrend()
 	{
 		String toReturn = "";

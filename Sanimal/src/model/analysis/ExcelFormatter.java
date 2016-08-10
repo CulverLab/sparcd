@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis;
 
 import java.io.File;
@@ -33,6 +28,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import model.ImageEntry;
 
+/**
+ * A formatter for excel files
+ * 
+ * @author David Slovikosky
+ */
 public class ExcelFormatter
 {
 	/**

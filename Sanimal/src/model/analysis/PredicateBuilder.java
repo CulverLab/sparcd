@@ -1,17 +1,10 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis;
 
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -23,8 +16,14 @@ import model.Location;
 import model.Species;
 import model.SpeciesEntry;
 
+/**
+ * A class that utilizes Java 8 predicates to filter a list of images
+ * 
+ * @author David Slovikosky
+ */
 public class PredicateBuilder
 {
+	// A base predicate to add to
 	private Predicate<ImageEntry> predicate = entry ->
 	{
 		return true;
@@ -34,40 +33,54 @@ public class PredicateBuilder
 	{
 	}
 
+	/**
+	 * Filter images by year only
+	 * 
+	 * @param year
+	 *            The year to filter by
+	 * @return The predicate builder instance to chain filters
+	 */
 	public PredicateBuilder yearOnly(Integer year)
 	{
 		this.predicate = this.predicate.and(image -> DateUtils.toCalendar(image.getDateTaken()).get(Calendar.YEAR) == year);
 		return this;
 	}
 
+	/**
+	 * Filter images by month(s)
+	 * 
+	 * @param month
+	 *            The month(s) to filter by
+	 * @return The predicate builder instance to chain filters
+	 */
 	public PredicateBuilder monthOnly(int... month)
 	{
 		this.predicate = this.predicate.and(image -> ArrayUtils.contains(month, DateUtils.toCalendar(image.getDateTaken()).get(Calendar.MONTH)));
 		return this;
 	}
 
+	/**
+	 * Filter images by time frame
+	 * 
+	 * @param startTimeHour
+	 *            The hour to begin filtering at
+	 * @param endTimeHour
+	 *            The hour to end filtering at
+	 * @return The predicate builder instance to chain filters
+	 */
 	public PredicateBuilder timeFrame(Integer startTimeHour, Integer endTimeHour)
 	{
 		this.predicate = this.predicate.and(image -> (DateUtils.toCalendar(image.getDateTaken()).get(Calendar.HOUR_OF_DAY) >= startTimeHour && DateUtils.toCalendar(image.getDateTaken()).get(Calendar.HOUR_OF_DAY) < endTimeHour));
 		return this;
 	}
 
-	public PredicateBuilder removeMonthlyDuplicates()
-	{
-		Set<Integer> usedDays = new HashSet<Integer>();
-		this.predicate = this.predicate.and(imageEntry ->
-		{
-			int day = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.DAY_OF_YEAR);
-			if (!usedDays.contains(day))
-			{
-				usedDays.add(day);
-				return true;
-			}
-			return false;
-		});
-		return this;
-	}
-
+	/**
+	 * Filter images by species type
+	 * 
+	 * @param species
+	 *            The species to filter by
+	 * @return The predicate builder instance to chain filters
+	 */
 	public PredicateBuilder speciesOnly(Species species)
 	{
 		this.predicate = this.predicate.and(entry ->
@@ -80,6 +93,11 @@ public class PredicateBuilder
 		return this;
 	}
 
+	/**
+	 * Filter images with any species
+	 * 
+	 * @return The predicate builder instance to chain filters
+	 */
 	public PredicateBuilder anyValidSpecies()
 	{
 		this.predicate = this.predicate.and(entry ->
@@ -91,12 +109,26 @@ public class PredicateBuilder
 		return this;
 	}
 
+	/**
+	 * Filter images by location
+	 * 
+	 * @param location
+	 *            The location to filter by
+	 * @return The predicate builder instance to chain filters
+	 */
 	public PredicateBuilder locationOnly(Location location)
 	{
 		this.predicate = this.predicate.and(image -> image.getLocationTaken() == location);
 		return this;
 	}
 
+	/**
+	 * Filter images by new moon only
+	 * 
+	 * @param newMoons
+	 *            The list of new moon dates
+	 * @return The predicate builder instance to chain filters
+	 */
 	public PredicateBuilder newMoonOnly(List<Date> newMoons)
 	{
 		this.predicate = this.predicate.and(entry ->
@@ -113,6 +145,13 @@ public class PredicateBuilder
 		return this;
 	}
 
+	/**
+	 * Filter images by full moon only
+	 * 
+	 * @param fullMoons
+	 *            The list of ful moon dates
+	 * @return The predicate builder instance to chain filters
+	 */
 	public PredicateBuilder fullMoonOnly(List<Date> fullMoons)
 	{
 		this.predicate = this.predicate.and(entry ->
@@ -129,11 +168,27 @@ public class PredicateBuilder
 		return this;
 	}
 
+	/**
+	 * Finalize the predicate and apply it to a list of images.
+	 * 
+	 * @param images
+	 *            The list of images to query
+	 * @return The filtered list
+	 */
 	public List<ImageEntry> query(List<ImageEntry> images)
 	{
 		return images.stream().filter(predicate).collect(Collectors.toList());
 	}
 
+	/**
+	 * Finalize the predicate and apply it to a list of images. Also sorts the images by the sorter
+	 * 
+	 * @param images
+	 *            The list of images to query
+	 * @param sorter
+	 *            The sorter to sort the filtered images by
+	 * @return The filtered list
+	 */
 	public List<ImageEntry> query(List<ImageEntry> images, Comparator<ImageEntry> sorter)
 	{
 		List<ImageEntry> result = query(images);

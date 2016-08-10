@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis.textFormatters;
 
 import java.util.Calendar;
@@ -17,13 +12,29 @@ import model.Species;
 import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
 
+/**
+ * The text formatter for any calculations containing "total days"
+ * 
+ * @author David Slovikosky
+ */
 public class TotalDayFormatter extends TextFormatter
 {
-	public TotalDayFormatter(List<ImageEntry> images, DataAnalysis analysis, Integer eventInterval)
+	public TotalDayFormatter(List<ImageEntry> images, DataAnalysis analysis)
 	{
-		super(images, analysis, eventInterval);
+		super(images, analysis);
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * For each year and for each month a table of the number of independent pictures per month for each location. The last column shows the Total
+	 * number of independent pictures at a location for all months. Total pictures for each month and then year is also given. For all locations Total
+	 * days is the number of camera trap days (or effort) for each month, with the total of all months in the last column. The last row, Pictures/day,
+	 * is Total pictures normalized (divided) by total effort for each month, and for all 12 months.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printPicturesByMonthYearLoc()
 	{
 		String toReturn = "";
@@ -135,6 +146,14 @@ public class TotalDayFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printPicturesByMonthLoc()
 	{
 		String toReturn = "";
@@ -250,6 +269,15 @@ public class TotalDayFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * For each year a table of species records for each month, and the total number of each species for the year. For all speies, for each month
+	 * Total pictures, Total days (effort), 10*(number of pictures divived by total effort), and species richness is given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printPicturesByMonthYearSpeciesRichness()
 	{
 		String toReturn = "";
@@ -372,6 +400,14 @@ public class TotalDayFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printPicturesByMonthSpeciesRichness()
 	{
 		String toReturn = "";
@@ -495,6 +531,14 @@ public class TotalDayFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printPicturesByMonthSpeciesLocElevation()
 	{
 		String toReturn = "";
@@ -737,6 +781,14 @@ public class TotalDayFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printAbundanceByMonthSpeciesLocElevation()
 	{
 		String toReturn = "";
@@ -1035,6 +1087,14 @@ public class TotalDayFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printSpeciesByLocElevationAndEffort()
 	{
 		String toReturn = "";
@@ -1122,6 +1182,14 @@ public class TotalDayFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printSpeciesByLocElevationAndEffortTable()
 	{
 		String toReturn = "\n";

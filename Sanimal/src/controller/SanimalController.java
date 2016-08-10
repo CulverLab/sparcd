@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package controller;
 
 import java.awt.event.ItemEvent;
@@ -29,10 +24,17 @@ import model.SpeciesEntry;
 import view.SanimalInput;
 import view.SanimalView;
 
+/**
+ * The main controller of sanimal in the MVC design pattern. It links the view to the model
+ * 
+ * @author David Slovikosky
+ */
 public class SanimalController
 {
+	// Declare the view and the model
 	private final SanimalView sanimalView;
 	private final SanimalData sanimalData;
+	// Declare constants
 	private static final long MILLIS_BETWEEN_CHECKS = 500;
 
 	// DEBUG
@@ -40,6 +42,14 @@ public class SanimalController
 	// Loc 2: 32.273057, -110.836507
 	// Loc 3: 32.273390, -110.836450
 
+	/**
+	 * Constructor of the controller
+	 * 
+	 * @param sanimalView
+	 *            The view to link the model to
+	 * @param sanimalData
+	 *            The model to link the view to
+	 */
 	public SanimalController(SanimalView sanimalView, SanimalData sanimalData)
 	{
 		this.sanimalView = sanimalView;
@@ -52,19 +62,15 @@ public class SanimalController
 		// When the user clicks a new image in the image list on the right
 		sanimalView.addImageTreeValueChanged(event ->
 		{
+			// Update the selected item and update the timeline data's image list
 			SanimalController.this.selectedItemUpdated();
 			List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
-			//				if (selectedImages.size() == 1)
-			//				{
-			//					ImageEntry selected = selectedImages.get(0);
-			//					sanimalView.setOutputText("Image Name = " + selected.getImageFile().getName() + "\n" + "Image Location = " + (selected.getLocationTaken() == null ? "Unknown" : selected.getLocationTaken().formattedString()) + "\n" + "Image Date Taken = " + selected.getDateTakenFormatted() + "\n"
-			//							+ "Image Species = ");
-			//				}
 			sanimalData.getTimelineData().updateList(selectedImages);
 		});
 		// When the user wants to load in images
 		sanimalView.addImageBrowseListener(event ->
 		{
+			// Create a JFileChooser and load in images from the directory
 			JFileChooser chooser = new JFileChooser();
 			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 			int returnVal = chooser.showOpenDialog(null);
@@ -165,8 +171,10 @@ public class SanimalController
 			Species selectedSpecies = sanimalView.getSelectedSpecies();
 			if (selectedSpecies != null)
 			{
+				// Ensure we have a species selected and an image selected
 				if (!sanimalView.getSelectedImageEntries().isEmpty())
 				{
+					// Get the number of animals, and add it to the image
 					Integer numberOfAnimals = Integer.MAX_VALUE;
 					while (numberOfAnimals == Integer.MAX_VALUE)
 					{
@@ -204,10 +212,8 @@ public class SanimalController
 			Species selectedSpecies = sanimalView.getSelectedSpecies();
 			List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
 			if (selectedSpecies != null)
-			{
 				for (ImageEntry imageEntry : selectedImages)
 					imageEntry.removeSpecies(selectedSpecies);
-			}
 			SanimalController.this.selectedItemUpdated();
 		});
 		// When the user clicks "Perform Analysis"
@@ -220,6 +226,7 @@ public class SanimalController
 		// When the user clicks to create an excel file
 		sanimalView.addALToCreateExcel(event ->
 		{
+			// Create a JFileChooser, and then create the excel file
 			JFileChooser chooser = new JFileChooser();
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			chooser.setDialogTitle("Select the location to save the excel file to");
@@ -284,6 +291,8 @@ public class SanimalController
 			@Override
 			public void mouseDragged(MouseEvent event)
 			{
+				// Only perform the update once every .5 seconds. This ensures that this update does not get
+				// spammed and lag the program
 				if (stopWatch.getTime() > MILLIS_BETWEEN_CHECKS)
 				{
 					double percentage = (double) event.getX() / (double) event.getComponent().getWidth();
@@ -305,6 +314,8 @@ public class SanimalController
 			if (eventInterval != -1)
 				sanimalView.setOutputText(sanimalData.getOutputFormatter().createAllPictures(sanimalView.getSelectedImageEntries(), eventInterval));
 		});
+
+		// Set the view to visible now that it has been constructed
 		sanimalView.setVisible(true);
 
 		///
@@ -312,15 +323,24 @@ public class SanimalController
 		///
 	}
 
+	/**
+	 * When the selected item is updated, we need to go through each entry and find common features between them to be displayed.
+	 */
 	public void selectedItemUpdated()
 	{
+		// The first entry to compare to
 		ImageEntry first = null;
+		// The first image's location
 		Location firstLocation = null;
+		// The first image's date
 		String firstDate = null;
+		// The first image's species
 		List<SpeciesEntry> firstSpeciesEntries = null;
 		List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
+		// Find similarities
 		for (ImageEntry current : selectedImages)
 		{
+			// Setup the first entry
 			if (first == null)
 			{
 				first = current;
@@ -330,10 +350,16 @@ public class SanimalController
 				Collections.sort(firstSpeciesEntries);
 				continue;
 			}
-			if (!current.getDateTakenFormatted().equals(firstDate))
-				firstDate = null;
-			if (current.getLocationTaken() != firstLocation)
-				firstLocation = null;
+			// If the first date is not null yet, we check to see if the current date equals the first date. If so,
+			// Continue, else we set the first date to null
+			if (firstDate != null)
+				if (!current.getDateTakenFormatted().equals(firstDate))
+					firstDate = null;
+			// Perform the same operation on location as above
+			if (firstLocation != null)
+				if (current.getLocationTaken() != firstLocation)
+					firstLocation = null;
+			// Perform the same operation on species as above
 			if (firstSpeciesEntries != null)
 			{
 				Collections.sort(current.getSpeciesPresent());
@@ -341,6 +367,7 @@ public class SanimalController
 					firstSpeciesEntries = null;
 			}
 		}
+		// Update the fields accordingly
 		sanimalView.setLocation(firstLocation);
 		sanimalView.setDate(firstDate);
 		sanimalView.setSpeciesEntryList(firstSpeciesEntries);

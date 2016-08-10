@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis.textFormatters;
 
 import java.util.Calendar;
@@ -17,13 +12,28 @@ import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
 import model.analysis.SanimalAnalysisUtils;
 
+/**
+ * The text formatter for trap days and effort calculations
+ * 
+ * @author David Slovikosky
+ */
 public class TrapDaysAndEffortFormatter extends TextFormatter
 {
-	public TrapDaysAndEffortFormatter(List<ImageEntry> images, DataAnalysis analysis, Integer eventInterval)
+	public TrapDaysAndEffortFormatter(List<ImageEntry> images, DataAnalysis analysis)
 	{
-		super(images, analysis, eventInterval);
+		super(images, analysis);
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * A list of all locations (Location) to be analyzed that includes the state and stop date, the total number of days each location was run
+	 * (Duration), the date of the first picture recorded at the location (First pic), and the species recorded. This is followed by the total number
+	 * of Camera trap days (Duration).
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printCameraTrapDays()
 	{
 		String toReturn = "";
@@ -57,6 +67,16 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * For each year, and for each location, and for each month, the number of camera traps days, and the total number of camera trap days for all
+	 * months. This is followed by Total days this is the total of all camera trap days from all locations for each month. The total number of camera
+	 * traps days for the year is given. The Summary for all years, for all locations, for all months, and for all years is also given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printCameraTrapEffort()
 	{
 		String toReturn = "";
@@ -130,6 +150,14 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printCameraTrapEffortSummary()
 	{
 		String toReturn = "";

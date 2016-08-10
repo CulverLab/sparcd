@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis;
 
 import java.time.temporal.ChronoUnit;
@@ -10,8 +5,22 @@ import java.util.Date;
 
 import model.UTMCoord;
 
+/**
+ * Utility class for Sanimal analysis
+ * 
+ * @author David Slovikosky
+ */
 public class SanimalAnalysisUtils
 {
+	/**
+	 * Calculates the days inbetween two dates
+	 * 
+	 * @param date1
+	 *            The first date
+	 * @param date2
+	 *            The second date
+	 * @return The days inbetween date1 and date 2
+	 */
 	public static long daysBetween(Date date1, Date date2)
 	{
 		if (date1 != null && date2 != null)
@@ -20,6 +29,19 @@ public class SanimalAnalysisUtils
 			return 0;
 	}
 
+	/**
+	 * Returns the distance between two lat longs in kilometers
+	 * 
+	 * @param lat1
+	 *            The latitude of the first coordinate
+	 * @param lng1
+	 *            The longitude of the last coordinate
+	 * @param lat2
+	 *            The latitude of the second coordinate
+	 * @param lng2
+	 *            The longitude of the second coordinate
+	 * @return The distance between the two lat/lngs in kilometers
+	 */
 	public static double distanceBetween(double lat1, double lng1, double lat2, double lng2)
 	{
 		//		var lat1Rad = lat1.toRadians(), lat2Rad = lat2.toRadians(), delta = (lon2-lon1).toRadians(), R = 6371e3; // gives d in metres
@@ -31,7 +53,15 @@ public class SanimalAnalysisUtils
 		return Math.acos(Math.sin(lat1Rad) * Math.sin(lat2Rad) + Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.cos(delta)) * R;
 	}
 
-	// SEE http://stackoverflow.com/questions/176137/java-convert-lat-lon-to-utm
+	/**
+	 * Converts lat/lng coords to UTM coords. The author is http://stackoverflow.com/questions/176137/java-convert-lat-lon-to-utm
+	 * 
+	 * @param Lat
+	 *            The latitude of the coordinate
+	 * @param Lon
+	 *            The longitude of the coordinate
+	 * @return The UTM coordinate represented by the lat/lng coordinates
+	 */
 	public static UTMCoord Deg2UTM(double Lat, double Lon)
 	{
 		double Easting;

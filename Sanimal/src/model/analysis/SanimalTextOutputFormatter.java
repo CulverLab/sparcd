@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis;
 
 import java.util.List;
@@ -22,30 +17,51 @@ import model.analysis.textFormatters.SpeciesLocCoordFormatter;
 import model.analysis.textFormatters.TotalDayFormatter;
 import model.analysis.textFormatters.TrapDaysAndEffortFormatter;
 
+/**
+ * The formatter that simulates the creation of Jim Sanderson's "Output.txt"
+ * 
+ * @author David Slovikosky
+ */
 public class SanimalTextOutputFormatter
 {
+	/**
+	 * Returns a massive string that is perfectly formatted to look like "Output.txt"
+	 * 
+	 * @param images
+	 *            The image list to analyze
+	 * @param eventInterval
+	 *            The event interval
+	 * @return A formatted string
+	 */
 	public String format(List<ImageEntry> images, Integer eventInterval)
 	{
+		// The string to return
 		String toReturn = "";
 
+		// If there are no images, return an appropriate string
 		if (images.isEmpty())
 			return "No images found under directory";
 
+		// Elapsed time in the calculation
 		long elapsedTime = System.currentTimeMillis();
 
+		// Create an analysis object
 		DataAnalysis analysis = new DataAnalysis(images, eventInterval);
-		HeaderFormatter headerFormatter = new HeaderFormatter(images, analysis, eventInterval);
-		FirstLastSpeciesFormatter firstLastSpeciesFormatter = new FirstLastSpeciesFormatter(images, analysis, eventInterval);
-		ActPerAbuLocFormatter actPerAbuLocFormatter = new ActPerAbuLocFormatter(images, analysis, eventInterval);
-		TrapDaysAndEffortFormatter trapDaysAndEffortFormatter = new TrapDaysAndEffortFormatter(images, analysis, eventInterval);
-		LocationStatFormatter locationStatFormatter = new LocationStatFormatter(images, analysis, eventInterval);
-		ActivityPatternFormatter activityPatternFormatter = new ActivityPatternFormatter(images, analysis, eventInterval);
-		LunarActivityFormatter lunarActivityFormatter = new LunarActivityFormatter(images, analysis, eventInterval);
-		RichnessFormatter richnessFormatter = new RichnessFormatter(images, analysis, eventInterval);
-		SpeciesLocCoordFormatter speciesLocCoordFormatter = new SpeciesLocCoordFormatter(images, analysis, eventInterval);
-		TotalDayFormatter totalDayFormatter = new TotalDayFormatter(images, analysis, eventInterval);
-		OccouranceFormatter occouranceFormatter = new OccouranceFormatter(images, analysis, eventInterval);
-		DetectionRateFormatter detectionRateFormatter = new DetectionRateFormatter(images, analysis, eventInterval);
+		// Create all required formatters
+		HeaderFormatter headerFormatter = new HeaderFormatter(images, analysis);
+		FirstLastSpeciesFormatter firstLastSpeciesFormatter = new FirstLastSpeciesFormatter(images, analysis);
+		ActPerAbuLocFormatter actPerAbuLocFormatter = new ActPerAbuLocFormatter(images, analysis);
+		TrapDaysAndEffortFormatter trapDaysAndEffortFormatter = new TrapDaysAndEffortFormatter(images, analysis);
+		LocationStatFormatter locationStatFormatter = new LocationStatFormatter(images, analysis);
+		ActivityPatternFormatter activityPatternFormatter = new ActivityPatternFormatter(images, analysis);
+		LunarActivityFormatter lunarActivityFormatter = new LunarActivityFormatter(images, analysis);
+		RichnessFormatter richnessFormatter = new RichnessFormatter(images, analysis);
+		SpeciesLocCoordFormatter speciesLocCoordFormatter = new SpeciesLocCoordFormatter(images, analysis);
+		TotalDayFormatter totalDayFormatter = new TotalDayFormatter(images, analysis);
+		OccouranceFormatter occouranceFormatter = new OccouranceFormatter(images, analysis);
+		DetectionRateFormatter detectionRateFormatter = new DetectionRateFormatter(images, analysis);
+
+		// Proceed to print each header:
 
 		// LOCATIONS 
 
@@ -259,12 +275,22 @@ public class SanimalTextOutputFormatter
 
 	}
 
+	/**
+	 * Instead of printing "output.txt" like above, this prints "Allpictures.txt"
+	 * 
+	 * @param images
+	 *            The image list to analyze
+	 * @param eventInterval
+	 *            The event interval
+	 * @return a formatted string
+	 */
 	public String createAllPictures(List<ImageEntry> images, Integer eventInterval)
 	{
 		String toReturn = "";
 
+		// Create an analysis object, then create the formatter, and create the text
 		DataAnalysis analysis = new DataAnalysis(images, eventInterval);
-		AllPicturesFormatter allPicturesFormatter = new AllPicturesFormatter(images, analysis, eventInterval);
+		AllPicturesFormatter allPicturesFormatter = new AllPicturesFormatter(images, analysis);
 		toReturn = toReturn + allPicturesFormatter.createAllPictures();
 
 		return toReturn;

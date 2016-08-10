@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis.textFormatters;
 
 import java.util.ArrayList;
@@ -21,13 +16,26 @@ import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
 import model.analysis.SanimalAnalysisUtils;
 
+/**
+ * The text formatter for first and last images taken of a species
+ * 
+ * @author David Slovikosky
+ */
 public class FirstLastSpeciesFormatter extends TextFormatter
 {
-	public FirstLastSpeciesFormatter(List<ImageEntry> images, DataAnalysis analysis, Integer eventInterval)
+	public FirstLastSpeciesFormatter(List<ImageEntry> images, DataAnalysis analysis)
 	{
-		super(images, analysis, eventInterval);
+		super(images, analysis);
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * Self explanatory
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printDaysInCameraTrap()
 	{
 		String toReturn = "";
@@ -45,6 +53,15 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * For each species to be analyzed, the day of the study, and the year, month, day, hour, minute, and location where the species was first
+	 * recorded.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printFirstPicOfEachSpecies()
 	{
 		String toReturn = "";
@@ -64,6 +81,15 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * For each species to be analyzed, the day of the study, and the year, month, day, hour, minute, and location where the species was last
+	 * recorded.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printLastPicOfEachSpecies()
 	{
 		String toReturn = "";
@@ -86,6 +112,15 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * The day of the study that a new species was recorded, the total number of new species records, and the name of the species that was (were)
+	 * recorded.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printSpeciesAccumulationCurve()
 	{
 		String toReturn = "";

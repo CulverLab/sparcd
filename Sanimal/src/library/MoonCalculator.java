@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package library;
 
 import java.text.SimpleDateFormat;
@@ -10,6 +5,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+/**
+ * Library used in moon phase calculations
+ * 
+ * @author https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=5&ved=0ahUKEwiHgtX7orXOAhUeHGMKHeblD9QQFggzMAQ&url=http%3A%2F%2Fmerganser.
+ *         math.gvsu.edu%2Fmyth%2Fmoon%2FMoonCalculator.java&usg=AFQjCNHd1NL2Ssf9XjsqNN8NlvMJF_YpGA&sig2=5LgL0HTnFOQ5kXO2Nz41HA&cad=rja
+ */
 public class MoonCalculator
 {
 

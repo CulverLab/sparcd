@@ -1,13 +1,7 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis.textFormatters;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -19,13 +13,26 @@ import model.Species;
 import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
 
+/**
+ * The text formatter for occurrence of species in locations
+ * 
+ * @author David Slovikosky
+ */
 public class OccouranceFormatter extends TextFormatter
 {
-	public OccouranceFormatter(List<ImageEntry> images, DataAnalysis analysis, Integer eventInterval)
+	public OccouranceFormatter(List<ImageEntry> images, DataAnalysis analysis)
 	{
-		super(images, analysis, eventInterval);
+		super(images, analysis);
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printCoOccuranceMatrix()
 	{
 		String toReturn = "";
@@ -71,6 +78,14 @@ public class OccouranceFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printAbsensePresenceMatrix()
 	{
 		String toReturn = "";
@@ -86,13 +101,9 @@ public class OccouranceFormatter extends TextFormatter
 
 		List<Location> alphabetical = new ArrayList<Location>(analysis.getAllImageLocations());
 
-		Collections.sort(alphabetical, new Comparator<Location>()
+		Collections.sort(alphabetical, (loc1, loc2) ->
 		{
-			@Override
-			public int compare(Location loc1, Location loc2)
-			{
-				return loc1.getName().compareTo(loc2.getName());
-			}
+			return loc1.getName().compareTo(loc2.getName());
 		});
 
 		for (Integer location = 0; location < alphabetical.size(); location++)
@@ -120,6 +131,14 @@ public class OccouranceFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printMaxMinSpeciesElevation()
 	{
 		String toReturn = "";
@@ -135,13 +154,9 @@ public class OccouranceFormatter extends TextFormatter
 
 		List<Location> elevationLocs = new ArrayList<Location>(analysis.getAllImageLocations());
 
-		Collections.sort(elevationLocs, new Comparator<Location>()
+		Collections.sort(elevationLocs, (loc1, loc2) ->
 		{
-			@Override
-			public int compare(Location loc1, Location loc2)
-			{
-				return Double.compare(loc1.getElevation(), loc2.getElevation());
-			}
+			return Double.compare(loc1.getElevation(), loc2.getElevation());
 		});
 
 		for (Integer location = 0; location < elevationLocs.size(); location++)
@@ -207,6 +222,17 @@ public class OccouranceFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * The list of species analyzed, and for each species the Fraction of locations Occupied calculated by computing the number of locations occipied
+	 * by the species divided by the total number of location shown in (). For each species the Number of locations Occupied is also given. The
+	 * Fraction of locations Occupied is referred to as Naive occupancy or Naive proportion of locations occupied.The list is presnted from the
+	 * greatest porportion of locations occupied to least locations occupied.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printNativeOccupancy()
 	{
 		String toReturn = "";
@@ -236,14 +262,9 @@ public class OccouranceFormatter extends TextFormatter
 			pairsToPrint.add(Pair.of((double) locationsWithSpecies / totalLocations, String.format("%-28s           %5.3f                  %3d\n", species.getName(), (double) locationsWithSpecies / totalLocations, locationsWithSpecies)));
 		}
 
-		Collections.sort(pairsToPrint, new Comparator<Pair<Double, String>>()
+		Collections.sort(pairsToPrint, (pair1, pair2) ->
 		{
-
-			@Override
-			public int compare(Pair<Double, String> pair1, Pair<Double, String> pair2)
-			{
-				return pair2.getLeft().compareTo(pair1.getLeft());
-			}
+			return pair2.getLeft().compareTo(pair1.getLeft());
 		});
 
 		for (Pair<Double, String> toPrint : pairsToPrint)
@@ -254,6 +275,16 @@ public class OccouranceFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * A table of location x location showing the results of a chi-square test of species frequencies at each pair of locations. The null hypothesis
+	 * H0: Species frequencies are independent of location is tested. If two locations have similar species frequencies then the H0 is rejected and an
+	 * "R" is shown in the table. Otherwise a "-" shows the locations have independent species frequencies.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printCHISqAnalysisOfPairedSpecieFreq()
 	{
 		String toReturn = "";

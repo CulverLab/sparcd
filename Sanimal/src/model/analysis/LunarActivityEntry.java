@@ -1,12 +1,12 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis;
 
 import model.Species;
 
+/**
+ * A simple class representing a lunar activity entry
+ * 
+ * @author David Slovikosky
+ */
 public class LunarActivityEntry
 {
 	private Species species;

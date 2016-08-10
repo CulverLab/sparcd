@@ -1,6 +1,3 @@
-/*
- * Author: http://stackoverflow.com/questions/29057457/adjust-width-of-jcombobox-dropdown-menu
- */
 package library;
 
 import java.awt.Dimension;
@@ -9,6 +6,11 @@ import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 
+/**
+ * Library class to create a full sized combobox
+ * 
+ * @author http://stackoverflow.com/questions/29057457/adjust-width-of-jcombobox-dropdown-menu
+ */
 public class ComboBoxFullMenu<E> extends JComboBox<E>
 {
 	public ComboBoxFullMenu()

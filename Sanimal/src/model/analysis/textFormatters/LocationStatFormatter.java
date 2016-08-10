@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis.textFormatters;
 
 import java.util.Calendar;
@@ -18,13 +13,27 @@ import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
 import model.analysis.SanimalAnalysisUtils;
 
+/**
+ * The text formatter for statistics about locations
+ * 
+ * @author David Slovikosky
+ */
 public class LocationStatFormatter extends TextFormatter
 {
-	public LocationStatFormatter(List<ImageEntry> images, DataAnalysis analysis, Integer eventInterval)
+	public LocationStatFormatter(List<ImageEntry> images, DataAnalysis analysis)
 	{
-		super(images, analysis, eventInterval);
+		super(images, analysis);
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * A species-location table showing the total number of independent pictures, and percent of the total for each location for each species
+	 * analyzed. The total number of independent pictures for all species is given for each location.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printPercentOfSpeciesInLoc()
 	{
 		String toReturn = "";
@@ -62,6 +71,17 @@ public class LocationStatFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * For each year, for each location, a species-month table shows the number of independent records for each species. For each location and species
+	 * the total number of independent records for all months is given in the last column (Total). The total number of pictures (Total pictures), the
+	 * total number of camera trap days (Total effort), and total number of independent pictures (TotL) normalized by the total number of camera trap
+	 * days for each month (Total/(Total effort)) is given. This is followed by a summary for all years.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printSpeciesByMonthByLocByYear()
 	{
 		String toReturn = "";
@@ -177,6 +197,14 @@ public class LocationStatFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printSpeciesByMonthByLoc()
 	{
 		String toReturn = "";
@@ -295,6 +323,15 @@ public class LocationStatFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * The Minimum distance and also Maximum distance between any two locations is given. The Average distance between all locations is also given.
+	 * This is folowed by a table showing all distances of all locations analyzed. Distances are in km.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printDistanceBetweenLocations()
 	{
 		String toReturn = "";
@@ -351,6 +388,15 @@ public class LocationStatFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * A species x species table. Each row has the species name followed by the number of locations in () where the species was recored, then the
+	 * number and in () the percent of locations where it was recorded with the species in the column.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printSpeciesOverlapAtLoc()
 	{
 		String toReturn = "";
@@ -382,6 +428,15 @@ public class LocationStatFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * The area contained in the convex polygon formed by the outer-most locations listed. Also given are the UTM locations of the locations. This is
+	 * followed by the Area contained in the convex polygon given in kilometers^2 and miles^2.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printAreaCoveredByTraps()
 	{
 		String toReturn = "";
@@ -393,6 +448,17 @@ public class LocationStatFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * The 10 most similar locations where similarity is based on the frequency of number of independent pictures of each species recorded. Paired
+	 * locations are given. The last column shows 10 times the squart toot of the sum of the squared frequency differences. Lower scores represent
+	 * more similar species frequency composition. Also given are the top 10 most different locations. Higher scores represent greater differences.
+	 * This is followed by a table showing all the scores for each paired of locations.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printLocSpeciesFrequencySimiliarity()
 	{
 		String toReturn = "";
@@ -409,6 +475,18 @@ public class LocationStatFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * Each location has a species composition. Pairs of locations have the no species in common, some species incommon, or all species in common. The
+	 * Jaccard Similarity Index (JSI) is a similarity index. Shown are the top 10 locations with the most similar list of spcies. Given are the names
+	 * of the locations, their JSI index (JSI), and the number of species recorded at each location (N1 N2) and the number of species in common
+	 * (N1&N2). Also given is a list of the top 10 most different locations that have fewer species in common. A table of JSI scores comparing all
+	 * locations is also given. Locations with no specis in common have JSI = 0.0. If both locations share the same species JSI = 1.000.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printLocSpeciesCompositionSimiliarity()
 	{
 		String toReturn = "";

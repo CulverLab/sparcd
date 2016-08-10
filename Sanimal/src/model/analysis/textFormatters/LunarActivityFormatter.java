@@ -1,13 +1,7 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis.textFormatters;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import model.ImageEntry;
@@ -16,15 +10,32 @@ import model.analysis.DataAnalysis;
 import model.analysis.LunarActivityEntry;
 import model.analysis.PredicateBuilder;
 
+/**
+ * The text formatter for statistics about lunar activity
+ * 
+ * @author David Slovikosky
+ */
 public class LunarActivityFormatter extends TextFormatter
 {
 	private List<LunarActivityEntry> lunarActivities = null;
 
-	public LunarActivityFormatter(List<ImageEntry> images, DataAnalysis analysis, Integer eventInterval)
+	public LunarActivityFormatter(List<ImageEntry> images, DataAnalysis analysis)
 	{
-		super(images, analysis, eventInterval);
+		super(images, analysis);
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * For all species the activity pattern for 11 days centered around a Full moon and New moon is given. The table shows the hour of the day,the
+	 * number of records,and the frequency of total records for both a New moon and a Full moon. The moon completes one orbit around earth each 29.55
+	 * days. The Difference is the square root of the sum of the squared differences in frequency. The greater the difference, the more a species is
+	 * active during one phase of the moon compared to the other phase. Note that birds are likely more active during a Full moon than a New moon, and
+	 * nocturnal rodents might show the opposite pattern.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printLunarActivity()
 	{
 		String toReturn = "";
@@ -92,6 +103,14 @@ public class LunarActivityFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * The species whose lunar activity pattern is most different is given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printLunarActivityMostDifferent()
 	{
 		String toReturn = "";
@@ -101,13 +120,9 @@ public class LunarActivityFormatter extends TextFormatter
 
 		if (!lunarActivities.isEmpty())
 		{
-			Collections.sort(lunarActivities, new Comparator<LunarActivityEntry>()
+			Collections.sort(lunarActivities, (entry1, entry2) ->
 			{
-				@Override
-				public int compare(LunarActivityEntry entry1, LunarActivityEntry entry2)
-				{
-					return entry2.getDifference().compareTo(entry1.getDifference());
-				}
+				return entry2.getDifference().compareTo(entry1.getDifference());
 			});
 
 			toReturn = toReturn + "SPECIES LUNAR ACTIVITY MOST DIFFERENT: ";

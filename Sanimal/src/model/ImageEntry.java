@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model;
 
 import java.awt.Image;
@@ -14,7 +9,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.function.Predicate;
 
 import javax.swing.ImageIcon;
 
@@ -74,13 +68,9 @@ public class ImageEntry
 
 	public void removeSpecies(Species species)
 	{
-		this.speciesPresent.removeIf(new Predicate<SpeciesEntry>()
+		this.speciesPresent.removeIf(entry ->
 		{
-			@Override
-			public boolean test(SpeciesEntry entry)
-			{
-				return entry.getSpecies() == species;
-			}
+			return entry.getSpecies() == species;
 		});
 	}
 

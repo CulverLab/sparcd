@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis.textFormatters;
 
 import java.util.List;
@@ -15,13 +10,27 @@ import model.Species;
 import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
 
+/**
+ * The text formatter for richness calculations
+ * 
+ * @author David Slovikosky
+ */
 public class RichnessFormatter extends TextFormatter
 {
-	public RichnessFormatter(List<ImageEntry> images, DataAnalysis analysis, Integer eventInterval)
+	public RichnessFormatter(List<ImageEntry> images, DataAnalysis analysis)
 	{
-		super(images, analysis, eventInterval);
+		super(images, analysis);
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * A table of locations vs. species showing the number of pictures of each species recorded at the location. The last column shows the number of
+	 * species recorded at the location (Rich), and the last row shows total number of loations a species was recorded at (Richness)
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printLocationSpeciesRichness()
 	{
 		String toReturn = "";

@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis.textFormatters;
 
 import java.util.List;
@@ -15,22 +10,39 @@ import model.Species;
 import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
 
+/**
+ * The text formatter for species activities, abundance, and period at locations
+ * 
+ * @author David Slovikosky
+ */
 public class ActPerAbuLocFormatter extends TextFormatter
 {
 	// Jim's program added 1 to counts greater than 1 in activity count, fixed the issue
 	// Jim's program added 1 to counts greater than 1 in period count, fixed the issue
 	// Jim's program calculations for Abundance were completely wrong and made no sense
 	// When running DataAnalyze, the last period can have X elements. The last period is being added to "Abundance" X times instead of once.
+	// The above problems were fixed as of the latest version of DataAnalyze
 	// ALL = number of images containing the species
 	// ACTIVITY = Number of periods containing at least one image in a single hour (ex. 1-1:59, 2-2:59, etc) 
 	// PERIOD = Consecutive images that are less than "period" apart where period comes from user input
 	// ABUNDANCE = Maximum number of animals photographed in a single image in each period
 
-	public ActPerAbuLocFormatter(List<ImageEntry> images, DataAnalysis analysis, Integer eventInterval)
+	public ActPerAbuLocFormatter(List<ImageEntry> images, DataAnalysis analysis)
 	{
-		super(images, analysis, eventInterval);
+		super(images, analysis);
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * For each year the total number of pictures of all species (All), the number of pictures that are used to calculate the activity pattern
+	 * (Activity), the number of independent pictures (Period), and the total number of individuals in all the independent pitures (Abundance). This
+	 * is followed by the total (Total) for all years.
+	 * 
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printNumberOfPicturesByYear()
 	{
 		String toReturn = "";
@@ -70,6 +82,16 @@ public class ActPerAbuLocFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * For each species to be analyzed and for each year, the total number of pictures (All), the number of pictures that are used to calculate the
+	 * activity pattern (Activity), the number of independent pictures (Period), the total number of individuals in all the independent pitures
+	 * (Abundance), and the number of locations where the species was recorded (Sites). This is followed by the total (Total) for all years.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printNumberOfPicturesBySpeciesByYear()
 	{
 		String toReturn = "";
@@ -109,6 +131,15 @@ public class ActPerAbuLocFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * A list of the number of independent pictures of each species ranked by total from most to least, and the percent of the total number of all
+	 * independent pictures. The total number of indepdenent pictures is given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printNumberOfPicturesByPercentTotal()
 	{
 		String toReturn = "";
@@ -141,6 +172,17 @@ public class ActPerAbuLocFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * For each species (SPECIES) a list of the number of independent pictures (NUMBER PICS), proportion of the total number of all independent
+	 * pictures (PROPORTION), the average number of individuals in each picture (AVG NUM INDIVS), and the proportion of the total number of
+	 * individuals for that species divided by the total number of all individuals (PROPORTION). The total number of all independent pictures (Total)
+	 * is given in the last line.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printSpeciesAbundance()
 	{
 		String toReturn = "";
@@ -180,6 +222,14 @@ public class ActPerAbuLocFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printSpeciesAbundanceYearSite()
 	{
 		String toReturn = "";
@@ -216,6 +266,14 @@ public class ActPerAbuLocFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * No description given.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printSpeciesAbundanceSite()
 	{
 		String toReturn = "";

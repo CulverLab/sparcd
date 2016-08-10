@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis.textFormatters;
 
 import java.util.Calendar;
@@ -18,13 +13,31 @@ import model.Species;
 import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
 
+/**
+ * The text formatter for species activity patterns
+ * 
+ * @author David Slovikosky
+ */
 public class ActivityPatternFormatter extends TextFormatter
 {
-	public ActivityPatternFormatter(List<ImageEntry> images, DataAnalysis analysis, Integer eventInterval)
+	public ActivityPatternFormatter(List<ImageEntry> images, DataAnalysis analysis)
 	{
-		super(images, analysis, eventInterval);
+		super(images, analysis);
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * For each species daily activity patterns are given for all species by one hour segments. The species is listed and in parentheses (the number
+	 * of reords used in the activity calculation / the total number of records some of which might be sequentil). The first column, labeled Hour,
+	 * shows the hour segments starting and ending at midnight. Activity pattern is given by the number of records collected from all locations
+	 * analyzed for all years, and in frequency for all years and months, and for all years and each month (since activity can vary by month). The
+	 * total number of records for all years that was used is also given. The number of records matches the number of pictures listed under NUMBER OF
+	 * PICTURES AND FILTERED PICTURES PER YEAR above.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printActivityPatterns()
 	{
 		String toReturn = "";
@@ -98,6 +111,18 @@ public class ActivityPatternFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * A table showing the similarity comparison of activity patterns using hourly frequency is given. The number in the table shows the squart root
+	 * of the sum of the squared differencs by hour for each species pair. Freqency is used because the number of records used to calcluate activity
+	 * patterns generally differs for each species. If a pair of species has similar activity patterns then the value in the table will be low. If two
+	 * species have very different activity patterns, one being diurnal, the other nocturnal for instance, the value in the table will be high.
+	 * 
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printSpeciesPairsActivitySimilarity()
 	{
 		String toReturn = "";
@@ -148,6 +173,15 @@ public class ActivityPatternFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * The species pair that has the most similar activity pattern is compared. Only those species with 25 or more pictures are used.
+	 * 
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printSpeciePairMostSimilar()
 	{
 		String toReturn = "";
@@ -229,6 +263,18 @@ public class ActivityPatternFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * Using the Ch-squared statistic activity patterns of paired species are analyzed and results presented in species x species table. The null
+	 * hypothesis H0: Species A and B have similar activity patterns at 95% is tested. If the pattern is significantly similar then a "+" is entered
+	 * for A x B, otherwise the pattern is not significcantly similar and is indicated by a"0" in the table. Only those species that have 25 or more
+	 * records are considered.
+	 * 
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printChiSquareAnalysisPairedActivity()
 	{
 		String toReturn = "";
@@ -289,6 +335,22 @@ public class ActivityPatternFormatter extends TextFormatter
 		return toReturn;
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * Using Northern hemisphere seasons of winter (Dec-Jan-Feb), spring (Mar-Apr-May), summer (Jun-Jul-Aug), and fall (Sep-Oct-Nov) activity patterns
+	 * for each species are presented in a table. The table shows the number of records used in the actvity calculation and the frequency for each
+	 * sason. To compare the seasonal activity patterns requires knowning the number of independent pictures recorded in each season normalied by the
+	 * number of camera trap days (Pictures/Effort) for the season, and the proportion of the number of records divided by the total number of records
+	 * for the all four seasons (Visitation proportion). That is, Visitation proportion is computed by summing Picture/Effort for all seasons, then
+	 * dividing each season by the sum. This gives the proportion of records (based on indepdenent pictures, not the number of pictures used to create
+	 * activity). Note that more records likely result from greater effort, hence the number of records must be normalizedby effort. The total number
+	 * of records for each season is given.
+	 * 
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printActivityPatternsSeason()
 	{
 		String toReturn = "";

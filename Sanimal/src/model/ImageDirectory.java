@@ -1,20 +1,29 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A class representing a directory containing images
+ * 
+ * @author David Slovikosky
+ */
 public class ImageDirectory
 {
+	// A list of images in the directory
 	private List<ImageEntry> images = new ArrayList<ImageEntry>();
+	// A list of subdirectories
 	private List<ImageDirectory> subDirectories = new ArrayList<ImageDirectory>();
+	// The file representing the directory
 	private File directory;
 
+	/**
+	 * Construct an image directory
+	 * 
+	 * @param directory
+	 *            The file that represents the directory
+	 */
 	public ImageDirectory(File directory)
 	{
 		if (!directory.isDirectory())
@@ -22,31 +31,61 @@ public class ImageDirectory
 		this.directory = directory;
 	}
 
+	/**
+	 * Add a new subdirctory to this directory
+	 * 
+	 * @param subDirectory
+	 *            The directory to add
+	 */
 	public void addSubDirectory(ImageDirectory subDirectory)
 	{
 		this.subDirectories.add(subDirectory);
 	}
 
+	/**
+	 * Add an image to this directory
+	 * 
+	 * @param imageEntry
+	 *            The image to add
+	 */
 	public void addImage(ImageEntry imageEntry)
 	{
 		this.images.add(imageEntry);
 	}
 
+	/**
+	 * Get the file representing this directory
+	 * 
+	 * @return The file representing this directory
+	 */
 	public File getDirectory()
 	{
 		return directory;
 	}
 
+	/**
+	 * Get the subdirectories
+	 * 
+	 * @return The list of subdirectories
+	 */
 	public List<ImageDirectory> getSubDirectories()
 	{
 		return subDirectories;
 	}
 
+	/**
+	 * Get the list of images in the directory
+	 * 
+	 * @return The list of images
+	 */
 	public List<ImageEntry> getImages()
 	{
 		return images;
 	}
 
+	/**
+	 * @return The string representing this directory
+	 */
 	@Override
 	public String toString()
 	{

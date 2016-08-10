@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model.analysis.textFormatters;
 
 import java.util.List;
@@ -15,13 +10,26 @@ import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
 import model.analysis.SanimalAnalysisUtils;
 
+/**
+ * The text formatter for species with location/utm/latlng coordinates
+ * 
+ * @author David Slovikosky
+ */
 public class SpeciesLocCoordFormatter extends TextFormatter
 {
-	public SpeciesLocCoordFormatter(List<ImageEntry> images, DataAnalysis analysis, Integer eventInterval)
+	public SpeciesLocCoordFormatter(List<ImageEntry> images, DataAnalysis analysis)
 	{
-		super(images, analysis, eventInterval);
+		super(images, analysis);
 	}
 
+	/**
+	 * <p>
+	 * Dr. Jim Sanderson's description:
+	 * <p>
+	 * For each species a list of locations where the species was recorded, and the UTM and elevation of the location.
+	 * 
+	 * @return Returns a string representing the data in a clean form
+	 */
 	public String printSpeciesByLocWithUTM()
 	{
 		String toReturn = "";
