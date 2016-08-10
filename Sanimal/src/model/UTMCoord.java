@@ -1,18 +1,34 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package model;
 
+/**
+ * A class representing a UTM coordinate, not lat/lng
+ * 
+ * @author David Slovikosky
+ */
 public class UTMCoord
 {
-	private double easting;
-	private double northing;
-	private int zone;
-	private char letter;
+	// Easting part of the UTM coordinate
+	private Double easting;
+	// Northing part of the UTM coordinate
+	private Double northing;
+	// Zone part of the UTM coordinate
+	private Integer zone;
+	// Letter of the UTM coordinate
+	private Character letter;
 
-	public UTMCoord(double easting, double northing, int zone, char letter)
+	/**
+	 * Constructor for the UTM coordinate
+	 * 
+	 * @param easting
+	 *            Easting part of the UTM coordinate
+	 * @param northing
+	 *            Northing part of the UTM coordinate
+	 * @param zone
+	 *            Zone part of the UTM coordinate
+	 * @param letter
+	 *            Letter of the UTM coordinate
+	 */
+	public UTMCoord(Double easting, Double northing, Integer zone, Character letter)
 	{
 		this.easting = easting;
 		this.northing = northing;
@@ -20,22 +36,34 @@ public class UTMCoord
 		this.letter = letter;
 	}
 
-	public double getEasting()
+	/**
+	 * @return Get the easting part of the UTM coordinate
+	 */
+	public Double getEasting()
 	{
 		return easting;
 	}
 
-	public double getNorthing()
+	/**
+	 * @return Get the northing part of the UTM coordinate
+	 */
+	public Double getNorthing()
 	{
 		return northing;
 	}
 
-	public int getZone()
+	/**
+	 * @return Get the zone of the UTM coordinate
+	 */
+	public Integer getZone()
 	{
 		return zone;
 	}
 
-	public char getLetter()
+	/**
+	 * @return The letter of the UTM coordinate
+	 */
+	public Character getLetter()
 	{
 		return letter;
 	}

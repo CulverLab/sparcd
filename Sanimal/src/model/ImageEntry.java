@@ -12,14 +12,31 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 
+/**
+ * A class representing an image file
+ * 
+ * @author David Slovikosky
+ */
 public class ImageEntry
 {
-	private File imageFile;
-	private Date dateTaken;
+	// The format with which to print the date out in
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("YYYY MM dd hh mm ss");
+
+	// The actual file 
+	private File imageFile;
+	// The date that the image was taken
+	private Date dateTaken;
+	// The location that the image was taken
 	private Location locationTaken;
+	// The species present in the image
 	private List<SpeciesEntry> speciesPresent = new ArrayList<SpeciesEntry>();
 
+	/**
+	 * Create a new image entry with an image file
+	 * 
+	 * @param file
+	 *            The file (must be an image file)
+	 */
 	public ImageEntry(File file)
 	{
 		this.imageFile = file;
@@ -32,33 +49,67 @@ public class ImageEntry
 		}
 	}
 
+	/**
+	 * Get the image file
+	 * 
+	 * @return The image file
+	 */
 	public File getImageFile()
 	{
 		return this.imageFile;
 	}
 
+	/**
+	 * Returns the date taken as a formatted string
+	 * 
+	 * @return The formatted date
+	 */
 	public String getDateTakenFormatted()
 	{
 		//this.validateDate();
 		return dateTaken.toString();
 	}
 
+	/**
+	 * Returns the date the image was taken
+	 * 
+	 * @return The date the image was taken
+	 */
 	public Date getDateTaken()
 	{
 		//this.validateDate();
 		return dateTaken;
 	}
 
+	/**
+	 * Set the location that the image was taken at
+	 * 
+	 * @param location
+	 *            The location
+	 */
 	public void setLocationTaken(Location location)
 	{
 		this.locationTaken = location;
 	}
 
+	/**
+	 * Return the location that the image was taken
+	 * 
+	 * @return The location
+	 */
 	public Location getLocationTaken()
 	{
 		return locationTaken;
 	}
 
+	/**
+	 * Add a new species to the image
+	 * 
+	 * @param species
+	 *            The species of the animal
+	 * @param amount
+	 *            The number of animals in the image
+	 */
 	public void addSpecies(Species species, Integer amount)
 	{
 		// Remove any other occurrences of the species from the image
@@ -66,6 +117,12 @@ public class ImageEntry
 		this.speciesPresent.add(new SpeciesEntry(species, amount));
 	}
 
+	/**
+	 * Remove a species from the list of image species
+	 * 
+	 * @param species
+	 *            The species to remove
+	 */
 	public void removeSpecies(Species species)
 	{
 		this.speciesPresent.removeIf(entry ->
@@ -74,16 +131,33 @@ public class ImageEntry
 		});
 	}
 
+	/**
+	 * Get the list of present species
+	 * 
+	 * @return A list of present species
+	 */
 	public List<SpeciesEntry> getSpeciesPresent()
 	{
 		return speciesPresent;
 	}
 
-	public ImageIcon createIcon(int width, int height)
+	/**
+	 * Create an image icon of this file with a given width and height
+	 * 
+	 * @param width
+	 *            The width of the scaled icon
+	 * @param height
+	 *            The height of the scaled icon
+	 * @return The image icon representing the scaled image
+	 */
+	public ImageIcon createIcon(Integer width, Integer height)
 	{
 		return ImageLoadingUtils.createImageIcon(imageFile, width, height, Image.SCALE_SMOOTH);
 	}
 
+	/**
+	 * Renames the image file based on the formatted date
+	 */
 	public void renameByDate()
 	{
 		//this.validateDate();
@@ -103,6 +177,9 @@ public class ImageEntry
 			System.err.println("Error renaming file: " + this.imageFile.getAbsolutePath());
 	}
 
+	/**
+	 * Returns the name of this image entry
+	 */
 	@Override
 	public String toString()
 	{
