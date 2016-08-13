@@ -1,27 +1,41 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package view;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 
+/**
+ * Class used in threading off runnable tasks
+ * 
+ * @author David Slovikosky
+ */
 public class SanimalIconLoader
 {
+	// Using singleton design pattern
 	private static SanimalIconLoader instance = new SanimalIconLoader();
+	// Use a thread pool executor to perform the tasks
 	private final ThreadPoolExecutor iconLoader = new ScheduledThreadPoolExecutor(5);
 
+	/**
+	 * Constrcutor is private due to singleton design pattern
+	 */
 	private SanimalIconLoader()
 	{
 	}
 
+	/**
+	 * @return Returns the one icon loader instance
+	 */
 	public static SanimalIconLoader getInstance()
 	{
 		return instance;
 	}
 
+	/**
+	 * Schedules a task to run on one of the threads
+	 * 
+	 * @param runnable
+	 *            The task to execute
+	 */
 	public void scheduleTask(Runnable runnable)
 	{
 		this.iconLoader.submit(runnable);

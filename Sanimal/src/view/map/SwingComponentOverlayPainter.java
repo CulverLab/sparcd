@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package view.map;
 
 import java.awt.Graphics2D;
@@ -14,8 +9,16 @@ import javax.swing.JComponent;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.viewer.WaypointPainter;
 
+/**
+ * A painter to paint swing components onto the map
+ * 
+ * @author David Slovikosky
+ */
 public class SwingComponentOverlayPainter extends WaypointPainter<SwingComponentOverlay>
 {
+	/**
+	 * Paint the swing component centered
+	 */
 	@Override
 	protected void doPaint(Graphics2D g, JXMapViewer jxMapViewer, int width, int height)
 	{

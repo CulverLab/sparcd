@@ -1,16 +1,21 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package view.map;
 
 import org.jxmapviewer.viewer.TileFactoryInfo;
 
+/**
+ * Tile factory used to receive google maps tiles
+ * 
+ * @author David Slovikosky
+ */
 public class GoogleMapsTileFactoryInfo extends TileFactoryInfo
 {
 	private static final int max = 22;
 
+	/**
+	 * Map types provided by google maps. Each is represented by a single letter
+	 * 
+	 * @author David Slovikosky
+	 */
 	public enum MapType
 	{
 		ROADS_ONLY("h"),
@@ -34,7 +39,10 @@ public class GoogleMapsTileFactoryInfo extends TileFactoryInfo
 	}
 
 	/**
-	 * Default constructor
+	 * Constructor for the tile factory
+	 * 
+	 * @param mapType
+	 *            The type of map to pull data
 	 */
 	public GoogleMapsTileFactoryInfo(MapType mapType)
 	{
@@ -42,6 +50,9 @@ public class GoogleMapsTileFactoryInfo extends TileFactoryInfo
 				"http://mt1.google.com/vt/lyrs=" + mapType.getTypeIdentifier(), "x", "y", "z"); // 5/15/10.png
 	}
 
+	/**
+	 * Returns the url with which to get the tile at x, y, z
+	 */
 	@Override
 	public String getTileUrl(int x, int y, int zoom)
 	{

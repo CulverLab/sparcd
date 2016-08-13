@@ -171,8 +171,9 @@ public class SanimalController
 			Species selectedSpecies = sanimalView.getSelectedSpecies();
 			if (selectedSpecies != null)
 			{
+				List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
 				// Ensure we have a species selected and an image selected
-				if (!sanimalView.getSelectedImageEntries().isEmpty())
+				if (!selectedImages.isEmpty())
 				{
 					// Get the number of animals, and add it to the image
 					Integer numberOfAnimals = Integer.MAX_VALUE;
@@ -189,7 +190,6 @@ public class SanimalController
 						{
 						}
 					}
-					List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
 					for (ImageEntry imageEntry : selectedImages)
 						imageEntry.addSpecies(selectedSpecies, numberOfAnimals);
 					if (selectedImages.size() == 1)

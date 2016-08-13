@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package view;
 
 import java.awt.Color;
@@ -27,6 +22,11 @@ import javax.swing.event.ChangeListener;
 
 import library.ComboBoxFullMenu;
 
+/**
+ * This class defines the map panel used in the main program
+ * 
+ * @author David Slovikosky
+ */
 public class MapPanel extends JPanel
 {
 	private JLabel lblMapProvider;
@@ -70,6 +70,7 @@ public class MapPanel extends JPanel
 		mapViewer.setLayout(null);
 		mapViewer.setBounds(0, 60, 637, 564);
 		mapViewer.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+		// When scrolling set the zoom level lables accordingly
 		mapViewer.addMouseWheelListener(new MouseWheelListener()
 		{
 			@Override
@@ -83,6 +84,7 @@ public class MapPanel extends JPanel
 				mapViewer.setMarkerScale((maxZoom - currZoom) / maxZoom);
 			}
 		});
+		// When you drag the mouse, set lat/lng coords accordingly
 		mapViewer.addMouseMotionListener(new MouseMotionListener()
 		{
 			@Override
@@ -167,7 +169,7 @@ public class MapPanel extends JPanel
 		});
 		this.add(sldSpeed);
 
-		lblSpeed = new JLabel("1x");
+		lblSpeed = new JLabel("0x");
 		lblSpeed.setBounds(292, 632, 26, 23);
 		this.add(lblSpeed);
 		lblSpeed.setFont(new Font("Tahoma", Font.PLAIN, 16));
@@ -176,6 +178,7 @@ public class MapPanel extends JPanel
 		prgDataShow.setBounds(328, 632, 300, 23);
 		prgDataShow.setMinimum(0);
 		prgDataShow.setMaximum(100);
+		// Clicking & Dragging allows for updating the progress bar
 		prgDataShow.addMouseListener(new MouseListener()
 		{
 			@Override
@@ -224,11 +227,17 @@ public class MapPanel extends JPanel
 		this.add(prgDataShow);
 	}
 
+	/**
+	 * @return The map viewer instance
+	 */
 	public SanimalMap getMapViewer()
 	{
 		return this.mapViewer;
 	}
 
+	/**
+	 * @return Return the progress bar used as the timeline
+	 */
 	public JProgressBar getPrgDataShow()
 	{
 		return this.prgDataShow;

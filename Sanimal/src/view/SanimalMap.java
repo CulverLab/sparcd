@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package view;
 
 import java.awt.event.ItemEvent;
@@ -110,7 +105,7 @@ public class SanimalMap extends JXMapViewer
 			}
 		});
 
-		// Cache files, completely optional
+		// Cache files, completely optional (Not allowed with google maps)
 		//File cacheDir = new File(System.getProperty("user.home") + File.separator + "Sanimal Map Tiles");
 		//LocalResponseCache.installResponseCache(tileFactoryInfo.getBaseURL(), cacheDir, false);
 

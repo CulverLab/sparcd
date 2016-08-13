@@ -1,8 +1,3 @@
-/*
- * Author: David Slovikosky
- * Mod: Afraid of the Dark
- * Ideas and Textures: Michael Albertson
- */
 package view.map;
 
 import java.awt.Graphics2D;
@@ -14,8 +9,16 @@ import javax.swing.JComponent;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.viewer.WaypointPainter;
 
+/**
+ * The painter for a Sanimal map marker
+ * 
+ * @author David Slovikosky
+ */
 public class SanimalMapMarkerOverlayPainter extends WaypointPainter<SanimalMapMarkerOverlay>
 {
+	/**
+	 * Paint the component centered
+	 */
 	@Override
 	protected void doPaint(Graphics2D g, JXMapViewer jxMapViewer, int width, int height)
 	{
