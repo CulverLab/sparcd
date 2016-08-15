@@ -81,7 +81,6 @@ public class SanimalInput
 		{ "Latitude/Longitude", "UTM" }, "Latitude/Longitude");
 		if (result == JOptionPane.CLOSED_OPTION)
 			return null;
-		System.out.println(result);
 		Boolean useLatLng = result == JOptionPane.YES_OPTION;
 
 		Double latitude = Double.MAX_VALUE;

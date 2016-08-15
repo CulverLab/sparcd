@@ -1,11 +1,13 @@
 package model.species;
 
+import java.io.Serializable;
+
 /**
  * A class representing a species
  * 
  * @author David Slovikosky
  */
-public class Species
+public class Species implements Serializable
 {
 	private final String name;
 

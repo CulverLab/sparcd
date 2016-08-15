@@ -3,6 +3,7 @@ package model.image;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
@@ -21,7 +22,7 @@ import model.species.SpeciesEntry;
  * 
  * @author David Slovikosky
  */
-public class ImageEntry
+public class ImageEntry implements Serializable
 {
 	// The format with which to print the date out in
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("YYYY MM dd hh mm ss");

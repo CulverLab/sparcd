@@ -1,5 +1,7 @@
 package model;
 
+import java.io.Serializable;
+
 import model.analysis.ExcelFormatter;
 import model.analysis.SanimalTextOutputFormatter;
 import model.image.ImageImporterData;
@@ -12,7 +14,7 @@ import model.timeline.TimelineData;
  * 
  * @author David Slovikosky
  */
-public class SanimalData
+public class SanimalData implements Serializable
 {
 	// Image data
 	private ImageImporterData imageData = new ImageImporterData();
@@ -21,11 +23,11 @@ public class SanimalData
 	// Species data
 	private SpeciesData speciesData = new SpeciesData();
 	// Output formatter
-	private SanimalTextOutputFormatter outputFormatter = new SanimalTextOutputFormatter();
+	private transient SanimalTextOutputFormatter outputFormatter = new SanimalTextOutputFormatter();
 	// Excel output formatter
-	private ExcelFormatter excelFormatter = new ExcelFormatter();
+	private transient ExcelFormatter excelFormatter = new ExcelFormatter();
 	// Timeline data
-	private TimelineData timelineData = new TimelineData();
+	private transient TimelineData timelineData = new TimelineData();
 
 	/**
 	 * @return The image data

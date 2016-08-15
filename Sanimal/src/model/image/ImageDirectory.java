@@ -1,6 +1,7 @@
 package model.image;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +10,7 @@ import java.util.List;
  * 
  * @author David Slovikosky
  */
-public class ImageDirectory
+public class ImageDirectory implements Serializable
 {
 	// A list of images in the directory
 	private List<ImageEntry> images = new ArrayList<ImageEntry>();

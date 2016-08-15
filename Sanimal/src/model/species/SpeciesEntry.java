@@ -1,11 +1,13 @@
 package model.species;
 
+import java.io.Serializable;
+
 /**
  * Wrapper around the species class which allows for the addition of the amount field that specifies how many animals are in an image
  * 
  * @author David Slovikosky
  */
-public class SpeciesEntry implements Comparable<SpeciesEntry>
+public class SpeciesEntry implements Comparable<SpeciesEntry>, Serializable
 {
 	// The species represented
 	private final Species species;

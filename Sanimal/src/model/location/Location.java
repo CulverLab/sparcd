@@ -1,5 +1,7 @@
 package model.location;
 
+import java.io.Serializable;
+
 import org.jxmapviewer.viewer.GeoPosition;
 
 /**
@@ -7,7 +9,7 @@ import org.jxmapviewer.viewer.GeoPosition;
  * 
  * @author David Slovikosky
  */
-public class Location
+public class Location implements Serializable
 {
 	private final String name;
 	private final double lat;

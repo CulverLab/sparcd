@@ -7,5 +7,5 @@ package model.location;
 
 public enum LocationUpdate
 {
-	LocationAdded;
+	LocationListChange;
 }

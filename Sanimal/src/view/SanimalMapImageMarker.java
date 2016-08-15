@@ -40,10 +40,10 @@ public class SanimalMapImageMarker extends JLabel
 				if (needsIcon)
 				{
 					this.setIcon(ImageLoadingUtils.createImageIcon(file, BASE_WIDTH_HEIGHT, BASE_WIDTH_HEIGHT, Image.SCALE_SMOOTH));
+					this.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2, true));
 				}
 			});
 		}
-		this.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2, true));
 		this.addMouseListener(new MouseListener()
 		{
 			@Override

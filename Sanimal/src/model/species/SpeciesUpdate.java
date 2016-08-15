@@ -7,5 +7,5 @@ package model.species;
 
 public enum SpeciesUpdate
 {
-	SpeciesAdded;
+	SpeciesListChanged;
 }

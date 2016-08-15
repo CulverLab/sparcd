@@ -1,5 +1,6 @@
 package model.species;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
@@ -9,7 +10,7 @@ import java.util.Observable;
  * 
  * @author David Slovikosky
  */
-public class SpeciesData extends Observable
+public class SpeciesData extends Observable implements Serializable
 {
 	// The list of registered species
 	private List<Species> species = new ArrayList<Species>();
@@ -24,7 +25,7 @@ public class SpeciesData extends Observable
 	{
 		this.species.add(species);
 		this.setChanged();
-		this.notifyObservers(SpeciesUpdate.SpeciesAdded);
+		this.notifyObservers(SpeciesUpdate.SpeciesListChanged);
 	}
 
 	/**
@@ -37,7 +38,17 @@ public class SpeciesData extends Observable
 	{
 		this.species.remove(species);
 		this.setChanged();
-		this.notifyObservers(SpeciesUpdate.SpeciesAdded);
+		this.notifyObservers(SpeciesUpdate.SpeciesListChanged);
+	}
+
+	/**
+	 * Clears the list of registered species
+	 */
+	public void clearRegisteredSpecies()
+	{
+		this.species.clear();
+		this.setChanged();
+		this.notifyObservers(SpeciesUpdate.SpeciesListChanged);
 	}
 
 	/**

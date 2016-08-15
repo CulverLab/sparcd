@@ -3,6 +3,8 @@ package view;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
@@ -110,6 +112,8 @@ public class SanimalView extends JFrame implements Observer
 	private JRadioButton radPeriod;
 	private JRadioButton radActivity;
 	private ButtonGroup grpDataType;
+	private JButton btnSaveToFile;
+	private JButton btnLoadFromFile;
 
 	private ImageView imageView = new ImageView();
 
@@ -355,6 +359,18 @@ public class SanimalView extends JFrame implements Observer
 		btnAllPictures.setLayout(null);
 		pnlExcelOutput.add(btnAllPictures);
 
+		btnSaveToFile = new JButton("Save to file");
+		btnSaveToFile.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		btnSaveToFile.setBounds(312, 44, 160, 23);
+		btnSaveToFile.setLayout(null);
+		pnlExcelOutput.add(btnSaveToFile);
+
+		btnLoadFromFile = new JButton("Load from file");
+		btnLoadFromFile.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		btnLoadFromFile.setBounds(312, 78, 160, 23);
+		btnLoadFromFile.setLayout(null);
+		pnlExcelOutput.add(btnLoadFromFile);
+
 		radNumPictures = new JRadioButton("Picture Count");
 		radNumPictures.setSelected(true);
 		radNumPictures.setFont(new Font("Tahoma", Font.PLAIN, 14));
@@ -459,6 +475,16 @@ public class SanimalView extends JFrame implements Observer
 	public void addALToPrgDataShow(MouseMotionListener listener)
 	{
 		this.map.getPrgDataShow().addMouseMotionListener(listener);
+	}
+
+	public void addALToSave(ActionListener listener)
+	{
+		this.btnSaveToFile.addActionListener(listener);
+	}
+
+	public void addALToLoad(ActionListener listener)
+	{
+		this.btnLoadFromFile.addActionListener(listener);
 	}
 
 	public Location getSelectedLocation()
@@ -577,6 +603,11 @@ public class SanimalView extends JFrame implements Observer
 		this.tarAllOutput.setText(text);
 	}
 
+	public void addDropTarget(DropTargetListener listener)
+	{
+		new DropTarget(this, listener);
+	}
+
 	public List<ImageEntry> getSelectedImageEntries()
 	{
 		List<ImageEntry> entries = new ArrayList<ImageEntry>();
@@ -649,14 +680,14 @@ public class SanimalView extends JFrame implements Observer
 		{
 			LocationData locationData = (LocationData) observable;
 			LocationUpdate locationUpdate = (LocationUpdate) argument;
-			if (locationUpdate == LocationUpdate.LocationAdded)
+			if (locationUpdate == LocationUpdate.LocationListChange)
 				this.setLocationList(locationData.getRegisteredLocations());
 		}
 		else if (observable instanceof SpeciesData && argument instanceof SpeciesUpdate)
 		{
 			SpeciesData speciesData = (SpeciesData) observable;
 			SpeciesUpdate speciesUpdate = (SpeciesUpdate) argument;
-			if (speciesUpdate == SpeciesUpdate.SpeciesAdded)
+			if (speciesUpdate == SpeciesUpdate.SpeciesListChanged)
 				this.setSpeciesList(speciesData.getRegisteredSpecies());
 		}
 		else if (observable instanceof ImageImporterData && argument instanceof ImageUpdate)
@@ -704,9 +735,14 @@ public class SanimalView extends JFrame implements Observer
 
 	private void setImageList(ImageDirectory imageDirectory)
 	{
-		DefaultMutableTreeNode head = new DefaultMutableTreeNode(imageDirectory);
-		this.createTreeFromImageDirectory(head, imageDirectory);
-		this.treImages.setModel(new DefaultTreeModel(head));
+		if (imageDirectory == null)
+			this.treImages.setModel((TreeModel) null);
+		else
+		{
+			DefaultMutableTreeNode head = new DefaultMutableTreeNode(imageDirectory);
+			this.createTreeFromImageDirectory(head, imageDirectory);
+			this.treImages.setModel(new DefaultTreeModel(head));
+		}
 	}
 
 	private void createTreeFromImageDirectory(DefaultMutableTreeNode headNode, ImageDirectory headDirectory)

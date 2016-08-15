@@ -2,6 +2,7 @@ package model.image;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.util.Observable;
 
@@ -10,10 +11,23 @@ import java.util.Observable;
  * 
  * @author David Slovikosky
  */
-public class ImageImporterData extends Observable
+public class ImageImporterData extends Observable implements Serializable
 {
 	// The head of the directory
 	private ImageDirectory head;
+
+	/**
+	 * Loads an existing image directory into the program
+	 * 
+	 * @param newDirectory
+	 *            The new source image directory
+	 */
+	public void loadImagesFromExistingDirectory(ImageDirectory newDirectory)
+	{
+		this.head = newDirectory;
+		this.setChanged();
+		this.notifyObservers(ImageUpdate.NewDirectorySelected);
+	}
 
 	/**
 	 * Set the head directory to the given file
