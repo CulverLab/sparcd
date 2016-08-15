@@ -1,14 +1,15 @@
-package model;
+package model.location;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
 
 /**
  * Stores a list of registered locations
  * 
  * @author David Slovikosky
  */
-public class LocationData
+public class LocationData extends Observable
 {
 	// The list of registered locations
 	private List<Location> registeredLocations = new ArrayList<Location>();
@@ -22,6 +23,8 @@ public class LocationData
 	public void addLocation(Location location)
 	{
 		this.registeredLocations.add(location);
+		this.setChanged();
+		this.notifyObservers(LocationUpdate.LocationAdded);
 	}
 
 	/**
@@ -36,6 +39,8 @@ public class LocationData
 		{
 			return loc.getName().equals(location);
 		});
+		this.setChanged();
+		this.notifyObservers(LocationUpdate.LocationAdded);
 	}
 
 	/**
@@ -47,6 +52,8 @@ public class LocationData
 	public void removeLocation(Location location)
 	{
 		this.registeredLocations.remove(location);
+		this.setChanged();
+		this.notifyObservers(LocationUpdate.LocationAdded);
 	}
 
 	/**

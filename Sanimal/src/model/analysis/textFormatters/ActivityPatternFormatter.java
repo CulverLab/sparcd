@@ -7,11 +7,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
-import model.ImageEntry;
-import model.Location;
-import model.Species;
 import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
+import model.image.ImageEntry;
+import model.location.Location;
+import model.species.Species;
 
 /**
  * The text formatter for species activity patterns

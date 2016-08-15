@@ -1,6 +1,6 @@
 package model.analysis;
 
-import model.Species;
+import model.species.Species;
 
 /**
  * A simple class representing a lunar activity entry

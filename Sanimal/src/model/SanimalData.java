@@ -2,6 +2,10 @@ package model;
 
 import model.analysis.ExcelFormatter;
 import model.analysis.SanimalTextOutputFormatter;
+import model.image.ImageImporterData;
+import model.location.LocationData;
+import model.species.SpeciesData;
+import model.timeline.TimelineData;
 
 /**
  * A container class for all data Sanimal will need to store

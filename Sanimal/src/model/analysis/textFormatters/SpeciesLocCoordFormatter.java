@@ -2,13 +2,13 @@ package model.analysis.textFormatters;
 
 import java.util.List;
 
-import model.ImageEntry;
-import model.Location;
-import model.Species;
-import model.UTMCoord;
 import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
 import model.analysis.SanimalAnalysisUtils;
+import model.image.ImageEntry;
+import model.location.Location;
+import model.location.UTMCoord;
+import model.species.Species;
 
 /**
  * The text formatter for species with location/utm/latlng coordinates

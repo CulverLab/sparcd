@@ -1,4 +1,4 @@
-package model;
+package model.image;
 
 import java.awt.Image;
 import java.io.File;
@@ -11,6 +11,10 @@ import java.util.Date;
 import java.util.List;
 
 import javax.swing.ImageIcon;
+
+import model.location.Location;
+import model.species.Species;
+import model.species.SpeciesEntry;
 
 /**
  * A class representing an image file

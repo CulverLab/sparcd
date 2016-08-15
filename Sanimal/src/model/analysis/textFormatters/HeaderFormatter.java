@@ -2,11 +2,11 @@ package model.analysis.textFormatters;
 
 import java.util.List;
 
-import model.ImageEntry;
-import model.Location;
-import model.Species;
 import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
+import model.image.ImageEntry;
+import model.location.Location;
+import model.species.Species;
 
 /**
  * The text formatter for the header of the various text output

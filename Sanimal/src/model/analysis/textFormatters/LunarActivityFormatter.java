@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import model.ImageEntry;
-import model.Species;
 import model.analysis.DataAnalysis;
 import model.analysis.LunarActivityEntry;
 import model.analysis.PredicateBuilder;
+import model.image.ImageEntry;
+import model.species.Species;
 
 /**
  * The text formatter for statistics about lunar activity

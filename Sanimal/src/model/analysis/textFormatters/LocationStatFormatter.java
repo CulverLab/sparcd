@@ -6,12 +6,12 @@ import java.util.List;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
-import model.ImageEntry;
-import model.Location;
-import model.Species;
 import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
 import model.analysis.SanimalAnalysisUtils;
+import model.image.ImageEntry;
+import model.location.Location;
+import model.species.Species;
 
 /**
  * The text formatter for statistics about locations

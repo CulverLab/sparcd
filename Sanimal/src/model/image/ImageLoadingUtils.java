@@ -1,4 +1,4 @@
-package model;
+package model.image;
 
 import java.awt.Image;
 import java.awt.Toolkit;

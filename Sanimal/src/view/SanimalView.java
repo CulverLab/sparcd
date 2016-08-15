@@ -5,12 +5,15 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
@@ -38,15 +41,23 @@ import javax.swing.tree.TreePath;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import library.ComboBoxFullMenu;
-import model.ImageDirectory;
-import model.ImageEntry;
-import model.ImageLoadingUtils;
-import model.Location;
-import model.Species;
-import model.SpeciesEntry;
+import model.image.ImageDirectory;
+import model.image.ImageEntry;
+import model.image.ImageImporterData;
+import model.image.ImageLoadingUtils;
+import model.image.ImageUpdate;
+import model.location.Location;
+import model.location.LocationData;
+import model.location.LocationUpdate;
+import model.species.Species;
+import model.species.SpeciesData;
+import model.species.SpeciesEntry;
+import model.species.SpeciesUpdate;
+import model.timeline.TimelineData;
+import model.timeline.TimelineUpdate;
 import view.map.SanimalMapMarkerOverlay;
 
-public class SanimalView extends JFrame
+public class SanimalView extends JFrame implements Observer
 {
 	private static ImageIcon DEFAULT_ICON = null;
 
@@ -100,6 +111,8 @@ public class SanimalView extends JFrame
 	private JRadioButton radActivity;
 	private ButtonGroup grpDataType;
 
+	private ImageView imageView = new ImageView();
+
 	public SanimalView()
 	{
 		this.getContentPane().setLayout(null);
@@ -111,6 +124,35 @@ public class SanimalView extends JFrame
 		lblThumbnail = new JLabel();
 		lblThumbnail.setBounds(278, 11, 391, 300);
 		lblThumbnail.setBorder(new LineBorder(Color.BLACK));
+		lblThumbnail.addMouseListener(new MouseListener()
+		{
+			@Override
+			public void mouseReleased(MouseEvent event)
+			{
+				if (!imageView.isVisible())
+					imageView.setVisible(true);
+			}
+
+			@Override
+			public void mousePressed(MouseEvent event)
+			{
+			}
+
+			@Override
+			public void mouseExited(MouseEvent event)
+			{
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent event)
+			{
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent event)
+			{
+			}
+		});
 		this.getContentPane().add(lblThumbnail);
 
 		if (DEFAULT_ICON == null)
@@ -435,6 +477,14 @@ public class SanimalView extends JFrame
 			return (Species) this.cbxSpecies.getSelectedItem();
 	}
 
+	public Species getSelectedSpeciesFromList()
+	{
+		if (this.lstSpecies.getSelectedIndex() == -1)
+			return null;
+		else
+			return ((SpeciesEntry) (this.lstSpecies.getSelectedValue())).getSpecies();
+	}
+
 	/**
 	 * @return 0 for number of pictures, 1 for abundance, 2 for activity, and 3 for period
 	 */
@@ -471,10 +521,12 @@ public class SanimalView extends JFrame
 	{
 		if (image != null)
 		{
-			//this.lblThumbnail.setIcon(DEFAULT_ICON);
 			SanimalIconLoader.getInstance().scheduleTask(() ->
 			{
 				this.lblThumbnail.setIcon(image.createIcon(this.lblThumbnail.getWidth(), this.lblThumbnail.getHeight()));
+				this.imageView.setDisplayImage(image);
+				if (this.imageView.isVisible())
+					this.imageView.refreshIcon();
 			});
 		}
 		else
@@ -503,29 +555,6 @@ public class SanimalView extends JFrame
 			this.cbxSpecies.setSelectedIndex(-1);
 	}
 
-	public void setLocationList(List<Location> locations)
-	{
-		if (!locations.contains((Location) this.cbxLocation.getSelectedItem()))
-			this.cbxLocation.setSelectedIndex(-1);
-		this.cbxLocation.removeAllItems();
-		this.map.getMapViewer().clearMarkers();
-		for (Location location : locations)
-		{
-			this.cbxLocation.addItem(location);
-			this.map.getMapViewer().addMarker(new SanimalMapMarkerOverlay(location, new SanimalMapMarker()));
-		}
-	}
-
-	public void setSpeciesList(List<Species> species)
-	{
-		Species selectedSpecies = (Species) this.cbxSpecies.getSelectedItem();
-		this.cbxSpecies.removeAllItems();
-		for (Species species2 : species)
-			this.cbxSpecies.addItem(species2);
-		if (species.contains(selectedSpecies))
-			this.cbxSpecies.setSelectedItem(selectedSpecies);
-	}
-
 	public void setSpeciesEntryList(List<SpeciesEntry> speciesEntries)
 	{
 		if (this.lstSpecies.getModel() instanceof DefaultListModel<?>)
@@ -538,33 +567,9 @@ public class SanimalView extends JFrame
 		}
 	}
 
-	public void setImagesDrawnOnMap(List<ImageEntry> images)
-	{
-		this.map.getMapViewer().setImagesDrawnOnMap(images);
-	}
-
 	public void centerMapOn(GeoPosition geoPosition)
 	{
 		this.map.getMapViewer().setCenterPosition(geoPosition);
-	}
-
-	public void setImageList(ImageDirectory imageDirectory)
-	{
-		DefaultMutableTreeNode head = new DefaultMutableTreeNode(imageDirectory);
-		this.createTreeFromImageDirectory(head, imageDirectory);
-		this.treImages.setModel(new DefaultTreeModel(head));
-	}
-
-	private void createTreeFromImageDirectory(DefaultMutableTreeNode headNode, ImageDirectory headDirectory)
-	{
-		for (ImageEntry image : headDirectory.getImages())
-			headNode.add(new DefaultMutableTreeNode(image));
-		for (ImageDirectory subDirectory : headDirectory.getSubDirectories())
-		{
-			DefaultMutableTreeNode subDirectoryNode = new DefaultMutableTreeNode(subDirectory);
-			this.createTreeFromImageDirectory(subDirectoryNode, subDirectory);
-			headNode.add(subDirectoryNode);
-		}
 	}
 
 	public void setOutputText(String text)
@@ -635,5 +640,89 @@ public class SanimalView extends JFrame
 			txtLng.setText("");
 			txtElevation.setText("");
 		}
+	}
+
+	@Override
+	public void update(Observable observable, Object argument)
+	{
+		if (observable instanceof LocationData && argument instanceof LocationUpdate)
+		{
+			LocationData locationData = (LocationData) observable;
+			LocationUpdate locationUpdate = (LocationUpdate) argument;
+			if (locationUpdate == LocationUpdate.LocationAdded)
+				this.setLocationList(locationData.getRegisteredLocations());
+		}
+		else if (observable instanceof SpeciesData && argument instanceof SpeciesUpdate)
+		{
+			SpeciesData speciesData = (SpeciesData) observable;
+			SpeciesUpdate speciesUpdate = (SpeciesUpdate) argument;
+			if (speciesUpdate == SpeciesUpdate.SpeciesAdded)
+				this.setSpeciesList(speciesData.getRegisteredSpecies());
+		}
+		else if (observable instanceof ImageImporterData && argument instanceof ImageUpdate)
+		{
+			ImageImporterData imageImporterData = (ImageImporterData) observable;
+			ImageUpdate imageUpdate = (ImageUpdate) argument;
+			if (imageUpdate == ImageUpdate.NewDirectorySelected)
+				this.setImageList(imageImporterData.getHeadDirectory());
+		}
+		else if (observable instanceof TimelineData && argument instanceof TimelineUpdate)
+		{
+			TimelineData timelineData = (TimelineData) observable;
+			TimelineUpdate timelineUpdate = (TimelineUpdate) argument;
+			if (timelineUpdate == TimelineUpdate.NewImageListToDisplay)
+				this.setImagesDrawnOnMap(timelineData.getImagesToDisplay());
+		}
+	}
+
+	///
+	/// Begin observer utility functions
+	///
+
+	private void setLocationList(List<Location> locations)
+	{
+		if (!locations.contains((Location) this.cbxLocation.getSelectedItem()))
+			this.cbxLocation.setSelectedIndex(-1);
+		this.cbxLocation.removeAllItems();
+		this.map.getMapViewer().clearMarkers();
+		for (Location location : locations)
+		{
+			this.cbxLocation.addItem(location);
+			this.map.getMapViewer().addMarker(new SanimalMapMarkerOverlay(location, new SanimalMapMarker()));
+		}
+	}
+
+	private void setSpeciesList(List<Species> species)
+	{
+		Species selectedSpecies = (Species) this.cbxSpecies.getSelectedItem();
+		this.cbxSpecies.removeAllItems();
+		for (Species species2 : species)
+			this.cbxSpecies.addItem(species2);
+		if (species.contains(selectedSpecies))
+			this.cbxSpecies.setSelectedItem(selectedSpecies);
+	}
+
+	private void setImageList(ImageDirectory imageDirectory)
+	{
+		DefaultMutableTreeNode head = new DefaultMutableTreeNode(imageDirectory);
+		this.createTreeFromImageDirectory(head, imageDirectory);
+		this.treImages.setModel(new DefaultTreeModel(head));
+	}
+
+	private void createTreeFromImageDirectory(DefaultMutableTreeNode headNode, ImageDirectory headDirectory)
+	{
+		for (ImageEntry image : headDirectory.getImages())
+			headNode.add(new DefaultMutableTreeNode(image));
+		for (ImageDirectory subDirectory : headDirectory.getSubDirectories())
+		{
+			DefaultMutableTreeNode subDirectoryNode = new DefaultMutableTreeNode(subDirectory);
+			this.createTreeFromImageDirectory(subDirectoryNode, subDirectory);
+			headNode.add(subDirectoryNode);
+		}
+	}
+
+	private void setImagesDrawnOnMap(List<ImageEntry> images)
+	{
+		this.map.getMapViewer().setImagesDrawnOnMap(images);
 	}
 }

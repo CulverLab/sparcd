@@ -1,15 +1,16 @@
-package model;
+package model.image;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Observable;
 
 /**
  * A class that imports images into a more easily readable structure
  * 
  * @author David Slovikosky
  */
-public class ImageImporterData
+public class ImageImporterData extends Observable
 {
 	// The head of the directory
 	private ImageDirectory head;
@@ -36,6 +37,8 @@ public class ImageImporterData
 			this.head = new ImageDirectory(imageOrLocation);
 			this.createDirectoryAndImageTree(this.head, recursive);
 		}
+		this.setChanged();
+		this.notifyObservers(ImageUpdate.NewDirectorySelected);
 	}
 
 	/**

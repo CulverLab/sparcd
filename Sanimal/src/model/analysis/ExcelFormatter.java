@@ -26,7 +26,7 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import model.ImageEntry;
+import model.image.ImageEntry;
 
 /**
  * A formatter for excel files

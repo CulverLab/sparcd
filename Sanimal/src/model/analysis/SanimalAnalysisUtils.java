@@ -3,7 +3,7 @@ package model.analysis;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
-import model.UTMCoord;
+import model.location.UTMCoord;
 
 /**
  * Utility class for Sanimal analysis

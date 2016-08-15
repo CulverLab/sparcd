@@ -16,11 +16,11 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.time.StopWatch;
 
-import model.ImageEntry;
-import model.Location;
 import model.SanimalData;
-import model.Species;
-import model.SpeciesEntry;
+import model.image.ImageEntry;
+import model.location.Location;
+import model.species.Species;
+import model.species.SpeciesEntry;
 import view.SanimalInput;
 import view.SanimalView;
 
@@ -56,6 +56,19 @@ public class SanimalController
 		this.sanimalData = sanimalData;
 
 		///
+		/// Begin to setup observable/observer listeners
+		///
+
+		sanimalData.getLocationData().addObserver(sanimalView);
+		sanimalData.getSpeciesData().addObserver(sanimalView);
+		sanimalData.getImageData().addObserver(sanimalView);
+		sanimalData.getTimelineData().addObserver(sanimalView);
+
+		///
+		/// End setup observable/observer listeners
+		///
+
+		///
 		/// Begin to setup sanimalView with action listeners 
 		///
 
@@ -64,8 +77,7 @@ public class SanimalController
 		{
 			// Update the selected item and update the timeline data's image list
 			SanimalController.this.selectedItemUpdated();
-			List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
-			sanimalData.getTimelineData().updateList(selectedImages);
+			sanimalData.getTimelineData().updateSourceImageList(sanimalView.getSelectedImageEntries());
 		});
 		// When the user wants to load in images
 		sanimalView.addImageBrowseListener(event ->
@@ -75,10 +87,7 @@ public class SanimalController
 			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 			int returnVal = chooser.showOpenDialog(null);
 			if (returnVal == JFileChooser.APPROVE_OPTION)
-			{
 				sanimalData.getImageData().readAndAddImages(chooser.getSelectedFile(), sanimalView.searchSubdirectories());
-				sanimalView.setImageList(sanimalData.getImageData().getHeadDirectory());
-			}
 		});
 		// When the user selects a new location from the drop down
 		sanimalView.addLocationSelectedListener(event ->
@@ -98,20 +107,16 @@ public class SanimalController
 		{
 			Location newLocation = SanimalInput.askUserForNewLocation();
 			if (newLocation != null)
-			{
 				sanimalData.getLocationData().addLocation(newLocation);
-				sanimalView.setLocationList(sanimalData.getLocationData().getRegisteredLocations());
-			}
+			sanimalView.setLocation(newLocation);
 		});
 		// When the user wants to add a new species
 		sanimalView.addALToAddNewSpecies(event ->
 		{
 			Species species = SanimalInput.askUserForNewSpecies();
 			if (species != null)
-			{
 				sanimalData.getSpeciesData().addSpecies(species);
-				sanimalView.setSpeciesList(sanimalData.getSpeciesData().getRegisteredSpecies());
-			}
+			sanimalView.setSpecies(species);
 		});
 		// When the user wants to remove a location
 		sanimalView.addALToRemoveLocation(event ->
@@ -133,7 +138,6 @@ public class SanimalController
 					if (image.getLocationTaken() == selected)
 						image.setLocationTaken(null);
 				sanimalData.getLocationData().removeLocation(selected.toString());
-				sanimalView.setLocationList(sanimalData.getLocationData().getRegisteredLocations());
 				SanimalController.this.selectedItemUpdated();
 			}
 		});
@@ -161,7 +165,6 @@ public class SanimalController
 							iterator.remove();
 				}
 				sanimalData.getSpeciesData().removeSpecies(selected);
-				sanimalView.setSpeciesList(sanimalData.getSpeciesData().getRegisteredSpecies());
 				SanimalController.this.selectedItemUpdated();
 			}
 		});
@@ -176,24 +179,15 @@ public class SanimalController
 				if (!selectedImages.isEmpty())
 				{
 					// Get the number of animals, and add it to the image
-					Integer numberOfAnimals = Integer.MAX_VALUE;
-					while (numberOfAnimals == Integer.MAX_VALUE)
+					Integer numberOfAnimals = SanimalInput.askUserForNumberAnimals();
+					if (numberOfAnimals != Integer.MAX_VALUE)
 					{
-						try
-						{
-							String numberOfAnimalsString = JOptionPane.showInputDialog("How many animals of this species are in the image?");
-							if (numberOfAnimalsString == null)
-								return;
-							numberOfAnimals = Integer.parseInt(numberOfAnimalsString);
-						}
-						catch (NumberFormatException exception)
-						{
-						}
+						for (ImageEntry imageEntry : selectedImages)
+							imageEntry.addSpecies(selectedSpecies, numberOfAnimals);
+						//						if (selectedImages.size() == 1)
+						//							sanimalView.setSpeciesEntryList(selectedImages.get(0).getSpeciesPresent());
+						SanimalController.this.selectedItemUpdated();
 					}
-					for (ImageEntry imageEntry : selectedImages)
-						imageEntry.addSpecies(selectedSpecies, numberOfAnimals);
-					if (selectedImages.size() == 1)
-						sanimalView.setSpeciesEntryList(selectedImages.get(0).getSpeciesPresent());
 				}
 				else
 				{
@@ -204,12 +198,11 @@ public class SanimalController
 			{
 				JOptionPane.showConfirmDialog(sanimalView, "You must select a species from the drop down first!", "Error adding species to Image", JOptionPane.DEFAULT_OPTION);
 			}
-			SanimalController.this.selectedItemUpdated();
 		});
 		// When the user removes an animal from an image
 		sanimalView.addALToRemoveSpeciesFromList(event ->
 		{
-			Species selectedSpecies = sanimalView.getSelectedSpecies();
+			Species selectedSpecies = sanimalView.getSelectedSpeciesFromList();
 			List<ImageEntry> selectedImages = sanimalView.getSelectedImageEntries();
 			if (selectedSpecies != null)
 				for (ImageEntry imageEntry : selectedImages)
@@ -254,8 +247,7 @@ public class SanimalController
 					percentage = 0;
 				if (percentage > 1)
 					percentage = 1;
-				List<ImageEntry> images = sanimalData.getTimelineData().imageListByPercent(percentage, DateUtils.MILLIS_PER_DAY / 2);
-				sanimalView.setImagesDrawnOnMap(images);
+				sanimalData.getTimelineData().imageListByPercent(percentage, DateUtils.MILLIS_PER_DAY / 2);
 			}
 
 			@Override
@@ -300,8 +292,7 @@ public class SanimalController
 						percentage = 0;
 					if (percentage > 1)
 						percentage = 1;
-					List<ImageEntry> images = sanimalData.getTimelineData().imageListByPercent(percentage, DateUtils.MILLIS_PER_DAY / 2);
-					sanimalView.setImagesDrawnOnMap(images);
+					sanimalData.getTimelineData().imageListByPercent(percentage, DateUtils.MILLIS_PER_DAY / 2);
 					stopWatch.reset();
 					stopWatch.start();
 				}

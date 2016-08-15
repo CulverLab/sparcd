@@ -22,7 +22,7 @@ import org.jxmapviewer.viewer.TileFactory;
 import org.jxmapviewer.viewer.WaypointPainter;
 
 import library.ComboBoxFullMenu;
-import model.ImageEntry;
+import model.image.ImageEntry;
 import view.map.GoogleMapsTileFactoryInfo;
 import view.map.SanimalMapMarkerOverlay;
 import view.map.SanimalMapMarkerOverlayPainter;

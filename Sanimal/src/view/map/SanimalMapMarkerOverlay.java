@@ -1,6 +1,6 @@
 package view.map;
 
-import model.Location;
+import model.location.Location;
 import view.SanimalMapMarker;
 
 /**

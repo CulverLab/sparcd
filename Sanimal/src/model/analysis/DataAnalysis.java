@@ -9,10 +9,10 @@ import java.util.List;
 import org.apache.commons.lang3.time.DateUtils;
 
 import library.MoonCalculator;
-import model.ImageEntry;
-import model.Location;
-import model.Species;
-import model.SpeciesEntry;
+import model.image.ImageEntry;
+import model.location.Location;
+import model.species.Species;
+import model.species.SpeciesEntry;
 
 /**
  * A class used to collect all of the basic data in the analysis. Also contains utility methods for performing various analysis.

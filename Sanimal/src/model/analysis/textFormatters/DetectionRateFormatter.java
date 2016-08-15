@@ -6,11 +6,11 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
-import model.ImageEntry;
-import model.Location;
-import model.Species;
 import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
+import model.image.ImageEntry;
+import model.location.Location;
+import model.species.Species;
 
 /**
  * The text formatter for detection rates of species at locations

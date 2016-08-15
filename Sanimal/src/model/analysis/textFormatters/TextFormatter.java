@@ -2,8 +2,8 @@ package model.analysis.textFormatters;
 
 import java.util.List;
 
-import model.ImageEntry;
 import model.analysis.DataAnalysis;
+import model.image.ImageEntry;
 
 /**
  * The text formatter base class used for all text analysis

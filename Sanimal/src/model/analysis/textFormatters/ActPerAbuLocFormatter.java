@@ -4,11 +4,11 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import model.ImageEntry;
-import model.Location;
-import model.Species;
 import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
+import model.image.ImageEntry;
+import model.location.Location;
+import model.species.Species;
 
 /**
  * The text formatter for species activities, abundance, and period at locations

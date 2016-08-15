@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
-import model.ImageEntry;
-import model.Location;
-import model.Species;
-import model.SpeciesEntry;
+import model.image.ImageEntry;
+import model.location.Location;
+import model.species.Species;
+import model.species.SpeciesEntry;
 
 /**
  * A class that utilizes Java 8 predicates to filter a list of images

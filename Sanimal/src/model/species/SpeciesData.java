@@ -1,14 +1,15 @@
-package model;
+package model.species;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
 
 /**
  * Data storage for a list of registered species
  * 
  * @author David Slovikosky
  */
-public class SpeciesData
+public class SpeciesData extends Observable
 {
 	// The list of registered species
 	private List<Species> species = new ArrayList<Species>();
@@ -22,6 +23,8 @@ public class SpeciesData
 	public void addSpecies(Species species)
 	{
 		this.species.add(species);
+		this.setChanged();
+		this.notifyObservers(SpeciesUpdate.SpeciesAdded);
 	}
 
 	/**
@@ -33,6 +36,8 @@ public class SpeciesData
 	public void removeSpecies(Species species)
 	{
 		this.species.remove(species);
+		this.setChanged();
+		this.notifyObservers(SpeciesUpdate.SpeciesAdded);
 	}
 
 	/**

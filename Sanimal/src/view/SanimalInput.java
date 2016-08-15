@@ -4,10 +4,10 @@ import javax.swing.JOptionPane;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import model.Location;
-import model.Species;
-import model.UTMCoord;
 import model.analysis.SanimalAnalysisUtils;
+import model.location.Location;
+import model.location.UTMCoord;
+import model.species.Species;
 
 /**
  * A class of utility methods that perform user input
@@ -18,6 +18,30 @@ public class SanimalInput
 {
 	private static final Character[] INVALID_UTM_LETTERS = new Character[]
 	{ 'A', 'B', 'I', 'O', 'Y', 'Z' };
+
+	/**
+	 * Asks the user to input the number of animals in an image
+	 * 
+	 * @return Integer.MAX_VALUE if the user closes the input box, or the number of animals the user wants
+	 */
+	public static Integer askUserForNumberAnimals()
+	{
+		Integer numberOfAnimals = Integer.MAX_VALUE;
+		while (numberOfAnimals == Integer.MAX_VALUE)
+		{
+			try
+			{
+				String numberOfAnimalsString = JOptionPane.showInputDialog("How many animals of this species are in the image?");
+				if (numberOfAnimalsString == null)
+					return Integer.MAX_VALUE;
+				numberOfAnimals = Integer.parseInt(numberOfAnimalsString);
+			}
+			catch (NumberFormatException exception)
+			{
+			}
+		}
+		return numberOfAnimals;
+	}
 
 	/**
 	 * Asks the user to input a new species.

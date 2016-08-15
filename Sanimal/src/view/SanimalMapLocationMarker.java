@@ -7,7 +7,7 @@ import java.awt.event.MouseListener;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
-import model.ImageLoadingUtils;
+import model.image.ImageLoadingUtils;
 
 public class SanimalMapLocationMarker extends JLabel
 {

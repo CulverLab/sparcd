@@ -1,4 +1,4 @@
-package model;
+package model.species;
 
 /**
  * Wrapper around the species class which allows for the addition of the amount field that specifies how many animals are in an image

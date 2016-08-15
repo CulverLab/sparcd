@@ -12,8 +12,8 @@ import javax.swing.JLabel;
 
 import org.apache.commons.lang3.StringUtils;
 
-import model.ImageEntry;
-import model.ImageLoadingUtils;
+import model.image.ImageEntry;
+import model.image.ImageLoadingUtils;
 
 public class SanimalMapImageMarker extends JLabel
 {

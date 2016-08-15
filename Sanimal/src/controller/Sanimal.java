@@ -1,6 +1,6 @@
 package controller;
 
-import javax.swing.JOptionPane;
+import java.awt.EventQueue;
 
 import model.SanimalData;
 import view.SanimalView;
@@ -15,10 +15,9 @@ public class Sanimal
 {
 	public static void main(String args[])
 	{
-		// Ensure that the user is using Java 8 and not Java 7-
-		if (System.getProperty("java.version").startsWith("1.8."))
+		EventQueue.invokeLater(() ->
+		{
 			new SanimalController(new SanimalView(), new SanimalData());
-		else
-			JOptionPane.showMessageDialog(null, "Java 8 must be installed to use this software!");
+		});
 	}
 }

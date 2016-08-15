@@ -10,11 +10,11 @@ import java.util.List;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import model.ImageEntry;
-import model.Species;
 import model.analysis.DataAnalysis;
 import model.analysis.PredicateBuilder;
 import model.analysis.SanimalAnalysisUtils;
+import model.image.ImageEntry;
+import model.species.Species;
 
 /**
  * The text formatter for first and last images taken of a species

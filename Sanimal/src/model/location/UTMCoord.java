@@ -1,4 +1,4 @@
-package model;
+package model.location;
 
 /**
  * A class representing a UTM coordinate, not lat/lng
