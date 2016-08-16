@@ -74,7 +74,10 @@ public class ImageView extends JFrame
 	{
 		SanimalIconLoader.getInstance().scheduleTask(() ->
 		{
-			this.lblImage.setIcon(this.image.createIcon(this.getContentPane().getWidth(), this.getContentPane().getHeight()));
+			if (image != null)
+				this.lblImage.setIcon(this.image.createIcon(this.getContentPane().getWidth(), this.getContentPane().getHeight()));
+			else
+				this.lblImage.setIcon(null);
 		});
 	}
 

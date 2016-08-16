@@ -8,6 +8,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -58,6 +59,7 @@ public class MapPanel extends JPanel
 	private JSlider sldSpeed;
 	private JLabel lblSpeed;
 	private JProgressBar prgDataShow;
+	private JLabel lblCurrentDate;
 
 	public MapPanel()
 	{
@@ -82,7 +84,7 @@ public class MapPanel extends JPanel
 
 		mapViewer = new SanimalMap(cbxMapProviders);
 		mapViewer.setLayout(null);
-		mapViewer.setBounds(0, 60, 637, 505);
+		mapViewer.setBounds(0, 60, 637, 463);
 		mapViewer.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 		// When scrolling set the zoom level lables accordingly
 		mapViewer.addMouseWheelListener(new MouseWheelListener()
@@ -133,37 +135,37 @@ public class MapPanel extends JPanel
 
 		btnTop = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Top2.png")));
 		btnTop.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnTop.setBounds(10, 576, 20, 20);
+		btnTop.setBounds(10, 537, 20, 20);
 		this.add(btnTop);
 
 		btnBackwards = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Backward2.png")));
 		btnBackwards.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnBackwards.setBounds(40, 576, 20, 20);
+		btnBackwards.setBounds(40, 537, 20, 20);
 		this.add(btnBackwards);
 
 		btnPrevious = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Previous2.png")));
 		btnPrevious.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnPrevious.setBounds(70, 576, 20, 20);
+		btnPrevious.setBounds(70, 537, 20, 20);
 		this.add(btnPrevious);
 
 		btnStop = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Stop2.png")));
 		btnStop.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnStop.setBounds(100, 576, 20, 20);
+		btnStop.setBounds(100, 537, 20, 20);
 		this.add(btnStop);
 
 		btnNext = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Next2.png")));
 		btnNext.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnNext.setBounds(130, 576, 20, 20);
+		btnNext.setBounds(130, 537, 20, 20);
 		this.add(btnNext);
 
 		btnForward = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Forward2.png")));
 		btnForward.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnForward.setBounds(160, 576, 20, 20);
+		btnForward.setBounds(160, 537, 20, 20);
 		this.add(btnForward);
 
 		btnBottom = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Bottom2.png")));
 		btnBottom.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnBottom.setBounds(190, 576, 20, 20);
+		btnBottom.setBounds(190, 537, 20, 20);
 		this.add(btnBottom);
 
 		sldSpeed = new JSlider(SwingConstants.HORIZONTAL);
@@ -171,7 +173,7 @@ public class MapPanel extends JPanel
 		sldSpeed.setValue(ArrayUtils.indexOf(SLIDER_SPEED_MULTIPLIERS, 1.0D));
 		sldSpeed.setPaintTicks(true);
 		sldSpeed.setSnapToTicks(true);
-		sldSpeed.setBounds(220, 573, 68, 23);
+		sldSpeed.setBounds(220, 534, 68, 23);
 		sldSpeed.setMinimum(0);
 		sldSpeed.setMaximum(SLIDER_SPEED_MULTIPLIERS.length - 1);
 		sldSpeed.addChangeListener(new ChangeListener()
@@ -185,12 +187,12 @@ public class MapPanel extends JPanel
 		this.add(sldSpeed);
 
 		lblSpeed = new JLabel(SLIDER_SPEED_MULTIPLIERS[sldSpeed.getValue()] + "x");
-		lblSpeed.setBounds(292, 573, 43, 23);
+		lblSpeed.setBounds(292, 534, 43, 23);
 		this.add(lblSpeed);
 		lblSpeed.setFont(new Font("Tahoma", Font.PLAIN, 16));
 
 		prgDataShow = new JProgressBar(SwingConstants.HORIZONTAL);
-		prgDataShow.setBounds(345, 573, 283, 23);
+		prgDataShow.setBounds(10, 568, 618, 23);
 		prgDataShow.setMinimum(0);
 		prgDataShow.setMaximum(100);
 		// Clicking & Dragging allows for updating the progress bar
@@ -240,6 +242,11 @@ public class MapPanel extends JPanel
 			}
 		});
 		this.add(prgDataShow);
+
+		this.lblCurrentDate = new JLabel();
+		lblCurrentDate.setBounds(345, 534, 283, 23);
+		lblCurrentDate.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		this.add(lblCurrentDate);
 	}
 
 	public void addALToTop(ActionListener listener)
@@ -280,6 +287,12 @@ public class MapPanel extends JPanel
 	public void addCLToSpeedSlider(ChangeListener listener)
 	{
 		this.sldSpeed.addChangeListener(listener);
+	}
+
+	public void setCurrentDateLabel(Date date)
+	{
+		this.lblCurrentDate.setText(date.toString());
+		this.lblCurrentDate.setToolTipText(date.toString());
 	}
 
 	public Double getCurrentSliderSpeed()

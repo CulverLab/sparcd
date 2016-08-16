@@ -583,7 +583,10 @@ public class SanimalView extends JFrame implements Observer
 			});
 		}
 		else
+		{
 			this.lblThumbnail.setIcon(null);
+			this.imageView.setDisplayImage(null);
+		}
 	}
 
 	public void setDate(String date)
@@ -727,6 +730,7 @@ public class SanimalView extends JFrame implements Observer
 			{
 				this.setImagesDrawnOnMap(timelineData.getImagesToDisplay());
 				this.map.getPrgDataShow().setValue((int) Math.round(100D * timelineData.getPercentageAcrossDisplayedImages()));
+				this.map.setCurrentDateLabel(timelineData.getCenterDayAsDate());
 			}
 		}
 	}

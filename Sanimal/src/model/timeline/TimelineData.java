@@ -1,5 +1,6 @@
 package model.timeline;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -172,6 +173,11 @@ public class TimelineData extends Observable
 			return 0D;
 		else
 			return (double) (dayToCenterAround - sourceImages.get(0).getDateTaken().getTime()) / (double) (daysCovered * DateUtils.MILLIS_PER_DAY);
+	}
+
+	public Date getCenterDayAsDate()
+	{
+		return new Date(this.dayToCenterAround);
 	}
 
 	public List<ImageEntry> getImagesToDisplay()
