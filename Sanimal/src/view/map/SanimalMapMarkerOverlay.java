@@ -23,6 +23,7 @@ public class SanimalMapMarkerOverlay extends SwingComponentOverlay
 	public SanimalMapMarkerOverlay(Location coord, SanimalMapMarker marker)
 	{
 		super(coord.toGeoPosition(), marker);
+		this.location = coord;
 	}
 
 	/**

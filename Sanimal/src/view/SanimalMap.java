@@ -22,6 +22,7 @@ import org.jxmapviewer.viewer.TileFactory;
 import org.jxmapviewer.viewer.WaypointPainter;
 
 import library.ComboBoxFullMenu;
+import model.analysis.PredicateBuilder;
 import model.image.ImageEntry;
 import view.map.GoogleMapsTileFactoryInfo;
 import view.map.SanimalMapMarkerOverlay;
@@ -132,6 +133,7 @@ public class SanimalMap extends JXMapViewer
 		{
 			this.add(marker.getComponent());
 			painter.setWaypoints(locations);
+			this.rescaleBasedOnZoom();
 			SanimalMap.this.repaint();
 		}
 	}
@@ -156,8 +158,11 @@ public class SanimalMap extends JXMapViewer
 		SanimalMap.this.repaint();
 	}
 
-	public void setMarkerScale(double scale)
+	public void rescaleBasedOnZoom()
 	{
+		double maxZoom = (double) this.getTileFactory().getInfo().getMaximumZoomLevel();
+		double currZoom = (double) this.getZoom();
+		Double scale = ((maxZoom - currZoom) / maxZoom);
 		if (scale <= 1.0 && scale >= 0.0)
 			for (SanimalMapMarkerOverlay overlay : locations)
 				overlay.getComponent().updateIconsByScale(scale);
@@ -173,9 +178,11 @@ public class SanimalMap extends JXMapViewer
 		for (SanimalMapMarkerOverlay mapMarkerOverlay : locations)
 		{
 			SanimalMapMarker marker = mapMarkerOverlay.getComponent();
-			for (ImageEntry image : images)
+			List<ImageEntry> imagesAtLoc = new PredicateBuilder().locationOnly(mapMarkerOverlay.getLocation()).query(images);
+			for (ImageEntry image : imagesAtLoc)
 				marker.addMarker(new SanimalMapImageMarker(image));
 			marker.refreshLayout();
+			this.rescaleBasedOnZoom();
 		}
 		this.repaint();
 	}

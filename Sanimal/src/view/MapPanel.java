@@ -2,6 +2,7 @@ package view;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -16,9 +17,12 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSlider;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import library.ComboBoxFullMenu;
 
@@ -29,6 +33,11 @@ import library.ComboBoxFullMenu;
  */
 public class MapPanel extends JPanel
 {
+	private static final Double[] SLIDER_SPEED_MULTIPLIERS = new Double[]
+	{ 0.0, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 4.0, 10.0 };
+
+	private final Timer zoomTimer;
+
 	private JLabel lblMapProvider;
 	private ComboBoxFullMenu<String> cbxMapProviders;
 	private SanimalMap mapViewer;
@@ -52,9 +61,14 @@ public class MapPanel extends JPanel
 
 	public MapPanel()
 	{
-		this.setBounds(679, 11, 638, 666);
+		this.setBounds(679, 11, 638, 607);
 		this.setBorder(new LineBorder(Color.BLACK));
 		this.setLayout(null);
+
+		this.zoomTimer = new Timer(500, event ->
+		{
+			MapPanel.this.mapViewer.rescaleBasedOnZoom();
+		});
 
 		lblMapProvider = new JLabel("Map Provider:");
 		lblMapProvider.setFont(new Font("Tahoma", Font.PLAIN, 14));
@@ -68,7 +82,7 @@ public class MapPanel extends JPanel
 
 		mapViewer = new SanimalMap(cbxMapProviders);
 		mapViewer.setLayout(null);
-		mapViewer.setBounds(0, 60, 637, 564);
+		mapViewer.setBounds(0, 60, 637, 505);
 		mapViewer.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 		// When scrolling set the zoom level lables accordingly
 		mapViewer.addMouseWheelListener(new MouseWheelListener()
@@ -79,9 +93,10 @@ public class MapPanel extends JPanel
 				lblZoomLevel.setText(zoomLevelBase + mapViewer.getZoom());
 				lblCurrentLat.setText(currentLatBase + String.format("%7.6f", mapViewer.getCenterPosition().getLatitude()));
 				lblCurrentLng.setText(currentLngBase + String.format("%7.6f", mapViewer.getCenterPosition().getLongitude()));
-				double maxZoom = (double) mapViewer.getTileFactory().getInfo().getMaximumZoomLevel();
-				double currZoom = (double) mapViewer.getZoom();
-				mapViewer.setMarkerScale((maxZoom - currZoom) / maxZoom);
+				if (!zoomTimer.isRunning())
+					zoomTimer.start();
+				else
+					zoomTimer.restart();
 			}
 		});
 		// When you drag the mouse, set lat/lng coords accordingly
@@ -118,64 +133,64 @@ public class MapPanel extends JPanel
 
 		btnTop = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Top2.png")));
 		btnTop.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnTop.setBounds(10, 635, 20, 20);
+		btnTop.setBounds(10, 576, 20, 20);
 		this.add(btnTop);
 
 		btnBackwards = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Backward2.png")));
 		btnBackwards.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnBackwards.setBounds(40, 635, 20, 20);
+		btnBackwards.setBounds(40, 576, 20, 20);
 		this.add(btnBackwards);
 
 		btnPrevious = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Previous2.png")));
 		btnPrevious.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnPrevious.setBounds(70, 635, 20, 20);
+		btnPrevious.setBounds(70, 576, 20, 20);
 		this.add(btnPrevious);
 
 		btnStop = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Stop2.png")));
 		btnStop.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnStop.setBounds(100, 635, 20, 20);
+		btnStop.setBounds(100, 576, 20, 20);
 		this.add(btnStop);
 
 		btnNext = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Next2.png")));
 		btnNext.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnNext.setBounds(130, 635, 20, 20);
+		btnNext.setBounds(130, 576, 20, 20);
 		this.add(btnNext);
 
 		btnForward = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Forward2.png")));
 		btnForward.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnForward.setBounds(160, 635, 20, 20);
+		btnForward.setBounds(160, 576, 20, 20);
 		this.add(btnForward);
 
 		btnBottom = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Bottom2.png")));
 		btnBottom.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnBottom.setBounds(190, 635, 20, 20);
+		btnBottom.setBounds(190, 576, 20, 20);
 		this.add(btnBottom);
 
 		sldSpeed = new JSlider(SwingConstants.HORIZONTAL);
 		sldSpeed.setMinorTickSpacing(1);
-		sldSpeed.setValue(0);
+		sldSpeed.setValue(ArrayUtils.indexOf(SLIDER_SPEED_MULTIPLIERS, 1.0D));
 		sldSpeed.setPaintTicks(true);
 		sldSpeed.setSnapToTicks(true);
-		sldSpeed.setBounds(220, 632, 68, 23);
+		sldSpeed.setBounds(220, 573, 68, 23);
 		sldSpeed.setMinimum(0);
-		sldSpeed.setMaximum(5);
+		sldSpeed.setMaximum(SLIDER_SPEED_MULTIPLIERS.length - 1);
 		sldSpeed.addChangeListener(new ChangeListener()
 		{
 			@Override
 			public void stateChanged(ChangeEvent event)
 			{
-				lblSpeed.setText(sldSpeed.getValue() + "x");
+				lblSpeed.setText(SLIDER_SPEED_MULTIPLIERS[sldSpeed.getValue()] + "x");
 			}
 		});
 		this.add(sldSpeed);
 
-		lblSpeed = new JLabel("0x");
-		lblSpeed.setBounds(292, 632, 26, 23);
+		lblSpeed = new JLabel(SLIDER_SPEED_MULTIPLIERS[sldSpeed.getValue()] + "x");
+		lblSpeed.setBounds(292, 573, 43, 23);
 		this.add(lblSpeed);
 		lblSpeed.setFont(new Font("Tahoma", Font.PLAIN, 16));
 
 		prgDataShow = new JProgressBar(SwingConstants.HORIZONTAL);
-		prgDataShow.setBounds(328, 632, 300, 23);
+		prgDataShow.setBounds(345, 573, 283, 23);
 		prgDataShow.setMinimum(0);
 		prgDataShow.setMaximum(100);
 		// Clicking & Dragging allows for updating the progress bar
@@ -225,6 +240,51 @@ public class MapPanel extends JPanel
 			}
 		});
 		this.add(prgDataShow);
+	}
+
+	public void addALToTop(ActionListener listener)
+	{
+		this.btnTop.addActionListener(listener);
+	}
+
+	public void addALToForward(ActionListener listener)
+	{
+		this.btnForward.addActionListener(listener);
+	}
+
+	public void addALToNext(ActionListener listener)
+	{
+		this.btnNext.addActionListener(listener);
+	}
+
+	public void addALToStop(ActionListener listener)
+	{
+		this.btnStop.addActionListener(listener);
+	}
+
+	public void addALToPrevious(ActionListener listener)
+	{
+		this.btnPrevious.addActionListener(listener);
+	}
+
+	public void addALToBackwards(ActionListener listener)
+	{
+		this.btnBackwards.addActionListener(listener);
+	}
+
+	public void addALToBottom(ActionListener listener)
+	{
+		this.btnBottom.addActionListener(listener);
+	}
+
+	public void addCLToSpeedSlider(ChangeListener listener)
+	{
+		this.sldSpeed.addChangeListener(listener);
+	}
+
+	public Double getCurrentSliderSpeed()
+	{
+		return SLIDER_SPEED_MULTIPLIERS[this.sldSpeed.getValue()];
 	}
 
 	/**

@@ -26,7 +26,6 @@ public class SanimalMapLocationMarker extends JLabel
 		super();
 		this.setLayout(null);
 		this.setBounds(0, 0, BASE_WIDTH_HEIGHT, BASE_WIDTH_HEIGHT);
-		this.updateIconsByScale(1.0);
 		this.addMouseListener(new MouseListener()
 		{
 			@Override

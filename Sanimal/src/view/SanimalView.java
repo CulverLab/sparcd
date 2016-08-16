@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.dnd.DropTarget;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -32,6 +34,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.border.LineBorder;
 import javax.swing.event.TreeSelectionListener;
@@ -39,8 +42,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-
-import org.jxmapviewer.viewer.GeoPosition;
 
 import library.ComboBoxFullMenu;
 import model.image.ImageDirectory;
@@ -62,6 +63,9 @@ import view.map.SanimalMapMarkerOverlay;
 public class SanimalView extends JFrame implements Observer
 {
 	private static ImageIcon DEFAULT_ICON = null;
+
+	private JToolBar barTop;
+	private JButton btnSaveToFile;
 
 	private JPanel pnlImageBrowser;
 	private JTree treImages;
@@ -112,7 +116,6 @@ public class SanimalView extends JFrame implements Observer
 	private JRadioButton radPeriod;
 	private JRadioButton radActivity;
 	private ButtonGroup grpDataType;
-	private JButton btnSaveToFile;
 	private JButton btnLoadFromFile;
 
 	private ImageView imageView = new ImageView();
@@ -125,8 +128,54 @@ public class SanimalView extends JFrame implements Observer
 		this.setSize(1334, 713);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+		barTop = new JToolBar(JToolBar.HORIZONTAL);
+		barTop.setBounds(10, 11, 1308, 48);
+		this.getContentPane().add(barTop);
+
+		btnSaveToFile = new JButton();
+		btnSaveToFile.setMaximumSize(new Dimension(40, 40));
+		btnSaveToFile.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		btnSaveToFile.setToolTipText("Save project");
+		btnSaveToFile.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+		btnSaveToFile.setIcon(ImageLoadingUtils.createImageIcon(new File(SanimalView.class.getResource("/images/saveIcon.png").getPath()), 38, 38, Image.SCALE_SMOOTH));
+		barTop.add(btnSaveToFile);
+
+		btnLoadFromFile = new JButton();
+		btnLoadFromFile.setMaximumSize(new Dimension(40, 40));
+		btnLoadFromFile.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		btnLoadFromFile.setToolTipText("Load project");
+		btnLoadFromFile.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+		barTop.add(btnLoadFromFile);
+		btnLoadFromFile.setIcon(ImageLoadingUtils.createImageIcon(new File(SanimalView.class.getResource("/images/loadIcon.png").getPath()), 38, 38, Image.SCALE_SMOOTH));
+
+		barTop.addSeparator();
+
+		btnPerformAnalysis = new JButton();
+		btnPerformAnalysis.setMaximumSize(new Dimension(40, 40));
+		btnPerformAnalysis.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnPerformAnalysis.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+		btnPerformAnalysis.setToolTipText("Re-create 'Output.txt'");
+		btnPerformAnalysis.setIcon(ImageLoadingUtils.createImageIcon(new File(SanimalView.class.getResource("/images/performAnalysis.png").getPath()), 38, 38, Image.SCALE_SMOOTH));
+		barTop.add(btnPerformAnalysis);
+
+		btnAllPictures = new JButton();
+		btnAllPictures.setMaximumSize(new Dimension(40, 40));
+		btnAllPictures.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		btnAllPictures.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+		btnAllPictures.setToolTipText("Create all pictures output");
+		btnAllPictures.setIcon(ImageLoadingUtils.createImageIcon(new File(SanimalView.class.getResource("/images/allPicturesOutput.png").getPath()), 38, 38, Image.SCALE_SMOOTH));
+		barTop.add(btnAllPictures);
+
+		btnToExcel = new JButton();
+		btnToExcel.setMaximumSize(new Dimension(40, 40));
+		btnToExcel.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		btnToExcel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+		btnToExcel.setToolTipText("Create excel file");
+		btnToExcel.setIcon(ImageLoadingUtils.createImageIcon(new File(SanimalView.class.getResource("/images/excelOutput.png").getPath()), 38, 38, Image.SCALE_SMOOTH));
+		barTop.add(btnToExcel);
+
 		lblThumbnail = new JLabel();
-		lblThumbnail.setBounds(278, 11, 391, 300);
+		lblThumbnail.setBounds(278, 70, 391, 241);
 		lblThumbnail.setBorder(new LineBorder(Color.BLACK));
 		lblThumbnail.addMouseListener(new MouseListener()
 		{
@@ -256,20 +305,15 @@ public class SanimalView extends JFrame implements Observer
 		btnRemoveSpecies.setToolTipText("Remove the selected species from the species dictionary");
 		pnlPropertyList.add(btnRemoveSpecies);
 
-		btnPerformAnalysis = new JButton("Perform Analysis");
-		btnPerformAnalysis.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnPerformAnalysis.setBounds(10, 164, 138, 23);
-		pnlPropertyList.add(btnPerformAnalysis);
-
 		lblAnalysisEventInterval = new JLabel("Event Interval (minutes): ");
 		lblAnalysisEventInterval.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblAnalysisEventInterval.setBounds(153, 168, 167, 14);
+		lblAnalysisEventInterval.setBounds(10, 167, 167, 14);
 		pnlPropertyList.add(lblAnalysisEventInterval);
 
 		txtAnalysisEventInterval = new JTextField();
 		txtAnalysisEventInterval.setText("60");
 		txtAnalysisEventInterval.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		txtAnalysisEventInterval.setBounds(330, 165, 87, 20);
+		txtAnalysisEventInterval.setBounds(187, 164, 230, 20);
 		pnlPropertyList.add(txtAnalysisEventInterval);
 
 		pnlSpeciesPresent = new JPanel();
@@ -303,30 +347,32 @@ public class SanimalView extends JFrame implements Observer
 		pnlSpeciesPresent.add(btnRemoveSpeciesFromList);
 
 		pnlImageBrowser = new JPanel();
-		pnlImageBrowser.setBounds(10, 11, 258, 300);
-		getContentPane().add(pnlImageBrowser);
+		pnlImageBrowser.setBounds(10, 70, 258, 241);
 		pnlImageBrowser.setBorder(new LineBorder(Color.BLACK));
 		pnlImageBrowser.setLayout(null);
+		getContentPane().add(pnlImageBrowser);
 
 		chxIncludeSubdirectories = new JCheckBox("Include Subdirectories");
 		chxIncludeSubdirectories.setFont(new Font("Tahoma", Font.PLAIN, 10));
 		chxIncludeSubdirectories.setSelected(true);
-		chxIncludeSubdirectories.setBounds(111, 270, 141, 23);
+		chxIncludeSubdirectories.setBounds(115, 206, 141, 23);
 		chxIncludeSubdirectories.setToolTipText("Search sub-directories as well as the selected directory for images");
 		pnlImageBrowser.add(chxIncludeSubdirectories);
 
 		btnBrowseForImages = new JButton("Select Images");
 		btnBrowseForImages.setFont(new Font("Tahoma", Font.PLAIN, 10));
-		btnBrowseForImages.setBounds(6, 270, 99, 23);
+		btnBrowseForImages.setBounds(10, 206, 99, 23);
 		pnlImageBrowser.add(btnBrowseForImages);
 
 		pneImageList = new JScrollPane();
 		treImages = new JTree((TreeModel) null);
-		pneImageList.setBounds(10, 11, 237, 252);
+		pneImageList.setBounds(10, 11, 237, 188);
 		pneImageList.setViewportView(treImages);
 		pnlImageBrowser.add(pneImageList);
 
 		map = new MapPanel();
+		map.setSize(638, 604);
+		map.setLocation(680, 70);
 		getContentPane().add(map);
 
 		tabOutputTabs = new JTabbedPane();
@@ -346,30 +392,6 @@ public class SanimalView extends JFrame implements Observer
 		pneExcelOutput = new JScrollPane();
 		pneExcelOutput.setFont(new Font("Tahoma", Font.PLAIN, 10));
 		pneExcelOutput.setViewportView(pnlExcelOutput);
-
-		btnToExcel = new JButton("Create excel file");
-		btnToExcel.setFont(new Font("Tahoma", Font.PLAIN, 10));
-		btnToExcel.setBounds(482, 44, 160, 23);
-		btnToExcel.setLayout(null);
-		pnlExcelOutput.add(btnToExcel);
-
-		btnAllPictures = new JButton("Create all pictures output");
-		btnAllPictures.setFont(new Font("Tahoma", Font.PLAIN, 10));
-		btnAllPictures.setBounds(482, 78, 160, 23);
-		btnAllPictures.setLayout(null);
-		pnlExcelOutput.add(btnAllPictures);
-
-		btnSaveToFile = new JButton("Save to file");
-		btnSaveToFile.setFont(new Font("Tahoma", Font.PLAIN, 10));
-		btnSaveToFile.setBounds(312, 44, 160, 23);
-		btnSaveToFile.setLayout(null);
-		pnlExcelOutput.add(btnSaveToFile);
-
-		btnLoadFromFile = new JButton("Load from file");
-		btnLoadFromFile.setFont(new Font("Tahoma", Font.PLAIN, 10));
-		btnLoadFromFile.setBounds(312, 78, 160, 23);
-		btnLoadFromFile.setLayout(null);
-		pnlExcelOutput.add(btnLoadFromFile);
 
 		radNumPictures = new JRadioButton("Picture Count");
 		radNumPictures.setSelected(true);
@@ -400,7 +422,7 @@ public class SanimalView extends JFrame implements Observer
 
 		pneAllOutput = new JScrollPane();
 		pneAllOutput.setViewportView(tarAllOutput);
-		tabOutputTabs.insertTab("Excel Output", new ImageIcon(""), pneExcelOutput, "Excel output testing", 0);
+		tabOutputTabs.insertTab("Output Settings", new ImageIcon(""), pneExcelOutput, "Excel output testing", 0);
 		tabOutputTabs.insertTab("Text Output", new ImageIcon(""), pneAllOutput, "All Output from the analysis", 0);
 		tabOutputTabs.setSelectedIndex(0);
 
@@ -485,6 +507,11 @@ public class SanimalView extends JFrame implements Observer
 	public void addALToLoad(ActionListener listener)
 	{
 		this.btnLoadFromFile.addActionListener(listener);
+	}
+
+	public MapPanel getMapPanel()
+	{
+		return this.map;
 	}
 
 	public Location getSelectedLocation()
@@ -593,11 +620,6 @@ public class SanimalView extends JFrame implements Observer
 		}
 	}
 
-	public void centerMapOn(GeoPosition geoPosition)
-	{
-		this.map.getMapViewer().setCenterPosition(geoPosition);
-	}
-
 	public void setOutputText(String text)
 	{
 		this.tarAllOutput.setText(text);
@@ -702,7 +724,10 @@ public class SanimalView extends JFrame implements Observer
 			TimelineData timelineData = (TimelineData) observable;
 			TimelineUpdate timelineUpdate = (TimelineUpdate) argument;
 			if (timelineUpdate == TimelineUpdate.NewImageListToDisplay)
+			{
 				this.setImagesDrawnOnMap(timelineData.getImagesToDisplay());
+				this.map.getPrgDataShow().setValue((int) Math.round(100D * timelineData.getPercentageAcrossDisplayedImages()));
+			}
 		}
 	}
 

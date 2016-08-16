@@ -26,7 +26,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.SerializationException;
 import org.apache.commons.lang3.SerializationUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.time.StopWatch;
 
 import model.SanimalData;
@@ -112,7 +111,7 @@ public class SanimalController
 					for (ImageEntry selectedImage : sanimalView.getSelectedImageEntries())
 						selectedImage.setLocationTaken(selected);
 				sanimalView.setLocation(selected);
-				sanimalView.centerMapOn(selected.toGeoPosition());
+				sanimalView.getMapPanel().getMapViewer().setCenterPosition(selected.toGeoPosition());
 			}
 		});
 		// When the user wants to add a new location
@@ -260,7 +259,7 @@ public class SanimalController
 					percentage = 0;
 				if (percentage > 1)
 					percentage = 1;
-				sanimalData.getTimelineData().imageListByPercent(percentage, DateUtils.MILLIS_PER_DAY / 2);
+				sanimalData.getTimelineData().centerOnDayByPercent(percentage);
 			}
 
 			@Override
@@ -305,7 +304,7 @@ public class SanimalController
 						percentage = 0;
 					if (percentage > 1)
 						percentage = 1;
-					sanimalData.getTimelineData().imageListByPercent(percentage, DateUtils.MILLIS_PER_DAY / 2);
+					sanimalData.getTimelineData().centerOnDayByPercent(percentage);
 					stopWatch.reset();
 					stopWatch.start();
 				}
@@ -458,6 +457,46 @@ public class SanimalController
 			{
 			}
 
+		});
+		// If the user clicks the single day advance button
+		sanimalView.getMapPanel().addALToNext(event ->
+		{
+			sanimalData.getTimelineData().advanceBySingleDay();
+		});
+		// If the user clicks the single day reverse button
+		sanimalView.getMapPanel().addALToPrevious(event ->
+		{
+			sanimalData.getTimelineData().rewindBySingleDay();
+		});
+		// If the user clicks the bottom button
+		sanimalView.getMapPanel().addALToBottom(event ->
+		{
+			sanimalData.getTimelineData().goToLast();
+		});
+		// If the user clicks the top button
+		sanimalView.getMapPanel().addALToTop(event ->
+		{
+			sanimalData.getTimelineData().goToFirst();
+		});
+		// If the user clicks the stop button
+		sanimalView.getMapPanel().addALToStop(event ->
+		{
+			sanimalData.getTimelineData().stopPlay();
+		});
+		// If the user clicks the play button
+		sanimalView.getMapPanel().addALToForward(event ->
+		{
+			sanimalData.getTimelineData().beginForwardPlay();
+		});
+		// If the user clicks the reverse button
+		sanimalView.getMapPanel().addALToBackwards(event ->
+		{
+			sanimalData.getTimelineData().beginReversePlay();
+		});
+		// When the user selects a new playback speed
+		sanimalView.getMapPanel().addCLToSpeedSlider(event ->
+		{
+			sanimalData.getTimelineData().setClockSpeedMultiplier(sanimalView.getMapPanel().getCurrentSliderSpeed());
 		});
 
 		// Set the view to visible now that it has been constructed
