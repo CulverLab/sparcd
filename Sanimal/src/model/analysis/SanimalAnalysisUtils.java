@@ -1,5 +1,8 @@
 package model.analysis;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
@@ -12,6 +15,28 @@ import model.location.UTMCoord;
  */
 public class SanimalAnalysisUtils
 {
+	/**
+	 * Test if a file is an image
+	 * 
+	 * @param file
+	 *            The file to test
+	 * @return True if the file is an image, false if not
+	 */
+	public static boolean fileIsImage(File file)
+	{
+		String result = null;
+		try
+		{
+			result = Files.probeContentType(file.toPath());
+		}
+		catch (IOException e)
+		{
+		}
+		if (result == null || !result.startsWith("image"))
+			return false;
+		return true;
+	}
+
 	/**
 	 * Calculates the days inbetween two dates
 	 * 

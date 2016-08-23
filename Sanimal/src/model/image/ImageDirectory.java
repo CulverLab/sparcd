@@ -1,7 +1,6 @@
 package model.image;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +9,7 @@ import java.util.List;
  * 
  * @author David Slovikosky
  */
-public class ImageDirectory implements Serializable
+public class ImageDirectory implements IImageContainer
 {
 	// A list of images in the directory
 	private List<ImageEntry> images = new ArrayList<ImageEntry>();
@@ -59,9 +58,22 @@ public class ImageDirectory implements Serializable
 	 * 
 	 * @return The file representing this directory
 	 */
-	public File getDirectory()
+	@Override
+	public File getFile()
 	{
 		return directory;
+	}
+
+	/**
+	 * Set the file that this directory represents
+	 * 
+	 * @param file
+	 *            The file that this directory represents
+	 */
+	@Override
+	public void setFile(File file)
+	{
+		this.directory = file;
 	}
 
 	/**

@@ -1,5 +1,6 @@
 package view;
 
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -16,7 +17,7 @@ public class SanimalIconLoader
 	private final ThreadPoolExecutor iconLoader = new ScheduledThreadPoolExecutor(5);
 
 	/**
-	 * Constrcutor is private due to singleton design pattern
+	 * Constructor is private due to singleton design pattern
 	 */
 	private SanimalIconLoader()
 	{
@@ -35,9 +36,11 @@ public class SanimalIconLoader
 	 * 
 	 * @param runnable
 	 *            The task to execute
+	 * 
+	 * @return The task submitted
 	 */
-	public void scheduleTask(Runnable runnable)
+	public Future<?> scheduleTask(Runnable runnable)
 	{
-		this.iconLoader.submit(runnable);
+		return this.iconLoader.submit(runnable);
 	}
 }

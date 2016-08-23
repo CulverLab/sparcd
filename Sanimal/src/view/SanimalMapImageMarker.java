@@ -28,7 +28,7 @@ public class SanimalMapImageMarker extends JLabel
 		super();
 		this.setLayout(null);
 		this.setBounds(0, 0, BASE_WIDTH_HEIGHT, BASE_WIDTH_HEIGHT);
-		this.file = image.getImageFile();
+		this.file = image.getFile();
 
 		this.setToolTipText(StringUtils.join(image.getSpeciesPresent(), ", "));
 

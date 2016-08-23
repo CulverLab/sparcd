@@ -7,5 +7,6 @@ package model.image;
 
 public enum ImageUpdate
 {
-	NewDirectorySelected;
+	NewDirectorySelected,
+	InvalidImageContainersDetected;
 }

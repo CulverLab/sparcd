@@ -1,10 +1,12 @@
 package model.image;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
+
+import model.analysis.SanimalAnalysisUtils;
 
 /**
  * A class that imports images into a more easily readable structure
@@ -15,6 +17,33 @@ public class ImageImporterData extends Observable implements Serializable
 {
 	// The head of the directory
 	private ImageDirectory head;
+	// A list of all currently invalid image containers
+	private transient List<IImageContainer> invalidContainers = new ArrayList<IImageContainer>();
+
+	public void performDirectoryValidation()
+	{
+		this.invalidContainers.clear();
+		if (this.head != null)
+			this.validateDirectory(head, invalidContainers);
+		if (!invalidContainers.isEmpty())
+		{
+			this.setChanged();
+			this.notifyObservers(ImageUpdate.InvalidImageContainersDetected);
+		}
+	}
+
+	private void validateDirectory(ImageDirectory directory, List<IImageContainer> invalidContainers)
+	{
+		if (!directory.getFile().exists())
+			invalidContainers.add(directory);
+
+		for (ImageEntry imageEntry : directory.getImages())
+			if (!imageEntry.getFile().exists())
+				invalidContainers.add(imageEntry);
+
+		for (ImageDirectory subDirectory : directory.getSubDirectories())
+			this.validateDirectory(subDirectory, invalidContainers);
+	}
 
 	/**
 	 * Loads an existing image directory into the program
@@ -66,10 +95,10 @@ public class ImageImporterData extends Observable implements Serializable
 	private void createDirectoryAndImageTree(ImageDirectory current, boolean recursive)
 	{
 		// Get all files in the directory
-		for (File file : current.getDirectory().listFiles())
+		for (File file : current.getFile().listFiles())
 		{
 			// Add all image files to the directory
-			if (fileIsImage(file))
+			if (SanimalAnalysisUtils.fileIsImage(file))
 			{
 				current.addImage(new ImageEntry(file));
 			}
@@ -84,28 +113,6 @@ public class ImageImporterData extends Observable implements Serializable
 	}
 
 	/**
-	 * Test if a file is an image
-	 * 
-	 * @param file
-	 *            The file to test
-	 * @return True if the file is an image, false if not
-	 */
-	private boolean fileIsImage(File file)
-	{
-		String result = null;
-		try
-		{
-			result = Files.probeContentType(file.toPath());
-		}
-		catch (IOException e)
-		{
-		}
-		if (result == null || !result.startsWith("image"))
-			return false;
-		return true;
-	}
-
-	/**
 	 * Get the head directory
 	 * 
 	 * @return the head directory
@@ -113,5 +120,15 @@ public class ImageImporterData extends Observable implements Serializable
 	public ImageDirectory getHeadDirectory()
 	{
 		return this.head;
+	}
+
+	/**
+	 * Get the list of invalid containers
+	 * 
+	 * @return A list of invalid containers
+	 */
+	public List<IImageContainer> getInvalidContainers()
+	{
+		return invalidContainers;
 	}
 }

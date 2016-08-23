@@ -29,6 +29,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.time.StopWatch;
 
 import model.SanimalData;
+import model.SanimalWorker;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
@@ -225,8 +226,14 @@ public class SanimalController
 		sanimalView.addALToPerformAnalysis(event ->
 		{
 			Integer eventInterval = sanimalView.getAnalysisEventInterval();
+			sanimalView.setOutputText("Processing...");
 			if (eventInterval != -1)
-				sanimalView.setOutputText(sanimalData.getOutputFormatter().format(sanimalView.getSelectedImageEntries(), eventInterval));
+			{
+				SanimalWorker.getInstance().scheduleTask(() ->
+				{
+					sanimalView.setOutputText(sanimalData.getOutputFormatter().format(sanimalView.getSelectedImageEntries(), eventInterval));
+				});
+			}
 		});
 		// When the user clicks to create an excel file
 		sanimalView.addALToCreateExcel(event ->
@@ -584,7 +591,10 @@ public class SanimalController
 
 		// Load image data
 		if (newData.getImageData() != null)
+		{
 			sanimalData.getImageData().loadImagesFromExistingDirectory(newData.getImageData().getHeadDirectory());
+			sanimalData.getImageData().performDirectoryValidation();
+		}
 		else
 			sanimalData.getImageData().loadImagesFromExistingDirectory(null);
 	}

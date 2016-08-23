@@ -147,7 +147,8 @@ public class TimelineData extends Observable
 			newDelay = (int) Math.round(BASE_CLOCK_SPEED / multiplier);
 		this.clock.setDelay(newDelay);
 		this.clock.setInitialDelay(newDelay);
-		this.clock.restart();
+		if (this.clock.isRunning())
+			this.clock.restart();
 	}
 
 	/**

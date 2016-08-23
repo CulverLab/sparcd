@@ -124,7 +124,7 @@ public class SanimalView extends JFrame implements Observer
 	{
 		this.getContentPane().setLayout(null);
 		this.setResizable(false);
-		this.setTitle("Sanimal");
+		this.setTitle("Scientific Animal Image AnaLysis (SANIMAL)");
 		this.setSize(1334, 713);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -721,6 +721,8 @@ public class SanimalView extends JFrame implements Observer
 			ImageUpdate imageUpdate = (ImageUpdate) argument;
 			if (imageUpdate == ImageUpdate.NewDirectorySelected)
 				this.setImageList(imageImporterData.getHeadDirectory());
+			else if (imageUpdate == ImageUpdate.InvalidImageContainersDetected)
+				SanimalInput.askUserToValidateProject(imageImporterData.getInvalidContainers());
 		}
 		else if (observable instanceof TimelineData && argument instanceof TimelineUpdate)
 		{

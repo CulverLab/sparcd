@@ -1,10 +1,16 @@
 package view;
 
+import java.io.File;
+import java.util.List;
+
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import model.analysis.SanimalAnalysisUtils;
+import model.image.IImageContainer;
 import model.location.Location;
 import model.location.UTMCoord;
 import model.species.Species;
@@ -18,6 +24,51 @@ public class SanimalInput
 {
 	private static final Character[] INVALID_UTM_LETTERS = new Character[]
 	{ 'A', 'B', 'I', 'O', 'Y', 'Z' };
+
+	/**
+	 * Given a list of invalid image containers, this function prompts the user to fix each invalid path
+	 * 
+	 * @param imageContainers
+	 *            The list of invalid image containers
+	 */
+	public static void askUserToValidateProject(List<IImageContainer> imageContainers)
+	{
+		for (IImageContainer container : imageContainers)
+		{
+			final File invalidFile = container.getFile();
+			JFileChooser chooser = new JFileChooser();
+			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+			chooser.setDialogTitle("Where is the folder or file named '" + invalidFile.getName() + "'");
+			chooser.setFileFilter(new FileFilter()
+			{
+				@Override
+				public String getDescription()
+				{
+					return invalidFile.getName();
+				}
+
+				@Override
+				public boolean accept(File file)
+				{
+					return file.isDirectory() || file.getName().equals(invalidFile.getName());
+				}
+			});
+			File validFile = null;
+			while (validFile == null)
+			{
+				chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+				int response = chooser.showOpenDialog(null);
+				if (response == JFileChooser.APPROVE_OPTION)
+				{
+					validFile = chooser.getSelectedFile();
+				}
+			}
+			container.setFile(validFile);
+		}
+
+		// To finish, clear the list since all containers are fixed
+		imageContainers.clear();
+	}
 
 	/**
 	 * Asks the user to input the number of animals in an image
