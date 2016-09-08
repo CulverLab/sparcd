@@ -11,7 +11,6 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -137,7 +136,7 @@ public class SanimalView extends JFrame implements Observer
 		btnSaveToFile.setFont(new Font("Tahoma", Font.PLAIN, 10));
 		btnSaveToFile.setToolTipText("Save project");
 		btnSaveToFile.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-		btnSaveToFile.setIcon(ImageLoadingUtils.createImageIcon(new File(SanimalView.class.getResource("/images/saveIcon.png").getPath()), 38, 38, Image.SCALE_SMOOTH));
+		btnSaveToFile.setIcon(ImageLoadingUtils.resizeImageIcon(new ImageIcon(SanimalView.class.getResource("/images/saveIcon.png")), 38, 38, Image.SCALE_SMOOTH, false));
 		barTop.add(btnSaveToFile);
 
 		btnLoadFromFile = new JButton();
@@ -146,7 +145,7 @@ public class SanimalView extends JFrame implements Observer
 		btnLoadFromFile.setToolTipText("Load project");
 		btnLoadFromFile.setBorder(BorderFactory.createLineBorder(Color.black, 1));
 		barTop.add(btnLoadFromFile);
-		btnLoadFromFile.setIcon(ImageLoadingUtils.createImageIcon(new File(SanimalView.class.getResource("/images/loadIcon.png").getPath()), 38, 38, Image.SCALE_SMOOTH));
+		btnLoadFromFile.setIcon(ImageLoadingUtils.resizeImageIcon(new ImageIcon(SanimalView.class.getResource("/images/loadIcon.png")), 38, 38, Image.SCALE_SMOOTH, false));
 
 		barTop.addSeparator();
 
@@ -155,7 +154,7 @@ public class SanimalView extends JFrame implements Observer
 		btnPerformAnalysis.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnPerformAnalysis.setBorder(BorderFactory.createLineBorder(Color.black, 1));
 		btnPerformAnalysis.setToolTipText("Re-create 'Output.txt'");
-		btnPerformAnalysis.setIcon(ImageLoadingUtils.createImageIcon(new File(SanimalView.class.getResource("/images/performAnalysis.png").getPath()), 38, 38, Image.SCALE_SMOOTH));
+		btnPerformAnalysis.setIcon(ImageLoadingUtils.resizeImageIcon(new ImageIcon(SanimalView.class.getResource("/images/performAnalysis.png")), 38, 38, Image.SCALE_SMOOTH, false));
 		barTop.add(btnPerformAnalysis);
 
 		btnAllPictures = new JButton();
@@ -163,7 +162,7 @@ public class SanimalView extends JFrame implements Observer
 		btnAllPictures.setFont(new Font("Tahoma", Font.PLAIN, 10));
 		btnAllPictures.setBorder(BorderFactory.createLineBorder(Color.black, 1));
 		btnAllPictures.setToolTipText("Create all pictures output");
-		btnAllPictures.setIcon(ImageLoadingUtils.createImageIcon(new File(SanimalView.class.getResource("/images/allPicturesOutput.png").getPath()), 38, 38, Image.SCALE_SMOOTH));
+		btnAllPictures.setIcon(ImageLoadingUtils.resizeImageIcon(new ImageIcon(SanimalView.class.getResource("/images/allPicturesOutput.png")), 38, 38, Image.SCALE_SMOOTH, false));
 		barTop.add(btnAllPictures);
 
 		btnToExcel = new JButton();
@@ -171,7 +170,7 @@ public class SanimalView extends JFrame implements Observer
 		btnToExcel.setFont(new Font("Tahoma", Font.PLAIN, 10));
 		btnToExcel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
 		btnToExcel.setToolTipText("Create excel file");
-		btnToExcel.setIcon(ImageLoadingUtils.createImageIcon(new File(SanimalView.class.getResource("/images/excelOutput.png").getPath()), 38, 38, Image.SCALE_SMOOTH));
+		btnToExcel.setIcon(ImageLoadingUtils.resizeImageIcon(new ImageIcon(SanimalView.class.getResource("/images/excelOutput.png")), 38, 38, Image.SCALE_SMOOTH, false));
 		barTop.add(btnToExcel);
 
 		lblThumbnail = new JLabel();
@@ -209,7 +208,7 @@ public class SanimalView extends JFrame implements Observer
 		this.getContentPane().add(lblThumbnail);
 
 		if (DEFAULT_ICON == null)
-			DEFAULT_ICON = ImageLoadingUtils.createImageIcon(new File(SanimalMapImageMarker.class.getResource("/images/loadingImageIcon.png").getFile()), this.lblThumbnail.getWidth(), this.lblThumbnail.getHeight(), Image.SCALE_SMOOTH);
+			DEFAULT_ICON = ImageLoadingUtils.resizeImageIcon(new ImageIcon(ImageLoadingUtils.retrieveImageResource("loadingImageIcon.png").getFile()), this.lblThumbnail.getWidth(), this.lblThumbnail.getHeight(), Image.SCALE_SMOOTH, false);
 
 		pnlPropertyList = new JPanel();
 		pnlPropertyList.setLayout(null);

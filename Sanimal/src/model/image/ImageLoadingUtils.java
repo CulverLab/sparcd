@@ -3,6 +3,7 @@ package model.image;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.io.File;
+import java.net.URL;
 
 import javax.swing.ImageIcon;
 
@@ -56,5 +57,17 @@ public class ImageLoadingUtils
 		if (!preserveOriginal)
 			image.flush();
 		return toReturn;
+	}
+
+	/**
+	 * Grabs a resource as a url stream
+	 * 
+	 * @param resourceName
+	 *            The name of the resource to get
+	 * @return The URL representing the resource
+	 */
+	public static URL retrieveImageResource(String resourceName)
+	{
+		return ImageLoadingUtils.class.getResource("/images/" + resourceName);
 	}
 }

@@ -18,7 +18,7 @@ import model.image.ImageLoadingUtils;
 public class SanimalMapImageMarker extends JLabel
 {
 	private static final Integer BASE_WIDTH_HEIGHT = 75;
-	private static final ImageIcon DEFAULT_ICON = ImageLoadingUtils.createImageIcon(new File(SanimalMapImageMarker.class.getResource("/images/loadingImageIcon.png").getFile()), BASE_WIDTH_HEIGHT, BASE_WIDTH_HEIGHT, Image.SCALE_SMOOTH);
+	private static final ImageIcon DEFAULT_ICON = ImageLoadingUtils.resizeImageIcon(new ImageIcon(ImageLoadingUtils.retrieveImageResource("loadingImageIcon.png")), BASE_WIDTH_HEIGHT, BASE_WIDTH_HEIGHT, Image.SCALE_SMOOTH, false);
 	private boolean needsIcon = true;
 	private final File file;
 	private Double prevScale = 1.0;

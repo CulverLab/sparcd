@@ -11,8 +11,8 @@ import model.image.ImageLoadingUtils;
 
 public class SanimalMapLocationMarker extends JLabel
 {
-	private static final ImageIcon BASE_ICON_NORMAL = new ImageIcon(SanimalMapLocationMarker.class.getResource("/images/marker2.png"));
-	private static final ImageIcon BASE_ICON_HIGHLIGHT = new ImageIcon(SanimalMapLocationMarker.class.getResource("/images/markerHighlight2.png"));
+	private static final ImageIcon BASE_ICON_NORMAL = new ImageIcon(ImageLoadingUtils.retrieveImageResource("marker2.png"));
+	private static final ImageIcon BASE_ICON_HIGHLIGHT = new ImageIcon(ImageLoadingUtils.retrieveImageResource("markerHighlight2.png"));
 	private static final Integer BASE_WIDTH_HEIGHT = 75;
 	private ImageIcon normalIcon = BASE_ICON_NORMAL;
 	private ImageIcon highlightedIcon = BASE_ICON_HIGHLIGHT;

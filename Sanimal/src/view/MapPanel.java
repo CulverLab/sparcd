@@ -26,6 +26,7 @@ import javax.swing.event.ChangeListener;
 import org.apache.commons.lang3.ArrayUtils;
 
 import library.ComboBoxFullMenu;
+import model.image.ImageLoadingUtils;
 
 /**
  * This class defines the map panel used in the main program
@@ -133,37 +134,37 @@ public class MapPanel extends JPanel
 		lblCurrentLng.setBounds(292, 35, 159, 14);
 		this.add(lblCurrentLng);
 
-		btnTop = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Top2.png")));
+		btnTop = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Top2.png")));
 		btnTop.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnTop.setBounds(10, 537, 20, 20);
 		this.add(btnTop);
 
-		btnBackwards = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Backward2.png")));
+		btnBackwards = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Backward2.png")));
 		btnBackwards.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnBackwards.setBounds(40, 537, 20, 20);
 		this.add(btnBackwards);
 
-		btnPrevious = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Previous2.png")));
+		btnPrevious = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Previous2.png")));
 		btnPrevious.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnPrevious.setBounds(70, 537, 20, 20);
 		this.add(btnPrevious);
 
-		btnStop = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Stop2.png")));
+		btnStop = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Stop2.png")));
 		btnStop.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnStop.setBounds(100, 537, 20, 20);
 		this.add(btnStop);
 
-		btnNext = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Next2.png")));
+		btnNext = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Next2.png")));
 		btnNext.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnNext.setBounds(130, 537, 20, 20);
 		this.add(btnNext);
 
-		btnForward = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Forward2.png")));
+		btnForward = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Forward2.png")));
 		btnForward.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnForward.setBounds(160, 537, 20, 20);
 		this.add(btnForward);
 
-		btnBottom = new JButton(new ImageIcon(MapPanel.class.getResource("/images/Bottom2.png")));
+		btnBottom = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Bottom2.png")));
 		btnBottom.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnBottom.setBounds(190, 537, 20, 20);
 		this.add(btnBottom);
