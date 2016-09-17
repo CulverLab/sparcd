@@ -7,6 +7,8 @@ import java.awt.Image;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -122,7 +124,7 @@ public class SanimalView extends JFrame implements Observer
 	public SanimalView()
 	{
 		this.getContentPane().setLayout(null);
-		this.setResizable(false);
+		this.setResizable(true);
 		this.setTitle("Scientific Animal Image AnaLysis (SANIMAL)");
 		this.setSize(1334, 713);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -424,6 +426,31 @@ public class SanimalView extends JFrame implements Observer
 		tabOutputTabs.insertTab("Output Settings", new ImageIcon(""), pneExcelOutput, "Excel output testing", 0);
 		tabOutputTabs.insertTab("Text Output", new ImageIcon(""), pneAllOutput, "All Output from the analysis", 0);
 		tabOutputTabs.setSelectedIndex(0);
+
+		this.getContentPane().addComponentListener(new ComponentListener()
+		{
+			@Override
+			public void componentShown(ComponentEvent event)
+			{
+			}
+
+			@Override
+			public void componentResized(ComponentEvent event)
+			{
+				barTop.setBounds(barTop.getX(), barTop.getY(), event.getComponent().getWidth() - 20, barTop.getHeight());
+				map.setBounds(map.getX(), map.getY(), event.getComponent().getWidth() - 690, event.getComponent().getHeight() - 75);
+			}
+
+			@Override
+			public void componentMoved(ComponentEvent event)
+			{
+			}
+
+			@Override
+			public void componentHidden(ComponentEvent event)
+			{
+			}
+		});
 
 		this.setLocationRelativeTo(null);
 	}

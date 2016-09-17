@@ -3,6 +3,8 @@ package view;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -50,6 +52,7 @@ public class MapPanel extends JPanel
 	private JLabel lblCurrentLng;
 	private String currentLngBase = "Longitude: ";
 
+	private JPanel pnlBottomBar;
 	private JButton btnTop;
 	private JButton btnBackwards;
 	private JButton btnPrevious;
@@ -72,6 +75,11 @@ public class MapPanel extends JPanel
 		{
 			MapPanel.this.mapViewer.rescaleBasedOnZoom();
 		});
+
+		pnlBottomBar = new JPanel();
+		pnlBottomBar.setBounds(10, 534, 618, 62);
+		pnlBottomBar.setLayout(null);
+		this.add(pnlBottomBar);
 
 		lblMapProvider = new JLabel("Map Provider:");
 		lblMapProvider.setFont(new Font("Tahoma", Font.PLAIN, 14));
@@ -136,45 +144,45 @@ public class MapPanel extends JPanel
 
 		btnTop = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Top2.png")));
 		btnTop.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnTop.setBounds(10, 537, 20, 20);
-		this.add(btnTop);
+		btnTop.setBounds(0, 11, 20, 20);
+		pnlBottomBar.add(btnTop);
 
 		btnBackwards = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Backward2.png")));
 		btnBackwards.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnBackwards.setBounds(40, 537, 20, 20);
-		this.add(btnBackwards);
+		btnBackwards.setBounds(30, 11, 20, 20);
+		pnlBottomBar.add(btnBackwards);
 
 		btnPrevious = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Previous2.png")));
 		btnPrevious.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnPrevious.setBounds(70, 537, 20, 20);
-		this.add(btnPrevious);
+		btnPrevious.setBounds(60, 11, 20, 20);
+		pnlBottomBar.add(btnPrevious);
 
 		btnStop = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Stop2.png")));
 		btnStop.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnStop.setBounds(100, 537, 20, 20);
-		this.add(btnStop);
+		btnStop.setBounds(90, 11, 20, 20);
+		pnlBottomBar.add(btnStop);
 
 		btnNext = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Next2.png")));
 		btnNext.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnNext.setBounds(130, 537, 20, 20);
-		this.add(btnNext);
+		btnNext.setBounds(120, 11, 20, 20);
+		pnlBottomBar.add(btnNext);
 
 		btnForward = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Forward2.png")));
 		btnForward.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnForward.setBounds(160, 537, 20, 20);
-		this.add(btnForward);
+		btnForward.setBounds(150, 11, 20, 20);
+		pnlBottomBar.add(btnForward);
 
 		btnBottom = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Bottom2.png")));
 		btnBottom.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnBottom.setBounds(190, 537, 20, 20);
-		this.add(btnBottom);
+		btnBottom.setBounds(180, 11, 20, 20);
+		pnlBottomBar.add(btnBottom);
 
 		sldSpeed = new JSlider(SwingConstants.HORIZONTAL);
 		sldSpeed.setMinorTickSpacing(1);
 		sldSpeed.setValue(ArrayUtils.indexOf(SLIDER_SPEED_MULTIPLIERS, 1.0D));
 		sldSpeed.setPaintTicks(true);
 		sldSpeed.setSnapToTicks(true);
-		sldSpeed.setBounds(220, 534, 68, 23);
+		sldSpeed.setBounds(210, 8, 68, 23);
 		sldSpeed.setMinimum(0);
 		sldSpeed.setMaximum(SLIDER_SPEED_MULTIPLIERS.length - 1);
 		sldSpeed.addChangeListener(new ChangeListener()
@@ -185,15 +193,15 @@ public class MapPanel extends JPanel
 				lblSpeed.setText(SLIDER_SPEED_MULTIPLIERS[sldSpeed.getValue()] + "x");
 			}
 		});
-		this.add(sldSpeed);
+		pnlBottomBar.add(sldSpeed);
 
 		lblSpeed = new JLabel(SLIDER_SPEED_MULTIPLIERS[sldSpeed.getValue()] + "x");
-		lblSpeed.setBounds(292, 534, 43, 23);
-		this.add(lblSpeed);
+		lblSpeed.setBounds(288, 8, 43, 23);
+		pnlBottomBar.add(lblSpeed);
 		lblSpeed.setFont(new Font("Tahoma", Font.PLAIN, 16));
 
 		prgDataShow = new JProgressBar(SwingConstants.HORIZONTAL);
-		prgDataShow.setBounds(10, 568, 618, 23);
+		prgDataShow.setBounds(0, 39, 618, 23);
 		prgDataShow.setMinimum(0);
 		prgDataShow.setMaximum(100);
 		// Clicking & Dragging allows for updating the progress bar
@@ -242,12 +250,37 @@ public class MapPanel extends JPanel
 				prgDataShow.setValue(newLoc);
 			}
 		});
-		this.add(prgDataShow);
+		pnlBottomBar.add(prgDataShow);
 
 		this.lblCurrentDate = new JLabel();
-		lblCurrentDate.setBounds(345, 534, 283, 23);
+		lblCurrentDate.setBounds(335, 8, 283, 23);
 		lblCurrentDate.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		this.add(lblCurrentDate);
+		pnlBottomBar.add(lblCurrentDate);
+
+		this.addComponentListener(new ComponentListener()
+		{
+			@Override
+			public void componentShown(ComponentEvent event)
+			{
+			}
+
+			@Override
+			public void componentResized(ComponentEvent event)
+			{
+				pnlBottomBar.setBounds(pnlBottomBar.getX(), event.getComponent().getHeight() - 70, pnlBottomBar.getWidth(), pnlBottomBar.getHeight());
+				mapViewer.setBounds(mapViewer.getX(), mapViewer.getY(), event.getComponent().getWidth(), event.getComponent().getHeight() - 130);
+			}
+
+			@Override
+			public void componentMoved(ComponentEvent event)
+			{
+			}
+
+			@Override
+			public void componentHidden(ComponentEvent event)
+			{
+			}
+		});
 	}
 
 	public void addALToTop(ActionListener listener)
