@@ -24,6 +24,10 @@ public class SpeciesData extends Observable implements Serializable
 	public void addSpecies(Species species)
 	{
 		this.species.add(species);
+		this.species.sort((species1, species2) ->
+		{
+			return species1.getName().compareToIgnoreCase(species2.getName());
+		});
 		this.setChanged();
 		this.notifyObservers(SpeciesUpdate.SpeciesListChanged);
 	}

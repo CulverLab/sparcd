@@ -112,6 +112,7 @@ public class SanimalView extends JFrame implements Observer
 	private JPanel pnlExcelOutput;
 	private JButton btnToExcel;
 	private JButton btnAllPictures;
+	private JButton btnLoadDefaultAnimals;
 	private JRadioButton radNumPictures;
 	private JRadioButton radAbundance;
 	private JRadioButton radPeriod;
@@ -174,6 +175,16 @@ public class SanimalView extends JFrame implements Observer
 		btnToExcel.setToolTipText("Create excel file");
 		btnToExcel.setIcon(ImageLoadingUtils.resizeImageIcon(new ImageIcon(SanimalView.class.getResource("/images/excelOutput.png")), 38, 38, Image.SCALE_SMOOTH, false));
 		barTop.add(btnToExcel);
+
+		barTop.addSeparator();
+
+		btnLoadDefaultAnimals = new JButton();
+		btnLoadDefaultAnimals.setMaximumSize(new Dimension(40, 40));
+		btnLoadDefaultAnimals.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		btnLoadDefaultAnimals.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+		btnLoadDefaultAnimals.setToolTipText("Load default desert animals");
+		btnLoadDefaultAnimals.setIcon(ImageLoadingUtils.resizeImageIcon(new ImageIcon(SanimalView.class.getResource("/images/paw.png")), 38, 38, Image.SCALE_SMOOTH, false));
+		barTop.add(btnLoadDefaultAnimals);
 
 		lblThumbnail = new JLabel();
 		lblThumbnail.setBounds(278, 70, 391, 241);
@@ -533,6 +544,11 @@ public class SanimalView extends JFrame implements Observer
 	public void addALToLoad(ActionListener listener)
 	{
 		this.btnLoadFromFile.addActionListener(listener);
+	}
+
+	public void addALToLoadDefaultAnimals(ActionListener listener)
+	{
+		this.btnLoadDefaultAnimals.addActionListener(listener);
 	}
 
 	public MapPanel getMapPanel()
