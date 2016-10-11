@@ -434,7 +434,7 @@ public class SanimalView extends JFrame implements Observer
 
 		pneAllOutput = new JScrollPane();
 		pneAllOutput.setViewportView(tarAllOutput);
-		tabOutputTabs.insertTab("Output Settings", new ImageIcon(""), pneExcelOutput, "Excel output testing", 0);
+		//tabOutputTabs.insertTab("Output Settings", new ImageIcon(""), pneExcelOutput, "Excel output testing", 0);
 		tabOutputTabs.insertTab("Text Output", new ImageIcon(""), pneAllOutput, "All Output from the analysis", 0);
 		tabOutputTabs.setSelectedIndex(0);
 
@@ -450,6 +450,7 @@ public class SanimalView extends JFrame implements Observer
 			{
 				barTop.setBounds(barTop.getX(), barTop.getY(), event.getComponent().getWidth() - 20, barTop.getHeight());
 				map.setBounds(map.getX(), map.getY(), event.getComponent().getWidth() - 690, event.getComponent().getHeight() - 75);
+				tabOutputTabs.setBounds(tabOutputTabs.getX(), tabOutputTabs.getY(), tabOutputTabs.getWidth(), event.getComponent().getHeight() - 545);
 			}
 
 			@Override

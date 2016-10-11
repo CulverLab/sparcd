@@ -3,8 +3,6 @@ package view;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -19,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSlider;
+import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.border.LineBorder;
@@ -46,7 +45,7 @@ public class MapPanel extends JPanel
 	private ComboBoxFullMenu<String> cbxMapProviders;
 	private SanimalMap mapViewer;
 	private JLabel lblZoomLevel;
-	private String zoomLevelBase = "Zoom Level: ";
+	private String zoomLevelBase = "Zoom: ";
 	private JLabel lblCurrentLat;
 	private String currentLatBase = "Latitude: ";
 	private JLabel lblCurrentLng;
@@ -69,31 +68,32 @@ public class MapPanel extends JPanel
 	{
 		this.setBounds(679, 11, 638, 607);
 		this.setBorder(new LineBorder(Color.BLACK));
-		this.setLayout(null);
+		SpringLayout layMapPanel = new SpringLayout();
+		this.setLayout(layMapPanel);
 
 		this.zoomTimer = new Timer(500, event ->
 		{
 			MapPanel.this.mapViewer.rescaleBasedOnZoom();
 		});
 
-		pnlBottomBar = new JPanel();
-		pnlBottomBar.setBounds(10, 534, 618, 62);
-		pnlBottomBar.setLayout(null);
-		this.add(pnlBottomBar);
-
-		lblMapProvider = new JLabel("Map Provider:");
+		lblMapProvider = new JLabel("Map:");
+		layMapPanel.putConstraint(SpringLayout.NORTH, lblMapProvider, 5, SpringLayout.NORTH, this);
+		layMapPanel.putConstraint(SpringLayout.WEST, lblMapProvider, 10, SpringLayout.WEST, this);
 		lblMapProvider.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblMapProvider.setBounds(10, 10, 95, 14);
 		this.add(lblMapProvider);
 
 		cbxMapProviders = new ComboBoxFullMenu<String>();
+		layMapPanel.putConstraint(SpringLayout.NORTH, cbxMapProviders, 2, SpringLayout.NORTH, this);
+		layMapPanel.putConstraint(SpringLayout.WEST, cbxMapProviders, 73, SpringLayout.WEST, this);
+		layMapPanel.putConstraint(SpringLayout.EAST, lblMapProvider, -6, SpringLayout.WEST, cbxMapProviders);
 		cbxMapProviders.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		cbxMapProviders.setBounds(115, 6, 167, 23);
 		this.add(cbxMapProviders);
 
 		mapViewer = new SanimalMap(cbxMapProviders);
-		mapViewer.setLayout(null);
-		mapViewer.setBounds(0, 60, 637, 463);
+		layMapPanel.putConstraint(SpringLayout.NORTH, mapViewer, 35, SpringLayout.NORTH, this);
+		layMapPanel.putConstraint(SpringLayout.WEST, mapViewer, 0, SpringLayout.WEST, this);
+		layMapPanel.putConstraint(SpringLayout.SOUTH, mapViewer, -69, SpringLayout.SOUTH, this);
+		layMapPanel.putConstraint(SpringLayout.EAST, mapViewer, 0, SpringLayout.EAST, this);
 		mapViewer.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 		// When scrolling set the zoom level lables accordingly
 		mapViewer.addMouseWheelListener(new MouseWheelListener()
@@ -127,62 +127,93 @@ public class MapPanel extends JPanel
 		});
 		this.add(mapViewer);
 
-		lblZoomLevel = new JLabel(zoomLevelBase + mapViewer.getZoom());
-		lblZoomLevel.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblZoomLevel.setBounds(10, 35, 105, 14);
-		this.add(lblZoomLevel);
-
 		lblCurrentLat = new JLabel(currentLatBase + String.format("%7.6f", mapViewer.getCenterPosition().getLatitude()));
+		layMapPanel.putConstraint(SpringLayout.NORTH, lblCurrentLat, 5, SpringLayout.NORTH, this);
+		layMapPanel.putConstraint(SpringLayout.EAST, cbxMapProviders, -6, SpringLayout.WEST, lblCurrentLat);
 		lblCurrentLat.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblCurrentLat.setBounds(292, 10, 159, 14);
 		this.add(lblCurrentLat);
 
 		lblCurrentLng = new JLabel(currentLngBase + String.format("%7.6f", mapViewer.getCenterPosition().getLongitude()));
+		layMapPanel.putConstraint(SpringLayout.NORTH, lblCurrentLng, 5, SpringLayout.NORTH, this);
+		layMapPanel.putConstraint(SpringLayout.EAST, lblCurrentLat, -6, SpringLayout.WEST, lblCurrentLng);
 		lblCurrentLng.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblCurrentLng.setBounds(292, 35, 159, 14);
 		this.add(lblCurrentLng);
 
+		lblZoomLevel = new JLabel(zoomLevelBase + mapViewer.getZoom());
+		layMapPanel.putConstraint(SpringLayout.NORTH, lblZoomLevel, 5, SpringLayout.NORTH, this);
+		layMapPanel.putConstraint(SpringLayout.WEST, lblZoomLevel, 533, SpringLayout.WEST, this);
+		layMapPanel.putConstraint(SpringLayout.EAST, lblZoomLevel, -11, SpringLayout.EAST, this);
+		layMapPanel.putConstraint(SpringLayout.EAST, lblCurrentLng, -6, SpringLayout.WEST, lblZoomLevel);
+		lblZoomLevel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		this.add(lblZoomLevel);
+
+		pnlBottomBar = new JPanel();
+		layMapPanel.putConstraint(SpringLayout.NORTH, pnlBottomBar, 0, SpringLayout.SOUTH, mapViewer);
+		layMapPanel.putConstraint(SpringLayout.WEST, pnlBottomBar, 0, SpringLayout.WEST, this);
+		layMapPanel.putConstraint(SpringLayout.SOUTH, pnlBottomBar, 0, SpringLayout.SOUTH, this);
+		layMapPanel.putConstraint(SpringLayout.EAST, pnlBottomBar, 0, SpringLayout.EAST, this);
+		SpringLayout layPnlBottomBar = new SpringLayout();
+		pnlBottomBar.setLayout(layPnlBottomBar);
+		this.add(pnlBottomBar);
+
 		btnTop = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Top2.png")));
+		layPnlBottomBar.putConstraint(SpringLayout.NORTH, btnTop, 5, SpringLayout.NORTH, pnlBottomBar);
+		layPnlBottomBar.putConstraint(SpringLayout.WEST, btnTop, 5, SpringLayout.WEST, pnlBottomBar);
+		layPnlBottomBar.putConstraint(SpringLayout.EAST, btnTop, 30, SpringLayout.WEST, pnlBottomBar);
 		btnTop.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnTop.setBounds(0, 11, 20, 20);
 		pnlBottomBar.add(btnTop);
 
 		btnBackwards = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Backward2.png")));
+		layPnlBottomBar.putConstraint(SpringLayout.NORTH, btnBackwards, 0, SpringLayout.NORTH, btnTop);
+		layPnlBottomBar.putConstraint(SpringLayout.WEST, btnBackwards, 6, SpringLayout.EAST, btnTop);
+		layPnlBottomBar.putConstraint(SpringLayout.EAST, btnBackwards, 31, SpringLayout.EAST, btnTop);
 		btnBackwards.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnBackwards.setBounds(30, 11, 20, 20);
 		pnlBottomBar.add(btnBackwards);
 
 		btnPrevious = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Previous2.png")));
+		layPnlBottomBar.putConstraint(SpringLayout.NORTH, btnPrevious, 0, SpringLayout.NORTH, btnTop);
+		layPnlBottomBar.putConstraint(SpringLayout.WEST, btnPrevious, 6, SpringLayout.EAST, btnBackwards);
+		layPnlBottomBar.putConstraint(SpringLayout.SOUTH, btnPrevious, 0, SpringLayout.SOUTH, btnTop);
+		layPnlBottomBar.putConstraint(SpringLayout.EAST, btnPrevious, 31, SpringLayout.EAST, btnBackwards);
 		btnPrevious.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnPrevious.setBounds(60, 11, 20, 20);
 		pnlBottomBar.add(btnPrevious);
 
 		btnStop = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Stop2.png")));
+		layPnlBottomBar.putConstraint(SpringLayout.NORTH, btnStop, 0, SpringLayout.NORTH, btnTop);
+		layPnlBottomBar.putConstraint(SpringLayout.WEST, btnStop, 6, SpringLayout.EAST, btnPrevious);
+		layPnlBottomBar.putConstraint(SpringLayout.EAST, btnStop, 31, SpringLayout.EAST, btnPrevious);
 		btnStop.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnStop.setBounds(90, 11, 20, 20);
 		pnlBottomBar.add(btnStop);
 
 		btnNext = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Next2.png")));
+		layPnlBottomBar.putConstraint(SpringLayout.NORTH, btnNext, 0, SpringLayout.NORTH, btnTop);
+		layPnlBottomBar.putConstraint(SpringLayout.WEST, btnNext, 6, SpringLayout.EAST, btnStop);
+		layPnlBottomBar.putConstraint(SpringLayout.SOUTH, btnNext, 0, SpringLayout.SOUTH, btnTop);
+		layPnlBottomBar.putConstraint(SpringLayout.EAST, btnNext, 31, SpringLayout.EAST, btnStop);
 		btnNext.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnNext.setBounds(120, 11, 20, 20);
 		pnlBottomBar.add(btnNext);
 
 		btnForward = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Forward2.png")));
+		layPnlBottomBar.putConstraint(SpringLayout.NORTH, btnForward, 0, SpringLayout.NORTH, btnTop);
+		layPnlBottomBar.putConstraint(SpringLayout.WEST, btnForward, 6, SpringLayout.EAST, btnNext);
+		layPnlBottomBar.putConstraint(SpringLayout.EAST, btnForward, 31, SpringLayout.EAST, btnNext);
 		btnForward.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnForward.setBounds(150, 11, 20, 20);
 		pnlBottomBar.add(btnForward);
 
 		btnBottom = new JButton(new ImageIcon(ImageLoadingUtils.retrieveImageResource("Bottom2.png")));
+		layPnlBottomBar.putConstraint(SpringLayout.NORTH, btnBottom, 0, SpringLayout.NORTH, btnTop);
+		layPnlBottomBar.putConstraint(SpringLayout.WEST, btnBottom, 6, SpringLayout.EAST, btnForward);
+		layPnlBottomBar.putConstraint(SpringLayout.EAST, btnBottom, 31, SpringLayout.EAST, btnForward);
 		btnBottom.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnBottom.setBounds(180, 11, 20, 20);
 		pnlBottomBar.add(btnBottom);
 
 		sldSpeed = new JSlider(SwingConstants.HORIZONTAL);
+		layPnlBottomBar.putConstraint(SpringLayout.NORTH, sldSpeed, 0, SpringLayout.NORTH, btnTop);
+		layPnlBottomBar.putConstraint(SpringLayout.WEST, sldSpeed, 6, SpringLayout.EAST, btnBottom);
 		sldSpeed.setMinorTickSpacing(1);
 		sldSpeed.setValue(ArrayUtils.indexOf(SLIDER_SPEED_MULTIPLIERS, 1.0D));
 		sldSpeed.setPaintTicks(true);
 		sldSpeed.setSnapToTicks(true);
-		sldSpeed.setBounds(210, 8, 68, 23);
 		sldSpeed.setMinimum(0);
 		sldSpeed.setMaximum(SLIDER_SPEED_MULTIPLIERS.length - 1);
 		sldSpeed.addChangeListener(new ChangeListener()
@@ -196,11 +227,17 @@ public class MapPanel extends JPanel
 		pnlBottomBar.add(sldSpeed);
 
 		lblSpeed = new JLabel(SLIDER_SPEED_MULTIPLIERS[sldSpeed.getValue()] + "x");
-		lblSpeed.setBounds(288, 8, 43, 23);
-		pnlBottomBar.add(lblSpeed);
+		layPnlBottomBar.putConstraint(SpringLayout.NORTH, lblSpeed, 0, SpringLayout.NORTH, btnTop);
+		layPnlBottomBar.putConstraint(SpringLayout.WEST, lblSpeed, 6, SpringLayout.EAST, sldSpeed);
+		layPnlBottomBar.putConstraint(SpringLayout.SOUTH, lblSpeed, 0, SpringLayout.SOUTH, btnTop);
 		lblSpeed.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		pnlBottomBar.add(lblSpeed);
 
 		prgDataShow = new JProgressBar(SwingConstants.HORIZONTAL);
+		layPnlBottomBar.putConstraint(SpringLayout.NORTH, prgDataShow, 6, SpringLayout.SOUTH, btnTop);
+		layPnlBottomBar.putConstraint(SpringLayout.WEST, prgDataShow, 0, SpringLayout.WEST, pnlBottomBar);
+		layPnlBottomBar.putConstraint(SpringLayout.SOUTH, prgDataShow, 0, SpringLayout.SOUTH, pnlBottomBar);
+		layPnlBottomBar.putConstraint(SpringLayout.EAST, prgDataShow, 0, SpringLayout.EAST, pnlBottomBar);
 		prgDataShow.setBounds(0, 39, 618, 23);
 		prgDataShow.setMinimum(0);
 		prgDataShow.setMaximum(100);
@@ -252,35 +289,14 @@ public class MapPanel extends JPanel
 		});
 		pnlBottomBar.add(prgDataShow);
 
-		this.lblCurrentDate = new JLabel();
-		lblCurrentDate.setBounds(335, 8, 283, 23);
+		lblCurrentDate = new JLabel();
+		layPnlBottomBar.putConstraint(SpringLayout.NORTH, lblCurrentDate, 0, SpringLayout.NORTH, btnTop);
+		layPnlBottomBar.putConstraint(SpringLayout.WEST, lblCurrentDate, 16, SpringLayout.EAST, lblSpeed);
+		layPnlBottomBar.putConstraint(SpringLayout.SOUTH, lblCurrentDate, 0, SpringLayout.SOUTH, btnTop);
+		layPnlBottomBar.putConstraint(SpringLayout.EAST, lblCurrentDate, -10, SpringLayout.EAST, pnlBottomBar);
 		lblCurrentDate.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		lblCurrentDate.setText("");
 		pnlBottomBar.add(lblCurrentDate);
-
-		this.addComponentListener(new ComponentListener()
-		{
-			@Override
-			public void componentShown(ComponentEvent event)
-			{
-			}
-
-			@Override
-			public void componentResized(ComponentEvent event)
-			{
-				pnlBottomBar.setBounds(pnlBottomBar.getX(), event.getComponent().getHeight() - 70, pnlBottomBar.getWidth(), pnlBottomBar.getHeight());
-				mapViewer.setBounds(mapViewer.getX(), mapViewer.getY(), event.getComponent().getWidth(), event.getComponent().getHeight() - 130);
-			}
-
-			@Override
-			public void componentMoved(ComponentEvent event)
-			{
-			}
-
-			@Override
-			public void componentHidden(ComponentEvent event)
-			{
-			}
-		});
 	}
 
 	public void addALToTop(ActionListener listener)
@@ -325,8 +341,8 @@ public class MapPanel extends JPanel
 
 	public void setCurrentDateLabel(Date date)
 	{
-		this.lblCurrentDate.setText(date.toString());
-		this.lblCurrentDate.setToolTipText(date.toString());
+		this.lblCurrentDate.setText("Date: " + date.toString());
+		this.lblCurrentDate.setToolTipText("Date: " + date.toString());
 	}
 
 	public Double getCurrentSliderSpeed()
