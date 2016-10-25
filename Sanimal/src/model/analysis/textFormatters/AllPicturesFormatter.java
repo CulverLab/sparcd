@@ -3,7 +3,7 @@ package model.analysis.textFormatters;
 import java.util.List;
 
 import model.analysis.DataAnalysis;
-import model.analysis.PredicateBuilder;
+import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
@@ -32,10 +32,10 @@ public class AllPicturesFormatter extends TextFormatter
 
 		for (Location location : analysis.getAllImageLocations())
 		{
-			List<ImageEntry> withLocation = new PredicateBuilder().locationOnly(location).query(images);
+			List<ImageEntry> withLocation = new ImageQuery().locationOnly(location).query(images);
 			for (Species species : analysis.getAllImageSpecies())
 			{
-				List<ImageEntry> withLocationSpecies = new PredicateBuilder().speciesOnly(species).query(withLocation);
+				List<ImageEntry> withLocationSpecies = new ImageQuery().speciesOnly(species).query(withLocation);
 				for (ImageEntry imageEntry : withLocationSpecies)
 				{
 					toReturn = toReturn + String.format("%-28s %-28s %-28s\n", location.getName(), species.getName(), imageEntry.getFile().getName());

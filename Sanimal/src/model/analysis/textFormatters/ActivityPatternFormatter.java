@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
 import model.analysis.DataAnalysis;
-import model.analysis.PredicateBuilder;
+import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
@@ -48,7 +48,7 @@ public class ActivityPatternFormatter extends TextFormatter
 		for (Species species : analysis.getAllImageSpecies())
 		{
 			String toAdd = "";
-			List<ImageEntry> imagesWithSpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> imagesWithSpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
 			Integer totalImages = imagesWithSpecies.size();
 			// Activity / All
 			toAdd = toAdd + "                   All months         Jan              Feb              Mar              Apr              May              Jun              Jul              Aug              Sep              Oct              Nov              Dec\n";
@@ -65,14 +65,14 @@ public class ActivityPatternFormatter extends TextFormatter
 				if (i == -1)
 					activity = analysis.activityForImageList(imagesWithSpecies);
 				else
-					activity = analysis.activityForImageList(new PredicateBuilder().monthOnly(i).query(imagesWithSpecies));
+					activity = analysis.activityForImageList(new ImageQuery().monthOnly(i).query(imagesWithSpecies));
 				totalActivities[i + 1] = activity;
 			}
 
 			// 24 hrs
 			for (int i = 0; i < 24; i++)
 			{
-				List<ImageEntry> imagesWithSpeciesAtTime = new PredicateBuilder().timeFrame(i, i + 1).query(imagesWithSpecies);
+				List<ImageEntry> imagesWithSpeciesAtTime = new ImageQuery().timeFrame(i, i + 1).query(imagesWithSpecies);
 				toAdd = toAdd + String.format("%02d:00-%02d:00   ", i, i + 1);
 				// 12 months
 				for (int j = -1; j < 12; j++)
@@ -82,7 +82,7 @@ public class ActivityPatternFormatter extends TextFormatter
 					if (j == -1)
 						activity = analysis.activityForImageList(imagesWithSpeciesAtTime);
 					else
-						activity = analysis.activityForImageList(new PredicateBuilder().monthOnly(j).query(imagesWithSpeciesAtTime));
+						activity = analysis.activityForImageList(new ImageQuery().monthOnly(j).query(imagesWithSpeciesAtTime));
 
 					if (activity != 0)
 						toAdd = toAdd + String.format("%6d %10.3f", activity, (double) activity / totalActivities[j + 1]);
@@ -142,8 +142,8 @@ public class ActivityPatternFormatter extends TextFormatter
 			toReturn = toReturn + String.format("%-27s", species.getName());
 			for (Species other : analysis.getAllImageSpecies())
 			{
-				List<ImageEntry> imagesWithSpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
-				List<ImageEntry> imagesWithSpeciesOther = new PredicateBuilder().speciesOnly(other).query(analysis.getImagesSortedByDate());
+				List<ImageEntry> imagesWithSpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
+				List<ImageEntry> imagesWithSpeciesOther = new ImageQuery().speciesOnly(other).query(analysis.getImagesSortedByDate());
 				int totalActivity = analysis.activityForImageList(imagesWithSpecies);
 				int totalActivityOther = analysis.activityForImageList(imagesWithSpeciesOther);
 
@@ -152,8 +152,8 @@ public class ActivityPatternFormatter extends TextFormatter
 				// 24 hrs
 				for (int i = 0; i < 24; i++)
 				{
-					List<ImageEntry> imagesWithSpeciesAtTime = new PredicateBuilder().timeFrame(i, i + 1).query(imagesWithSpecies);
-					List<ImageEntry> imagesWithSpeciesAtTimeOther = new PredicateBuilder().timeFrame(i, i + 1).query(imagesWithSpeciesOther);
+					List<ImageEntry> imagesWithSpeciesAtTime = new ImageQuery().timeFrame(i, i + 1).query(imagesWithSpecies);
+					List<ImageEntry> imagesWithSpeciesAtTimeOther = new ImageQuery().timeFrame(i, i + 1).query(imagesWithSpeciesOther);
 					double activity = analysis.activityForImageList(imagesWithSpeciesAtTime);
 					double activityOther = analysis.activityForImageList(imagesWithSpeciesAtTimeOther);
 					double frequency = activity / totalActivity;
@@ -197,8 +197,8 @@ public class ActivityPatternFormatter extends TextFormatter
 		{
 			for (Species other : analysis.getAllImageSpecies())
 			{
-				List<ImageEntry> imagesWithSpecies = new PredicateBuilder().speciesOnly(species).query(images);
-				List<ImageEntry> imagesWithSpeciesOther = new PredicateBuilder().speciesOnly(other).query(images);
+				List<ImageEntry> imagesWithSpecies = new ImageQuery().speciesOnly(species).query(images);
+				List<ImageEntry> imagesWithSpeciesOther = new ImageQuery().speciesOnly(other).query(images);
 				int totalImages = imagesWithSpecies.size();
 				int totalImagesOther = imagesWithSpeciesOther.size();
 				double activitySimilarity = 0;
@@ -208,8 +208,8 @@ public class ActivityPatternFormatter extends TextFormatter
 					// 24 hrs
 					for (int i = 0; i < 24; i++)
 					{
-						List<ImageEntry> imagesWithSpeciesAtTime = new PredicateBuilder().timeFrame(i, i + 1).query(imagesWithSpecies);
-						List<ImageEntry> imagesWithSpeciesAtTimeOther = new PredicateBuilder().timeFrame(i, i + 1).query(imagesWithSpeciesOther);
+						List<ImageEntry> imagesWithSpeciesAtTime = new ImageQuery().timeFrame(i, i + 1).query(imagesWithSpecies);
+						List<ImageEntry> imagesWithSpeciesAtTimeOther = new ImageQuery().timeFrame(i, i + 1).query(imagesWithSpeciesOther);
 						double numImages = imagesWithSpeciesAtTime.size();
 						double numImagesOther = imagesWithSpeciesAtTimeOther.size();
 						double frequency = numImages / totalImages;
@@ -235,8 +235,8 @@ public class ActivityPatternFormatter extends TextFormatter
 		{
 			toReturn = toReturn + String.format("Hour            %-28s %-28s\n", lowest.getName(), lowestOther.getName());
 
-			List<ImageEntry> imagesWithSpecies = new PredicateBuilder().speciesOnly(lowest).query(images);
-			List<ImageEntry> imagesWithSpeciesOther = new PredicateBuilder().speciesOnly(lowestOther).query(images);
+			List<ImageEntry> imagesWithSpecies = new ImageQuery().speciesOnly(lowest).query(images);
+			List<ImageEntry> imagesWithSpeciesOther = new ImageQuery().speciesOnly(lowestOther).query(images);
 			int totalImages = imagesWithSpecies.size();
 			int totalImagesOther = imagesWithSpeciesOther.size();
 			double activitySimilarity = 0;
@@ -244,8 +244,8 @@ public class ActivityPatternFormatter extends TextFormatter
 			// 24 hrs
 			for (int i = 0; i < 24; i++)
 			{
-				List<ImageEntry> imagesWithSpeciesAtTime = new PredicateBuilder().timeFrame(i, i + 1).query(imagesWithSpecies);
-				List<ImageEntry> imagesWithSpeciesAtTimeOther = new PredicateBuilder().timeFrame(i, i + 1).query(imagesWithSpeciesOther);
+				List<ImageEntry> imagesWithSpeciesAtTime = new ImageQuery().timeFrame(i, i + 1).query(imagesWithSpecies);
+				List<ImageEntry> imagesWithSpeciesAtTimeOther = new ImageQuery().timeFrame(i, i + 1).query(imagesWithSpeciesOther);
 				double numImages = imagesWithSpeciesAtTime.size();
 				double numImagesOther = imagesWithSpeciesAtTimeOther.size();
 				double frequency = numImages / totalImages;
@@ -294,22 +294,22 @@ public class ActivityPatternFormatter extends TextFormatter
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			List<ImageEntry> imagesWithSpecies = new PredicateBuilder().speciesOnly(species).query(images);
+			List<ImageEntry> imagesWithSpecies = new ImageQuery().speciesOnly(species).query(images);
 			int totalImages = imagesWithSpecies.size();
 			if (totalImages >= 25)
 			{
 				toReturn = toReturn + String.format("%-28s", species.getName());
 				for (Species other : analysis.getAllImageSpecies())
 				{
-					List<ImageEntry> imagesWithSpeciesOther = new PredicateBuilder().speciesOnly(other).query(images);
+					List<ImageEntry> imagesWithSpeciesOther = new ImageQuery().speciesOnly(other).query(images);
 					int totalImagesOther = imagesWithSpeciesOther.size();
 					double activitySimilarity = 0;
 
 					// 24 hrs
 					for (int i = 0; i < 24; i++)
 					{
-						List<ImageEntry> imagesWithSpeciesAtTime = new PredicateBuilder().timeFrame(i, i + 1).query(imagesWithSpecies);
-						List<ImageEntry> imagesWithSpeciesAtTimeOther = new PredicateBuilder().timeFrame(i, i + 1).query(imagesWithSpeciesOther);
+						List<ImageEntry> imagesWithSpeciesAtTime = new ImageQuery().timeFrame(i, i + 1).query(imagesWithSpecies);
+						List<ImageEntry> imagesWithSpeciesAtTimeOther = new ImageQuery().timeFrame(i, i + 1).query(imagesWithSpeciesOther);
 						double numImages = imagesWithSpeciesAtTime.size();
 						double numImagesOther = imagesWithSpeciesAtTimeOther.size();
 						double frequency = numImages / totalImages;
@@ -369,7 +369,7 @@ public class ActivityPatternFormatter extends TextFormatter
 		int[] monthlyTotals = new int[12];
 		for (Location location : analysis.getAllImageLocations())
 		{
-			List<ImageEntry> withLocation = new PredicateBuilder().locationOnly(location).query(images);
+			List<ImageEntry> withLocation = new ImageQuery().locationOnly(location).query(images);
 			Calendar firstCal = DateUtils.toCalendar(analysis.getFirstImageInList(withLocation).getDateTaken());
 			Calendar lastCal = DateUtils.toCalendar(analysis.getLastImageInList(withLocation).getDateTaken());
 			Integer firstMonth = firstCal.get(Calendar.MONTH);
@@ -407,7 +407,7 @@ public class ActivityPatternFormatter extends TextFormatter
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
 
 			toReturn = toReturn + species.getName() + "\n";
 			toReturn = toReturn + "                     Dec-Jan-Feb           Mar-Apr-May           Jun-Jul-Aug           Sep-Oct-Nov\n";
@@ -421,7 +421,7 @@ public class ActivityPatternFormatter extends TextFormatter
 			int[] imagesPerSeason = new int[4];
 			for (int i = 0; i < 4; i++)
 			{
-				List<ImageEntry> seasonWithSpecies = new PredicateBuilder().monthOnly(seasons[i]).query(withSpecies);
+				List<ImageEntry> seasonWithSpecies = new ImageQuery().monthOnly(seasons[i]).query(withSpecies);
 				Integer activity = analysis.activityForImageList(seasonWithSpecies);
 				toReturn = toReturn + String.format("%7d               ", activity);
 				imagesPerSeason[i] = activity;
@@ -460,15 +460,15 @@ public class ActivityPatternFormatter extends TextFormatter
 			// 24 hrs
 			for (int j = 0; j < 24; j++)
 			{
-				List<ImageEntry> withSpeciesAtTime = new PredicateBuilder().timeFrame(j, j + 1).query(withSpecies);
+				List<ImageEntry> withSpeciesAtTime = new ImageQuery().timeFrame(j, j + 1).query(withSpecies);
 
 				toAdd = toAdd + String.format("       %02d:00-%02d:00    ", j, j + 1);
 
 				// 4 seasons
 				for (int i = 0; i < 4; i++)
 				{
-					List<ImageEntry> withSpeciesAtTimeInSeason = new PredicateBuilder().monthOnly(seasons[i]).query(withSpeciesAtTime);
-					List<ImageEntry> withSpeciesInSeason = new PredicateBuilder().monthOnly(seasons[i]).query(withSpecies);
+					List<ImageEntry> withSpeciesAtTimeInSeason = new ImageQuery().monthOnly(seasons[i]).query(withSpeciesAtTime);
+					List<ImageEntry> withSpeciesInSeason = new ImageQuery().monthOnly(seasons[i]).query(withSpecies);
 					Integer numPics = analysis.activityForImageList(withSpeciesAtTimeInSeason);
 					Integer totalPics = analysis.activityForImageList(withSpeciesInSeason);
 					double frequency = 0;

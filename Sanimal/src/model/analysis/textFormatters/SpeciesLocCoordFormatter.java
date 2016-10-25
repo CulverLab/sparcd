@@ -3,7 +3,7 @@ package model.analysis.textFormatters;
 import java.util.List;
 
 import model.analysis.DataAnalysis;
-import model.analysis.PredicateBuilder;
+import model.analysis.ImageQuery;
 import model.analysis.SanimalAnalysisUtils;
 import model.image.ImageEntry;
 import model.location.Location;
@@ -37,7 +37,7 @@ public class SpeciesLocCoordFormatter extends TextFormatter
 		toReturn = toReturn + "SPECIES BY LOCATION WITH UTM AND ELEVATION\n";
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(images);
+			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
 			toReturn = toReturn + species.getName() + "\n";
 			toReturn = toReturn + "Location                        UTMe-w   UTMn-s    Elevation   Lat        Long\n";
 			for (Location location : analysis.locationsForImageList(withSpecies))

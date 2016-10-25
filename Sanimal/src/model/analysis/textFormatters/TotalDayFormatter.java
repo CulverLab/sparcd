@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
 import model.analysis.DataAnalysis;
-import model.analysis.PredicateBuilder;
+import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
@@ -48,14 +48,14 @@ public class TotalDayFormatter extends TextFormatter
 
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> imagesByLocationAndYear = new PredicateBuilder().yearOnly(year).locationOnly(location).query(analysis.getImagesSortedByDate());
+				List<ImageEntry> imagesByLocationAndYear = new ImageQuery().yearOnly(year).locationOnly(location).query(analysis.getImagesSortedByDate());
 				if (!imagesByLocationAndYear.isEmpty())
 				{
 					toReturn = toReturn + String.format("%-28s", location.getName());
 					Integer total = 0;
 					for (int i = 0; i < 12; i++)
 					{
-						List<ImageEntry> imagesByLocationYearAndMonth = new PredicateBuilder().monthOnly(i).query(imagesByLocationAndYear);
+						List<ImageEntry> imagesByLocationYearAndMonth = new ImageQuery().monthOnly(i).query(imagesByLocationAndYear);
 						Integer period = analysis.periodForImageList(imagesByLocationYearAndMonth);
 						total = total + period;
 						toReturn = toReturn + String.format("%5d ", period);
@@ -73,7 +73,7 @@ public class TotalDayFormatter extends TextFormatter
 				Integer totalPeriod = 0;
 				for (Location location : analysis.getAllImageLocations())
 				{
-					List<ImageEntry> imagesByLocationYearAndMonth = new PredicateBuilder().locationOnly(location).monthOnly(i).yearOnly(year).query(analysis.getImagesSortedByDate());
+					List<ImageEntry> imagesByLocationYearAndMonth = new ImageQuery().locationOnly(location).monthOnly(i).yearOnly(year).query(analysis.getImagesSortedByDate());
 					Integer period = analysis.periodForImageList(imagesByLocationYearAndMonth);
 					totalPic = totalPic + period;
 					totalPeriod = totalPeriod + period;
@@ -86,12 +86,12 @@ public class TotalDayFormatter extends TextFormatter
 
 			toReturn = toReturn + "Total days                     ";
 
-			List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> yearsPics = new ImageQuery().yearOnly(year).query(analysis.getImagesSortedByDate());
 
 			int[] daysUsed = new int[12];
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+				List<ImageEntry> yearLocPics = new ImageQuery().locationOnly(location).query(yearsPics);
 				if (!yearLocPics.isEmpty())
 				{
 					ImageEntry first = yearLocPics.get(0);
@@ -170,12 +170,12 @@ public class TotalDayFormatter extends TextFormatter
 		{
 			toReturn = toReturn + String.format("%-28s", location.getName());
 
-			List<ImageEntry> imagesAtLoc = new PredicateBuilder().locationOnly(location).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> imagesAtLoc = new ImageQuery().locationOnly(location).query(analysis.getImagesSortedByDate());
 
 			Integer picsInYear = 0;
 			for (int i = 0; i < 12; i++)
 			{
-				List<ImageEntry> imagesAtLocWithMonth = new PredicateBuilder().monthOnly(i).query(imagesAtLoc);
+				List<ImageEntry> imagesAtLocWithMonth = new ImageQuery().monthOnly(i).query(imagesAtLoc);
 				Integer period = analysis.periodForImageList(imagesAtLocWithMonth);
 				picsInYear = picsInYear + period;
 				toReturn = toReturn + String.format("%5d ", period);
@@ -195,7 +195,7 @@ public class TotalDayFormatter extends TextFormatter
 			Integer totalPeriod = 0;
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> imagesByMonthAndLoc = new PredicateBuilder().monthOnly(i).locationOnly(location).query(analysis.getImagesSortedByDate());
+				List<ImageEntry> imagesByMonthAndLoc = new ImageQuery().monthOnly(i).locationOnly(location).query(analysis.getImagesSortedByDate());
 				Integer period = analysis.periodForImageList(imagesByMonthAndLoc);
 				totalPic = totalPic + period;
 				totalPeriod = totalPeriod + period;
@@ -211,10 +211,10 @@ public class TotalDayFormatter extends TextFormatter
 		int[] daysUsed = new int[12];
 		for (Integer year : analysis.getAllImageYears())
 		{
-			List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> yearsPics = new ImageQuery().yearOnly(year).query(analysis.getImagesSortedByDate());
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+				List<ImageEntry> yearLocPics = new ImageQuery().locationOnly(location).query(yearsPics);
 				if (!yearLocPics.isEmpty())
 				{
 					ImageEntry first = yearLocPics.get(0);
@@ -293,14 +293,14 @@ public class TotalDayFormatter extends TextFormatter
 			int[] totalRichness = new int[12];
 			for (Species species : analysis.getAllImageSpecies())
 			{
-				List<ImageEntry> imagesBySpeciesAndYear = new PredicateBuilder().yearOnly(year).speciesOnly(species).query(analysis.getImagesSortedByDate());
+				List<ImageEntry> imagesBySpeciesAndYear = new ImageQuery().yearOnly(year).speciesOnly(species).query(analysis.getImagesSortedByDate());
 				if (!imagesBySpeciesAndYear.isEmpty())
 				{
 					toReturn = toReturn + String.format("%-28s", species.getName());
 					Integer total = 0;
 					for (int i = 0; i < 12; i++)
 					{
-						List<ImageEntry> imagesBySpeciesYearAndMonth = new PredicateBuilder().monthOnly(i).query(imagesBySpeciesAndYear);
+						List<ImageEntry> imagesBySpeciesYearAndMonth = new ImageQuery().monthOnly(i).query(imagesBySpeciesAndYear);
 						Integer period = analysis.periodForImageList(imagesBySpeciesYearAndMonth);
 						total = total + period;
 						toReturn = toReturn + String.format("%5d ", period);
@@ -316,11 +316,11 @@ public class TotalDayFormatter extends TextFormatter
 			int[] totalPics = new int[12];
 			for (int i = 0; i < 12; i++)
 			{
-				List<ImageEntry> imagesByYearAndMonth = new PredicateBuilder().monthOnly(i).yearOnly(year).query(analysis.getImagesSortedByDate());
+				List<ImageEntry> imagesByYearAndMonth = new ImageQuery().monthOnly(i).yearOnly(year).query(analysis.getImagesSortedByDate());
 				Integer totalPeriod = 0;
 				for (Location location : analysis.getAllImageLocations())
 				{
-					List<ImageEntry> imagesByYearMonthAndLocation = new PredicateBuilder().locationOnly(location).query(imagesByYearAndMonth);
+					List<ImageEntry> imagesByYearMonthAndLocation = new ImageQuery().locationOnly(location).query(imagesByYearAndMonth);
 					Integer period = analysis.periodForImageList(imagesByYearMonthAndLocation);
 					totalPic = totalPic + period;
 					totalPeriod = totalPeriod + period;
@@ -332,12 +332,12 @@ public class TotalDayFormatter extends TextFormatter
 			toReturn = toReturn + "\n";
 
 			toReturn = toReturn + "Total days                     ";
-			List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> yearsPics = new ImageQuery().yearOnly(year).query(analysis.getImagesSortedByDate());
 
 			int[] daysUsed = new int[12];
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+				List<ImageEntry> yearLocPics = new ImageQuery().locationOnly(location).query(yearsPics);
 				if (!yearLocPics.isEmpty())
 				{
 					ImageEntry first = yearLocPics.get(0);
@@ -420,11 +420,11 @@ public class TotalDayFormatter extends TextFormatter
 		{
 			toReturn = toReturn + String.format("%-28s", species.getName());
 
-			List<ImageEntry> imagesBySpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> imagesBySpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
 			Integer total = 0;
 			for (int i = 0; i < 12; i++)
 			{
-				List<ImageEntry> imagesBySpeciesAndMonth = new PredicateBuilder().monthOnly(i).query(imagesBySpecies);
+				List<ImageEntry> imagesBySpeciesAndMonth = new ImageQuery().monthOnly(i).query(imagesBySpecies);
 				Integer period = analysis.periodForImageList(imagesBySpeciesAndMonth);
 				total = total + period;
 				toReturn = toReturn + String.format("%5d ", period);
@@ -441,13 +441,13 @@ public class TotalDayFormatter extends TextFormatter
 		int[] totalPics = new int[12];
 		for (int i = 0; i < 12; i++)
 		{
-			List<ImageEntry> imagesByMonth = new PredicateBuilder().monthOnly(i).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> imagesByMonth = new ImageQuery().monthOnly(i).query(analysis.getImagesSortedByDate());
 			Integer totalPeriod = 0;
 			for (Location location : analysis.getAllImageLocations())
 			{
 				for (Integer year : analysis.getAllImageYears())
 				{
-					List<ImageEntry> imagesByYearMonthAndLocation = new PredicateBuilder().yearOnly(year).locationOnly(location).query(imagesByMonth);
+					List<ImageEntry> imagesByYearMonthAndLocation = new ImageQuery().yearOnly(year).locationOnly(location).query(imagesByMonth);
 					Integer period = analysis.periodForImageList(imagesByYearMonthAndLocation);
 					totalPic = totalPic + period;
 					totalPeriod = totalPeriod + period;
@@ -464,10 +464,10 @@ public class TotalDayFormatter extends TextFormatter
 		int[] daysUsed = new int[12];
 		for (Integer year : analysis.getAllImageYears())
 		{
-			List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> yearsPics = new ImageQuery().yearOnly(year).query(analysis.getImagesSortedByDate());
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+				List<ImageEntry> yearLocPics = new ImageQuery().locationOnly(location).query(yearsPics);
 				if (!yearLocPics.isEmpty())
 				{
 
@@ -552,7 +552,7 @@ public class TotalDayFormatter extends TextFormatter
 
 			for (Integer year : analysis.getAllImageYears())
 			{
-				List<ImageEntry> imagesBySpeciesAndYear = new PredicateBuilder().speciesOnly(species).yearOnly(year).query(analysis.getImagesSortedByDate());
+				List<ImageEntry> imagesBySpeciesAndYear = new ImageQuery().speciesOnly(species).yearOnly(year).query(analysis.getImagesSortedByDate());
 
 				if (!imagesBySpeciesAndYear.isEmpty())
 				{
@@ -562,14 +562,14 @@ public class TotalDayFormatter extends TextFormatter
 
 					for (Location location : analysis.getAllImageLocations())
 					{
-						List<ImageEntry> imagesBySpeciesLocationAndYear = new PredicateBuilder().locationOnly(location).query(imagesBySpeciesAndYear);
+						List<ImageEntry> imagesBySpeciesLocationAndYear = new ImageQuery().locationOnly(location).query(imagesBySpeciesAndYear);
 						if (!imagesBySpeciesLocationAndYear.isEmpty())
 						{
 							toReturn = toReturn + String.format("%-28s %6d", location.getName(), (int) location.getElevation());
 							Integer total = 0;
 							for (int i = 0; i < 12; i++)
 							{
-								List<ImageEntry> imagesBySpeciesYearLocationAndMonth = new PredicateBuilder().monthOnly(i).query(imagesBySpeciesLocationAndYear);
+								List<ImageEntry> imagesBySpeciesYearLocationAndMonth = new ImageQuery().monthOnly(i).query(imagesBySpeciesLocationAndYear);
 								Integer period = analysis.periodForImageList(imagesBySpeciesYearLocationAndMonth);
 								total = total + period;
 								toReturn = toReturn + String.format("%5d ", period);
@@ -584,11 +584,11 @@ public class TotalDayFormatter extends TextFormatter
 					int[] totalPics = new int[12];
 					for (int i = 0; i < 12; i++)
 					{
-						List<ImageEntry> imagesByYearSpeciesAndMonth = new PredicateBuilder().speciesOnly(species).monthOnly(i).yearOnly(year).query(images);
+						List<ImageEntry> imagesByYearSpeciesAndMonth = new ImageQuery().speciesOnly(species).monthOnly(i).yearOnly(year).query(images);
 						Integer totalPeriod = 0;
 						for (Location location : analysis.getAllImageLocations())
 						{
-							List<ImageEntry> imagesByYearSpeciesMonthLocation = new PredicateBuilder().locationOnly(location).query(imagesByYearSpeciesAndMonth);
+							List<ImageEntry> imagesByYearSpeciesMonthLocation = new ImageQuery().locationOnly(location).query(imagesByYearSpeciesAndMonth);
 							Integer period = analysis.periodForImageList(imagesByYearSpeciesMonthLocation);
 							totalPic = totalPic + period;
 							totalPeriod = totalPeriod + period;
@@ -602,11 +602,11 @@ public class TotalDayFormatter extends TextFormatter
 					toReturn = toReturn + "Total days                            ";
 
 					int[] daysUsed = new int[12];
-					List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
+					List<ImageEntry> yearsPics = new ImageQuery().yearOnly(year).query(analysis.getImagesSortedByDate());
 
 					for (Location location : analysis.getAllImageLocations())
 					{
-						List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+						List<ImageEntry> yearLocPics = new ImageQuery().locationOnly(location).query(yearsPics);
 
 						if (!yearLocPics.isEmpty())
 						{
@@ -669,18 +669,18 @@ public class TotalDayFormatter extends TextFormatter
 
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> imagesBySpeciesLocation = new PredicateBuilder().locationOnly(location).speciesOnly(species).query(analysis.getImagesSortedByDate());
+				List<ImageEntry> imagesBySpeciesLocation = new ImageQuery().locationOnly(location).speciesOnly(species).query(analysis.getImagesSortedByDate());
 				if (!imagesBySpeciesLocation.isEmpty())
 				{
 					toReturn = toReturn + String.format("%-28s %6d", location.getName(), (int) location.getElevation());
 					Integer total = 0;
 					for (int i = 0; i < 12; i++)
 					{
-						List<ImageEntry> imagesBySpeciesLocationAndMonth = new PredicateBuilder().monthOnly(i).query(imagesBySpeciesLocation);
+						List<ImageEntry> imagesBySpeciesLocationAndMonth = new ImageQuery().monthOnly(i).query(imagesBySpeciesLocation);
 						Integer totalPeriod = 0;
 						for (Integer year : analysis.getAllImageYears())
 						{
-							List<ImageEntry> imagesBySpeciesLocationMonthAndYear = new PredicateBuilder().yearOnly(year).query(imagesBySpeciesLocationAndMonth);
+							List<ImageEntry> imagesBySpeciesLocationMonthAndYear = new ImageQuery().yearOnly(year).query(imagesBySpeciesLocationAndMonth);
 							Integer period = analysis.periodForImageList(imagesBySpeciesLocationMonthAndYear);
 							totalPeriod = totalPeriod + period;
 							total = total + period;
@@ -698,13 +698,13 @@ public class TotalDayFormatter extends TextFormatter
 			int[] totalPics = new int[12];
 			for (int i = 0; i < 12; i++)
 			{
-				List<ImageEntry> imagesByMonthSpecies = new PredicateBuilder().speciesOnly(species).monthOnly(i).query(analysis.getImagesSortedByDate());
+				List<ImageEntry> imagesByMonthSpecies = new ImageQuery().speciesOnly(species).monthOnly(i).query(analysis.getImagesSortedByDate());
 				Integer totalPeriod = 0;
 				for (Integer year : analysis.getAllImageYears())
 				{
 					for (Location location : analysis.getAllImageLocations())
 					{
-						List<ImageEntry> imagesByYearSpeciesMonthLocation = new PredicateBuilder().yearOnly(year).locationOnly(location).query(imagesByMonthSpecies);
+						List<ImageEntry> imagesByYearSpeciesMonthLocation = new ImageQuery().yearOnly(year).locationOnly(location).query(imagesByMonthSpecies);
 						Integer period = analysis.periodForImageList(imagesByYearSpeciesMonthLocation);
 						totalPic = totalPic + period;
 						totalPeriod = totalPeriod + period;
@@ -721,10 +721,10 @@ public class TotalDayFormatter extends TextFormatter
 			int[] daysUsed = new int[12];
 			for (Integer year : analysis.getAllImageYears())
 			{
-				List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
+				List<ImageEntry> yearsPics = new ImageQuery().yearOnly(year).query(analysis.getImagesSortedByDate());
 				for (Location location : analysis.getAllImageLocations())
 				{
-					List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+					List<ImageEntry> yearLocPics = new ImageQuery().locationOnly(location).query(yearsPics);
 
 					if (!yearLocPics.isEmpty())
 					{
@@ -801,11 +801,11 @@ public class TotalDayFormatter extends TextFormatter
 		{
 			toReturn = toReturn + species.getName() + "\n";
 
-			List<ImageEntry> withSpecices = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> withSpecices = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
 
 			for (Integer year : analysis.getAllImageYears())
 			{
-				List<ImageEntry> withSpeciesYear = new PredicateBuilder().yearOnly(year).query(withSpecices);
+				List<ImageEntry> withSpeciesYear = new ImageQuery().yearOnly(year).query(withSpecices);
 
 				if (!withSpeciesYear.isEmpty())
 				{
@@ -815,7 +815,7 @@ public class TotalDayFormatter extends TextFormatter
 
 					for (Location location : analysis.getAllImageLocations())
 					{
-						List<ImageEntry> withSpeciesYearLocation = new PredicateBuilder().locationOnly(location).query(withSpeciesYear);
+						List<ImageEntry> withSpeciesYearLocation = new ImageQuery().locationOnly(location).query(withSpeciesYear);
 
 						if (!withSpeciesYearLocation.isEmpty())
 						{
@@ -823,7 +823,7 @@ public class TotalDayFormatter extends TextFormatter
 							Integer total = 0;
 							for (int i = 0; i < 12; i++)
 							{
-								List<ImageEntry> withSpeciesYearLocationMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesYearLocation);
+								List<ImageEntry> withSpeciesYearLocationMonth = new ImageQuery().monthOnly(i).query(withSpeciesYearLocation);
 								Integer abundance = analysis.abundanceForImageList(withSpeciesYearLocationMonth, species);
 								total = total + abundance;
 								toReturn = toReturn + String.format("%5d ", abundance);
@@ -839,11 +839,11 @@ public class TotalDayFormatter extends TextFormatter
 					int[] totalPics = new int[12];
 					for (int i = 0; i < 12; i++)
 					{
-						List<ImageEntry> withSpeciesYearMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesYear);
+						List<ImageEntry> withSpeciesYearMonth = new ImageQuery().monthOnly(i).query(withSpeciesYear);
 						Integer totalPeriod = 0;
 						for (Location location : analysis.getAllImageLocations())
 						{
-							List<ImageEntry> withSpeciesYearMonthLocation = new PredicateBuilder().locationOnly(location).query(withSpeciesYearMonth);
+							List<ImageEntry> withSpeciesYearMonthLocation = new ImageQuery().locationOnly(location).query(withSpeciesYearMonth);
 							Integer period = analysis.periodForImageList(withSpeciesYearMonthLocation);
 							totalPic = totalPic + period;
 							totalPeriod = totalPeriod + period;
@@ -859,11 +859,11 @@ public class TotalDayFormatter extends TextFormatter
 					int[] totalAbundances = new int[12];
 					for (int i = 0; i < 12; i++)
 					{
-						List<ImageEntry> withSpeciesYearMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesYear);
+						List<ImageEntry> withSpeciesYearMonth = new ImageQuery().monthOnly(i).query(withSpeciesYear);
 						Integer totalAbundance = 0;
 						for (Location location : analysis.getAllImageLocations())
 						{
-							List<ImageEntry> withSpeciesYearMonthLocation = new PredicateBuilder().locationOnly(location).query(withSpeciesYearMonth);
+							List<ImageEntry> withSpeciesYearMonthLocation = new ImageQuery().locationOnly(location).query(withSpeciesYearMonth);
 							Integer abundance = analysis.abundanceForImageList(withSpeciesYearMonthLocation, species);
 							totalAbundancePics = totalAbundancePics + abundance;
 							totalAbundance = totalAbundance + abundance;
@@ -884,11 +884,11 @@ public class TotalDayFormatter extends TextFormatter
 
 					toReturn = toReturn + "Total days                            ";
 					int[] daysUsed = new int[12];
-					List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
+					List<ImageEntry> yearsPics = new ImageQuery().yearOnly(year).query(analysis.getImagesSortedByDate());
 
 					for (Location location : analysis.getAllImageLocations())
 					{
-						List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+						List<ImageEntry> yearLocPics = new ImageQuery().locationOnly(location).query(yearsPics);
 
 						if (!yearLocPics.isEmpty())
 						{
@@ -949,10 +949,10 @@ public class TotalDayFormatter extends TextFormatter
 
 			toReturn = toReturn + "Location                  Elevation  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   Total\n";
 
-			List<ImageEntry> withSpecies = new PredicateBuilder().query(withSpecices);
+			List<ImageEntry> withSpecies = new ImageQuery().query(withSpecices);
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> withSpeciesLocation = new PredicateBuilder().locationOnly(location).query(withSpecies);
+				List<ImageEntry> withSpeciesLocation = new ImageQuery().locationOnly(location).query(withSpecies);
 
 				if (!withSpeciesLocation.isEmpty())
 				{
@@ -960,11 +960,11 @@ public class TotalDayFormatter extends TextFormatter
 					Integer total = 0;
 					for (int i = 0; i < 12; i++)
 					{
-						List<ImageEntry> withSpeciesLocationMonth = new PredicateBuilder().monthOnly(i).query(withSpeciesLocation);
+						List<ImageEntry> withSpeciesLocationMonth = new ImageQuery().monthOnly(i).query(withSpeciesLocation);
 						Integer abundance = 0;
 						for (Integer year : analysis.getAllImageYears())
 						{
-							List<ImageEntry> withSpeciesLocationMonthYear = new PredicateBuilder().yearOnly(year).query(withSpeciesLocationMonth);
+							List<ImageEntry> withSpeciesLocationMonthYear = new ImageQuery().yearOnly(year).query(withSpeciesLocationMonth);
 							abundance = abundance + analysis.abundanceForImageList(withSpeciesLocationMonthYear, species);
 							total = total + abundance;
 						}
@@ -981,7 +981,7 @@ public class TotalDayFormatter extends TextFormatter
 			int[] totalPics = new int[12];
 			for (int i = 0; i < 12; i++)
 			{
-				List<ImageEntry> withSpeciesYearMonth = new PredicateBuilder().monthOnly(i).query(withSpecices);
+				List<ImageEntry> withSpeciesYearMonth = new ImageQuery().monthOnly(i).query(withSpecices);
 				Integer period = analysis.periodForImageList(withSpeciesYearMonth);
 				totalPic = totalPic + period;
 				totalPics[i] = period;
@@ -995,15 +995,15 @@ public class TotalDayFormatter extends TextFormatter
 			int[] totalAbundances = new int[12];
 			for (int i = 0; i < 12; i++)
 			{
-				List<ImageEntry> withSpeciesMonth = new PredicateBuilder().monthOnly(i).query(withSpecies);
+				List<ImageEntry> withSpeciesMonth = new ImageQuery().monthOnly(i).query(withSpecies);
 				Integer totalAbundance = 0;
 				for (Location location : analysis.getAllImageLocations())
 				{
-					List<ImageEntry> withSpeciesMonthLocation = new PredicateBuilder().locationOnly(location).query(withSpeciesMonth);
+					List<ImageEntry> withSpeciesMonthLocation = new ImageQuery().locationOnly(location).query(withSpeciesMonth);
 					Integer abundance = 0;
 					for (Integer year : analysis.getAllImageYears())
 					{
-						List<ImageEntry> withSpeciesMonthLocationYear = new PredicateBuilder().yearOnly(year).query(withSpeciesMonthLocation);
+						List<ImageEntry> withSpeciesMonthLocationYear = new ImageQuery().yearOnly(year).query(withSpeciesMonthLocation);
 						abundance = abundance + analysis.abundanceForImageList(withSpeciesMonthLocationYear, species);
 					}
 					totalAbundancePics = totalAbundancePics + abundance;
@@ -1028,11 +1028,11 @@ public class TotalDayFormatter extends TextFormatter
 			int[] daysUsed = new int[12];
 			for (Integer year : analysis.getAllImageYears())
 			{
-				List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
+				List<ImageEntry> yearsPics = new ImageQuery().yearOnly(year).query(analysis.getImagesSortedByDate());
 
 				for (Location location : analysis.getAllImageLocations())
 				{
-					List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+					List<ImageEntry> yearLocPics = new ImageQuery().locationOnly(location).query(yearsPics);
 					if (!yearLocPics.isEmpty())
 					{
 						ImageEntry first = yearLocPics.get(0);
@@ -1110,19 +1110,19 @@ public class TotalDayFormatter extends TextFormatter
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
 			toReturn = toReturn + "Location                  Elevation   # pics/Effort   Percent\n";
 			toReturn = toReturn + species.getName() + "\n";
 			double[] picsOverEffortTotals = new double[analysis.getAllImageLocations().size()];
 			Double picsOverEffortTotal = 0D;
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> withSpeciesLoc = new PredicateBuilder().locationOnly(location).query(withSpecies);
+				List<ImageEntry> withSpeciesLoc = new ImageQuery().locationOnly(location).query(withSpecies);
 
 				Integer periodTotal = 0;
 				for (Integer year : analysis.getAllImageYears())
 				{
-					List<ImageEntry> withSpeciesLocYear = new PredicateBuilder().yearOnly(year).query(withSpeciesLoc);
+					List<ImageEntry> withSpeciesLocYear = new ImageQuery().yearOnly(year).query(withSpeciesLoc);
 					if (!withSpeciesLocYear.isEmpty())
 					{
 						periodTotal = periodTotal + analysis.periodForImageList(withSpeciesLocYear);
@@ -1132,8 +1132,8 @@ public class TotalDayFormatter extends TextFormatter
 				Integer effortTotal = 0;
 				for (Integer year : analysis.getAllImageYears())
 				{
-					List<ImageEntry> yearsPics = new PredicateBuilder().yearOnly(year).query(analysis.getImagesSortedByDate());
-					List<ImageEntry> yearLocPics = new PredicateBuilder().locationOnly(location).query(yearsPics);
+					List<ImageEntry> yearsPics = new ImageQuery().yearOnly(year).query(analysis.getImagesSortedByDate());
+					List<ImageEntry> yearLocPics = new ImageQuery().locationOnly(location).query(yearsPics);
 
 					if (!yearLocPics.isEmpty())
 					{
@@ -1219,18 +1219,18 @@ public class TotalDayFormatter extends TextFormatter
 
 			for (Species species : analysis.getAllImageSpecies())
 			{
-				List<ImageEntry> bySpecies = new PredicateBuilder().speciesOnly(species).query(images);
-				List<ImageEntry> bySpeciesAndLoc = new PredicateBuilder().locationOnly(location).query(bySpecies);
+				List<ImageEntry> bySpecies = new ImageQuery().speciesOnly(species).query(images);
+				List<ImageEntry> bySpeciesAndLoc = new ImageQuery().locationOnly(location).query(bySpecies);
 				Integer bySpeciesPeriod = 0;
 				Integer bySpeciesAndLocPeriod = 0;
 
 				for (Integer year : analysis.getAllImageYears())
 				{
-					List<ImageEntry> bySpeciesYear = new PredicateBuilder().yearOnly(year).query(bySpecies);
+					List<ImageEntry> bySpeciesYear = new ImageQuery().yearOnly(year).query(bySpecies);
 					for (Location location2 : analysis.getAllImageLocations())
-						bySpeciesPeriod = bySpeciesPeriod + analysis.periodForImageList(new PredicateBuilder().locationOnly(location2).query(bySpeciesYear));
+						bySpeciesPeriod = bySpeciesPeriod + analysis.periodForImageList(new ImageQuery().locationOnly(location2).query(bySpeciesYear));
 
-					List<ImageEntry> bySpeciesLocYear = new PredicateBuilder().yearOnly(year).query(bySpeciesAndLoc);
+					List<ImageEntry> bySpeciesLocYear = new ImageQuery().yearOnly(year).query(bySpeciesAndLoc);
 					bySpeciesAndLocPeriod = bySpeciesAndLocPeriod + analysis.periodForImageList(bySpeciesLocYear);
 				}
 

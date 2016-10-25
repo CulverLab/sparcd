@@ -6,23 +6,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Chart;
-import org.apache.poi.ss.usermodel.ClientAnchor;
-import org.apache.poi.ss.usermodel.Drawing;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.charts.AxisCrosses;
-import org.apache.poi.ss.usermodel.charts.AxisPosition;
-import org.apache.poi.ss.usermodel.charts.AxisTickMark;
-import org.apache.poi.ss.usermodel.charts.ChartDataSource;
-import org.apache.poi.ss.usermodel.charts.ChartLegend;
-import org.apache.poi.ss.usermodel.charts.DataSources;
-import org.apache.poi.ss.usermodel.charts.LegendPosition;
-import org.apache.poi.ss.usermodel.charts.ScatterChartData;
-import org.apache.poi.ss.usermodel.charts.ScatterChartSeries;
-import org.apache.poi.ss.usermodel.charts.ValueAxis;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -40,20 +23,23 @@ public class ExcelFormatter
 	 * @param location
 	 *            The file to write to
 	 * @param images
-	 *            The image list to analyze
-	 * @param dataType
-	 *            0 for number of pictures, 1 for abundance, 2 for activity, and 3 for period
+	 *            The image list (may be filtered) to analyze
 	 * @return
 	 */
-	public boolean format(File location, List<ImageEntry> images, Integer dataType, Integer eventInterval)
+	public boolean format(File location, List<ImageEntry> images, Integer eventInterval)
 	{
-		if (dataType < 0 || dataType > 3 || eventInterval == -1)
+		if (eventInterval == -1 || images == null)
 			return false;
 
 		XSSFWorkbook workbook = new XSSFWorkbook();
 		XSSFSheet mainSheet = workbook.createSheet("Analysis");
 		DataAnalysis analysis = new DataAnalysis(images, eventInterval);
 
+		for (ImageEntry entry : images)
+		{
+			System.out.println(entry.toString());
+		}
+		/*
 		//		Date firstImageDate = analysis.getImagesSortedByDate().get(0).getDateTaken();
 		//		List<Map.Entry<Species, ImageEntry>> firstImageEntriesSorted = new ArrayList<Map.Entry<Species, ImageEntry>>(analysis.getSpeciesToFirstImage().entrySet());
 		//		Collections.<Map.Entry<Species, ImageEntry>> sort(firstImageEntriesSorted, new Comparator<Map.Entry<Species, ImageEntry>>()
@@ -81,13 +67,13 @@ public class ExcelFormatter
 		//			Cell cellName = row.createCell(cellid++, XSSFCell.CELL_TYPE_STRING);
 		//			cellName.setCellValue(name);
 		//		}
-
+		
 		Integer[][] data = new Integer[][]
 		{
 				{ 2, 3, 4 },
 				{ 5, 6, 7 },
 				{ 8, 9, 10 } };
-
+		
 		int rowid = 0;
 		for (Integer[] integers : data)
 		{
@@ -99,9 +85,8 @@ public class ExcelFormatter
 				cell.setCellValue(integer);
 			}
 		}
-
+		
 		//System.out.println(dataType == 0 ? "Number of Pics" : dataType == 1 ? "Abundance" : dataType == 2 ? "Activity" : "Period");
-
 		Drawing drawing = mainSheet.createDrawingPatriarch();
 		ClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 5, 2, 20, 24);
 		Chart chart = drawing.createChart(anchor);
@@ -122,8 +107,9 @@ public class ExcelFormatter
 		//ScatterChartSeries series2 = chartData.addSerie(xs, ys2);
 		series.setTitle("Data Table");
 		//series2.setTitle("Hello World 2!");
-
+		
 		chart.plot(chartData, bottomAxis, leftAxis);
+		*/
 
 		///
 		/// Saving the file, do not change

@@ -3,7 +3,7 @@ package model.analysis.textFormatters;
 import java.util.List;
 
 import model.analysis.DataAnalysis;
-import model.analysis.PredicateBuilder;
+import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
@@ -83,10 +83,10 @@ public class HeaderFormatter extends TextFormatter
 		Integer totalActivity = 0;
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> withSpeciesLoc = new PredicateBuilder().locationOnly(location).query(withSpecies);
+				List<ImageEntry> withSpeciesLoc = new ImageQuery().locationOnly(location).query(withSpecies);
 				totalActivity = totalActivity + analysis.activityForImageList(withSpeciesLoc);
 			}
 		}
@@ -96,10 +96,10 @@ public class HeaderFormatter extends TextFormatter
 		Integer totalPeriod = 0;
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> withSpeciesLoc = new PredicateBuilder().locationOnly(location).query(withSpecies);
+				List<ImageEntry> withSpeciesLoc = new ImageQuery().locationOnly(location).query(withSpecies);
 				totalPeriod = totalPeriod + analysis.periodForImageList(withSpeciesLoc);
 			}
 		}

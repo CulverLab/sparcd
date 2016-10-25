@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.commons.lang3.time.DateUtils;
 
 import model.analysis.DataAnalysis;
-import model.analysis.PredicateBuilder;
+import model.analysis.ImageQuery;
 import model.analysis.SanimalAnalysisUtils;
 import model.image.ImageEntry;
 import model.location.Location;
@@ -44,7 +44,7 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 		long durationTotal = 0;
 		for (Location location : analysis.getAllImageLocations())
 		{
-			List<ImageEntry> withLocation = new PredicateBuilder().locationOnly(location).query(images);
+			List<ImageEntry> withLocation = new ImageQuery().locationOnly(location).query(images);
 			ImageEntry firstEntry = analysis.getFirstImageInList(withLocation);
 			ImageEntry lastEntry = analysis.getLastImageInList(withLocation);
 			Calendar firstCal = DateUtils.toCalendar(firstEntry.getDateTaken());
@@ -85,7 +85,7 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 
 		for (Integer year : analysis.getAllImageYears())
 		{
-			List<ImageEntry> withYear = new PredicateBuilder().yearOnly(year).query(images);
+			List<ImageEntry> withYear = new ImageQuery().yearOnly(year).query(images);
 			List<Location> locations = analysis.locationsForImageList(withYear);
 			if (!locations.isEmpty())
 			{
@@ -97,7 +97,7 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 
 				for (Location location : locations)
 				{
-					List<ImageEntry> withYearLocation = new PredicateBuilder().locationOnly(location).query(withYear);
+					List<ImageEntry> withYearLocation = new ImageQuery().locationOnly(location).query(withYear);
 					Calendar firstCal = DateUtils.toCalendar(analysis.getFirstImageInList(withYearLocation).getDateTaken());
 					Calendar lastCal = DateUtils.toCalendar(analysis.getLastImageInList(withYearLocation).getDateTaken());
 					Integer firstMonth = firstCal.get(Calendar.MONTH);
@@ -173,7 +173,7 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 
 		for (Location location : analysis.getAllImageLocations())
 		{
-			List<ImageEntry> withLocation = new PredicateBuilder().locationOnly(location).query(images);
+			List<ImageEntry> withLocation = new ImageQuery().locationOnly(location).query(images);
 			Calendar firstCal = DateUtils.toCalendar(analysis.getFirstImageInList(withLocation).getDateTaken());
 			Calendar lastCal = DateUtils.toCalendar(analysis.getLastImageInList(withLocation).getDateTaken());
 			Integer firstMonth = firstCal.get(Calendar.MONTH);

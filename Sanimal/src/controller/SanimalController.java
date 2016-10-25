@@ -250,7 +250,7 @@ public class SanimalController
 			if (response == JFileChooser.APPROVE_OPTION)
 			{
 				File directory = chooser.getSelectedFile();
-				if (sanimalData.getExcelFormatter().format(directory, sanimalView.getSelectedImageEntries(), sanimalView.getSelectedDataTypeRadioButton(), sanimalView.getAnalysisEventInterval()))
+				if (sanimalData.getExcelFormatter().format(directory, sanimalView.getFilteredImageEntries(), sanimalView.getAnalysisEventInterval()))
 					JOptionPane.showMessageDialog(sanimalView, "Excel file saved sucessfully!");
 				else
 					JOptionPane.showMessageDialog(sanimalView, "There was an error when saving the excel file.");

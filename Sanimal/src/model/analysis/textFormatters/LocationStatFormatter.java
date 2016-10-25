@@ -7,7 +7,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
 import model.analysis.DataAnalysis;
-import model.analysis.PredicateBuilder;
+import model.analysis.ImageQuery;
 import model.analysis.SanimalAnalysisUtils;
 import model.image.ImageEntry;
 import model.location.Location;
@@ -54,8 +54,8 @@ public class LocationStatFormatter extends TextFormatter
 			toReturn = toReturn + String.format("%-26s", species.getName());
 			for (Location location : analysis.getAllImageLocations())
 			{
-				Integer totalPeriod = analysis.periodForImageList(new PredicateBuilder().locationOnly(location).anyValidSpecies().query(analysis.getImagesSortedByDate()));
-				Integer period = analysis.periodForImageList(new PredicateBuilder().locationOnly(location).speciesOnly(species).query(analysis.getImagesSortedByDate()));
+				Integer totalPeriod = analysis.periodForImageList(new ImageQuery().locationOnly(location).anyValidSpecies().query(analysis.getImagesSortedByDate()));
+				Integer period = analysis.periodForImageList(new ImageQuery().locationOnly(location).speciesOnly(species).query(analysis.getImagesSortedByDate()));
 				toReturn = toReturn + String.format("%5d %7.2f                   ", period, (period / (double) totalPeriod) * 100);
 			}
 			toReturn = toReturn + "\n";
@@ -64,7 +64,7 @@ public class LocationStatFormatter extends TextFormatter
 		toReturn = toReturn + "Total pictures            ";
 
 		for (Location location : analysis.getAllImageLocations())
-			toReturn = toReturn + String.format("%5d  100.00                   ", analysis.periodForImageList(new PredicateBuilder().locationOnly(location).query(analysis.getImagesSortedByDate())));
+			toReturn = toReturn + String.format("%5d  100.00                   ", analysis.periodForImageList(new ImageQuery().locationOnly(location).query(analysis.getImagesSortedByDate())));
 
 		toReturn = toReturn + "\n\n";
 
@@ -95,7 +95,7 @@ public class LocationStatFormatter extends TextFormatter
 
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> atLocation = new PredicateBuilder().yearOnly(year).locationOnly(location).query(analysis.getImagesSortedByDate());
+				List<ImageEntry> atLocation = new ImageQuery().yearOnly(year).locationOnly(location).query(analysis.getImagesSortedByDate());
 				if (!atLocation.isEmpty())
 				{
 					toReturn = toReturn + String.format("%-28s  Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec   Total\n", location.getName());
@@ -103,14 +103,14 @@ public class LocationStatFormatter extends TextFormatter
 					for (Species species : analysis.getAllImageSpecies())
 					{
 						int totalPics = 0;
-						List<ImageEntry> atLocationWithSpecies = new PredicateBuilder().speciesOnly(species).query(atLocation);
+						List<ImageEntry> atLocationWithSpecies = new ImageQuery().speciesOnly(species).query(atLocation);
 						if (!atLocationWithSpecies.isEmpty())
 						{
 							toReturn = toReturn + String.format("%-28s", species.getName());
 							// Months 0-12
 							for (int i = 0; i < 12; i++)
 							{
-								Integer period = analysis.periodForImageList(new PredicateBuilder().monthOnly(i).query(atLocationWithSpecies));
+								Integer period = analysis.periodForImageList(new ImageQuery().monthOnly(i).query(atLocationWithSpecies));
 								toReturn = toReturn + String.format("%5d  ", period);
 								totalPics = totalPics + period;
 							}
@@ -122,7 +122,7 @@ public class LocationStatFormatter extends TextFormatter
 					int totalPics = 0;
 					for (int i = 0; i < 12; i++)
 					{
-						Integer period = analysis.periodForImageList(new PredicateBuilder().monthOnly(i).query(atLocation));
+						Integer period = analysis.periodForImageList(new ImageQuery().monthOnly(i).query(atLocation));
 						toReturn = toReturn + String.format("%5d  ", period);
 						totalPics = totalPics + period;
 					}
@@ -167,7 +167,7 @@ public class LocationStatFormatter extends TextFormatter
 					calendar = Calendar.getInstance();
 					for (int i = 0; i < 12; i++)
 					{
-						Integer period = analysis.periodForImageList(new PredicateBuilder().monthOnly(i).query(atLocation));
+						Integer period = analysis.periodForImageList(new ImageQuery().monthOnly(i).query(atLocation));
 						int effort = 0;
 						if (firstMonth == lastMonth && firstMonth == i)
 							effort = lastDay - firstDay + 1;
@@ -218,7 +218,7 @@ public class LocationStatFormatter extends TextFormatter
 
 		for (Location location : analysis.getAllImageLocations())
 		{
-			List<ImageEntry> atLocation = new PredicateBuilder().locationOnly(location).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> atLocation = new ImageQuery().locationOnly(location).query(analysis.getImagesSortedByDate());
 
 			if (!atLocation.isEmpty())
 			{
@@ -227,14 +227,14 @@ public class LocationStatFormatter extends TextFormatter
 				for (Species species : analysis.getAllImageSpecies())
 				{
 					int totalPics = 0;
-					List<ImageEntry> atLocationWithSpecies = new PredicateBuilder().speciesOnly(species).query(atLocation);
+					List<ImageEntry> atLocationWithSpecies = new ImageQuery().speciesOnly(species).query(atLocation);
 					if (!atLocationWithSpecies.isEmpty())
 					{
 						toReturn = toReturn + String.format("%-28s", species.getName());
 						// Months 0-12
 						for (int i = 0; i < 12; i++)
 						{
-							Integer period = analysis.periodForImageList(new PredicateBuilder().monthOnly(i).query(atLocationWithSpecies));
+							Integer period = analysis.periodForImageList(new ImageQuery().monthOnly(i).query(atLocationWithSpecies));
 							toReturn = toReturn + String.format("%5d  ", period);
 							totalPics = totalPics + period;
 						}
@@ -246,7 +246,7 @@ public class LocationStatFormatter extends TextFormatter
 				int totalPics = 0;
 				for (int i = 0; i < 12; i++)
 				{
-					Integer period = analysis.periodForImageList(new PredicateBuilder().monthOnly(i).query(atLocation));
+					Integer period = analysis.periodForImageList(new ImageQuery().monthOnly(i).query(atLocation));
 					toReturn = toReturn + String.format("%5d  ", period);
 					totalPics = totalPics + period;
 				}
@@ -291,7 +291,7 @@ public class LocationStatFormatter extends TextFormatter
 				calendar = Calendar.getInstance();
 				for (int i = 0; i < 12; i++)
 				{
-					Integer period = analysis.periodForImageList(new PredicateBuilder().monthOnly(i).query(atLocation));
+					Integer period = analysis.periodForImageList(new ImageQuery().monthOnly(i).query(atLocation));
 					int effort = 0;
 					if (firstMonth == lastMonth && firstMonth == i)
 						effort = lastDay - firstDay + 1;
@@ -410,13 +410,13 @@ public class LocationStatFormatter extends TextFormatter
 		toReturn = toReturn + "\n";
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(images);
+			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
 			toReturn = toReturn + String.format("%-28s", species.getName());
 			List<Location> locations = analysis.locationsForImageList(withSpecies);
 			toReturn = toReturn + String.format("%3d    ", locations.size());
 			for (Species other : analysis.getAllImageSpecies())
 			{
-				List<ImageEntry> withSpeciesOther = new PredicateBuilder().speciesOnly(other).query(images);
+				List<ImageEntry> withSpeciesOther = new ImageQuery().speciesOnly(other).query(images);
 				List<Location> locationsOther = analysis.locationsForImageList(withSpeciesOther);
 				Integer intersectionSize = ListUtils.<Location> intersection(locations, locationsOther).size();
 				toReturn = toReturn + String.format("%2d (%6.1f) ", intersectionSize, (100D * (double) intersectionSize / locations.size()));

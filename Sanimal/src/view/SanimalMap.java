@@ -22,7 +22,7 @@ import org.jxmapviewer.viewer.TileFactory;
 import org.jxmapviewer.viewer.WaypointPainter;
 
 import library.ComboBoxFullMenu;
-import model.analysis.PredicateBuilder;
+import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import view.map.GoogleMapsTileFactoryInfo;
 import view.map.SanimalMapMarkerOverlay;
@@ -178,7 +178,7 @@ public class SanimalMap extends JXMapViewer
 		for (SanimalMapMarkerOverlay mapMarkerOverlay : locations)
 		{
 			SanimalMapMarker marker = mapMarkerOverlay.getComponent();
-			List<ImageEntry> imagesAtLoc = new PredicateBuilder().locationOnly(mapMarkerOverlay.getLocation()).query(images);
+			List<ImageEntry> imagesAtLoc = new ImageQuery().locationOnly(mapMarkerOverlay.getLocation()).query(images);
 			for (ImageEntry image : imagesAtLoc)
 				marker.addMarker(new SanimalMapImageMarker(image));
 			marker.refreshLayout();

@@ -11,7 +11,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import model.analysis.DataAnalysis;
-import model.analysis.PredicateBuilder;
+import model.analysis.ImageQuery;
 import model.analysis.SanimalAnalysisUtils;
 import model.image.ImageEntry;
 import model.species.Species;
@@ -71,7 +71,7 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 
 		for (Species speciesToPrint : analysis.getAllImageSpecies())
 		{
-			ImageEntry imageToPrint = analysis.getFirstImageInList(new PredicateBuilder().speciesOnly(speciesToPrint).query(images));
+			ImageEntry imageToPrint = analysis.getFirstImageInList(new ImageQuery().speciesOnly(speciesToPrint).query(images));
 			Calendar dateToPrint = DateUtils.toCalendar(imageToPrint.getDateTaken());
 			toReturn = toReturn + String.format("%-28s %4d  %4d %4d %4d %3d %5d %6d   %-28s\n", speciesToPrint, SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), dateToPrint.getTime()) + 1, dateToPrint.get(Calendar.YEAR), (dateToPrint.get(Calendar.MONTH) + 1),
 					dateToPrint.get(Calendar.DAY_OF_MONTH), dateToPrint.get(Calendar.HOUR_OF_DAY), dateToPrint.get(Calendar.MINUTE), dateToPrint.get(Calendar.SECOND), (imageToPrint.getLocationTaken() == null ? "Unknown" : imageToPrint.getLocationTaken().getName()));
@@ -98,7 +98,7 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 		toReturn = toReturn + "Species                      Days  Year Month Day Hour Minute Second Location                   Duration\n";
 		for (Species speciesToPrint : analysis.getAllImageSpecies())
 		{
-			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(speciesToPrint).query(images);
+			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(speciesToPrint).query(images);
 			ImageEntry imageToPrint = analysis.getLastImageInList(withSpecies);
 			ImageEntry firstImage = analysis.getFirstImageInList(withSpecies);
 			Calendar dateToPrint = DateUtils.toCalendar(imageToPrint.getDateTaken());
@@ -129,7 +129,7 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			List<ImageEntry> imagesWithSpecies = new PredicateBuilder().speciesOnly(species).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> imagesWithSpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
 			if (!imagesWithSpecies.isEmpty())
 				speciesFirstImage.add(Pair.of(species, imagesWithSpecies.get(0)));
 		}

@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import model.analysis.DataAnalysis;
-import model.analysis.PredicateBuilder;
+import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
@@ -45,12 +45,12 @@ public class RichnessFormatter extends TextFormatter
 		for (Location location : analysis.getAllImageLocations())
 		{
 			toReturn = toReturn + String.format("%-28s       ", location.getName());
-			List<ImageEntry> imagesAtLoc = new PredicateBuilder().locationOnly(location).query(analysis.getImagesSortedByDate());
+			List<ImageEntry> imagesAtLoc = new ImageQuery().locationOnly(location).query(analysis.getImagesSortedByDate());
 
 			Integer horizontalRichness = 0;
 			for (Species species : analysis.getAllImageSpecies())
 			{
-				List<ImageEntry> imagesAtLocWithSpecies = new PredicateBuilder().speciesOnly(species).query(imagesAtLoc);
+				List<ImageEntry> imagesAtLocWithSpecies = new ImageQuery().speciesOnly(species).query(imagesAtLoc);
 				Integer period = analysis.periodForImageList(imagesAtLocWithSpecies);
 				horizontalRichness = horizontalRichness + (period == 0 ? 0 : 1);
 				toReturn = toReturn + String.format("%5d  ", period);
@@ -64,10 +64,10 @@ public class RichnessFormatter extends TextFormatter
 		for (Species species : analysis.getAllImageSpecies())
 		{
 			Integer richness = 0;
-			List<ImageEntry> imagesWithSpecies = new PredicateBuilder().speciesOnly(species).query(images);
+			List<ImageEntry> imagesWithSpecies = new ImageQuery().speciesOnly(species).query(images);
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> imagesWithSpeciesAtLoc = new PredicateBuilder().locationOnly(location).query(imagesWithSpecies);
+				List<ImageEntry> imagesWithSpeciesAtLoc = new ImageQuery().locationOnly(location).query(imagesWithSpecies);
 				richness = richness + (imagesWithSpeciesAtLoc.size() == 0 ? 0 : 1);
 			}
 			toReturn = toReturn + String.format("%5d  ", richness);

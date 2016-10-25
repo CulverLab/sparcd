@@ -6,7 +6,7 @@ import java.util.List;
 
 import model.analysis.DataAnalysis;
 import model.analysis.LunarActivityEntry;
-import model.analysis.PredicateBuilder;
+import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import model.species.Species;
 
@@ -44,8 +44,8 @@ public class LunarActivityFormatter extends TextFormatter
 		toReturn = toReturn + "  New and full moon +/- 5 days activity patterns\n";
 		toReturn = toReturn + "  Difference (large is greater difference)\n";
 
-		List<ImageEntry> imagesFull = new PredicateBuilder().fullMoonOnly(analysis.getFullMoons()).query(images);
-		List<ImageEntry> imagesNew = new PredicateBuilder().newMoonOnly(analysis.getNewMoons()).query(images);
+		List<ImageEntry> imagesFull = new ImageQuery().fullMoonOnly(analysis.getFullMoons()).query(images);
+		List<ImageEntry> imagesNew = new ImageQuery().newMoonOnly(analysis.getNewMoons()).query(images);
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
@@ -53,10 +53,10 @@ public class LunarActivityFormatter extends TextFormatter
 			toReturn = toReturn + "                 Full moon activity    New moon activity\n";
 			toReturn = toReturn + "    Hour        Number    Frequency   Number    Frequency\n";
 
-			List<ImageEntry> imagesWithSpeciesFull = new PredicateBuilder().speciesOnly(species).query(imagesFull);
+			List<ImageEntry> imagesWithSpeciesFull = new ImageQuery().speciesOnly(species).query(imagesFull);
 			int totalImagesFull = imagesWithSpeciesFull.size();
 
-			List<ImageEntry> imagesWithSpeciesNew = new PredicateBuilder().speciesOnly(species).query(imagesNew);
+			List<ImageEntry> imagesWithSpeciesNew = new ImageQuery().speciesOnly(species).query(imagesNew);
 			int totalImagesNew = imagesWithSpeciesNew.size();
 
 			int numImagesTotalFull = 0;
@@ -69,14 +69,14 @@ public class LunarActivityFormatter extends TextFormatter
 			// 24 hrs
 			for (int i = 0; i < 24; i++)
 			{
-				List<ImageEntry> imagesWithSpeciesAtTimeFull = new PredicateBuilder().timeFrame(i, i + 1).query(imagesWithSpeciesFull);
+				List<ImageEntry> imagesWithSpeciesAtTimeFull = new ImageQuery().timeFrame(i, i + 1).query(imagesWithSpeciesFull);
 				int numImagesFull = imagesWithSpeciesAtTimeFull.size();
 				double frequencyFull = 0;
 				if (totalImagesFull != 0)
 					frequencyFull = (double) numImagesFull / totalImagesFull;
 				numImagesTotalFull = numImagesTotalFull + numImagesFull;
 
-				List<ImageEntry> imagesWithSpeciesAtTimeNew = new PredicateBuilder().timeFrame(i, i + 1).query(imagesWithSpeciesNew);
+				List<ImageEntry> imagesWithSpeciesAtTimeNew = new ImageQuery().timeFrame(i, i + 1).query(imagesWithSpeciesNew);
 				int numImagesNew = imagesWithSpeciesAtTimeNew.size();
 				double frequencyNew = 0;
 				if (totalImagesNew != 0)
@@ -143,8 +143,8 @@ public class LunarActivityFormatter extends TextFormatter
 	{
 		lunarActivities = new ArrayList<LunarActivityEntry>();
 
-		List<ImageEntry> imagesFull = new PredicateBuilder().fullMoonOnly(analysis.getFullMoons()).query(images);
-		List<ImageEntry> imagesNew = new PredicateBuilder().newMoonOnly(analysis.getNewMoons()).query(images);
+		List<ImageEntry> imagesFull = new ImageQuery().fullMoonOnly(analysis.getFullMoons()).query(images);
+		List<ImageEntry> imagesNew = new ImageQuery().newMoonOnly(analysis.getNewMoons()).query(images);
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
@@ -153,23 +153,23 @@ public class LunarActivityFormatter extends TextFormatter
 
 			double totalDifference = 0;
 
-			List<ImageEntry> imagesWithSpeciesFull = new PredicateBuilder().speciesOnly(species).query(imagesFull);
+			List<ImageEntry> imagesWithSpeciesFull = new ImageQuery().speciesOnly(species).query(imagesFull);
 			int totalImagesFull = imagesWithSpeciesFull.size();
 
-			List<ImageEntry> imagesWithSpeciesNew = new PredicateBuilder().speciesOnly(species).query(imagesNew);
+			List<ImageEntry> imagesWithSpeciesNew = new ImageQuery().speciesOnly(species).query(imagesNew);
 			int totalImagesNew = imagesWithSpeciesNew.size();
 
 			// 24 hrs
 			for (int i = 0; i < 24; i++)
 			{
-				List<ImageEntry> imagesWithSpeciesAtTimeFull = new PredicateBuilder().timeFrame(i, i + 1).query(imagesWithSpeciesFull);
+				List<ImageEntry> imagesWithSpeciesAtTimeFull = new ImageQuery().timeFrame(i, i + 1).query(imagesWithSpeciesFull);
 				int numImagesFull = imagesWithSpeciesAtTimeFull.size();
 				double frequencyFull = 0;
 				if (totalImagesFull != 0)
 					frequencyFull = (double) numImagesFull / totalImagesFull;
 				numImagesTotalFull = numImagesTotalFull + numImagesFull;
 
-				List<ImageEntry> imagesWithSpeciesAtTimeNew = new PredicateBuilder().timeFrame(i, i + 1).query(imagesWithSpeciesNew);
+				List<ImageEntry> imagesWithSpeciesAtTimeNew = new ImageQuery().timeFrame(i, i + 1).query(imagesWithSpeciesNew);
 				int numImagesNew = imagesWithSpeciesAtTimeNew.size();
 				double frequencyNew = 0;
 				if (totalImagesNew != 0)

@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import model.analysis.DataAnalysis;
-import model.analysis.PredicateBuilder;
+import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
@@ -51,18 +51,18 @@ public class OccouranceFormatter extends TextFormatter
 		for (Species species : analysis.getAllImageSpecies())
 		{
 			toReturn = toReturn + String.format("%-28s", species.getName());
-			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(images);
+			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
 
 			for (Species other : analysis.getAllImageSpecies())
 			{
-				List<ImageEntry> withOtherSpecies = new PredicateBuilder().speciesOnly(other).query(images);
+				List<ImageEntry> withOtherSpecies = new ImageQuery().speciesOnly(other).query(images);
 
 				Integer numLocations = 0;
 
 				for (Location location : analysis.getAllImageLocations())
 				{
-					List<ImageEntry> withSpeciesLoc = new PredicateBuilder().locationOnly(location).query(withSpecies);
-					List<ImageEntry> withOtherSpeciesLoc = new PredicateBuilder().locationOnly(location).query(withOtherSpecies);
+					List<ImageEntry> withSpeciesLoc = new ImageQuery().locationOnly(location).query(withSpecies);
+					List<ImageEntry> withOtherSpeciesLoc = new ImageQuery().locationOnly(location).query(withOtherSpecies);
 					if (!withSpeciesLoc.isEmpty() && !withOtherSpeciesLoc.isEmpty())
 						numLocations = numLocations + 1;
 				}
@@ -115,11 +115,11 @@ public class OccouranceFormatter extends TextFormatter
 		{
 			toReturn = toReturn + String.format("%-28s", species.getName());
 
-			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(images);
+			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
 
 			for (Location location : alphabetical)
 			{
-				List<ImageEntry> withSpeciesAtLoc = new PredicateBuilder().locationOnly(location).query(withSpecies);
+				List<ImageEntry> withSpeciesAtLoc = new ImageQuery().locationOnly(location).query(withSpecies);
 				toReturn = toReturn + String.format("%2d ", (withSpeciesAtLoc.size() == 0 ? 0 : 1));
 			}
 
@@ -168,11 +168,11 @@ public class OccouranceFormatter extends TextFormatter
 		{
 			toReturn = toReturn + String.format("%-28s", species.getName());
 
-			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(images);
+			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
 
 			for (Location location : elevationLocs)
 			{
-				List<ImageEntry> withSpeciesAtLoc = new PredicateBuilder().locationOnly(location).query(withSpecies);
+				List<ImageEntry> withSpeciesAtLoc = new ImageQuery().locationOnly(location).query(withSpecies);
 				toReturn = toReturn + String.format("%2d ", (withSpeciesAtLoc.size() == 0 ? 0 : 1));
 			}
 
@@ -199,11 +199,11 @@ public class OccouranceFormatter extends TextFormatter
 			Double minElevation = Double.MAX_VALUE;
 			Double maxElevation = 0D;
 
-			List<ImageEntry> bySpecies = new PredicateBuilder().speciesOnly(species).query(images);
+			List<ImageEntry> bySpecies = new ImageQuery().speciesOnly(species).query(images);
 
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> bySpeciesLocation = new PredicateBuilder().locationOnly(location).query(bySpecies);
+				List<ImageEntry> bySpeciesLocation = new ImageQuery().locationOnly(location).query(bySpecies);
 				if (!bySpeciesLocation.isEmpty())
 				{
 					Double elevation = location.getElevation();
@@ -249,12 +249,12 @@ public class OccouranceFormatter extends TextFormatter
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			List<ImageEntry> withSpecies = new PredicateBuilder().speciesOnly(species).query(images);
+			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
 			Integer locationsWithSpecies = 0;
 
 			for (Location location : analysis.getAllImageLocations())
 			{
-				List<ImageEntry> withSpeciesLoc = new PredicateBuilder().locationOnly(location).query(withSpecies);
+				List<ImageEntry> withSpeciesLoc = new ImageQuery().locationOnly(location).query(withSpecies);
 				if (!withSpeciesLoc.isEmpty())
 					locationsWithSpecies = locationsWithSpecies + 1;
 			}

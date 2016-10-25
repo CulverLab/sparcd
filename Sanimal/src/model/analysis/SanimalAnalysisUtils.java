@@ -5,6 +5,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
 
 import model.location.UTMCoord;
 
@@ -15,6 +19,33 @@ import model.location.UTMCoord;
  */
 public class SanimalAnalysisUtils
 {
+	/**
+	 * Turns a CSV string into a list of integers
+	 * 
+	 * @param CSV
+	 *            The string in the format int, int, int
+	 * @return A list of integers that the CSV represents
+	 */
+	public static List<Integer> csvStringToInts(String CSV)
+	{
+		String[] individualVals = StringUtils.split(CSV, ',');
+		List<Integer> ints = new LinkedList<Integer>();
+		for (String string : individualVals)
+		{
+			if (!string.isEmpty())
+			{
+				try
+				{
+					ints.add(Integer.parseInt(string));
+				}
+				catch (NumberFormatException exception)
+				{
+				}
+			}
+		}
+		return ints;
+	}
+
 	/**
 	 * Test if a file is an image
 	 * 
