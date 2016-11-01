@@ -339,6 +339,8 @@ public class SanimalController
 			if (response == JFileChooser.APPROVE_OPTION)
 			{
 				File directory = chooser.getSelectedFile();
+				if (!directory.getAbsolutePath().endsWith(".sanimal"))
+					directory = new File(directory.getAbsolutePath() + ".sanimal");
 				try
 				{
 					byte[] sanimalDataBytes = SerializationUtils.serialize(sanimalData);

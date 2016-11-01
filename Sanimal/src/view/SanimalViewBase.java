@@ -42,10 +42,12 @@ public abstract class SanimalViewBase extends JFrame
 	protected JTree treImages;
 	protected JTextField txtDate;
 	protected JLabel lblDate;
-	protected JLabel lblThumbnail;
 	protected JCheckBox chxIncludeSubdirectories;
 	protected JButton btnBrowseForImages;
 	protected JScrollPane pneImageList;
+
+	protected JPanel pnlThumbnailSettings;
+	protected JButton btnShowPreview;
 
 	protected JPanel pnlPropertyList;
 	protected JLabel lblLocation;
@@ -194,12 +196,20 @@ public abstract class SanimalViewBase extends JFrame
 		pneImageList.setViewportView(treImages);
 		pnlImageBrowser.add(pneImageList);
 
-		lblThumbnail = new JLabel();
-		contentPaneLayout.putConstraint(SpringLayout.NORTH, lblThumbnail, 0, SpringLayout.SOUTH, barTop);
-		contentPaneLayout.putConstraint(SpringLayout.WEST, lblThumbnail, 5, SpringLayout.EAST, pnlImageBrowser);
-		contentPaneLayout.putConstraint(SpringLayout.SOUTH, lblThumbnail, 0, SpringLayout.SOUTH, pnlImageBrowser);
-		lblThumbnail.setBorder(new LineBorder(Color.BLACK));
-		this.getContentPane().add(lblThumbnail);
+		pnlThumbnailSettings = new JPanel();
+		SpringLayout thumbnailSettingsLayout = new SpringLayout();
+		pnlThumbnailSettings.setLayout(thumbnailSettingsLayout);
+		contentPaneLayout.putConstraint(SpringLayout.NORTH, pnlThumbnailSettings, 0, SpringLayout.SOUTH, barTop);
+		contentPaneLayout.putConstraint(SpringLayout.WEST, pnlThumbnailSettings, 5, SpringLayout.EAST, pnlImageBrowser);
+		contentPaneLayout.putConstraint(SpringLayout.SOUTH, pnlThumbnailSettings, 0, SpringLayout.SOUTH, pnlImageBrowser);
+		pnlThumbnailSettings.setBorder(new LineBorder(Color.BLACK));
+		this.getContentPane().add(pnlThumbnailSettings);
+
+		btnShowPreview = new JButton("Show Image Preview");
+		thumbnailSettingsLayout.putConstraint(SpringLayout.NORTH, btnShowPreview, 10, SpringLayout.NORTH, pnlThumbnailSettings);
+		thumbnailSettingsLayout.putConstraint(SpringLayout.WEST, btnShowPreview, 10, SpringLayout.WEST, pnlThumbnailSettings);
+		btnShowPreview.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		pnlThumbnailSettings.add(btnShowPreview);
 
 		pnlPropertyList = new JPanel();
 		contentPaneLayout.putConstraint(SpringLayout.NORTH, pnlPropertyList, 6, SpringLayout.SOUTH, pnlImageBrowser);
@@ -378,7 +388,7 @@ public abstract class SanimalViewBase extends JFrame
 
 		map = new MapPanel();
 		contentPaneLayout.putConstraint(SpringLayout.NORTH, map, 0, SpringLayout.SOUTH, barTop);
-		contentPaneLayout.putConstraint(SpringLayout.EAST, lblThumbnail, -5, SpringLayout.WEST, map);
+		contentPaneLayout.putConstraint(SpringLayout.EAST, pnlThumbnailSettings, -5, SpringLayout.WEST, map);
 		contentPaneLayout.putConstraint(SpringLayout.EAST, pnlSpeciesPresent, -5, SpringLayout.WEST, map);
 		contentPaneLayout.putConstraint(SpringLayout.WEST, map, 700, SpringLayout.WEST, getContentPane());
 		contentPaneLayout.putConstraint(SpringLayout.SOUTH, map, -5, SpringLayout.SOUTH, getContentPane());

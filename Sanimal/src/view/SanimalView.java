@@ -59,7 +59,7 @@ public class SanimalView extends SanimalViewBase implements Observer
 		this.pack();
 		this.setLocationRelativeTo(null);
 
-		lblThumbnail.addMouseListener(new MouseListener()
+		btnShowPreview.addMouseListener(new MouseListener()
 		{
 			@Override
 			public void mouseReleased(MouseEvent event)
@@ -234,15 +234,11 @@ public class SanimalView extends SanimalViewBase implements Observer
 		{
 			SanimalIconLoader.getInstance().scheduleTask(() ->
 			{
-				this.lblThumbnail.setIcon(image.createIcon(this.lblThumbnail.getWidth(), this.lblThumbnail.getHeight()));
 				this.imageView.setDisplayImage(image);
-				if (this.imageView.isVisible())
-					this.imageView.refreshIcon();
 			});
 		}
 		else
 		{
-			this.lblThumbnail.setIcon(null);
 			this.imageView.setDisplayImage(null);
 		}
 	}
