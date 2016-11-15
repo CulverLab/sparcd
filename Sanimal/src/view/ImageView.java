@@ -131,14 +131,29 @@ public class ImageView extends JFrame
 			this.lblImage.setSource(null);
 	}
 
+	public void resetImage()
+	{
+		this.lblImage.setPanX(0);
+		this.lblImage.setPanY(0);
+		this.lblImage.setScaleToFit(this.getContentPane().getWidth(), this.getContentPane().getHeight());
+	}
+
+	public void setImageBrightness(Double brightness)
+	{
+		this.lblImage.setBrightness(brightness);
+	}
+
+	public void setImageContrast(Double contrast)
+	{
+		this.lblImage.setContrast(contrast);
+	}
+
 	private class ResizeListener implements ActionListener
 	{
 		@Override
 		public void actionPerformed(ActionEvent event)
 		{
-			lblImage.setPanX(0);
-			lblImage.setPanY(0);
-			lblImage.setScaleToFit(getContentPane().getWidth(), getContentPane().getHeight());
+			resetImage();
 		}
 	}
 }

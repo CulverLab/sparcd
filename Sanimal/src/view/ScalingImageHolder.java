@@ -2,13 +2,15 @@ package view;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.awt.image.IndexColorModel;
+import java.awt.image.RescaleOp;
 
 import javax.swing.JComponent;
 
@@ -17,13 +19,19 @@ public class ScalingImageHolder extends JComponent
 	private Double scaleX = 1.0;
 	private Double scaleY = 1.0;
 
+	private Double brightness = 1.0;
+	private Double contrast = 1.0;
+
+	private Integer originalPanX = 0;
+	private Integer originalPanY = 0;
 	private Integer panX = 0;
 	private Integer panY = 0;
 
-	private Integer previousX = 0;
-	private Integer previousY = 0;
+	private Integer currentOffsetX = 0;
+	private Integer currentOffsetY = 0;
 
-	private Image source;
+	private BufferedImage source;
+	private BufferedImage toDisplay;
 
 	public ScalingImageHolder()
 	{
@@ -32,8 +40,14 @@ public class ScalingImageHolder extends JComponent
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent event)
 			{
-				scaleX = scaleX - event.getWheelRotation() * 0.1;
-				scaleY = scaleY - event.getWheelRotation() * 0.1;
+				panX = panX - event.getX();
+				panY = panY - event.getY();
+				scaleX = scaleX * (event.getWheelRotation() > 0 ? 0.9 : 1.1);
+				scaleY = scaleY * (event.getWheelRotation() > 0 ? 0.9 : 1.1);
+				panX = (int) Math.round(panX * scaleX);
+				panY = (int) Math.round(panY * scaleY);
+				panX = panX + event.getX();
+				panY = panY + event.getY();
 				repaint();
 			}
 		});
@@ -48,8 +62,8 @@ public class ScalingImageHolder extends JComponent
 			@Override
 			public void mouseDragged(MouseEvent event)
 			{
-				panX = previousX + event.getX();
-				panY = previousY + event.getY();
+				panX = originalPanX + event.getX();
+				panY = originalPanY + event.getY();
 
 				repaint();
 			}
@@ -60,13 +74,15 @@ public class ScalingImageHolder extends JComponent
 			@Override
 			public void mouseReleased(MouseEvent e)
 			{
-				previousX = panX;
-				previousY = panY;
+				originalPanX = panX;
+				originalPanY = panY;
 			}
 
 			@Override
-			public void mousePressed(MouseEvent e)
+			public void mousePressed(MouseEvent event)
 			{
+				originalPanX = panX - event.getX();
+				originalPanY = panY - event.getY();
 			}
 
 			@Override
@@ -80,7 +96,7 @@ public class ScalingImageHolder extends JComponent
 			}
 
 			@Override
-			public void mouseClicked(MouseEvent e)
+			public void mouseClicked(MouseEvent event)
 			{
 			}
 		});
@@ -91,7 +107,7 @@ public class ScalingImageHolder extends JComponent
 	{
 		super.paintComponent(g);
 
-		if (source != null)
+		if (toDisplay != null)
 		{
 			Graphics2D g2d = (Graphics2D) g;
 
@@ -99,34 +115,23 @@ public class ScalingImageHolder extends JComponent
 			AffineTransform originalTransform = g2d.getTransform();
 
 			g2d.translate(panX, panY);
+			System.out.println("At: " + panX + ", " + panY);
 			g2d.scale(scaleX, scaleY);
 
 			// paint the image here with no scaling
-			g2d.drawImage(source, 0, 0, null);
+			g2d.drawImage(toDisplay, 0, 0, null);
 
 			// Restore original transform
 			g2d.setTransform(originalTransform);
 		}
 	}
 
-	public void setScaleX(Double scaleX)
-	{
-		this.scaleX = scaleX;
-		ScalingImageHolder.this.repaint();
-	}
-
-	public void setScaleY(Double scaleY)
-	{
-		this.scaleY = scaleY;
-		ScalingImageHolder.this.repaint();
-	}
-
 	public void setScaleToFit(Integer width, Integer height)
 	{
 		if (source != null)
 		{
-			this.setScaleX((double) width / (double) this.source.getWidth(null));
-			this.setScaleY((double) height / (double) this.source.getHeight(null));
+			this.scaleX = ((double) width / (double) this.source.getWidth(null));
+			this.scaleY = ((double) height / (double) this.source.getHeight(null));
 		}
 	}
 
@@ -142,11 +147,42 @@ public class ScalingImageHolder extends JComponent
 		ScalingImageHolder.this.repaint();
 	}
 
-	public void setSource(Image source)
+	public void setSource(BufferedImage source)
 	{
 		if (this.source != null)
 			this.source.flush();
-		this.source = source;
-		ScalingImageHolder.this.repaint();
+		if (source.getColorModel() instanceof IndexColorModel)
+		{
+			System.out.println("Invalid image");
+		}
+		else
+		{
+			this.source = source;
+			this.updateEdited();
+			ScalingImageHolder.this.repaint();
+		}
+	}
+
+	public void setBrightness(Double brightness)
+	{
+		this.brightness = brightness;
+		this.updateEdited();
+		this.repaint();
+	}
+
+	public void setContrast(Double contrast)
+	{
+		this.contrast = contrast;
+		this.updateEdited();
+		this.repaint();
+	}
+
+	public void updateEdited()
+	{
+		if (toDisplay != null)
+			toDisplay.flush();
+		// Contrast, Brightness, Hints
+		RescaleOp filter = new RescaleOp(contrast.floatValue(), brightness.floatValue(), null);
+		toDisplay = filter.filter(source, null);
 	}
 }

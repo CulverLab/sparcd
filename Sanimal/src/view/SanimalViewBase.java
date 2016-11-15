@@ -19,6 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -48,6 +49,11 @@ public abstract class SanimalViewBase extends JFrame
 
 	protected JPanel pnlThumbnailSettings;
 	protected JButton btnShowPreview;
+	protected JButton btnResetPreview;
+	protected JLabel lblBrightness;
+	protected JSlider sldBrightness;
+	protected JLabel lblContrast;
+	protected JSlider sldContrast;
 
 	protected JPanel pnlPropertyList;
 	protected JLabel lblLocation;
@@ -210,6 +216,34 @@ public abstract class SanimalViewBase extends JFrame
 		thumbnailSettingsLayout.putConstraint(SpringLayout.WEST, btnShowPreview, 10, SpringLayout.WEST, pnlThumbnailSettings);
 		btnShowPreview.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		pnlThumbnailSettings.add(btnShowPreview);
+
+		btnResetPreview = new JButton("Reset Image Preview");
+		thumbnailSettingsLayout.putConstraint(SpringLayout.NORTH, btnResetPreview, 0, SpringLayout.NORTH, btnShowPreview);
+		thumbnailSettingsLayout.putConstraint(SpringLayout.WEST, btnResetPreview, 6, SpringLayout.EAST, btnShowPreview);
+		btnResetPreview.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		pnlThumbnailSettings.add(btnResetPreview);
+
+		lblBrightness = new JLabel("Brightness: ");
+		thumbnailSettingsLayout.putConstraint(SpringLayout.NORTH, lblBrightness, 12, SpringLayout.SOUTH, btnShowPreview);
+		thumbnailSettingsLayout.putConstraint(SpringLayout.WEST, lblBrightness, 0, SpringLayout.WEST, btnShowPreview);
+		lblBrightness.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		pnlThumbnailSettings.add(lblBrightness);
+
+		sldBrightness = new JSlider(JSlider.HORIZONTAL, -25, 25, 1);
+		thumbnailSettingsLayout.putConstraint(SpringLayout.WEST, sldBrightness, 6, SpringLayout.EAST, lblBrightness);
+		thumbnailSettingsLayout.putConstraint(SpringLayout.SOUTH, sldBrightness, 0, SpringLayout.SOUTH, lblBrightness);
+		pnlThumbnailSettings.add(sldBrightness);
+
+		lblContrast = new JLabel("Contrast: ");
+		thumbnailSettingsLayout.putConstraint(SpringLayout.NORTH, lblContrast, 12, SpringLayout.SOUTH, lblBrightness);
+		thumbnailSettingsLayout.putConstraint(SpringLayout.WEST, lblContrast, 0, SpringLayout.WEST, btnShowPreview);
+		lblContrast.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		pnlThumbnailSettings.add(lblContrast);
+
+		sldContrast = new JSlider(JSlider.HORIZONTAL, 0, 50, 25);
+		thumbnailSettingsLayout.putConstraint(SpringLayout.WEST, sldContrast, 0, SpringLayout.WEST, sldBrightness);
+		thumbnailSettingsLayout.putConstraint(SpringLayout.SOUTH, sldContrast, 0, SpringLayout.SOUTH, lblContrast);
+		pnlThumbnailSettings.add(sldContrast);
 
 		pnlPropertyList = new JPanel();
 		contentPaneLayout.putConstraint(SpringLayout.NORTH, pnlPropertyList, 6, SpringLayout.SOUTH, pnlImageBrowser);

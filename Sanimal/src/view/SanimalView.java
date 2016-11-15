@@ -3,9 +3,9 @@ package view;
 import java.awt.Dimension;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetListener;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
@@ -18,6 +18,8 @@ import java.util.Observer;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -59,33 +61,42 @@ public class SanimalView extends SanimalViewBase implements Observer
 		this.pack();
 		this.setLocationRelativeTo(null);
 
-		btnShowPreview.addMouseListener(new MouseListener()
+		btnShowPreview.addActionListener(new ActionListener()
 		{
 			@Override
-			public void mouseReleased(MouseEvent event)
+			public void actionPerformed(ActionEvent event)
 			{
 				if (!imageView.isVisible())
 					imageView.setVisible(true);
 			}
+		});
 
+		btnResetPreview.addActionListener(new ActionListener()
+		{
 			@Override
-			public void mousePressed(MouseEvent event)
+			public void actionPerformed(ActionEvent event)
 			{
+				imageView.resetImage();
+				sldBrightness.setValue(1);
+				sldContrast.setValue(25);
 			}
+		});
 
+		sldBrightness.addChangeListener(new ChangeListener()
+		{
 			@Override
-			public void mouseExited(MouseEvent event)
+			public void stateChanged(ChangeEvent event)
 			{
+				imageView.setImageBrightness((double) sldBrightness.getValue() * 10);
 			}
+		});
 
+		sldContrast.addChangeListener(new ChangeListener()
+		{
 			@Override
-			public void mouseEntered(MouseEvent event)
+			public void stateChanged(ChangeEvent event)
 			{
-			}
-
-			@Override
-			public void mouseClicked(MouseEvent event)
-			{
+				imageView.setImageContrast((double) sldContrast.getValue() / 25D);
 			}
 		});
 	}
