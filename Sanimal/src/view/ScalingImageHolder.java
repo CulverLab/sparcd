@@ -40,14 +40,18 @@ public class ScalingImageHolder extends JComponent
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent event)
 			{
-				panX = panX - event.getX();
-				panY = panY - event.getY();
-				scaleX = scaleX * (event.getWheelRotation() > 0 ? 0.9 : 1.1);
-				scaleY = scaleY * (event.getWheelRotation() > 0 ? 0.9 : 1.1);
-				panX = (int) Math.round(panX * scaleX);
-				panY = (int) Math.round(panY * scaleY);
-				panX = panX + event.getX();
-				panY = panY + event.getY();
+				Integer widthDifference = (int) (source.getWidth() * scaleX);
+				Integer heightDifference = (int) (source.getHeight() * scaleY);
+				Double scaleFactor = (event.getWheelRotation() > 0 ? 0.9 : (1 / .9));
+				scaleX = scaleX * scaleFactor;
+				scaleY = scaleY * scaleFactor;
+				widthDifference = widthDifference - (int) (source.getWidth() * scaleX);
+				heightDifference = heightDifference - (int) (source.getHeight() * scaleY);
+				Double percentAcrossX = event.getX() / (double) (ScalingImageHolder.this.getWidth());
+				Double percentAcrossY = event.getY() / (double) (ScalingImageHolder.this.getHeight());
+				System.out.println(percentAcrossX + ", " + percentAcrossY);
+				panX = (int) (panX + widthDifference * percentAcrossX);
+				panY = (int) (panY + heightDifference * percentAcrossY);
 				repaint();
 			}
 		});
@@ -115,7 +119,6 @@ public class ScalingImageHolder extends JComponent
 			AffineTransform originalTransform = g2d.getTransform();
 
 			g2d.translate(panX, panY);
-			System.out.println("At: " + panX + ", " + panY);
 			g2d.scale(scaleX, scaleY);
 
 			// paint the image here with no scaling
