@@ -6,10 +6,12 @@
 package view;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -23,6 +25,7 @@ import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SpringLayout;
@@ -55,15 +58,20 @@ public abstract class SanimalViewBase extends JFrame
 	protected JLabel lblContrast;
 	protected JSlider sldContrast;
 
+	protected ButtonGroup distanceButtonGroup;
+	protected JToggleButton btnUnitFeet;
+	protected JToggleButton btnUnitMeter;
+	protected ButtonGroup locationButtonGroup;
+	protected JToggleButton btnUnitLatLng;
+	protected JToggleButton btnUnitUTM;
+
 	protected JPanel pnlPropertyList;
 	protected JLabel lblLocation;
 	protected ComboBoxFullMenu<Location> cbxLocation;
 	protected JButton btnAddNewLocation;
 	protected JButton btnRemoveLocation;
-	protected JLabel lblLocationLat;
-	protected JTextField txtLat;
-	protected JLabel lblLocationLng;
-	protected JTextField txtLng;
+	protected JLabel lblLocationCoord;
+	protected JTextArea tarLocationCoord;
 	protected JLabel lblLocationElevation;
 	protected JTextField txtElevation;
 	protected JLabel lblSpecies;
@@ -169,6 +177,8 @@ public abstract class SanimalViewBase extends JFrame
 		btnLoadDefaultAnimals.setIcon(ImageLoadingUtils.resizeImageIcon(new ImageIcon(SanimalView.class.getResource("/images/paw.png")), 38, 38, Image.SCALE_SMOOTH, false));
 		barTop.add(btnLoadDefaultAnimals);
 
+		barTop.addSeparator();
+
 		pnlImageBrowser = new JPanel();
 		contentPaneLayout.putConstraint(SpringLayout.NORTH, pnlImageBrowser, 0, SpringLayout.SOUTH, barTop);
 		contentPaneLayout.putConstraint(SpringLayout.WEST, pnlImageBrowser, 10, SpringLayout.WEST, getContentPane());
@@ -203,11 +213,11 @@ public abstract class SanimalViewBase extends JFrame
 		pnlImageBrowser.add(pneImageList);
 
 		pnlThumbnailSettings = new JPanel();
+		contentPaneLayout.putConstraint(SpringLayout.SOUTH, pnlThumbnailSettings, 0, SpringLayout.SOUTH, pnlImageBrowser);
 		SpringLayout thumbnailSettingsLayout = new SpringLayout();
 		pnlThumbnailSettings.setLayout(thumbnailSettingsLayout);
 		contentPaneLayout.putConstraint(SpringLayout.NORTH, pnlThumbnailSettings, 0, SpringLayout.SOUTH, barTop);
 		contentPaneLayout.putConstraint(SpringLayout.WEST, pnlThumbnailSettings, 5, SpringLayout.EAST, pnlImageBrowser);
-		contentPaneLayout.putConstraint(SpringLayout.SOUTH, pnlThumbnailSettings, 0, SpringLayout.SOUTH, pnlImageBrowser);
 		pnlThumbnailSettings.setBorder(new LineBorder(Color.BLACK));
 		this.getContentPane().add(pnlThumbnailSettings);
 
@@ -245,6 +255,9 @@ public abstract class SanimalViewBase extends JFrame
 		thumbnailSettingsLayout.putConstraint(SpringLayout.SOUTH, sldContrast, 0, SpringLayout.SOUTH, lblContrast);
 		pnlThumbnailSettings.add(sldContrast);
 
+		distanceButtonGroup = new ButtonGroup();
+		locationButtonGroup = new ButtonGroup();
+
 		pnlPropertyList = new JPanel();
 		contentPaneLayout.putConstraint(SpringLayout.NORTH, pnlPropertyList, 6, SpringLayout.SOUTH, pnlImageBrowser);
 		contentPaneLayout.putConstraint(SpringLayout.WEST, pnlPropertyList, 9, SpringLayout.WEST, getContentPane());
@@ -258,8 +271,8 @@ public abstract class SanimalViewBase extends JFrame
 		pnlPropertyList.add(lblDate);
 
 		txtDate = new JTextField();
-		propertyListLayout.putConstraint(SpringLayout.NORTH, txtDate, -3, SpringLayout.NORTH, lblDate);
-		propertyListLayout.putConstraint(SpringLayout.WEST, txtDate, 6, SpringLayout.EAST, lblDate);
+		propertyListLayout.putConstraint(SpringLayout.WEST, txtDate, 14, SpringLayout.EAST, lblDate);
+		propertyListLayout.putConstraint(SpringLayout.EAST, txtDate, -8, SpringLayout.EAST, pnlPropertyList);
 		txtDate.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		txtDate.setEditable(false);
 		pnlPropertyList.add(txtDate);
@@ -267,65 +280,55 @@ public abstract class SanimalViewBase extends JFrame
 		lblLocation = new JLabel("Location: ");
 		propertyListLayout.putConstraint(SpringLayout.WEST, lblDate, 0, SpringLayout.WEST, lblLocation);
 		propertyListLayout.putConstraint(SpringLayout.SOUTH, lblDate, -10, SpringLayout.NORTH, lblLocation);
+		propertyListLayout.putConstraint(SpringLayout.WEST, lblLocation, 10, SpringLayout.WEST, pnlPropertyList);
 		lblLocation.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		pnlPropertyList.add(lblLocation);
 
 		cbxLocation = new ComboBoxFullMenu<Location>();
-		propertyListLayout.putConstraint(SpringLayout.NORTH, cbxLocation, -3, SpringLayout.NORTH, lblLocation);
+		propertyListLayout.putConstraint(SpringLayout.WEST, cbxLocation, 0, SpringLayout.WEST, txtDate);
+		propertyListLayout.putConstraint(SpringLayout.NORTH, cbxLocation, 34, SpringLayout.NORTH, pnlPropertyList);
 		cbxLocation.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		cbxLocation.setSelectedIndex(-1);
 		pnlPropertyList.add(cbxLocation);
 
 		btnAddNewLocation = new JButton("Add");
+		propertyListLayout.putConstraint(SpringLayout.SOUTH, txtDate, -3, SpringLayout.NORTH, btnAddNewLocation);
+		propertyListLayout.putConstraint(SpringLayout.EAST, cbxLocation, -6, SpringLayout.WEST, btnAddNewLocation);
 		propertyListLayout.putConstraint(SpringLayout.NORTH, btnAddNewLocation, -4, SpringLayout.NORTH, lblLocation);
-		propertyListLayout.putConstraint(SpringLayout.WEST, btnAddNewLocation, 6, SpringLayout.EAST, cbxLocation);
 		btnAddNewLocation.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		pnlPropertyList.add(btnAddNewLocation);
 
 		btnRemoveLocation = new JButton("Remove");
-		propertyListLayout.putConstraint(SpringLayout.EAST, txtDate, 0, SpringLayout.EAST, btnRemoveLocation);
+		propertyListLayout.putConstraint(SpringLayout.EAST, btnRemoveLocation, -8, SpringLayout.EAST, pnlPropertyList);
+		propertyListLayout.putConstraint(SpringLayout.EAST, btnAddNewLocation, -6, SpringLayout.WEST, btnRemoveLocation);
 		propertyListLayout.putConstraint(SpringLayout.NORTH, btnRemoveLocation, -4, SpringLayout.NORTH, lblLocation);
-		propertyListLayout.putConstraint(SpringLayout.WEST, btnRemoveLocation, 6, SpringLayout.EAST, btnAddNewLocation);
 		btnRemoveLocation.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		pnlPropertyList.add(btnRemoveLocation);
 
-		lblLocationLat = new JLabel("Latitude: ");
-		propertyListLayout.putConstraint(SpringLayout.WEST, lblLocation, 0, SpringLayout.WEST, lblLocationLat);
-		propertyListLayout.putConstraint(SpringLayout.SOUTH, lblLocation, -10, SpringLayout.NORTH, lblLocationLat);
-		lblLocationLat.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		pnlPropertyList.add(lblLocationLat);
+		lblLocationCoord = new JLabel("Coordinates: ");
+		propertyListLayout.putConstraint(SpringLayout.SOUTH, lblLocation, -10, SpringLayout.NORTH, lblLocationCoord);
+		lblLocationCoord.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		pnlPropertyList.add(lblLocationCoord);
 
-		txtLat = new JTextField();
-		propertyListLayout.putConstraint(SpringLayout.WEST, cbxLocation, 0, SpringLayout.WEST, txtLat);
-		propertyListLayout.putConstraint(SpringLayout.NORTH, txtLat, -3, SpringLayout.NORTH, lblLocationLat);
-		txtLat.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		txtLat.setEditable(false);
-		pnlPropertyList.add(txtLat);
-
-		lblLocationLng = new JLabel("Longitude: ");
-		propertyListLayout.putConstraint(SpringLayout.WEST, lblLocationLat, 0, SpringLayout.WEST, lblLocationLng);
-		propertyListLayout.putConstraint(SpringLayout.SOUTH, lblLocationLat, -10, SpringLayout.NORTH, lblLocationLng);
-		lblLocationLng.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		pnlPropertyList.add(lblLocationLng);
-
-		txtLng = new JTextField();
-		propertyListLayout.putConstraint(SpringLayout.WEST, txtLat, 0, SpringLayout.WEST, txtLng);
-		propertyListLayout.putConstraint(SpringLayout.EAST, txtLat, 0, SpringLayout.EAST, txtLng);
-		propertyListLayout.putConstraint(SpringLayout.NORTH, txtLng, -3, SpringLayout.NORTH, lblLocationLng);
-		txtLng.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		txtLng.setEditable(false);
-		pnlPropertyList.add(txtLng);
+		tarLocationCoord = new JTextArea();
+		tarLocationCoord.setEditable(false);
+		propertyListLayout.putConstraint(SpringLayout.NORTH, tarLocationCoord, -2, SpringLayout.NORTH, lblLocationCoord);
+		propertyListLayout.putConstraint(SpringLayout.WEST, tarLocationCoord, 0, SpringLayout.WEST, txtDate);
+		propertyListLayout.putConstraint(SpringLayout.EAST, tarLocationCoord, 0, SpringLayout.EAST, txtDate);
+		tarLocationCoord.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		tarLocationCoord.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+		pnlPropertyList.add(tarLocationCoord);
 
 		lblLocationElevation = new JLabel("Elevation: ");
-		propertyListLayout.putConstraint(SpringLayout.WEST, lblLocationLng, 0, SpringLayout.WEST, lblLocationElevation);
-		propertyListLayout.putConstraint(SpringLayout.SOUTH, lblLocationLng, -10, SpringLayout.NORTH, lblLocationElevation);
+		propertyListLayout.putConstraint(SpringLayout.WEST, lblLocationCoord, 0, SpringLayout.WEST, lblLocationElevation);
+		propertyListLayout.putConstraint(SpringLayout.SOUTH, lblLocationCoord, -35, SpringLayout.NORTH, lblLocationElevation);
 		lblLocationElevation.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		pnlPropertyList.add(lblLocationElevation);
 
 		txtElevation = new JTextField();
-		propertyListLayout.putConstraint(SpringLayout.WEST, txtLng, 0, SpringLayout.WEST, txtElevation);
-		propertyListLayout.putConstraint(SpringLayout.EAST, txtLng, 0, SpringLayout.EAST, txtElevation);
+		propertyListLayout.putConstraint(SpringLayout.SOUTH, tarLocationCoord, -6, SpringLayout.NORTH, txtElevation);
 		propertyListLayout.putConstraint(SpringLayout.NORTH, txtElevation, -3, SpringLayout.NORTH, lblLocationElevation);
+		propertyListLayout.putConstraint(SpringLayout.WEST, txtElevation, 0, SpringLayout.WEST, txtDate);
 		txtElevation.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		txtElevation.setEditable(false);
 		pnlPropertyList.add(txtElevation);
@@ -337,10 +340,8 @@ public abstract class SanimalViewBase extends JFrame
 		pnlPropertyList.add(lblSpecies);
 
 		cbxSpecies = new ComboBoxFullMenu<Species>();
-		propertyListLayout.putConstraint(SpringLayout.EAST, cbxLocation, 0, SpringLayout.EAST, cbxSpecies);
-		propertyListLayout.putConstraint(SpringLayout.WEST, txtElevation, 0, SpringLayout.WEST, cbxSpecies);
 		propertyListLayout.putConstraint(SpringLayout.NORTH, cbxSpecies, -3, SpringLayout.NORTH, lblSpecies);
-		propertyListLayout.putConstraint(SpringLayout.WEST, cbxSpecies, 6, SpringLayout.EAST, lblSpecies);
+		propertyListLayout.putConstraint(SpringLayout.WEST, cbxSpecies, 0, SpringLayout.WEST, txtDate);
 		propertyListLayout.putConstraint(SpringLayout.EAST, cbxSpecies, 175, SpringLayout.EAST, lblSpecies);
 		cbxSpecies.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		cbxSpecies.setSelectedIndex(-1);
@@ -348,7 +349,7 @@ public abstract class SanimalViewBase extends JFrame
 
 		btnAddNewSpecies = new JButton("Add");
 		propertyListLayout.putConstraint(SpringLayout.NORTH, btnAddNewSpecies, -4, SpringLayout.NORTH, lblSpecies);
-		propertyListLayout.putConstraint(SpringLayout.WEST, btnAddNewSpecies, 6, SpringLayout.EAST, cbxSpecies);
+		propertyListLayout.putConstraint(SpringLayout.WEST, btnAddNewSpecies, 5, SpringLayout.EAST, cbxSpecies);
 		btnAddNewSpecies.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnAddNewSpecies.setToolTipText("Add a new species to the species dictionary");
 		pnlPropertyList.add(btnAddNewSpecies);
@@ -422,6 +423,32 @@ public abstract class SanimalViewBase extends JFrame
 
 		map = new MapPanel();
 		contentPaneLayout.putConstraint(SpringLayout.NORTH, map, 0, SpringLayout.SOUTH, barTop);
+
+		btnUnitFeet = new JToggleButton("Feet");
+		barTop.add(btnUnitFeet);
+		btnUnitFeet.setSelected(true);
+		btnUnitFeet.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		distanceButtonGroup.add(btnUnitFeet);
+
+		btnUnitMeter = new JToggleButton("Meters");
+		barTop.add(btnUnitMeter);
+		btnUnitMeter.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		distanceButtonGroup.add(btnUnitMeter);
+
+		barTop.addSeparator((Dimension) null);
+
+		btnUnitLatLng = new JToggleButton("Latitude/Longitude");
+		barTop.add(btnUnitLatLng);
+		btnUnitLatLng.setSelected(true);
+		btnUnitLatLng.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		locationButtonGroup.add(btnUnitLatLng);
+
+		btnUnitUTM = new JToggleButton("UTM");
+		barTop.add(btnUnitUTM);
+		btnUnitUTM.setSelected(true);
+		btnUnitUTM.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		locationButtonGroup.add(btnUnitUTM);
+
 		contentPaneLayout.putConstraint(SpringLayout.EAST, pnlThumbnailSettings, -5, SpringLayout.WEST, map);
 		contentPaneLayout.putConstraint(SpringLayout.EAST, pnlSpeciesPresent, -5, SpringLayout.WEST, map);
 		contentPaneLayout.putConstraint(SpringLayout.WEST, map, 700, SpringLayout.WEST, getContentPane());

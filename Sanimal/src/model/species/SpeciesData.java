@@ -23,6 +23,9 @@ public class SpeciesData extends Observable implements Serializable
 	 */
 	public void addSpecies(Species species)
 	{
+		for (Species speciesOther : this.species)
+			if (species.getName().equals(speciesOther.getName()))
+				return;
 		this.species.add(species);
 		this.species.sort((species1, species2) ->
 		{

@@ -102,8 +102,7 @@ public class MapPanel extends JPanel
 			public void mouseWheelMoved(MouseWheelEvent event)
 			{
 				lblZoomLevel.setText(zoomLevelBase + mapViewer.getZoom());
-				lblCurrentLat.setText(currentLatBase + String.format("%7.6f", mapViewer.getCenterPosition().getLatitude()));
-				lblCurrentLng.setText(currentLngBase + String.format("%7.6f", mapViewer.getCenterPosition().getLongitude()));
+				MapPanel.this.refreshMapLocation();
 				if (!zoomTimer.isRunning())
 					zoomTimer.start();
 				else
@@ -121,19 +120,18 @@ public class MapPanel extends JPanel
 			@Override
 			public void mouseDragged(MouseEvent event)
 			{
-				lblCurrentLat.setText(currentLatBase + String.format("%7.6f", mapViewer.getCenterPosition().getLatitude()));
-				lblCurrentLng.setText(currentLngBase + String.format("%7.6f", mapViewer.getCenterPosition().getLongitude()));
+				MapPanel.this.refreshMapLocation();
 			}
 		});
 		this.add(mapViewer);
 
-		lblCurrentLat = new JLabel(currentLatBase + String.format("%7.6f", mapViewer.getCenterPosition().getLatitude()));
+		lblCurrentLat = new JLabel(currentLatBase + String.format("%.6f", mapViewer.getCenterPosition().getLatitude()));
 		layMapPanel.putConstraint(SpringLayout.NORTH, lblCurrentLat, 5, SpringLayout.NORTH, this);
 		layMapPanel.putConstraint(SpringLayout.EAST, cbxMapProviders, -6, SpringLayout.WEST, lblCurrentLat);
 		lblCurrentLat.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		this.add(lblCurrentLat);
 
-		lblCurrentLng = new JLabel(currentLngBase + String.format("%7.6f", mapViewer.getCenterPosition().getLongitude()));
+		lblCurrentLng = new JLabel(currentLngBase + String.format("%.6f", mapViewer.getCenterPosition().getLongitude()));
 		layMapPanel.putConstraint(SpringLayout.NORTH, lblCurrentLng, 5, SpringLayout.NORTH, this);
 		layMapPanel.putConstraint(SpringLayout.EAST, lblCurrentLat, -6, SpringLayout.WEST, lblCurrentLng);
 		lblCurrentLng.setFont(new Font("Tahoma", Font.PLAIN, 14));
@@ -238,7 +236,6 @@ public class MapPanel extends JPanel
 		layPnlBottomBar.putConstraint(SpringLayout.WEST, prgDataShow, 0, SpringLayout.WEST, pnlBottomBar);
 		layPnlBottomBar.putConstraint(SpringLayout.SOUTH, prgDataShow, 0, SpringLayout.SOUTH, pnlBottomBar);
 		layPnlBottomBar.putConstraint(SpringLayout.EAST, prgDataShow, 0, SpringLayout.EAST, pnlBottomBar);
-		prgDataShow.setBounds(0, 39, 618, 23);
 		prgDataShow.setMinimum(0);
 		prgDataShow.setMaximum(100);
 		// Clicking & Dragging allows for updating the progress bar
@@ -364,5 +361,11 @@ public class MapPanel extends JPanel
 	public JProgressBar getPrgDataShow()
 	{
 		return this.prgDataShow;
+	}
+
+	public void refreshMapLocation()
+	{
+		lblCurrentLat.setText(currentLatBase + String.format("%.6f", mapViewer.getCenterPosition().getLatitude()));
+		lblCurrentLng.setText(currentLngBase + String.format("%.6f", mapViewer.getCenterPosition().getLongitude()));
 	}
 }

@@ -154,16 +154,19 @@ public class ScalingImageHolder extends JComponent
 	{
 		if (this.source != null)
 			this.source.flush();
-		if (source.getColorModel() instanceof IndexColorModel)
+		this.source = source;
+		if (source != null)
 		{
-			System.out.println("Invalid image");
+			if (source.getColorModel() instanceof IndexColorModel)
+			{
+				System.out.println("Invalid image");
+			}
+			else
+			{
+				this.updateEdited();
+			}
 		}
-		else
-		{
-			this.source = source;
-			this.updateEdited();
-			ScalingImageHolder.this.repaint();
-		}
+		ScalingImageHolder.this.repaint();
 	}
 
 	public void setBrightness(Double brightness)

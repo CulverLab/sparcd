@@ -28,6 +28,7 @@ import javax.swing.tree.TreePath;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import controller.Constants;
 import model.analysis.ImageQuery;
 import model.analysis.SanimalAnalysisUtils;
 import model.image.ImageDirectory;
@@ -37,6 +38,7 @@ import model.image.ImageUpdate;
 import model.location.Location;
 import model.location.LocationData;
 import model.location.LocationUpdate;
+import model.location.UTMCoord;
 import model.species.Species;
 import model.species.SpeciesData;
 import model.species.SpeciesEntry;
@@ -99,6 +101,19 @@ public class SanimalView extends SanimalViewBase implements Observer
 				imageView.setImageContrast((double) sldContrast.getValue() / 25D);
 			}
 		});
+
+		ActionListener utmLatLngFeetMetersClicked = new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent event)
+			{
+				SanimalView.this.refreshLocationFields();
+			}
+		};
+		btnUnitLatLng.addActionListener(utmLatLngFeetMetersClicked);
+		btnUnitUTM.addActionListener(utmLatLngFeetMetersClicked);
+		btnUnitFeet.addActionListener(utmLatLngFeetMetersClicked);
+		btnUnitMeter.addActionListener(utmLatLngFeetMetersClicked);
 	}
 
 	public void addImageTreeValueChanged(TreeSelectionListener listener)
@@ -404,14 +419,39 @@ public class SanimalView extends SanimalViewBase implements Observer
 		Location currentlySelected = ((Location) cbxLocation.getSelectedItem());
 		if (currentlySelected != null)
 		{
-			txtLat.setText(Double.toString(currentlySelected.getLat()));
-			txtLng.setText(Double.toString(currentlySelected.getLng()));
-			txtElevation.setText(Double.toString(currentlySelected.getElevation()));
+			Double heightInFeet = currentlySelected.getElevation();
+			Double latitude = currentlySelected.getLat();
+			Double longitude = currentlySelected.getLng();
+			if (btnUnitFeet.isSelected())
+			{
+				txtElevation.setText(String.format("%.1f", heightInFeet));
+			}
+			else if (btnUnitMeter.isSelected())
+			{
+				txtElevation.setText(String.format("%.1f", heightInFeet * Constants.FEET2METERS));
+			}
+			else
+			{
+				txtElevation.setText("");
+			}
+
+			if (btnUnitLatLng.isSelected())
+			{
+				tarLocationCoord.setText(String.format("Latitude: %.6f\nLongitude: %.6f", latitude, longitude));
+			}
+			else if (btnUnitUTM.isSelected())
+			{
+				UTMCoord utm = SanimalAnalysisUtils.Deg2UTM(latitude, longitude);
+				tarLocationCoord.setText(String.format("%s%s %.0f %.0f", utm.getZone().toString(), utm.getLetter().toString(), utm.getEasting(), utm.getNorthing()));
+			}
+			else
+			{
+				tarLocationCoord.setText("");
+			}
 		}
 		else
 		{
-			txtLat.setText("");
-			txtLng.setText("");
+			tarLocationCoord.setText("");
 			txtElevation.setText("");
 		}
 	}

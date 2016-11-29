@@ -14,7 +14,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -511,29 +510,7 @@ public class SanimalController
 		// When the user clicks the load default animals button
 		sanimalView.addALToLoadDefaultAnimals(event ->
 		{
-			List<String> defaultSpecies = new ArrayList<String>();
-			defaultSpecies.add("Bobcat");
-			defaultSpecies.add("Cardinal");
-			defaultSpecies.add("Coyote");
-			defaultSpecies.add("Dog");
-			defaultSpecies.add("Domestic_Cat");
-			defaultSpecies.add("Dove");
-			defaultSpecies.add("Fox");
-			defaultSpecies.add("Ground_Squirrel");
-			defaultSpecies.add("Javelina");
-			defaultSpecies.add("Lizard");
-			defaultSpecies.add("Mule_Deer");
-			defaultSpecies.add("Quail");
-			defaultSpecies.add("Rabbit");
-			defaultSpecies.add("Raccoon");
-			defaultSpecies.add("Snake");
-			defaultSpecies.add("Squirrel");
-			defaultSpecies.add("Tortoise");
-			defaultSpecies.add("Unknown");
-			defaultSpecies.add("Woodpecker");
-			for (Species species : sanimalData.getSpeciesData().getRegisteredSpecies())
-				defaultSpecies.remove(species.getName());
-			for (String species : defaultSpecies)
+			for (String species : Constants.DEFAULT_SPECIES)
 				sanimalData.getSpeciesData().addSpecies(new Species(species));
 		});
 

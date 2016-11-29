@@ -9,6 +9,7 @@ import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import controller.Constants;
 import model.analysis.SanimalAnalysisUtils;
 import model.image.IImageContainer;
 import model.location.Location;
@@ -237,13 +238,20 @@ public class SanimalInput
 			longitude = latLng[1];
 		}
 
+		// Input lat/lng or UTM
+		result = JOptionPane.showOptionDialog(null, "Is the elevation in feet or meters?", "Distance units", JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]
+		{ "Feet", "Meters" }, "Feet");
+		if (result == JOptionPane.CLOSED_OPTION)
+			return null;
+		Boolean useFeet = result == JOptionPane.YES_OPTION;
+
 		// Input the elevation
 		Double elevation = Double.MAX_VALUE;
 		while (elevation == Double.MAX_VALUE)
 		{
 			try
 			{
-				String elevationString = JOptionPane.showInputDialog("Enter the elevation (in feet) of location '" + name + "'");
+				String elevationString = JOptionPane.showInputDialog("Enter the elevation of location '" + name + "'");
 				if (elevationString == null)
 					return null;
 				elevation = Double.parseDouble(elevationString);
@@ -252,6 +260,10 @@ public class SanimalInput
 			{
 			}
 		}
+
+		if (!useFeet)
+			elevation = elevation * Constants.METERS2FEET;
+
 		// Return the location
 		return new Location(name, latitude, longitude, elevation);
 	}
