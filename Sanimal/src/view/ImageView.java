@@ -122,6 +122,7 @@ public class ImageView extends JFrame
 			try
 			{
 				this.lblImage.setSource(ImageIO.read(image.getFile()));
+				this.resetImage();
 			}
 			catch (Exception e)
 			{

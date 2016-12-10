@@ -183,7 +183,6 @@ public abstract class SanimalViewBase extends JFrame
 		contentPaneLayout.putConstraint(SpringLayout.NORTH, pnlImageBrowser, 0, SpringLayout.SOUTH, barTop);
 		contentPaneLayout.putConstraint(SpringLayout.WEST, pnlImageBrowser, 10, SpringLayout.WEST, getContentPane());
 		contentPaneLayout.putConstraint(SpringLayout.SOUTH, pnlImageBrowser, 280, SpringLayout.SOUTH, barTop);
-		contentPaneLayout.putConstraint(SpringLayout.EAST, pnlImageBrowser, 247, SpringLayout.WEST, getContentPane());
 		pnlImageBrowser.setBorder(new LineBorder(Color.BLACK));
 		SpringLayout imageBrowserLayout = new SpringLayout();
 		pnlImageBrowser.setLayout(imageBrowserLayout);
@@ -213,11 +212,11 @@ public abstract class SanimalViewBase extends JFrame
 		pnlImageBrowser.add(pneImageList);
 
 		pnlThumbnailSettings = new JPanel();
-		contentPaneLayout.putConstraint(SpringLayout.SOUTH, pnlThumbnailSettings, 0, SpringLayout.SOUTH, pnlImageBrowser);
+		contentPaneLayout.putConstraint(SpringLayout.EAST, pnlImageBrowser, -6, SpringLayout.WEST, pnlThumbnailSettings);
+		contentPaneLayout.putConstraint(SpringLayout.NORTH, pnlThumbnailSettings, 0, SpringLayout.SOUTH, barTop);
+		contentPaneLayout.putConstraint(SpringLayout.WEST, pnlThumbnailSettings, 270, SpringLayout.WEST, getContentPane());
 		SpringLayout thumbnailSettingsLayout = new SpringLayout();
 		pnlThumbnailSettings.setLayout(thumbnailSettingsLayout);
-		contentPaneLayout.putConstraint(SpringLayout.NORTH, pnlThumbnailSettings, 0, SpringLayout.SOUTH, barTop);
-		contentPaneLayout.putConstraint(SpringLayout.WEST, pnlThumbnailSettings, 5, SpringLayout.EAST, pnlImageBrowser);
 		pnlThumbnailSettings.setBorder(new LineBorder(Color.BLACK));
 		this.getContentPane().add(pnlThumbnailSettings);
 
@@ -260,6 +259,7 @@ public abstract class SanimalViewBase extends JFrame
 
 		pnlPropertyList = new JPanel();
 		contentPaneLayout.putConstraint(SpringLayout.NORTH, pnlPropertyList, 6, SpringLayout.SOUTH, pnlImageBrowser);
+		contentPaneLayout.putConstraint(SpringLayout.SOUTH, pnlThumbnailSettings, -6, SpringLayout.NORTH, pnlPropertyList);
 		contentPaneLayout.putConstraint(SpringLayout.WEST, pnlPropertyList, 9, SpringLayout.WEST, getContentPane());
 		SpringLayout propertyListLayout = new SpringLayout();
 		pnlPropertyList.setLayout(propertyListLayout);
@@ -422,6 +422,7 @@ public abstract class SanimalViewBase extends JFrame
 		pnlSpeciesPresent.add(btnRemoveSpeciesFromList);
 
 		map = new MapPanel();
+		contentPaneLayout.putConstraint(SpringLayout.EAST, pnlThumbnailSettings, -5, SpringLayout.WEST, map);
 		contentPaneLayout.putConstraint(SpringLayout.NORTH, map, 0, SpringLayout.SOUTH, barTop);
 
 		btnUnitFeet = new JToggleButton("Feet");
@@ -448,8 +449,6 @@ public abstract class SanimalViewBase extends JFrame
 		btnUnitUTM.setSelected(true);
 		btnUnitUTM.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		locationButtonGroup.add(btnUnitUTM);
-
-		contentPaneLayout.putConstraint(SpringLayout.EAST, pnlThumbnailSettings, -5, SpringLayout.WEST, map);
 		contentPaneLayout.putConstraint(SpringLayout.EAST, pnlSpeciesPresent, -5, SpringLayout.WEST, map);
 		contentPaneLayout.putConstraint(SpringLayout.WEST, map, 700, SpringLayout.WEST, getContentPane());
 		contentPaneLayout.putConstraint(SpringLayout.SOUTH, map, -5, SpringLayout.SOUTH, getContentPane());

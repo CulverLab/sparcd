@@ -73,15 +73,18 @@ public class SanimalView extends SanimalViewBase implements Observer
 			}
 		});
 
-		btnResetPreview.addActionListener(new ActionListener()
+		btnResetPreview.addActionListener(event ->
 		{
-			@Override
-			public void actionPerformed(ActionEvent event)
-			{
-				imageView.resetImage();
-				sldBrightness.setValue(1);
-				sldContrast.setValue(25);
-			}
+			imageView.resetImage();
+			sldBrightness.setValue(1);
+			sldContrast.setValue(25);
+		});
+
+		treImages.addTreeSelectionListener(event ->
+		{
+			imageView.resetImage();
+			sldBrightness.setValue(1);
+			sldContrast.setValue(25);
 		});
 
 		sldBrightness.addChangeListener(new ChangeListener()

@@ -18,6 +18,8 @@ public class ScalingImageHolder extends JComponent
 {
 	private Double scaleX = 1.0;
 	private Double scaleY = 1.0;
+	private Double baseScaleX = 1.0;
+	private Double baseScaleY = 1.0;
 
 	private Double brightness = 1.0;
 	private Double contrast = 1.0;
@@ -40,16 +42,16 @@ public class ScalingImageHolder extends JComponent
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent event)
 			{
-				Integer widthDifference = (int) (source.getWidth() * scaleX);
-				Integer heightDifference = (int) (source.getHeight() * scaleY);
 				Double scaleFactor = (event.getWheelRotation() > 0 ? 0.9 : (1 / .9));
+				Double percentAcrossX = (event.getX()) / (double) (ScalingImageHolder.this.getWidth());
+				Double percentAcrossY = (event.getY()) / (double) (ScalingImageHolder.this.getHeight());
+				Integer widthScaled = (int) (source.getWidth() * scaleX);
+				Integer heightScaled = (int) (source.getHeight() * scaleY);
 				scaleX = scaleX * scaleFactor;
 				scaleY = scaleY * scaleFactor;
-				widthDifference = widthDifference - (int) (source.getWidth() * scaleX);
-				heightDifference = heightDifference - (int) (source.getHeight() * scaleY);
-				Double percentAcrossX = event.getX() / (double) (ScalingImageHolder.this.getWidth());
-				Double percentAcrossY = event.getY() / (double) (ScalingImageHolder.this.getHeight());
-				System.out.println(percentAcrossX + ", " + percentAcrossY);
+				Integer widthDifference = widthScaled - (int) (source.getWidth() * scaleX);
+				Integer heightDifference = heightScaled - (int) (source.getHeight() * scaleY);
+				System.out.println(widthDifference + ", " + heightDifference + " SCALE = " + baseScaleX / scaleX + ", " + baseScaleY / scaleY);
 				panX = (int) (panX + widthDifference * percentAcrossX);
 				panY = (int) (panY + heightDifference * percentAcrossY);
 				repaint();
@@ -135,6 +137,8 @@ public class ScalingImageHolder extends JComponent
 		{
 			this.scaleX = ((double) width / (double) this.source.getWidth(null));
 			this.scaleY = ((double) height / (double) this.source.getHeight(null));
+			this.baseScaleX = this.scaleX;
+			this.baseScaleY = this.scaleY;
 		}
 	}
 
