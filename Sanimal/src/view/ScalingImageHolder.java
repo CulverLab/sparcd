@@ -35,6 +35,9 @@ public class ScalingImageHolder extends JComponent
 	private BufferedImage source;
 	private BufferedImage toDisplay;
 
+	private Integer currentZoom = 0;
+	private Double SCALE_FACTOR = 0.1D;
+
 	public ScalingImageHolder()
 	{
 		this.addMouseWheelListener(new MouseWheelListener()
@@ -42,18 +45,23 @@ public class ScalingImageHolder extends JComponent
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent event)
 			{
-				Double scaleFactor = (event.getWheelRotation() > 0 ? 0.9 : (1 / .9));
-				Double percentAcrossX = (event.getX()) / (double) (ScalingImageHolder.this.getWidth());
-				Double percentAcrossY = (event.getY()) / (double) (ScalingImageHolder.this.getHeight());
+				if (event.getWheelRotation() > 0)
+					currentZoom = currentZoom - 1;
+				else
+					currentZoom = currentZoom + 1;
+				if (currentZoom < 0)
+					currentZoom = 0;
+				Double percentAcrossImageX = (event.getX() - panX) / (source.getWidth() * scaleX);
+				Double percentAcrossImageY = (event.getY() - panY) / (source.getHeight() * scaleY);
 				Integer widthScaled = (int) (source.getWidth() * scaleX);
 				Integer heightScaled = (int) (source.getHeight() * scaleY);
-				scaleX = scaleX * scaleFactor;
-				scaleY = scaleY * scaleFactor;
+				scaleX = baseScaleX + SCALE_FACTOR * currentZoom;
+				scaleY = baseScaleY + SCALE_FACTOR * currentZoom;
 				Integer widthDifference = widthScaled - (int) (source.getWidth() * scaleX);
 				Integer heightDifference = heightScaled - (int) (source.getHeight() * scaleY);
-				System.out.println(widthDifference + ", " + heightDifference + " SCALE = " + baseScaleX / scaleX + ", " + baseScaleY / scaleY);
-				panX = (int) (panX + widthDifference * percentAcrossX);
-				panY = (int) (panY + heightDifference * percentAcrossY);
+				System.out.println(percentAcrossImageX + ", " + percentAcrossImageY);
+				panX = (int) (panX + widthDifference * percentAcrossImageX);
+				panY = (int) (panY + heightDifference * percentAcrossImageY);
 				repaint();
 			}
 		});
@@ -139,6 +147,7 @@ public class ScalingImageHolder extends JComponent
 			this.scaleY = ((double) height / (double) this.source.getHeight(null));
 			this.baseScaleX = this.scaleX;
 			this.baseScaleY = this.scaleY;
+			this.currentZoom = 0;
 		}
 	}
 
