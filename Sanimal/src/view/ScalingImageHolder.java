@@ -59,7 +59,6 @@ public class ScalingImageHolder extends JComponent
 				scaleY = baseScaleY + SCALE_FACTOR * currentZoom;
 				Integer widthDifference = widthScaled - (int) (source.getWidth() * scaleX);
 				Integer heightDifference = heightScaled - (int) (source.getHeight() * scaleY);
-				System.out.println(percentAcrossImageX + ", " + percentAcrossImageY);
 				panX = (int) (panX + widthDifference * percentAcrossImageX);
 				panY = (int) (panY + heightDifference * percentAcrossImageY);
 				repaint();
@@ -145,6 +144,10 @@ public class ScalingImageHolder extends JComponent
 		{
 			this.scaleX = ((double) width / (double) this.source.getWidth(null));
 			this.scaleY = ((double) height / (double) this.source.getHeight(null));
+			if (this.scaleX < this.scaleY)
+				this.scaleY = this.scaleX;
+			else
+				this.scaleX = this.scaleY;
 			this.baseScaleX = this.scaleX;
 			this.baseScaleY = this.scaleY;
 			this.currentZoom = 0;
@@ -154,20 +157,17 @@ public class ScalingImageHolder extends JComponent
 	public void setPanX(Integer panX)
 	{
 		this.panX = panX;
-		ScalingImageHolder.this.repaint();
+		this.repaint();
 	}
 
 	public void setPanY(Integer panY)
 	{
 		this.panY = panY;
-		ScalingImageHolder.this.repaint();
+		this.repaint();
 	}
 
 	public void setSource(BufferedImage source)
 	{
-		if (this.source != null)
-			this.source.flush();
-		this.source = source;
 		if (source != null)
 		{
 			if (source.getColorModel() instanceof IndexColorModel)
@@ -176,10 +176,13 @@ public class ScalingImageHolder extends JComponent
 			}
 			else
 			{
+				if (this.source != null)
+					this.source.flush();
+				this.source = source;
 				this.updateEdited();
+				ScalingImageHolder.this.repaint();
 			}
 		}
-		ScalingImageHolder.this.repaint();
 	}
 
 	public void setBrightness(Double brightness)
