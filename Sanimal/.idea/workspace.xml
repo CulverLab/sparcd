@@ -1,0 +1,1215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="b21cf69f-7015-4d52-93c2-b892e3a6e8f3" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/newView/MenuBackgroundPanel.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/newView/SanimalView.form" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/newView/SanimalViewController.java" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Confusing bits.txt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-collections4-4.1-src.zip" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-collections4-4.1.jar" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-io-2.5-src.zip" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-io-2.5.jar" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-lang3-3.4-src.zip" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-lang3-3.4.jar" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/LICENSE.txt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/NOTICE.txt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/PROPOSAL.html" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/README.txt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/RELEASE-NOTES.txt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/build-testing.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/build.properties.sample" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/build.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/checkstyle.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/license-header.txt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/pmd.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/pom.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/changes/changes.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/changes/release-notes.vm" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/conf/MANIFEST.MF" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/assembly/bin.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/assembly/src.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/Log.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/LogConfigurationException.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/LogFactory.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/LogSource.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/impl/AvalonLogger.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/impl/Jdk13LumberjackLogger.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/impl/Jdk14Logger.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/impl/Log4JLogger.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/impl/LogFactoryImpl.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/impl/LogKitLogger.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/impl/NoOpLog.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/impl/ServletContextCleaner.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/impl/SimpleLog.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/impl/WeakHashtable.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/impl/package.html" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/org/apache/commons/logging/package.html" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/main/java/overview.html" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/media/logo.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/media/logo.xcf" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/site/resources/images/logo.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/site/site.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/site/xdoc/building.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/site/xdoc/download_logging.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/site/xdoc/guide.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/site/xdoc/index.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/site/xdoc/issue-tracking.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/site/xdoc/junit-report.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/site/xdoc/mail-lists.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/site/xdoc/proposal.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/site/xdoc/tech.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/site/xdoc/troubleshooting.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/AbstractLogTest.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/AltHashtable.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/AltHashtableTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/BadHashtablePropertyTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/BasicOperationsTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/DummyException.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/LoadTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/LogTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/NullClassLoaderTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/PathableClassLoader.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/PathableTestSuite.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/SimpleLogTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/UserClass.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/avalon/AvalonLoggerTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/config/FirstPriorityConfigTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/config/PriorityConfigTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/impl/WeakHashtableTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/jdk14/CustomConfigAPITestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/jdk14/CustomConfigFullTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/jdk14/CustomConfigTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/jdk14/DefaultConfigTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/jdk14/TestHandler.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/log4j/StandardTests.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/log4j/log4j12/ApiClasspathStandardTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/log4j/log4j12/AppClasspathStandardTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/log4j/log4j12/ChildClasspathStandardTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/log4j/log4j12/Log4j12StandardTests.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/log4j/log4j12/ParentClasspathStandardTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/log4j/log4j12/TestAppender.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/logkit/StandardTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/noop/NoOpLogTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/pathable/ChildFirstTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/pathable/GeneralTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/pathable/ParentFirstTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/security/DummyClass.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/security/MockSecurityManager.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/security/SecurityAllowedTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/security/SecurityForbiddenTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/servlet/BasicServletTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/simple/CustomConfigTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/simple/DateTimeCustomConfigTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/simple/DecoratedSimpleLog.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/simple/DefaultConfigTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/simple/LogRecord.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/tccl/BadTCCLTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/tccl/NullTCCLTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/tccl/custom/MyLog.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/tccl/custom/MyLogFactoryImpl.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/tccl/log/TcclDisabledTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/tccl/log/TcclEnabledTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/tccl/logfactory/TcclDisabledTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/java/org/apache/commons/logging/tccl/logfactory/TcclEnabledTestCase.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/resources/org/apache/commons/logging/config/nopriority/commons-logging.properties" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/resources/org/apache/commons/logging/config/priority10/commons-logging.properties" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/resources/org/apache/commons/logging/config/priority20/commons-logging.properties" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/resources/org/apache/commons/logging/config/priority20a/commons-logging.properties" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/resources/org/apache/commons/logging/jdk14/CustomConfig.properties" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/resources/org/apache/commons/logging/tccl/log/props_disable_tccl/commons-logging.properties" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/resources/org/apache/commons/logging/tccl/log/props_enable_tccl/commons-logging.properties" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/resources/org/apache/commons/logging/tccl/logfactory/props_disable_tccl/commons-logging.properties" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2-src/src/test/resources/org/apache/commons/logging/tccl/logfactory/props_enable_tccl/commons-logging.properties" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/commons-logging-1.2.jar" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/hs_err_pid30256.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/jxmapviewer2-2.3-SNAPSHOT-sources.jar" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/jxmapviewer2-2.3-SNAPSHOT.jar" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/metadata-extractor-2.9.1.jar" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/metadata-extractor-2.9.1.zip" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/xmpcore-5.1.2.jar" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/controller/Sanimal.java" afterPath="$PROJECT_DIR$/src/controller/Sanimal.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/view/SanimalView.java" afterPath="$PROJECT_DIR$/src/view/SanimalView.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/view/SanimalViewBase.java" afterPath="$PROJECT_DIR$/src/view/SanimalViewBase.java" />
+    </list>
+    <ignored path="$PROJECT_DIR$/bin/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="SanimalView.form" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/newView/SanimalView.form">
+          <provider selected="true" editor-type-id="ui-designer">
+            <state />
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="MenuBackgroundPanel.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/newView/MenuBackgroundPanel.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="163">
+              <caret line="40" column="84" lean-forward="false" selection-start-line="40" selection-start-column="84" selection-end-line="40" selection-end-column="84" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>testR</find>
+      <find>testRadioButton</find>
+    </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="GradleLocalSettings">
+    <option name="modificationStamps">
+      <map>
+        <entry key="$PROJECT_DIR$/../../AfraidOfTheDark" value="1481917827519" />
+      </map>
+    </option>
+    <option name="externalProjectsViewState">
+      <projects_view />
+    </option>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/src/view/map/Test.form" />
+        <option value="$PROJECT_DIR$/src/view/SanimalViewBase.form" />
+        <option value="$PROJECT_DIR$/src/view/SanimalViewBase.java" />
+        <option value="$PROJECT_DIR$/src/view/SanimalView.java" />
+        <option value="$PROJECT_DIR$/src/newView/SanimalViewController.java" />
+        <option value="$PROJECT_DIR$/src/controller/Sanimal.java" />
+        <option value="$PROJECT_DIR$/src/newView/MenuBackgroundPanel.java" />
+        <option value="$PROJECT_DIR$/src/newView/SanimalView.form" />
+      </list>
+    </option>
+  </component>
+  <component name="InvalidFacetManager">
+    <ignored-facets>
+      <facet id="Sanimal/invalid/OSGi" />
+    </ignored-facets>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1936" />
+    <option name="height" value="1056" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator currentView="ProjectPane" proportions="" version="1">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+      <manualOrder />
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Sanimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Sanimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Sanimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Sanimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Sanimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Sanimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="newView" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Sanimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Sanimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="controller" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+      <pane id="Scratches" />
+      <pane id="PackagesPane" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.0" />
+    <property name="project.structure.side.proportion" value="0.0" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="js.eslint.eslintPackage" value="" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Application.Main">
+    <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin">
+      <module name="" />
+      <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -XX:MaxPermSize=250m -ea" />
+      <option name="PROGRAM_PARAMETERS" />
+      <predefined_log_file id="idea.log" enabled="true" />
+      <method />
+    </configuration>
+    <configuration default="true" type="AndroidRunConfigurationType" factoryName="Android App">
+      <module name="" />
+      <option name="DEPLOY" value="true" />
+      <option name="ARTIFACT_NAME" value="" />
+      <option name="PM_INSTALL_OPTIONS" value="" />
+      <option name="ACTIVITY_EXTRA_FLAGS" value="" />
+      <option name="MODE" value="default_activity" />
+      <option name="TARGET_SELECTION_MODE" value="SHOW_DIALOG" />
+      <option name="PREFERRED_AVD" value="" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
+      <option name="SKIP_NOOP_APK_INSTALLATIONS" value="true" />
+      <option name="FORCE_STOP_RUNNING_APP" value="true" />
+      <option name="DEBUGGER_TYPE" value="Java" />
+      <option name="USE_LAST_SELECTED_DEVICE" value="false" />
+      <option name="PREFERRED_AVD" value="" />
+      <Java />
+      <Profilers>
+        <option name="ENABLE_ADVANCED_PROFILING" value="true" />
+        <option name="GAPID_ENABLED" value="false" />
+        <option name="GAPID_DISABLE_PCS" value="false" />
+        <option name="SUPPORT_LIB_ENABLED" value="true" />
+        <option name="INSTRUMENTATION_ENABLED" value="true" />
+      </Profilers>
+      <option name="DEEP_LINK" value="" />
+      <option name="ACTIVITY_CLASS" value="" />
+      <method />
+    </configuration>
+    <configuration default="true" type="AndroidTestRunConfigurationType" factoryName="Android Tests">
+      <module name="" />
+      <option name="TESTING_TYPE" value="0" />
+      <option name="INSTRUMENTATION_RUNNER_CLASS" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="EXTRA_OPTIONS" value="" />
+      <option name="TARGET_SELECTION_MODE" value="SHOW_DIALOG" />
+      <option name="PREFERRED_AVD" value="" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
+      <option name="SKIP_NOOP_APK_INSTALLATIONS" value="true" />
+      <option name="FORCE_STOP_RUNNING_APP" value="true" />
+      <option name="DEBUGGER_TYPE" value="Java" />
+      <option name="USE_LAST_SELECTED_DEVICE" value="false" />
+      <option name="PREFERRED_AVD" value="" />
+      <Java />
+      <Profilers>
+        <option name="ENABLE_ADVANCED_PROFILING" value="true" />
+        <option name="GAPID_ENABLED" value="false" />
+        <option name="GAPID_DISABLE_PCS" value="false" />
+        <option name="SUPPORT_LIB_ENABLED" value="true" />
+        <option name="INSTRUMENTATION_ENABLED" value="true" />
+      </Profilers>
+      <method />
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <module />
+      <method />
+    </configuration>
+    <configuration default="true" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <module name="" />
+      <option name="arquillianRunConfiguration">
+        <value>
+          <option name="containerStateName" value="" />
+        </value>
+      </option>
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="METHOD_NAME" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="singleModule" />
+      </option>
+      <envs />
+      <patterns />
+      <method />
+    </configuration>
+    <configuration default="true" type="ArquillianTestNG" factoryName="">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <module name="" />
+      <option name="arquillianRunConfiguration">
+        <value>
+          <option name="containerStateName" value="" />
+        </value>
+      </option>
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="SUITE_NAME" />
+      <option name="PACKAGE_NAME" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="METHOD_NAME" />
+      <option name="GROUP_NAME" />
+      <option name="TEST_OBJECT" value="CLASS" />
+      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="OUTPUT_DIRECTORY" />
+      <option name="ANNOTATION_TYPE" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="singleModule" />
+      </option>
+      <option name="USE_DEFAULT_REPORTERS" value="false" />
+      <option name="PROPERTIES_FILE" />
+      <envs />
+      <properties />
+      <listeners />
+      <method />
+    </configuration>
+    <configuration default="true" type="Cold Fusion runner description" factoryName="Cold Fusion" custom_browser="" web_path="">
+      <method />
+    </configuration>
+    <configuration default="true" type="CucumberJavaRunConfigurationType" factoryName="Cucumber java">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="myFilePath" />
+      <option name="GLUE" />
+      <option name="myNameFilter" />
+      <option name="myGeneratedName" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="FlashRunConfigurationType" factoryName="Flash App">
+      <option name="BCName" value="" />
+      <option name="IOSSimulatorSdkPath" value="" />
+      <option name="adlOptions" value="" />
+      <option name="airProgramParameters" value="" />
+      <option name="appDescriptorForEmulator" value="Android" />
+      <option name="debugTransport" value="USB" />
+      <option name="debuggerSdkRaw" value="BC SDK" />
+      <option name="emulator" value="NexusOne" />
+      <option name="emulatorAdlOptions" value="" />
+      <option name="fastPackaging" value="true" />
+      <option name="fullScreenHeight" value="0" />
+      <option name="fullScreenWidth" value="0" />
+      <option name="launchUrl" value="false" />
+      <option name="launcherParameters">
+        <LauncherParameters>
+          <option name="browser" value="a7bb68e0-33c0-4d6f-a81a-aac1fdb870c8" />
+          <option name="launcherType" value="OSDefault" />
+          <option name="newPlayerInstance" value="false" />
+          <option name="playerPath" value="FlashPlayerDebugger.exe" />
+        </LauncherParameters>
+      </option>
+      <option name="mobileRunTarget" value="Emulator" />
+      <option name="moduleName" value="" />
+      <option name="overriddenMainClass" value="" />
+      <option name="overriddenOutputFileName" value="" />
+      <option name="overrideMainClass" value="false" />
+      <option name="runTrusted" value="true" />
+      <option name="screenDpi" value="0" />
+      <option name="screenHeight" value="0" />
+      <option name="screenWidth" value="0" />
+      <option name="url" value="http://" />
+      <option name="usbDebugPort" value="7936" />
+      <method />
+    </configuration>
+    <configuration default="true" type="FlexUnitRunConfigurationType" factoryName="FlexUnit" appDescriptorForEmulator="Android" class_name="" emulatorAdlOptions="" method_name="" package_name="" scope="Class">
+      <option name="BCName" value="" />
+      <option name="launcherParameters">
+        <LauncherParameters>
+          <option name="browser" value="a7bb68e0-33c0-4d6f-a81a-aac1fdb870c8" />
+          <option name="launcherType" value="OSDefault" />
+          <option name="newPlayerInstance" value="false" />
+          <option name="playerPath" value="FlashPlayerDebugger.exe" />
+        </LauncherParameters>
+      </option>
+      <option name="moduleName" value="" />
+      <option name="trusted" value="true" />
+      <method />
+    </configuration>
+    <configuration default="true" type="GradleRunConfiguration" factoryName="Gradle">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list />
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <method />
+    </configuration>
+    <configuration default="true" type="GrailsRunConfigurationType" factoryName="Grails">
+      <setting name="vmparams" value="" />
+      <setting name="cmdLine" value="run-app" />
+      <setting name="passParentEnv" value="true" />
+      <setting name="launchBrowser" value="true" />
+      <setting name="launchBrowserUrl" value="" />
+      <setting name="depsClasspath" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JUnit" factoryName="JUnit">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <module name="" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="METHOD_NAME" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" value="-ea" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="singleModule" />
+      </option>
+      <envs />
+      <patterns />
+      <method />
+    </configuration>
+    <configuration default="true" type="JarApplication" factoryName="JAR Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="Java Scratch" factoryName="Java Scratch">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="SCRATCH_FILE_ID" value="0" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerJest" factoryName="Jest">
+      <node-interpreter value="project" />
+      <working-dir value="" />
+      <envs />
+      <scope-kind value="ALL" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerProtractor" factoryName="Protractor">
+      <config-file value="" />
+      <node-interpreter value="project" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug">
+      <method />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType" factoryName="Kotlin">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="Sanimal" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType" factoryName="Kotlin script">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="filePath" />
+      <option name="vmParameters" />
+      <option name="alternativeJrePath" />
+      <option name="programParameters" />
+      <option name="passParentEnvs" value="true" />
+      <option name="workingDirectory" />
+      <option name="isAlternativeJrePathEnabled" value="false" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="Remote" factoryName="Remote">
+      <option name="USE_SOCKET_TRANSPORT" value="true" />
+      <option name="SERVER_MODE" value="false" />
+      <option name="SHMEM_ADDRESS" value="javadebug" />
+      <option name="HOST" value="localhost" />
+      <option name="PORT" value="5005" />
+      <method />
+    </configuration>
+    <configuration default="true" type="ScalaTestRunConfiguration" factoryName="ScalaTest">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <module name="" />
+      <setting name="path" value="" />
+      <setting name="package" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workingDirectory" value="" />
+      <setting name="searchForTest" value="Across module dependencies" />
+      <setting name="testName" value="" />
+      <setting name="testKind" value="Class" />
+      <setting name="showProgressMessages" value="true" />
+      <setting name="useSbt" value="false" />
+      <setting name="useUiWithSbt" value="false" />
+      <classRegexps />
+      <testRegexps />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="Specs2RunConfiguration" factoryName="Specs2">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <module name="" />
+      <setting name="path" value="" />
+      <setting name="package" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workingDirectory" value="" />
+      <setting name="searchForTest" value="Across module dependencies" />
+      <setting name="testName" value="" />
+      <setting name="testKind" value="Class" />
+      <setting name="showProgressMessages" value="true" />
+      <setting name="useSbt" value="false" />
+      <setting name="useUiWithSbt" value="false" />
+      <classRegexps />
+      <testRegexps />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <module name="" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="TestNG" factoryName="TestNG">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <module name="" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="SUITE_NAME" />
+      <option name="PACKAGE_NAME" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="METHOD_NAME" />
+      <option name="GROUP_NAME" />
+      <option name="TEST_OBJECT" value="CLASS" />
+      <option name="VM_PARAMETERS" value="-ea" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <option name="OUTPUT_DIRECTORY" />
+      <option name="ANNOTATION_TYPE" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="singleModule" />
+      </option>
+      <option name="USE_DEFAULT_REPORTERS" value="false" />
+      <option name="PROPERTIES_FILE" />
+      <envs />
+      <properties />
+      <listeners />
+      <method />
+    </configuration>
+    <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <gulpfile />
+      <tasks />
+      <arguments />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="js.build_tools.npm" factoryName="npm">
+      <command value="run" />
+      <scripts />
+      <node-interpreter value="project" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="uTestRunConfiguration" factoryName="utest">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <module name="" />
+      <setting name="path" value="" />
+      <setting name="package" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workingDirectory" value="" />
+      <setting name="searchForTest" value="Across module dependencies" />
+      <setting name="testName" value="" />
+      <setting name="testKind" value="Class" />
+      <setting name="showProgressMessages" value="true" />
+      <setting name="useSbt" value="false" />
+      <setting name="useUiWithSbt" value="false" />
+      <classRegexps />
+      <testRegexps />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="Main" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="MAIN_CLASS_NAME" value="controller.Sanimal" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="Sanimal" />
+      <envs />
+      <method />
+    </configuration>
+    <list size="1">
+      <item index="0" class="java.lang.String" itemvalue="Application.Main" />
+    </list>
+  </component>
+  <component name="SbtLocalSettings">
+    <option name="externalProjectsViewState">
+      <projects_view />
+    </option>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false">
+    <option name="remove_strategy" value="false" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b21cf69f-7015-4d52-93c2-b892e3a6e8f3" name="Default" comment="" />
+      <created>1489298924904</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1489298924904</updated>
+      <workItem from="1489298929545" duration="1168000" />
+      <workItem from="1489353882355" duration="19000" />
+      <workItem from="1496644359648" duration="488000" />
+      <workItem from="1496772800554" duration="32000" />
+      <workItem from="1496772845113" duration="627000" />
+      <workItem from="1496773489721" duration="325000" />
+      <workItem from="1496773828809" duration="1358000" />
+      <workItem from="1496775202649" duration="2296000" />
+      <workItem from="1496778020783" duration="1545000" />
+      <workItem from="1496779585729" duration="1044000" />
+      <workItem from="1496788469762" duration="30000" />
+      <workItem from="1496788539274" duration="2923000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="11855000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <layout>
+      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Nl-Palette" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900432" sideWeight="0.4978678" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900432" sideWeight="0.5021322" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32034633" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Properties" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2803838" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.38278008" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900432" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="processedProjectFiles" value="true" />
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <option name="time" value="1" />
+    </breakpoint-manager>
+    <watches-manager />
+  </component>
+  <component name="antWorkspaceConfiguration">
+    <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
+    <option name="FILTER_TARGETS" value="false" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/newView/SanimalView.form">
+      <provider selected="true" editor-type-id="ui-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/newView/MenuBackgroundPanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="800">
+          <caret line="40" column="84" lean-forward="false" selection-start-line="40" selection-start-column="84" selection-end-line="40" selection-end-column="84" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/newView/SanimalView.form">
+      <provider selected="true" editor-type-id="ui-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/newView/MenuBackgroundPanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="800">
+          <caret line="40" column="84" lean-forward="false" selection-start-line="40" selection-start-column="84" selection-end-line="40" selection-end-column="84" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/newView/SanimalView.form">
+      <provider selected="true" editor-type-id="ui-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/newView/MenuBackgroundPanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="800">
+          <caret line="40" column="84" lean-forward="false" selection-start-line="40" selection-start-column="84" selection-end-line="40" selection-end-column="84" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/newView/SanimalView.form">
+      <provider selected="true" editor-type-id="ui-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/newView/MenuBackgroundPanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="760">
+          <caret line="38" column="11" lean-forward="true" selection-start-line="38" selection-start-column="11" selection-end-line="38" selection-end-column="11" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/newView/SanimalView.form">
+      <provider selected="true" editor-type-id="ui-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/newView/SanimalViewController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="700">
+          <caret line="36" column="40" lean-forward="false" selection-start-line="36" selection-start-column="40" selection-end-line="36" selection-end-column="40" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/newView/SanimalView.form">
+      <provider selected="true" editor-type-id="ui-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/controller/Sanimal.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="380">
+          <caret line="19" column="33" lean-forward="false" selection-start-line="19" selection-start-column="16" selection-end-line="19" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/controller/SanimalController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1960">
+          <caret line="98" column="42" lean-forward="true" selection-start-line="98" selection-start-column="42" selection-end-line="98" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/newView/SanimalView.form">
+      <provider selected="true" editor-type-id="ui-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/controller/Sanimal.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="380">
+          <caret line="19" column="33" lean-forward="false" selection-start-line="19" selection-start-column="16" selection-end-line="19" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/controller/SanimalController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="460">
+          <caret line="58" column="32" lean-forward="false" selection-start-line="58" selection-start-column="32" selection-end-line="58" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/SanimalView.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="940">
+          <caret line="47" column="48" lean-forward="false" selection-start-line="47" selection-start-column="33" selection-end-line="47" selection-end-column="48" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/SanimalViewBase.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="500">
+          <caret line="25" column="0" lean-forward="true" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/SanimalView.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="100">
+          <caret line="50" column="1" lean-forward="false" selection-start-line="50" selection-start-column="1" selection-end-line="50" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/SanimalViewBase.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="10840">
+          <caret line="558" column="5" lean-forward="false" selection-start-line="558" selection-start-column="5" selection-end-line="558" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/SanimalView.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1000">
+          <caret line="50" column="1" lean-forward="true" selection-start-line="50" selection-start-column="1" selection-end-line="50" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/SanimalViewBase.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_121/src.zip!/javax/swing/tree/DefaultMutableTreeNode.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="197">
+          <caret line="763" column="23" lean-forward="false" selection-start-line="763" selection-start-column="23" selection-end-line="763" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/map/Test.form" />
+    <entry file="file://$PROJECT_DIR$/src/view/map/Test.java" />
+    <entry file="file://$PROJECT_DIR$/src/view/SanimalView.form" />
+    <entry file="file://$PROJECT_DIR$/src/view/SanimalViewBase.form" />
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_121/src.zip!/javax/swing/SpringLayout.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16460">
+          <caret line="881" column="11" lean-forward="false" selection-start-line="881" selection-start-column="11" selection-end-line="881" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/SanimalViewBase.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="20">
+          <caret line="25" column="0" lean-forward="false" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_121/src.zip!/com/sun/org/apache/bcel/internal/generic/FieldGen.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="193">
+          <caret line="73" column="13" lean-forward="false" selection-start-line="73" selection-start-column="13" selection-end-line="73" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/view/SanimalView.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="55" column="55" lean-forward="false" selection-start-line="55" selection-start-column="23" selection-end-line="55" selection-end-column="55" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/controller/SanimalController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-280">
+          <caret line="78" column="0" lean-forward="true" selection-start-line="78" selection-start-column="0" selection-end-line="78" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_121/src.zip!/javax/swing/JPanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="211">
+          <caret line="81" column="11" lean-forward="false" selection-start-line="81" selection-start-column="11" selection-end-line="81" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_121/src.zip!/javax/imageio/ImageIO.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="231">
+          <caret line="1301" column="9" lean-forward="true" selection-start-line="1301" selection-start-column="9" selection-end-line="1301" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_121/src.zip!/java/awt/Graphics.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="224">
+          <caret line="881" column="28" lean-forward="false" selection-start-line="881" selection-start-column="28" selection-end-line="881" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/newView/SanimalViewController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="381">
+          <caret line="38" column="0" lean-forward="false" selection-start-line="38" selection-start-column="0" selection-end-line="38" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/controller/Sanimal.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="400">
+          <caret line="26" column="36" lean-forward="false" selection-start-line="26" selection-start-column="36" selection-end-line="26" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/newView/MenuBackgroundPanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="163">
+          <caret line="40" column="84" lean-forward="false" selection-start-line="40" selection-start-column="84" selection-end-line="40" selection-end-column="84" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/newView/SanimalView.form">
+      <provider selected="true" editor-type-id="ui-designer">
+        <state />
+      </provider>
+    </entry>
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="ArtifactsStructureConfigurable.UI">
+        <settings>
+          <artifact-editor />
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="FacetStructureConfigurable.UI">
+        <settings>
+          <last-edited>No facets are configured</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="GlobalLibrariesConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="JdkListConfigurable.UI">
+        <settings>
+          <last-edited>1.8</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ModuleStructureConfigurable.UI">
+        <settings>
+          <last-edited>Sanimal</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ProjectJDKs.UI">
+        <settings>
+          <last-edited>1.8</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ProjectLibrariesConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
+  </component>
+</project>

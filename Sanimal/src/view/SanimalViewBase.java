@@ -10,25 +10,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSlider;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
-import javax.swing.JTree;
-import javax.swing.SpringLayout;
+import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.tree.TreeModel;
 
@@ -549,19 +531,19 @@ public abstract class SanimalViewBase extends JFrame
 		radNumPictures.setSelected(true);
 		radNumPictures.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		pnlExcelOutput.add(radNumPictures);
-		
+
 		radActivity = new JRadioButton("Picture Activity");
 		radActivity.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		pnlExcelOutput.add(radActivity);
-		
+
 		radAbundance = new JRadioButton("Picture Abundance");
 		radAbundance.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		pnlExcelOutput.add(radAbundance);
-		
+
 		radPeriod = new JRadioButton("Picture Period");
 		radPeriod.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		pnlExcelOutput.add(radPeriod);
-		
+
 		grpDataType = new ButtonGroup();
 		grpDataType.add(radNumPictures);
 		grpDataType.add(radActivity);

@@ -15,9 +15,7 @@ import java.util.ListIterator;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionListener;
@@ -56,7 +54,7 @@ public class SanimalView extends SanimalViewBase implements Observer
 		super();
 		this.setResizable(true);
 		this.setTitle("Scientific Animal Image AnaLysis (SANIMAL)");
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
 		this.setSize(1400, 773);
 		this.setMinimumSize(new Dimension(1400, 773));
@@ -410,9 +408,9 @@ public class SanimalView extends SanimalViewBase implements Observer
 			if (this.treImages.getModel().getRoot() instanceof DefaultMutableTreeNode)
 			{
 				DefaultMutableTreeNode root = (DefaultMutableTreeNode) this.treImages.getModel().getRoot();
-				for (DefaultMutableTreeNode node : Collections.<DefaultMutableTreeNode> list(root.preorderEnumeration()))
-					if (node.getUserObject() instanceof ImageEntry)
-						entries.add((ImageEntry) node.getUserObject());
+				//for (DefaultMutableTreeNode node : Collections.<DefaultMutableTreeNode> list(root.preorderEnumeration()))
+				//	if (node.getUserObject() instanceof ImageEntry)
+				//		entries.add((ImageEntry) node.getUserObject());
 			}
 		return entries;
 	}
