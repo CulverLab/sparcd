@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<AnchorPane prefHeight="300.0" prefWidth="524.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalViewController">
+    <stylesheets>
+        <URL value="@SanimalView.css" />
+    </stylesheets>
+    <children>
+        <ImageView scaleX="1.03" scaleY="1.05" pickOnBounds="true" preserveRatio="false">
+            <image>
+                <Image url="@../images/mainMenu/sanimalBackground.JPG" />
+            </image>
+        </ImageView>
+        <ImageView fitHeight="161.0" fitWidth="405.0" layoutX="14.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+            <image>
+                <Image url="@../images/mainMenu/sanimalTitle.png" />
+            </image>
+        </ImageView>
+        <GridPane layoutX="55.0" layoutY="148.0" prefHeight="111.0" prefWidth="49.0" scaleX="1.5" scaleY="1.5" styleClass="buttonPane">
+            <columnConstraints>
+                <ColumnConstraints maxWidth="100.0" minWidth="100.0" prefWidth="110.0" />
+            </columnConstraints>
+            <children>
+                <Button fx:id="btnImport" maxHeight="28" maxWidth="100" mnemonicParsing="false" onAction="#importPressed" styleClass="importBtn" text="Import" GridPane.halignment="CENTER" GridPane.rowIndex="0" GridPane.valignment="CENTER" />
+                <Button fx:id="btnAnalyze" maxHeight="28" maxWidth="100" mnemonicParsing="false" onAction="#analyzePressed" styleClass="analyzeBtn" text="Analyze" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                <Button fx:id="btnMap" maxHeight="28" maxWidth="100" mnemonicParsing="false" onAction="#mapPressed" styleClass="mapBtn" text="Map" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
+                <Button fx:id="btnExit" maxHeight="28" maxWidth="100" mnemonicParsing="false" onAction="#exitPressed" styleClass="exitBtn" text="Exit" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER" />
+            </children>
+            <rowConstraints>
+                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" />
+                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" />
+                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" />
+                <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" />
+            </rowConstraints>
+        </GridPane>
+    </children>
+</AnchorPane>

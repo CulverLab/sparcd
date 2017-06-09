@@ -1,0 +1,15 @@
+.deleteBtn {
+    -fx-background-image: url("../images/importWindow/delete.png");
+    -fx-background-size: 18 18;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: 5px center;
+    -fx-alignment: center-right;
+}
+
+.editBtn {
+    -fx-background-image: url("../images/importWindow/edit.png");
+    -fx-background-size: 18 18;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: 5px center;
+    -fx-alignment: center-right;
+}
