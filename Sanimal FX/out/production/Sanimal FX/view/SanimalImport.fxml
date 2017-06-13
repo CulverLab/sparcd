@@ -1,24 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.net.URL?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ListView?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import library.ImageViewPane?>
 
-<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalImportController">
-   <children>
-      <ListView fx:id="speciesListView" HBox.hgrow="ALWAYS" minWidth="310" maxWidth="310" />
-      <GridPane prefHeight="400.0" prefWidth="404.0">
-        <columnConstraints>
-          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        </rowConstraints>
-      </GridPane>
-   </children>
-</HBox>
+<BorderPane fx:id="" minHeight="500" minWidth="1000" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalImportController">
+    <stylesheets>
+        <URL value="@SanimalImport.css" />
+    </stylesheets>
+    <center>
+        <BorderPane>
+            <center>
+                <ImageViewPane fx:id="imagePreviewPane" prefHeight="400" prefWidth="600" styleClass="imageViewBackground">
+                    <imageView>
+                        <ImageView fx:id="imagePreview" preserveRatio="true" styleClass="imageView" />
+                    </imageView>
+                </ImageViewPane>
+            </center>
+            <bottom>
+                <AnchorPane maxHeight="200" minHeight="200" BorderPane.alignment="CENTER" />
+            </bottom>
+        </BorderPane>
+    </center>
+    <left>
+        <VBox styleClass="lightBorder" maxWidth="310" minWidth="310" BorderPane.alignment="CENTER">
+            <children>
+                <ListView fx:id="speciesListView" VBox.vgrow="ALWAYS" />
+                <HBox alignment="CENTER" maxHeight="60" maxWidth="310" minHeight="60" minWidth="310" prefHeight="60" spacing="30">
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#addNewSpecies" prefWidth="60" styleClass="addBtn" text="New" />
+                        <Button mnemonicParsing="false" onAction="#editCurrentSpecies" prefWidth="60" styleClass="editBtn" text="Edit" />
+                        <Button mnemonicParsing="false" onAction="#deleteCurrentSpecies" prefWidth="70" styleClass="deleteBtn" text="Delete" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </left>
+    <right>
+        <VBox styleClass="lightBorder" maxWidth="310" minWidth="310" prefHeight="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <TreeView fx:id="imageTree" VBox.vgrow="ALWAYS" />
+            <HBox alignment="CENTER" maxHeight="60" maxWidth="310" minHeight="60" minWidth="310" prefHeight="60" spacing="40">
+               <children>
+                  <Button styleClass="importBtn" prefWidth="115" mnemonicParsing="false" text="Import Images" />
+                  <Button styleClass="deleteBtn" prefWidth="70" mnemonicParsing="false" text="Delete" />
+               </children>
+            </HBox>
+         </children></VBox>
+    </right>
+</BorderPane>

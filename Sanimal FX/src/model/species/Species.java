@@ -1,5 +1,8 @@
 package model.species;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
 import java.io.Serializable;
 import java.net.URL;
 
@@ -10,21 +13,57 @@ import java.net.URL;
  */
 public class Species implements Serializable
 {
-    private String name;
-    private String scientificName;
-    private String speciesIconURL;
+    private StringProperty name = new SimpleStringProperty();
+    private StringProperty scientificName = new SimpleStringProperty();
+    private StringProperty speciesIconURL = new SimpleStringProperty();
+
+    public static final String UNINITIALIZED = "UNINITIALIZED";
 
     /**
      * Constructor for the species
      *
      * @param name
      *            The name of the species
+     * @param scientificName
+     *            The scientific name of the species
+     * @param speciesIconURL
+     *            The URL of the icon as a string
      */
     public Species(String name, String scientificName, String speciesIconURL)
     {
-        this.name = name;
-        this.scientificName = scientificName;
-        this.speciesIconURL = speciesIconURL;
+        this.name.setValue(name);
+        this.scientificName.setValue(scientificName);
+        this.speciesIconURL.setValue(speciesIconURL);
+    }
+
+    /**
+     * Default constructor to create an empty species
+     */
+    public Species()
+    {
+        this.name.setValue(UNINITIALIZED);
+        this.scientificName.setValue(UNINITIALIZED);
+        this.speciesIconURL.setValue(UNINITIALIZED);
+    }
+
+    public Boolean isUninitialized()
+    {
+        return !this.nameValid() || !this.scientificNameValid() || !this.iconValid();
+    }
+
+    public Boolean nameValid()
+    {
+        return !this.name.getValue().equals(UNINITIALIZED);
+    }
+
+    public Boolean scientificNameValid()
+    {
+        return !this.scientificName.getValue().equals(UNINITIALIZED);
+    }
+
+    public Boolean iconValid()
+    {
+        return !this.speciesIconURL.getValue().equals(UNINITIALIZED);
     }
 
     /**
@@ -33,7 +72,7 @@ public class Species implements Serializable
      */
     public void setName(String name)
     {
-        this.name = name;
+        this.name.setValue(name);
     }
 
     /**
@@ -41,7 +80,7 @@ public class Species implements Serializable
      */
     public String getName()
     {
-        return name;
+        return name.getValue();
     }
 
     /**
@@ -50,7 +89,7 @@ public class Species implements Serializable
      */
     public void setScientificName(String scientificName)
     {
-        this.scientificName = scientificName;
+        this.scientificName.setValue(scientificName);
     }
 
     /**
@@ -58,16 +97,16 @@ public class Species implements Serializable
      */
     public String getScientificName()
     {
-        return scientificName;
+        return scientificName.getValue();
     }
 
     /**
      * Set the species icon using a URL
-     * @param speciesIcon The new species icon of the species
+     * @param speciesIconURL The new species icon of the species
      */
-    public void setSpeciesIcon(String speciesIcon)
+    public void setSpeciesIcon(String speciesIconURL)
     {
-        this.speciesIconURL = speciesIconURL;
+        this.speciesIconURL.setValue(speciesIconURL);
     }
 
     /**
@@ -75,7 +114,7 @@ public class Species implements Serializable
      */
     public String getSpeciesIcon()
     {
-        return speciesIconURL;
+        return speciesIconURL.getValue();
     }
 
     /**
@@ -85,5 +124,20 @@ public class Species implements Serializable
     public String toString()
     {
         return this.getName();
+    }
+
+    public StringProperty getNameProperty()
+    {
+        return this.name;
+    }
+
+    public StringProperty getScientificNameProperty()
+    {
+        return this.scientificName;
+    }
+
+    public StringProperty getSpeciesIconURLProperty()
+    {
+        return this.speciesIconURL;
     }
 }
