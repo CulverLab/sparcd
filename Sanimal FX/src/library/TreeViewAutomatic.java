@@ -12,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.image.ImageView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -194,6 +195,13 @@ public class TreeViewAutomatic<T extends HierarchyData<T>> extends TreeView<T> {
         TreeItem<T> treeItem = new TreeItem<T>();
         treeItem.setValue(value);
         treeItem.setExpanded(true);
+
+        /*
+         * Custom addition to add support for a default icon
+         */
+        if (value.getTreeIcon() != null) {
+            treeItem.setGraphic(new ImageView(value.getTreeIcon()));
+        }
 
         if (value != null && value.getChildren() != null) {
             ListChangeListener<T> listChangeListener = getListChangeListener(treeItem.getChildren());

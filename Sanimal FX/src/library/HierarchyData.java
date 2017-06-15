@@ -1,6 +1,7 @@
 package library;
 
 import javafx.collections.ObservableList;
+import javafx.scene.image.Image;
 
 /**
  * Used to mark an object as hierarchical data.
@@ -16,4 +17,11 @@ public interface HierarchyData<T extends HierarchyData> {
      * @return A list of children.
      */
     ObservableList<T> getChildren();
+
+    /**
+     * Used in grabbing the icon used in the TreeView
+     *
+     * @return The image to be put as the tree icon
+     */
+    Image getTreeIcon();
 }

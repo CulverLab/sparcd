@@ -5,6 +5,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.image.Image;
 
 import java.io.File;
 
@@ -15,6 +16,9 @@ import java.io.File;
  */
 public class ImageDirectory extends ImageContainer
 {
+	// The icon to use for all images at the moment
+	private static final Image DEFAULT_DIRECTORY_ICON = new Image(ImageEntry.class.getResource("../../images/importWindow/directoryIcon.png").toString());
+
 	private ObservableList<ImageContainer> children = FXCollections.observableArrayList(imageContainer -> {
 		if (imageContainer instanceof ImageEntry)
 		{
@@ -54,6 +58,12 @@ public class ImageDirectory extends ImageContainer
 		if (!directory.isDirectory())
 			throw new RuntimeException("The specified file is not a directory!");
 		this.directoryProperty.setValue(directory);
+	}
+
+	@Override
+	public Image getTreeIcon()
+	{
+		return DEFAULT_DIRECTORY_ICON;
 	}
 
 	@Override

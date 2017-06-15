@@ -7,6 +7,7 @@ package model.image;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.image.Image;
 import library.HierarchyData;
 
 import java.io.File;

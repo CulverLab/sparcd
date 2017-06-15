@@ -12,6 +12,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.image.Image;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
@@ -25,6 +26,8 @@ public class ImageEntry extends ImageContainer
 {
 	// The format with which to print the date out in
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("YYYY MM dd hh mm ss");
+	// The icon to use for all images at the moment
+	private static final Image DEFAULT_IMAGE_ICON = new Image(ImageEntry.class.getResource("../../images/importWindow/imageIcon.png").toString());
 
 	// The actual file 
 	private ObjectProperty<File> imageFileProperty = new SimpleObjectProperty<File>();
@@ -54,6 +57,12 @@ public class ImageEntry extends ImageContainer
 		catch (IOException e)
 		{
 		}
+	}
+
+	@Override
+	public Image getTreeIcon()
+	{
+		return DEFAULT_IMAGE_ICON;
 	}
 
 	/**

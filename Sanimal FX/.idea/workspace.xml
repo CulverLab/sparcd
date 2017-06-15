@@ -2,33 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5260a486-4238-4f6c-872c-455c95ae1124" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/library/HierarchyData.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/library/TreeViewAutomatic.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/model/SanimalData.java" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/out/production/Sanimal FX/controller/SanimalImportController.class" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Sanimal FX/model/species/SpeciesEntry.class" afterPath="$PROJECT_DIR$/out/production/Sanimal FX/model/species/SpeciesEntry.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Sanimal FX/view/SanimalImport.fxml" afterPath="$PROJECT_DIR$/out/production/Sanimal FX/view/SanimalImport.fxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/controller/SanimalImportController.java" afterPath="$PROJECT_DIR$/src/controller/SanimalImportController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/DataAnalysis.java" afterPath="$PROJECT_DIR$/src/model/analysis/DataAnalysis.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/ImageQuery.java" afterPath="$PROJECT_DIR$/src/model/analysis/ImageQuery.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/SanimalAnalysisUtils.java" afterPath="$PROJECT_DIR$/src/model/analysis/SanimalAnalysisUtils.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/textFormatters/ActPerAbuLocFormatter.java" afterPath="$PROJECT_DIR$/src/model/analysis/textFormatters/ActPerAbuLocFormatter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/textFormatters/AllPicturesFormatter.java" afterPath="$PROJECT_DIR$/src/model/analysis/textFormatters/AllPicturesFormatter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/textFormatters/DetectionRateFormatter.java" afterPath="$PROJECT_DIR$/src/model/analysis/textFormatters/DetectionRateFormatter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/textFormatters/FirstLastSpeciesFormatter.java" afterPath="$PROJECT_DIR$/src/model/analysis/textFormatters/FirstLastSpeciesFormatter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/textFormatters/HeaderFormatter.java" afterPath="$PROJECT_DIR$/src/model/analysis/textFormatters/HeaderFormatter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/textFormatters/LocationStatFormatter.java" afterPath="$PROJECT_DIR$/src/model/analysis/textFormatters/LocationStatFormatter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/textFormatters/LunarActivityFormatter.java" afterPath="$PROJECT_DIR$/src/model/analysis/textFormatters/LunarActivityFormatter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/textFormatters/OccouranceFormatter.java" afterPath="$PROJECT_DIR$/src/model/analysis/textFormatters/OccouranceFormatter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/textFormatters/RichnessFormatter.java" afterPath="$PROJECT_DIR$/src/model/analysis/textFormatters/RichnessFormatter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/textFormatters/SpeciesLocCoordFormatter.java" afterPath="$PROJECT_DIR$/src/model/analysis/textFormatters/SpeciesLocCoordFormatter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/textFormatters/TotalDayFormatter.java" afterPath="$PROJECT_DIR$/src/model/analysis/textFormatters/TotalDayFormatter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/analysis/textFormatters/TrapDaysAndEffortFormatter.java" afterPath="$PROJECT_DIR$/src/model/analysis/textFormatters/TrapDaysAndEffortFormatter.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/library/HierarchyData.java" afterPath="$PROJECT_DIR$/src/library/HierarchyData.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/library/TreeViewAutomatic.java" afterPath="$PROJECT_DIR$/src/library/TreeViewAutomatic.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/image/ImageContainer.java" afterPath="$PROJECT_DIR$/src/model/image/ImageContainer.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/image/ImageDirectory.java" afterPath="$PROJECT_DIR$/src/model/image/ImageDirectory.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/image/ImageEntry.java" afterPath="$PROJECT_DIR$/src/model/image/ImageEntry.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/model/species/SpeciesEntry.java" afterPath="$PROJECT_DIR$/src/model/species/SpeciesEntry.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/view/SanimalImport.fxml" afterPath="$PROJECT_DIR$/src/view/SanimalImport.fxml" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -81,75 +59,15 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="TreeViewAutomatic.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/library/TreeViewAutomatic.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="232">
-              <caret line="106" column="23" lean-forward="false" selection-start-line="106" selection-start-column="16" selection-end-line="106" selection-end-column="23" />
-              <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="e#1410#1446#0" expanded="true" />
-                <element signature="e#1699#1739#0" expanded="true" />
-                <element signature="e#1832#1861#0" expanded="true" />
-                <element signature="e#5627#5649#0" expanded="true" />
-                <element signature="e#8035#8036#0" expanded="true" />
-                <element signature="e#8072#8073#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="SanimalImport.fxml" pinned="false" current-in-tab="false">
+      <file leaf-file-name="SanimalImport.fxml" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/view/SanimalImport.fxml">
-          <provider editor-type-id="JavaFX-Scene-Builder">
+          <provider selected="true" editor-type-id="JavaFX-Scene-Builder">
             <state />
           </provider>
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="613">
+          <provider editor-type-id="text-editor">
+            <state relative-caret-position="476">
               <caret line="53" column="45" lean-forward="false" selection-start-line="53" selection-start-column="45" selection-end-line="53" selection-end-column="45" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ImageEntry.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/model/image/ImageEntry.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="363">
-              <caret line="39" column="0" lean-forward="false" selection-start-line="39" selection-start-column="0" selection-end-line="39" selection-end-column="0" />
-              <folding>
-                <element signature="e#891#897#0" expanded="true" />
-                <element signature="e#1013#1019#0" expanded="true" />
-                <element signature="e#1147#1157#0" expanded="true" />
-                <element signature="e#1267#1281#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ImageContainer.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/model/image/ImageContainer.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="360">
-              <caret line="27" column="47" lean-forward="false" selection-start-line="27" selection-start-column="47" selection-end-line="27" selection-end-column="47" />
-              <folding>
-                <element signature="e#485#486#0" expanded="true" />
-                <element signature="e#523#524#0" expanded="true" />
-                <element signature="e#591#592#0" expanded="true" />
-                <element signature="e#640#641#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="SanimalData.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/model/SanimalData.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="265">
-              <caret line="30" column="31" lean-forward="false" selection-start-line="30" selection-start-column="31" selection-end-line="30" selection-end-column="31" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -228,7 +146,6 @@
         <option value="$PROJECT_DIR$/src/model/analysis/DataAnalysis.java" />
         <option value="$PROJECT_DIR$/src/model/analysis/ImageQuery.java" />
         <option value="$PROJECT_DIR$/src/model/analysis/SanimalAnalysisUtils.java" />
-        <option value="$PROJECT_DIR$/src/library/HierarchyData.java" />
         <option value="$PROJECT_DIR$/src/library/TreeViewWithItems.java" />
         <option value="$PROJECT_DIR$/src/model/image/IImageContainer.java" />
         <option value="$PROJECT_DIR$/src/library/ImageDirectoryTreeItem.java" />
@@ -237,16 +154,17 @@
         <option value="$PROJECT_DIR$/src/model/SanimalData.java" />
         <option value="$PROJECT_DIR$/src/library/ImageContainerTreeItem.java" />
         <option value="$PROJECT_DIR$/src/library/RecursiveTreeItem.java" />
-        <option value="$PROJECT_DIR$/src/model/image/ImageEntry.java" />
         <option value="$PROJECT_DIR$/src/library/RecursiveImageDirectoryTreeItem.java" />
         <option value="$PROJECT_DIR$/src/library/HeirarchyData.java" />
-        <option value="$PROJECT_DIR$/src/library/TreeViewAutomatic.java" />
-        <option value="$PROJECT_DIR$/src/model/image/ImageContainer.java" />
-        <option value="$PROJECT_DIR$/src/model/image/ImageDirectory.java" />
         <option value="$PROJECT_DIR$/src/view/SanimalImport.fxml" />
         <option value="$PROJECT_DIR$/src/model/image/ImageImporterData.java" />
         <option value="$PROJECT_DIR$/src/model/image/ImageImporter.java" />
         <option value="$PROJECT_DIR$/src/controller/SanimalImportController.java" />
+        <option value="$PROJECT_DIR$/src/model/image/ImageContainer.java" />
+        <option value="$PROJECT_DIR$/src/library/HierarchyData.java" />
+        <option value="$PROJECT_DIR$/src/model/image/ImageDirectory.java" />
+        <option value="$PROJECT_DIR$/src/model/image/ImageEntry.java" />
+        <option value="$PROJECT_DIR$/src/library/TreeViewAutomatic.java" />
       </list>
     </option>
   </component>
@@ -322,82 +240,6 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="model" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Sanimal FX" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Sanimal FX" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="model" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="image" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Sanimal FX" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Sanimal FX" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="library" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Sanimal FX" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Sanimal FX" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Sanimal FX" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Sanimal FX" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="controller" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -933,12 +775,12 @@
       <workItem from="1497308608121" duration="2250000" />
       <workItem from="1497323728806" duration="10353000" />
       <workItem from="1497392176398" duration="131000" />
-      <workItem from="1497392320348" duration="26911000" />
+      <workItem from="1497392320348" duration="27648000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="106011000" />
+    <option name="totallyTimeSpent" value="106748000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -970,7 +812,7 @@
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21321961" sideWeight="0.495671" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17099567" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4491342" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -1301,14 +1143,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/library/HierarchyData.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="15" column="20" lean-forward="false" selection-start-line="15" selection-start-column="20" selection-end-line="15" selection-end-column="20" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://C:/Program Files/Java/jdk1.8.0_121/javafx-src.zip!/javafx/collections/ObservableList.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="242">
@@ -1344,37 +1178,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/model/image/ImageEntry.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="363">
-          <caret line="39" column="0" lean-forward="false" selection-start-line="39" selection-start-column="0" selection-end-line="39" selection-end-column="0" />
-          <folding>
-            <element signature="e#891#897#0" expanded="true" />
-            <element signature="e#1013#1019#0" expanded="true" />
-            <element signature="e#1147#1157#0" expanded="true" />
-            <element signature="e#1267#1281#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/view/SanimalImport.fxml">
-      <provider editor-type-id="JavaFX-Scene-Builder">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="613">
-          <caret line="53" column="45" lean-forward="false" selection-start-line="53" selection-start-column="45" selection-end-line="53" selection-end-column="45" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://C:/Program Files/Java/jdk1.8.0_121/javafx-src.zip!/javafx/beans/property/ObjectPropertyBase.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="166">
           <caret line="147" column="0" lean-forward="false" selection-start-line="147" selection-start-column="0" selection-end-line="147" selection-end-column="0" />
           <folding>
-            <element signature="e#2623#2624#0" expanded="true" />
-            <element signature="e#2685#2686#0" expanded="true" />
+            <element signature="e#2623#2624#0" expanded="false" />
+            <element signature="e#2685#2686#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1395,16 +1205,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/model/image/ImageDirectory.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="895">
-          <caret line="51" column="11" lean-forward="false" selection-start-line="51" selection-start-column="11" selection-end-line="51" selection-end-column="11" />
-          <folding>
-            <element signature="e#1237#1243#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/model/SanimalData.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="265">
@@ -1415,29 +1215,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/library/TreeViewAutomatic.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="232">
-          <caret line="106" column="23" lean-forward="false" selection-start-line="106" selection-start-column="16" selection-end-line="106" selection-end-column="23" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#1410#1446#0" expanded="true" />
-            <element signature="e#1699#1739#0" expanded="true" />
-            <element signature="e#1832#1861#0" expanded="true" />
-            <element signature="e#5627#5649#0" expanded="true" />
-            <element signature="e#8035#8036#0" expanded="true" />
-            <element signature="e#8072#8073#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://C:/Program Files/Java/jdk1.8.0_121/javafx-src.zip!/javafx/scene/control/TreeView.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="181">
           <caret line="468" column="22" lean-forward="false" selection-start-line="468" selection-start-column="22" selection-end-line="468" selection-end-column="22" />
           <folding>
-            <element signature="e#20227#20228#0" expanded="true" />
-            <element signature="e#20268#20269#0" expanded="true" />
+            <element signature="e#20227#20228#0" expanded="false" />
+            <element signature="e#20268#20269#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1453,6 +1237,72 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/model/image/ImageContainer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="65">
+          <caret line="15" column="61" lean-forward="false" selection-start-line="15" selection-start-column="48" selection-end-line="15" selection-end-column="61" />
+          <folding>
+            <element signature="e#518#519#0" expanded="true" />
+            <element signature="e#556#557#0" expanded="true" />
+            <element signature="e#624#625#0" expanded="true" />
+            <element signature="e#673#674#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/model/image/ImageDirectory.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="212">
+          <caret line="19" column="122" lean-forward="false" selection-start-line="19" selection-start-column="96" selection-end-line="19" selection-end-column="122" />
+          <folding>
+            <element signature="e#1472#1478#0" expanded="true" />
+            <element signature="e#1859#1860#0" expanded="true" />
+            <element signature="e#1895#1896#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/model/image/ImageEntry.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="125">
+          <caret line="30" column="0" lean-forward="true" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
+          <folding>
+            <element signature="e#1117#1123#0" expanded="true" />
+            <element signature="e#1239#1245#0" expanded="true" />
+            <element signature="e#1373#1383#0" expanded="true" />
+            <element signature="e#1493#1507#0" expanded="true" />
+            <element signature="e#2053#2054#0" expanded="true" />
+            <element signature="e#2085#2086#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/library/HierarchyData.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="18" column="36" lean-forward="true" selection-start-line="18" selection-start-column="36" selection-end-line="18" selection-end-column="36" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/library/TreeViewAutomatic.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="204" column="0" lean-forward="true" selection-start-line="204" selection-start-column="0" selection-end-line="204" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#1447#1483#0" expanded="true" />
+            <element signature="e#1736#1776#0" expanded="true" />
+            <element signature="e#1869#1898#0" expanded="true" />
+            <element signature="e#5664#5686#0" expanded="true" />
+            <element signature="e#8279#8280#0" expanded="true" />
+            <element signature="e#8316#8317#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/model/image/ImageImporter.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="437">
@@ -1463,16 +1313,14 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/model/image/ImageContainer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="27" column="47" lean-forward="false" selection-start-line="27" selection-start-column="47" selection-end-line="27" selection-end-column="47" />
-          <folding>
-            <element signature="e#485#486#0" expanded="true" />
-            <element signature="e#523#524#0" expanded="true" />
-            <element signature="e#591#592#0" expanded="true" />
-            <element signature="e#640#641#0" expanded="true" />
-          </folding>
+    <entry file="file://$PROJECT_DIR$/src/view/SanimalImport.fxml">
+      <provider selected="true" editor-type-id="JavaFX-Scene-Builder">
+        <state />
+      </provider>
+      <provider editor-type-id="text-editor">
+        <state relative-caret-position="476">
+          <caret line="53" column="45" lean-forward="false" selection-start-line="53" selection-start-column="45" selection-end-line="53" selection-end-column="45" />
+          <folding />
         </state>
       </provider>
     </entry>
