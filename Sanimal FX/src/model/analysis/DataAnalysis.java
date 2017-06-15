@@ -1,10 +1,6 @@
 package model.analysis;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.lang3.time.DateUtils;
 
@@ -57,10 +53,7 @@ public class DataAnalysis
 				nullLocationsFound = true;
 
 		// Sort the locations by name
-		Collections.sort(allImageLocations, (loc1, loc2) ->
-		{
-			return loc1.getName().compareTo(loc2.getName());
-		});
+		allImageLocations.sort(Comparator.comparing(Location::getName));
 
 		// Find all image species 
 		for (ImageEntry imageEntry : images)
@@ -69,10 +62,7 @@ public class DataAnalysis
 					allImageSpecies.add(speciesEntry.getSpecies());
 
 		// Sort species by name
-		Collections.sort(allImageSpecies, (species1, species2) ->
-		{
-			return species1.getName().compareTo(species2.getName());
-		});
+		allImageSpecies.sort(Comparator.comparing(Species::getName));
 
 		// Find all image years
 		for (ImageEntry imageEntry : images)
@@ -87,10 +77,7 @@ public class DataAnalysis
 
 		// Create a copy of "images", and sort it by date
 		imagesSortedByDate = new ArrayList<ImageEntry>(images);
-		Collections.sort(imagesSortedByDate, (entry1, entry2) ->
-		{
-			return entry1.getDateTaken().compareTo(entry2.getDateTaken());
-		});
+		imagesSortedByDate.sort(Comparator.comparing(ImageEntry::getDateTaken));
 
 		// If we have at least one image, begin calculating lunar cycles
 		if (imagesSortedByDate.size() > 0)
@@ -173,10 +160,7 @@ public class DataAnalysis
 				if (!locations.contains(image.getLocationTaken()))
 					locations.add(image.getLocationTaken());
 
-		Collections.sort(locations, (loc1, loc2) ->
-		{
-			return loc1.getName().compareTo(loc2.getName());
-		});
+		locations.sort(Comparator.comparing(Location::getName));
 
 		return locations;
 	}

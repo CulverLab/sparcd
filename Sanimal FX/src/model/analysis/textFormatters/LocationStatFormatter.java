@@ -36,39 +36,39 @@ public class LocationStatFormatter extends TextFormatter
 	 */
 	public String printPercentOfSpeciesInLoc()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "FOR EACH LOCATION TOTAL NUMBER AND PERCENT OF EACH SPECIES\n";
-		toReturn = toReturn + "  Use independent picture\n";
+		toReturn.append("FOR EACH LOCATION TOTAL NUMBER AND PERCENT OF EACH SPECIES\n");
+		toReturn.append("  Use independent picture\n");
 
 		for (Location location : analysis.getAllImageLocations())
-			toReturn = toReturn + String.format("%31s ", location.getName());
-		toReturn = toReturn + "\n";
-		toReturn = toReturn + "Species";
-		for (Location location : analysis.getAllImageLocations())
-			toReturn = toReturn + "                   Total Percent";
-		toReturn = toReturn + "\n";
+			toReturn.append(String.format("%31s ", location.getName()));
+		toReturn.append("\n");
+		toReturn.append("Species");
+		for (Location ignored : analysis.getAllImageLocations())
+			toReturn.append("                   Total Percent");
+		toReturn.append("\n");
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn = toReturn + String.format("%-26s", species.getName());
+			toReturn.append(String.format("%-26s", species.getName()));
 			for (Location location : analysis.getAllImageLocations())
 			{
 				Integer totalPeriod = analysis.periodForImageList(new ImageQuery().locationOnly(location).anyValidSpecies().query(analysis.getImagesSortedByDate()));
 				Integer period = analysis.periodForImageList(new ImageQuery().locationOnly(location).speciesOnly(species).query(analysis.getImagesSortedByDate()));
-				toReturn = toReturn + String.format("%5d %7.2f                   ", period, (period / (double) totalPeriod) * 100);
+				toReturn.append(String.format("%5d %7.2f                   ", period, (period / (double) totalPeriod) * 100));
 			}
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 		}
 
-		toReturn = toReturn + "Total pictures            ";
+		toReturn.append("Total pictures            ");
 
 		for (Location location : analysis.getAllImageLocations())
-			toReturn = toReturn + String.format("%5d  100.00                   ", analysis.periodForImageList(new ImageQuery().locationOnly(location).query(analysis.getImagesSortedByDate())));
+			toReturn.append(String.format("%5d  100.00                   ", analysis.periodForImageList(new ImageQuery().locationOnly(location).query(analysis.getImagesSortedByDate()))));
 
-		toReturn = toReturn + "\n\n";
+		toReturn.append("\n\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -84,21 +84,21 @@ public class LocationStatFormatter extends TextFormatter
 	 */
 	public String printSpeciesByMonthByLocByYear()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "FOR EACH LOCATION AND MONTH TOTAL NUMBER EACH SPECIES\n";
-		toReturn = toReturn + "  Use independent picture\n";
+		toReturn.append("FOR EACH LOCATION AND MONTH TOTAL NUMBER EACH SPECIES\n");
+		toReturn.append("  Use independent picture\n");
 
 		for (Integer year : analysis.getAllImageYears())
 		{
-			toReturn = toReturn + year + "\n";
+			toReturn.append(year).append("\n");
 
 			for (Location location : analysis.getAllImageLocations())
 			{
 				List<ImageEntry> atLocation = new ImageQuery().yearOnly(year).locationOnly(location).query(analysis.getImagesSortedByDate());
 				if (!atLocation.isEmpty())
 				{
-					toReturn = toReturn + String.format("%-28s  Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec   Total\n", location.getName());
+					toReturn.append(String.format("%-28s  Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec   Total\n", location.getName()));
 					// All species
 					for (Species species : analysis.getAllImageSpecies())
 					{
@@ -106,29 +106,29 @@ public class LocationStatFormatter extends TextFormatter
 						List<ImageEntry> atLocationWithSpecies = new ImageQuery().speciesOnly(species).query(atLocation);
 						if (!atLocationWithSpecies.isEmpty())
 						{
-							toReturn = toReturn + String.format("%-28s", species.getName());
+							toReturn.append(String.format("%-28s", species.getName()));
 							// Months 0-12
 							for (int i = 0; i < 12; i++)
 							{
 								Integer period = analysis.periodForImageList(new ImageQuery().monthOnly(i).query(atLocationWithSpecies));
-								toReturn = toReturn + String.format("%5d  ", period);
+								toReturn.append(String.format("%5d  ", period));
 								totalPics = totalPics + period;
 							}
-							toReturn = toReturn + String.format("%5d  ", totalPics);
-							toReturn = toReturn + "\n";
+							toReturn.append(String.format("%5d  ", totalPics));
+							toReturn.append("\n");
 						}
 					}
-					toReturn = toReturn + "Total pictures              ";
+					toReturn.append("Total pictures              ");
 					int totalPics = 0;
 					for (int i = 0; i < 12; i++)
 					{
 						Integer period = analysis.periodForImageList(new ImageQuery().monthOnly(i).query(atLocation));
-						toReturn = toReturn + String.format("%5d  ", period);
+						toReturn.append(String.format("%5d  ", period));
 						totalPics = totalPics + period;
 					}
-					toReturn = toReturn + String.format("%5d  ", totalPics);
-					toReturn = toReturn + "\n";
-					toReturn = toReturn + "Total effort                ";
+					toReturn.append(String.format("%5d  ", totalPics));
+					toReturn.append("\n");
+					toReturn.append("Total effort                ");
 					int totalEffort = 0;
 					Calendar firstCal = DateUtils.toCalendar(analysis.getFirstImageInList(atLocation).getDateTaken());
 					Calendar lastCal = DateUtils.toCalendar(analysis.getLastImageInList(atLocation).getDateTaken());
@@ -152,12 +152,12 @@ public class LocationStatFormatter extends TextFormatter
 							effort = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 						}
 
-						toReturn = toReturn + String.format("%5d  ", effort);
+						toReturn.append(String.format("%5d  ", effort));
 						totalEffort = totalEffort + effort;
 					}
-					toReturn = toReturn + String.format("%5d  ", totalEffort);
-					toReturn = toReturn + "\n";
-					toReturn = toReturn + "Total/Total effort          ";
+					toReturn.append(String.format("%5d  ", totalEffort));
+					toReturn.append("\n");
+					toReturn.append("Total/Total effort          ");
 					firstCal = DateUtils.toCalendar(analysis.getFirstImageInList(atLocation).getDateTaken());
 					lastCal = DateUtils.toCalendar(analysis.getLastImageInList(atLocation).getDateTaken());
 					firstMonth = firstCal.get(Calendar.MONTH);
@@ -183,18 +183,18 @@ public class LocationStatFormatter extends TextFormatter
 						double ratio = 0;
 						if (effort != 0)
 							ratio = (double) period / (double) effort;
-						toReturn = toReturn + String.format("%5.2f  ", ratio);
+						toReturn.append(String.format("%5.2f  ", ratio));
 					}
 					double totalRatio = 0;
 					if (totalEffort != 0)
 						totalRatio = (double) totalPics / (double) totalEffort;
-					toReturn = toReturn + String.format("%5.2f  ", totalRatio);
-					toReturn = toReturn + "\n\n";
+					toReturn.append(String.format("%5.2f  ", totalRatio));
+					toReturn.append("\n\n");
 				}
 			}
 		}
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -207,14 +207,14 @@ public class LocationStatFormatter extends TextFormatter
 	 */
 	public String printSpeciesByMonthByLoc()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "ALL LOCATIONS ALL SPECIES FOR EACH MONTH FOR ALL YEARS\n";
-		toReturn = toReturn + "  Use independent picture\n";
+		toReturn.append("ALL LOCATIONS ALL SPECIES FOR EACH MONTH FOR ALL YEARS\n");
+		toReturn.append("  Use independent picture\n");
 
 		Integer numYears = analysis.getAllImageYears().size();
 		if (numYears != 0)
-			toReturn = toReturn + "Years " + analysis.getAllImageYears().get(0) + " to " + analysis.getAllImageYears().get(numYears - 1) + "\n";
+			toReturn.append("Years ").append(analysis.getAllImageYears().get(0)).append(" to ").append(analysis.getAllImageYears().get(numYears - 1)).append("\n");
 
 		for (Location location : analysis.getAllImageLocations())
 		{
@@ -222,7 +222,7 @@ public class LocationStatFormatter extends TextFormatter
 
 			if (!atLocation.isEmpty())
 			{
-				toReturn = toReturn + String.format("%-28s  Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec   Total\n", location.getName());
+				toReturn.append(String.format("%-28s  Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec   Total\n", location.getName()));
 
 				for (Species species : analysis.getAllImageSpecies())
 				{
@@ -230,29 +230,29 @@ public class LocationStatFormatter extends TextFormatter
 					List<ImageEntry> atLocationWithSpecies = new ImageQuery().speciesOnly(species).query(atLocation);
 					if (!atLocationWithSpecies.isEmpty())
 					{
-						toReturn = toReturn + String.format("%-28s", species.getName());
+						toReturn.append(String.format("%-28s", species.getName()));
 						// Months 0-12
 						for (int i = 0; i < 12; i++)
 						{
 							Integer period = analysis.periodForImageList(new ImageQuery().monthOnly(i).query(atLocationWithSpecies));
-							toReturn = toReturn + String.format("%5d  ", period);
+							toReturn.append(String.format("%5d  ", period));
 							totalPics = totalPics + period;
 						}
-						toReturn = toReturn + String.format("%5d  ", totalPics);
-						toReturn = toReturn + "\n";
+						toReturn.append(String.format("%5d  ", totalPics));
+						toReturn.append("\n");
 					}
 				}
-				toReturn = toReturn + "Total pictures              ";
+				toReturn.append("Total pictures              ");
 				int totalPics = 0;
 				for (int i = 0; i < 12; i++)
 				{
 					Integer period = analysis.periodForImageList(new ImageQuery().monthOnly(i).query(atLocation));
-					toReturn = toReturn + String.format("%5d  ", period);
+					toReturn.append(String.format("%5d  ", period));
 					totalPics = totalPics + period;
 				}
-				toReturn = toReturn + String.format("%5d  ", totalPics);
-				toReturn = toReturn + "\n";
-				toReturn = toReturn + "Total effort                ";
+				toReturn.append(String.format("%5d  ", totalPics));
+				toReturn.append("\n");
+				toReturn.append("Total effort                ");
 				int totalEffort = 0;
 				Calendar firstCal = DateUtils.toCalendar(analysis.getFirstImageInList(atLocation).getDateTaken());
 				Calendar lastCal = DateUtils.toCalendar(analysis.getLastImageInList(atLocation).getDateTaken());
@@ -276,12 +276,12 @@ public class LocationStatFormatter extends TextFormatter
 						effort = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 					}
 
-					toReturn = toReturn + String.format("%5d  ", effort);
+					toReturn.append(String.format("%5d  ", effort));
 					totalEffort = totalEffort + effort;
 				}
-				toReturn = toReturn + String.format("%5d  ", totalEffort);
-				toReturn = toReturn + "\n";
-				toReturn = toReturn + "Total/Total effort          ";
+				toReturn.append(String.format("%5d  ", totalEffort));
+				toReturn.append("\n");
+				toReturn.append("Total/Total effort          ");
 				firstCal = DateUtils.toCalendar(analysis.getFirstImageInList(atLocation).getDateTaken());
 				lastCal = DateUtils.toCalendar(analysis.getLastImageInList(atLocation).getDateTaken());
 				firstMonth = firstCal.get(Calendar.MONTH);
@@ -308,19 +308,19 @@ public class LocationStatFormatter extends TextFormatter
 					double ratio = 0;
 					if (effort != 0)
 						ratio = (double) period / (double) effort;
-					toReturn = toReturn + String.format("%5.2f  ", ratio);
+					toReturn.append(String.format("%5.2f  ", ratio));
 				}
 				double totalRatio = 0;
 				if (totalEffort != 0)
 					totalRatio = (double) totalPics / (double) totalEffort;
-				toReturn = toReturn + String.format("%5.2f  ", totalRatio);
-				toReturn = toReturn + "\n";
+				toReturn.append(String.format("%5.2f  ", totalRatio));
+				toReturn.append("\n");
 
-				toReturn = toReturn + "\n";
+				toReturn.append("\n");
 			}
 		}
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -334,9 +334,9 @@ public class LocationStatFormatter extends TextFormatter
 	 */
 	public String printDistanceBetweenLocations()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "DISTANCE (km) BETWEEN LOCATIONS\n";
+		toReturn.append("DISTANCE (km) BETWEEN LOCATIONS\n");
 
 		double maxDistance = 0;
 		Location maxLoc1 = null;
@@ -364,28 +364,28 @@ public class LocationStatFormatter extends TextFormatter
 				}
 		if (minLoc1 != null)
 		{
-			toReturn = toReturn + String.format("Minimum distance = %7.3f Locations: %28s %28s\n", minDistance, minLoc1.getName(), minLoc2.getName());
-			toReturn = toReturn + String.format("Maximum distance = %7.3f Locations: %28s %28s\n", maxDistance, maxLoc1.getName(), maxLoc2.getName());
-			toReturn = toReturn + String.format("Average distance = %7.3f\n\n", (minDistance + maxDistance) / 2.0D);
+			toReturn.append(String.format("Minimum distance = %7.3f Locations: %28s %28s\n", minDistance, minLoc1.getName(), minLoc2.getName()));
+			toReturn.append(String.format("Maximum distance = %7.3f Locations: %28s %28s\n", maxDistance, maxLoc1.getName(), maxLoc2.getName()));
+			toReturn.append(String.format("Average distance = %7.3f\n\n", (minDistance + maxDistance) / 2.0D));
 		}
 
-		toReturn = toReturn + "Locations                       ";
+		toReturn.append("Locations                       ");
 		for (Location location : analysis.getAllImageLocations())
-			toReturn = toReturn + String.format("%-28s", location.getName());
-		toReturn = toReturn + "\n";
+			toReturn.append(String.format("%-28s", location.getName()));
+		toReturn.append("\n");
 		for (Location location : analysis.getAllImageLocations())
 		{
-			toReturn = toReturn + String.format("%-32s", location.getName());
+			toReturn.append(String.format("%-32s", location.getName()));
 			for (Location other : analysis.getAllImageLocations())
 			{
 				double distance = SanimalAnalysisUtils.distanceBetween(location.getLat(), location.getLng(), other.getLat(), other.getLng());
-				toReturn = toReturn + String.format("%-28f", distance);
+				toReturn.append(String.format("%-28f", distance));
 			}
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 		}
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -399,33 +399,33 @@ public class LocationStatFormatter extends TextFormatter
 	 */
 	public String printSpeciesOverlapAtLoc()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "SPECIES OVERLAP AT LOCATIONS\n";
-		toReturn = toReturn + "  Number of locations  " + analysis.getAllImageLocations().size() + "\n";
-		toReturn = toReturn + "                          Locations  Locations and percent of locations where both species were recorded\n";
-		toReturn = toReturn + "Species                    recorded ";
+		toReturn.append("SPECIES OVERLAP AT LOCATIONS\n");
+		toReturn.append("  Number of locations  ").append(analysis.getAllImageLocations().size()).append("\n");
+		toReturn.append("                          Locations  Locations and percent of locations where both species were recorded\n");
+		toReturn.append("Species                    recorded ");
 		for (Species species : analysis.getAllImageSpecies())
-			toReturn = toReturn + String.format("%-12s", species.getName());
-		toReturn = toReturn + "\n";
+			toReturn.append(String.format("%-12s", species.getName()));
+		toReturn.append("\n");
 		for (Species species : analysis.getAllImageSpecies())
 		{
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
-			toReturn = toReturn + String.format("%-28s", species.getName());
+			toReturn.append(String.format("%-28s", species.getName()));
 			List<Location> locations = analysis.locationsForImageList(withSpecies);
-			toReturn = toReturn + String.format("%3d    ", locations.size());
+			toReturn.append(String.format("%3d    ", locations.size()));
 			for (Species other : analysis.getAllImageSpecies())
 			{
 				List<ImageEntry> withSpeciesOther = new ImageQuery().speciesOnly(other).query(images);
 				List<Location> locationsOther = analysis.locationsForImageList(withSpeciesOther);
 				Integer intersectionSize = ListUtils.<Location> intersection(locations, locationsOther).size();
-				toReturn = toReturn + String.format("%2d (%6.1f) ", intersectionSize, (100D * (double) intersectionSize / locations.size()));
+				toReturn.append(String.format("%2d (%6.1f) ", intersectionSize, (100D * (double) intersectionSize / locations.size())));
 			}
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 		}
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**

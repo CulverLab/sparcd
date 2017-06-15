@@ -1,5 +1,10 @@
 package model.species;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
+
 import java.io.Serializable;
 
 /**
@@ -10,9 +15,9 @@ import java.io.Serializable;
 public class SpeciesEntry implements Comparable<SpeciesEntry>
 {
 	// The species represented
-	private final Species species;
+	private final ObjectProperty<Species> speciesProperty = new SimpleObjectProperty<Species>();
 	// The number of that species
-	private final Integer amount;
+	private final IntegerProperty amountProperty = new SimpleIntegerProperty();
 
 	/**
 	 * Construct a species entry with a species and a number of that species
@@ -24,8 +29,8 @@ public class SpeciesEntry implements Comparable<SpeciesEntry>
 	 */
 	public SpeciesEntry(Species species, Integer amount)
 	{
-		this.species = species;
-		this.amount = amount;
+		this.speciesProperty.setValue(species);
+		this.amountProperty.setValue(amount);
 	}
 
 	/**
@@ -33,7 +38,7 @@ public class SpeciesEntry implements Comparable<SpeciesEntry>
 	 */
 	public Species getSpecies()
 	{
-		return species;
+		return speciesProperty.getValue();
 	}
 
 	/**
@@ -41,7 +46,17 @@ public class SpeciesEntry implements Comparable<SpeciesEntry>
 	 */
 	public Integer getAmount()
 	{
-		return amount;
+		return amountProperty.getValue();
+	}
+
+	public ObjectProperty<Species> getSpeciesProperty()
+	{
+		return this.speciesProperty;
+	}
+
+	public IntegerProperty getAmountProperty()
+	{
+		return this.amountProperty;
 	}
 
 	/**
@@ -62,7 +77,7 @@ public class SpeciesEntry implements Comparable<SpeciesEntry>
 		if (obj instanceof SpeciesEntry)
 		{
 			SpeciesEntry other = (SpeciesEntry) obj;
-			return other.amount == this.amount && other.species.equals(this.species);
+			return other.getAmount() == this.getAmount() && other.getSpecies().equals(this.getSpecies());
 		}
 		return false;
 	}
@@ -73,7 +88,7 @@ public class SpeciesEntry implements Comparable<SpeciesEntry>
 	@Override
 	public int compareTo(SpeciesEntry other)
 	{
-		if (other.amount == this.amount && other.species.equals(this.species))
+		if (other.getAmount() == this.getAmount() && other.getSpecies().equals(this.getSpecies()))
 			return 0;
 		else
 			return 1;

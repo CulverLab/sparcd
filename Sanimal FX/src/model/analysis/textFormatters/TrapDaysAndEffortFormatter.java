@@ -36,10 +36,10 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 	 */
 	public String printCameraTrapDays()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "CAMERA TRAP DAYS\n";
-		toReturn = toReturn + "Location                    Start date  Stop date   Duration   First pic   Species\n";
+		toReturn.append("CAMERA TRAP DAYS\n");
+		toReturn.append("Location                    Start date  Stop date   Duration   First pic   Species\n");
 
 		long durationTotal = 0;
 		for (Location location : analysis.getAllImageLocations())
@@ -52,19 +52,19 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 			long currentDuration = SanimalAnalysisUtils.daysBetween(firstEntry.getDateTaken(), lastEntry.getDateTaken()) + 1;
 			durationTotal = durationTotal + currentDuration;
 
-			String speciesPresent = "";
+			StringBuilder speciesPresent = new StringBuilder();
 			for (SpeciesEntry entry : firstEntry.getSpeciesPresent())
-				speciesPresent = speciesPresent + entry.getSpecies().getName() + " ";
+				speciesPresent.append(entry.getSpecies().getName()).append(" ");
 
-			toReturn = toReturn + String.format("%-27s %4s %2d %2d  %4s %2d %2d %9d   %4s %2d %2d  %s\n", location.getName(), firstCal.get(Calendar.YEAR), firstCal.get(Calendar.MONTH) + 1, firstCal.get(Calendar.DAY_OF_MONTH), lastCal.get(Calendar.YEAR), lastCal.get(Calendar.MONTH) + 1, lastCal.get(
-					Calendar.DAY_OF_MONTH), currentDuration, firstCal.get(Calendar.YEAR), firstCal.get(Calendar.MONTH) + 1, firstCal.get(Calendar.DAY_OF_MONTH), speciesPresent);
+			toReturn.append(String.format("%-27s %4s %2d %2d  %4s %2d %2d %9d   %4s %2d %2d  %s\n", location.getName(), firstCal.get(Calendar.YEAR), firstCal.get(Calendar.MONTH) + 1, firstCal.get(Calendar.DAY_OF_MONTH), lastCal.get(Calendar.YEAR), lastCal.get(Calendar.MONTH) + 1, lastCal.get(
+					Calendar.DAY_OF_MONTH), currentDuration, firstCal.get(Calendar.YEAR), firstCal.get(Calendar.MONTH) + 1, firstCal.get(Calendar.DAY_OF_MONTH), speciesPresent.toString()));
 		}
 
-		toReturn = toReturn + String.format("Total camera trap days                             %9d\n", durationTotal);
+		toReturn.append(String.format("Total camera trap days                             %9d\n", durationTotal));
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -79,9 +79,9 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 	 */
 	public String printCameraTrapEffort()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "CAMERA TRAP EFFORT\n";
+		toReturn.append("CAMERA TRAP EFFORT\n");
 
 		for (Integer year : analysis.getAllImageYears())
 		{
@@ -89,9 +89,9 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 			List<Location> locations = analysis.locationsForImageList(withYear);
 			if (!locations.isEmpty())
 			{
-				toReturn = toReturn + "Year " + year + "\n";
+				toReturn.append("Year ").append(year).append("\n");
 				int numLocations = locations.size();
-				toReturn = toReturn + String.format("Location (%3d)              Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec    Total\n", numLocations);
+				toReturn.append(String.format("Location (%3d)              Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec    Total\n", numLocations));
 
 				int[] monthlyTotals = new int[12];
 
@@ -105,7 +105,7 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
 					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
 					Calendar calendar = Calendar.getInstance();
-					toReturn = toReturn + String.format("%-28s", location.getName());
+					toReturn.append(String.format("%-28s", location.getName()));
 					int monthTotal = 0;
 					for (int i = 0; i < 12; i++)
 					{
@@ -122,32 +122,32 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 							monthValue = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 						}
 
-						toReturn = toReturn + String.format(" %2d    ", monthValue);
+						toReturn.append(String.format(" %2d    ", monthValue));
 						monthTotal = monthTotal + monthValue;
 						monthlyTotals[i] = monthlyTotals[i] + monthValue;
 					}
-					toReturn = toReturn + monthTotal + "\n";
+					toReturn.append(monthTotal).append("\n");
 				}
 
-				toReturn = toReturn + "Total days                  ";
+				toReturn.append("Total days                  ");
 
 				Integer totalTotal = 0;
 
 				for (int i = 0; i < 12; i++)
 				{
 					totalTotal = totalTotal + monthlyTotals[i];
-					toReturn = toReturn + String.format(" %2d    ", monthlyTotals[i]);
+					toReturn.append(String.format(" %2d    ", monthlyTotals[i]));
 				}
 
-				toReturn = toReturn + String.format("%2d", totalTotal);
+				toReturn.append(String.format("%2d", totalTotal));
 
-				toReturn = toReturn + "\n";
+				toReturn.append("\n");
 			}
 
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 		}
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -160,14 +160,14 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 	 */
 	public String printCameraTrapEffortSummary()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "CAMERA TRAP EFFORT SUMMARY\n";
+		toReturn.append("CAMERA TRAP EFFORT SUMMARY\n");
 		int numYears = analysis.getAllImageYears().size();
 		if (numYears != 0)
-			toReturn = toReturn + "Years " + analysis.getAllImageYears().get(0) + " to " + analysis.getAllImageYears().get(numYears - 1) + "\n";
+			toReturn.append("Years ").append(analysis.getAllImageYears().get(0)).append(" to ").append(analysis.getAllImageYears().get(numYears - 1)).append("\n");
 
-		toReturn = toReturn + "Location                    Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec    Total\n";
+		toReturn.append("Location                    Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec    Total\n");
 
 		int[] monthlyTotals = new int[12];
 
@@ -181,7 +181,7 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 			Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
 			Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
 			Calendar calendar = Calendar.getInstance();
-			toReturn = toReturn + String.format("%-28s", location.getName());
+			toReturn.append(String.format("%-28s", location.getName()));
 			int monthTotal = 0;
 			for (int i = 0; i < 12; i++)
 			{
@@ -198,27 +198,27 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 					monthValue = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 				}
 
-				toReturn = toReturn + String.format(" %2d    ", monthValue);
+				toReturn.append(String.format(" %2d    ", monthValue));
 				monthTotal = monthTotal + monthValue;
 				monthlyTotals[i] = monthlyTotals[i] + monthValue;
 			}
-			toReturn = toReturn + monthTotal + "\n";
+			toReturn.append(monthTotal).append("\n");
 		}
 
-		toReturn = toReturn + "Total days                  ";
+		toReturn.append("Total days                  ");
 
 		Integer totalTotal = 0;
 
 		for (int i = 0; i < 12; i++)
 		{
 			totalTotal = totalTotal + monthlyTotals[i];
-			toReturn = toReturn + String.format(" %2d    ", monthlyTotals[i]);
+			toReturn.append(String.format(" %2d    ", monthlyTotals[i]));
 		}
 
-		toReturn = toReturn + String.format("%2d", totalTotal);
+		toReturn.append(String.format("%2d", totalTotal));
 
-		toReturn = toReturn + "\n\n";
+		toReturn.append("\n\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 }

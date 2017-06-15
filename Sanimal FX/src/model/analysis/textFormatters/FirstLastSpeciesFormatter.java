@@ -64,21 +64,21 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 	 */
 	public String printFirstPicOfEachSpecies()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "FIRST PICTURE OF EACH SPECIES\n";
-		toReturn = toReturn + "Species                      Days  Year Month Day Hour Minute Second Location\n";
+		toReturn.append("FIRST PICTURE OF EACH SPECIES\n");
+		toReturn.append("Species                      Days  Year Month Day Hour Minute Second Location\n");
 
 		for (Species speciesToPrint : analysis.getAllImageSpecies())
 		{
 			ImageEntry imageToPrint = analysis.getFirstImageInList(new ImageQuery().speciesOnly(speciesToPrint).query(images));
 			Calendar dateToPrint = DateUtils.toCalendar(imageToPrint.getDateTaken());
-			toReturn = toReturn + String.format("%-28s %4d  %4d %4d %4d %3d %5d %6d   %-28s\n", speciesToPrint, SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), dateToPrint.getTime()) + 1, dateToPrint.get(Calendar.YEAR), (dateToPrint.get(Calendar.MONTH) + 1),
-					dateToPrint.get(Calendar.DAY_OF_MONTH), dateToPrint.get(Calendar.HOUR_OF_DAY), dateToPrint.get(Calendar.MINUTE), dateToPrint.get(Calendar.SECOND), (imageToPrint.getLocationTaken() == null ? "Unknown" : imageToPrint.getLocationTaken().getName()));
+			toReturn.append(String.format("%-28s %4d  %4d %4d %4d %3d %5d %6d   %-28s\n", speciesToPrint, SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), dateToPrint.getTime()) + 1, dateToPrint.get(Calendar.YEAR), (dateToPrint.get(Calendar.MONTH) + 1),
+					dateToPrint.get(Calendar.DAY_OF_MONTH), dateToPrint.get(Calendar.HOUR_OF_DAY), dateToPrint.get(Calendar.MINUTE), dateToPrint.get(Calendar.SECOND), (imageToPrint.getLocationTaken() == null ? "Unknown" : imageToPrint.getLocationTaken().getName())));
 		}
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -92,24 +92,24 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 	 */
 	public String printLastPicOfEachSpecies()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "LAST PICTURE OF EACH SPECIES\n";
-		toReturn = toReturn + "Species                      Days  Year Month Day Hour Minute Second Location                   Duration\n";
+		toReturn.append("LAST PICTURE OF EACH SPECIES\n");
+		toReturn.append("Species                      Days  Year Month Day Hour Minute Second Location                   Duration\n");
 		for (Species speciesToPrint : analysis.getAllImageSpecies())
 		{
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(speciesToPrint).query(images);
 			ImageEntry imageToPrint = analysis.getLastImageInList(withSpecies);
 			ImageEntry firstImage = analysis.getFirstImageInList(withSpecies);
 			Calendar dateToPrint = DateUtils.toCalendar(imageToPrint.getDateTaken());
-			toReturn = toReturn + String.format("%-28s %4d  %4d %4d %4d %3d %5d %6d   %-28s %4d\n", speciesToPrint, SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), dateToPrint.getTime()) + 1, dateToPrint.get(Calendar.YEAR), (dateToPrint.get(Calendar.MONTH)
+			toReturn.append(String.format("%-28s %4d  %4d %4d %4d %3d %5d %6d   %-28s %4d\n", speciesToPrint, SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), dateToPrint.getTime()) + 1, dateToPrint.get(Calendar.YEAR), (dateToPrint.get(Calendar.MONTH)
 					+ 1), dateToPrint.get(Calendar.DAY_OF_MONTH), dateToPrint.get(Calendar.HOUR_OF_DAY), dateToPrint.get(Calendar.MINUTE), dateToPrint.get(Calendar.SECOND), (imageToPrint.getLocationTaken() == null ? "Unknown" : imageToPrint.getLocationTaken().getName()), SanimalAnalysisUtils
-							.daysBetween(firstImage.getDateTaken(), imageToPrint.getDateTaken()) + 1);
+					.daysBetween(firstImage.getDateTaken(), imageToPrint.getDateTaken()) + 1));
 		}
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -123,7 +123,7 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 	 */
 	public String printSpeciesAccumulationCurve()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
 		List<Pair<Species, ImageEntry>> speciesFirstImage = new ArrayList<Pair<Species, ImageEntry>>();
 
@@ -134,23 +134,16 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 				speciesFirstImage.add(Pair.of(species, imagesWithSpecies.get(0)));
 		}
 
-		Collections.sort(speciesFirstImage, new Comparator<Pair<Species, ImageEntry>>()
-		{
-			@Override
-			public int compare(Pair<Species, ImageEntry> pair1, Pair<Species, ImageEntry> pair2)
-			{
-				return pair1.getRight().getDateTaken().compareTo(pair2.getRight().getDateTaken());
-			}
-		});
+		speciesFirstImage.sort(Comparator.comparing(pair -> pair.getRight().getDateTaken()));
 
-		toReturn = toReturn + "SPECIES ACCUMULATION CURVE\n";
-		toReturn = toReturn + "  DAY    NUMBER    SPECIES\n";
+		toReturn.append("SPECIES ACCUMULATION CURVE\n");
+		toReturn.append("  DAY    NUMBER    SPECIES\n");
 		int number = 0;
 		for (Pair<Species, ImageEntry> entry : speciesFirstImage)
-			toReturn = toReturn + String.format("%5d     %3d      %s\n", SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), entry.getValue().getDateTaken()) + 1, ++number, entry.getKey().getName());
+			toReturn.append(String.format("%5d     %3d      %s\n", SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), entry.getValue().getDateTaken()) + 1, ++number, entry.getKey().getName()));
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 }

@@ -34,22 +34,22 @@ public class DetectionRateFormatter extends TextFormatter
 	 */
 	public String printDetectionRateSpeciesYear()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "DETECTION RATE FOR EACH SPECIES PER YEAR\n";
-		toReturn = toReturn + "  One record of each species per location per PERIOD\n";
-		toReturn = toReturn + "  Number of pictures/prd multiplied by 100\n";
+		toReturn.append("DETECTION RATE FOR EACH SPECIES PER YEAR\n");
+		toReturn.append("  One record of each species per location per PERIOD\n");
+		toReturn.append("  Number of pictures/prd multiplied by 100\n");
 
 		for (Integer year : analysis.getAllImageYears())
 		{
-			toReturn = toReturn + "Year " + year + "\n";
-			toReturn = toReturn + "                            Total   Total       Pics          Species\n";
-			toReturn = toReturn + "Location                     days    pics       /prd    ";
+			toReturn.append("Year ").append(year).append("\n");
+			toReturn.append("                            Total   Total       Pics          Species\n");
+			toReturn.append("Location                     days    pics       /prd    ");
 
 			for (Species species : analysis.getAllImageSpecies())
-				toReturn = toReturn + String.format("%5s ", StringUtils.left(species.getName(), 5));
+				toReturn.append(String.format("%5s ", StringUtils.left(species.getName(), 5)));
 
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 
 			List<ImageEntry> byYear = new ImageQuery().yearOnly(year).query(analysis.getImagesSortedByDate());
 
@@ -61,7 +61,7 @@ public class DetectionRateFormatter extends TextFormatter
 				List<ImageEntry> byYearLocation = new ImageQuery().locationOnly(location).query(byYear);
 				if (!byYearLocation.isEmpty())
 				{
-					toReturn = toReturn + String.format("%-28s", location.getName());
+					toReturn.append(String.format("%-28s", location.getName()));
 
 					Integer totalDaysForLoc = 0;
 					ImageEntry first = byYearLocation.get(0);
@@ -101,33 +101,33 @@ public class DetectionRateFormatter extends TextFormatter
 
 					totalPics = totalPics + periodTotal;
 
-					toReturn = toReturn + String.format("  %3d %7d    %7.2f   ", totalDaysForLoc, periodTotal, (totalDaysForLoc == 0 ? 0 : 100D * (double) periodTotal / totalDaysForLoc));
+					toReturn.append(String.format("  %3d %7d    %7.2f   ", totalDaysForLoc, periodTotal, (totalDaysForLoc == 0 ? 0 : 100D * (double) periodTotal / totalDaysForLoc)));
 
 					for (Species species : analysis.getAllImageSpecies())
 					{
 						Integer period = analysis.periodForImageList(new ImageQuery().speciesOnly(species).query(byYearLocation));
-						toReturn = toReturn + String.format(" %5.2f", 100D * (double) period / totalDaysForLoc);
+						toReturn.append(String.format(" %5.2f", 100D * (double) period / totalDaysForLoc));
 						Integer index = analysis.getAllImageSpecies().indexOf(species);
 						averageRate[index] = averageRate[index] + (double) period;
 					}
 
-					toReturn = toReturn + "\n";
+					toReturn.append("\n");
 				}
 			}
 
-			toReturn = toReturn + "Total days pics; Avg rate   ";
+			toReturn.append("Total days pics; Avg rate   ");
 
-			toReturn = toReturn + String.format("  %3d %7d    %7.2f   ", totalDays, totalPics, 100D * (double) totalPics / totalDays);
+			toReturn.append(String.format("  %3d %7d    %7.2f   ", totalDays, totalPics, 100D * (double) totalPics / totalDays));
 
 			for (Integer species = 0; species < analysis.getAllImageSpecies().size(); species++)
 			{
-				toReturn = toReturn + String.format(" %5.2f", totalDays == 0 ? 0 : (100D * averageRate[species] / totalDays));
+				toReturn.append(String.format(" %5.2f", totalDays == 0 ? 0 : (100D * averageRate[species] / totalDays)));
 			}
 
-			toReturn = toReturn + "\n\n";
+			toReturn.append("\n\n");
 		}
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -140,23 +140,23 @@ public class DetectionRateFormatter extends TextFormatter
 	 */
 	public String printDetectionRateSummary()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "DETECTION RATE SUMMARY FOR EACH SPECIES\n";
-		toReturn = toReturn + "  One record of each species per location per PERIOD\n";
-		toReturn = toReturn + "  Number of pictures/PERIOD multiplied by 100\n";
+		toReturn.append("DETECTION RATE SUMMARY FOR EACH SPECIES\n");
+		toReturn.append("  One record of each species per location per PERIOD\n");
+		toReturn.append("  Number of pictures/PERIOD multiplied by 100\n");
 
 		Integer numYears = analysis.getAllImageYears().size();
 		if (!analysis.getAllImageYears().isEmpty())
-			toReturn = toReturn + "Years " + analysis.getAllImageYears().get(0) + " to " + analysis.getAllImageYears().get(numYears - 1) + "\n";
+			toReturn.append("Years ").append(analysis.getAllImageYears().get(0)).append(" to ").append(analysis.getAllImageYears().get(numYears - 1)).append("\n");
 
-		toReturn = toReturn + "                            Total   Total     Pics          Species\n";
-		toReturn = toReturn + "Location                     days    pics     /prd   ";
+		toReturn.append("                            Total   Total     Pics          Species\n");
+		toReturn.append("Location                     days    pics     /prd   ");
 
 		for (Species species : analysis.getAllImageSpecies())
-			toReturn = toReturn + String.format("%5s ", StringUtils.left(species.getName(), 5));
+			toReturn.append(String.format("%5s ", StringUtils.left(species.getName(), 5)));
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
 		Integer totalDays = 0;
 		Integer totalPics = 0;
@@ -165,7 +165,7 @@ public class DetectionRateFormatter extends TextFormatter
 
 		for (Location location : analysis.getAllImageLocations())
 		{
-			toReturn = toReturn + String.format("%-28s", location.getName());
+			toReturn.append(String.format("%-28s", location.getName()));
 			List<ImageEntry> byLocation = new ImageQuery().locationOnly(location).query(analysis.getImagesSortedByDate());
 
 			Integer totalDaysLoc = 0;
@@ -215,33 +215,33 @@ public class DetectionRateFormatter extends TextFormatter
 
 			totalPics = totalPics + periodTotal;
 
-			toReturn = toReturn + String.format("  %3d %7d  %7.2f  ", totalDaysLoc, periodTotal, totalDaysLoc == 0 ? 0 : 100D * (double) periodTotal / totalDaysLoc);
+			toReturn.append(String.format("  %3d %7d  %7.2f  ", totalDaysLoc, periodTotal, totalDaysLoc == 0 ? 0 : 100D * (double) periodTotal / totalDaysLoc));
 
 			for (Species species : analysis.getAllImageSpecies())
 			{
 				Integer period = 0;
 				for (Integer year : analysis.getAllImageYears())
 					period = period + analysis.periodForImageList(new ImageQuery().speciesOnly(species).yearOnly(year).query(byLocation));
-				toReturn = toReturn + String.format(" %5.2f", (double) period / totalDaysLoc);
+				toReturn.append(String.format(" %5.2f", (double) period / totalDaysLoc));
 				Integer index = analysis.getAllImageSpecies().indexOf(species);
 				averageRate[index] = averageRate[index] + (double) period;
 			}
 
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 		}
 
-		toReturn = toReturn + "Total days pics; Avg rate   ";
+		toReturn.append("Total days pics; Avg rate   ");
 
-		toReturn = toReturn + String.format("  %3d %7d  %7.2f  ", totalDays, totalPics, 100D * (double) totalPics / totalDays);
+		toReturn.append(String.format("  %3d %7d  %7.2f  ", totalDays, totalPics, 100D * (double) totalPics / totalDays));
 
 		for (Integer species = 0; species < analysis.getAllImageSpecies().size(); species++)
 		{
-			toReturn = toReturn + String.format(" %5.2f", totalDays == 0 ? 0 : 100D * averageRate[species] / totalDays);
+			toReturn.append(String.format(" %5.2f", totalDays == 0 ? 0 : 100D * averageRate[species] / totalDays));
 		}
 
-		toReturn = toReturn + "\n\n";
+		toReturn.append("\n\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -254,16 +254,16 @@ public class DetectionRateFormatter extends TextFormatter
 	 */
 	public String printDetectionRateLocationMonth()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "DETECTION RATE FOR EACH LOCATION BY MONTH\n";
-		toReturn = toReturn + "  One record of each species per location per PERIOD\n";
+		toReturn.append("DETECTION RATE FOR EACH LOCATION BY MONTH\n");
+		toReturn.append("  One record of each species per location per PERIOD\n");
 
 		for (Integer year : analysis.getAllImageYears())
 		{
-			toReturn = toReturn + "Year " + year + "\n";
-			toReturn = toReturn + "                            Total   Total       Pics          Months \n";
-			toReturn = toReturn + "Location                     days    pics       /prd       Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec\n";
+			toReturn.append("Year ").append(year).append("\n");
+			toReturn.append("                            Total   Total       Pics          Months \n");
+			toReturn.append("Location                     days    pics       /prd       Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec\n");
 
 			List<ImageEntry> byYear = new ImageQuery().yearOnly(year).query(analysis.getImagesSortedByDate());
 
@@ -277,7 +277,7 @@ public class DetectionRateFormatter extends TextFormatter
 				if (!byYearLocation.isEmpty())
 				{
 					Integer totalDaysForLoc = 0;
-					toReturn = toReturn + String.format("%-28s", location.getName());
+					toReturn.append(String.format("%-28s", location.getName()));
 
 					ImageEntry first = byYearLocation.get(0);
 					ImageEntry last = byYearLocation.get(byYearLocation.size() - 1);
@@ -316,7 +316,7 @@ public class DetectionRateFormatter extends TextFormatter
 
 					totalPics = totalPics + periodTotal;
 
-					toReturn = toReturn + String.format("  %3d %7d    %7.2f    ", totalDaysForLoc, periodTotal, (double) periodTotal / totalDaysForLoc);
+					toReturn.append(String.format("  %3d %7d    %7.2f    ", totalDaysForLoc, periodTotal, (double) periodTotal / totalDaysForLoc));
 
 					for (int i = 0; i < 12; i++)
 					{
@@ -324,28 +324,28 @@ public class DetectionRateFormatter extends TextFormatter
 						Integer period = 0;
 						for (Species species : analysis.getAllImageSpecies())
 							period = period + analysis.periodForImageList(new ImageQuery().monthOnly(i).speciesOnly(species).query(byYearLocation));
-						toReturn = toReturn + String.format(" %5.2f  ", (double) period / totalDaysForLoc);
+						toReturn.append(String.format(" %5.2f  ", (double) period / totalDaysForLoc));
 
 						averageRate[i] = averageRate[i] + (double) period;
 					}
 
-					toReturn = toReturn + "\n";
+					toReturn.append("\n");
 				}
 			}
 
-			toReturn = toReturn + "Total days pics; Avg rate   ";
+			toReturn.append("Total days pics; Avg rate   ");
 
-			toReturn = toReturn + String.format("  %3d %7d    %7.2f    ", totalDays, totalPics, (double) totalPics / totalDays);
+			toReturn.append(String.format("  %3d %7d    %7.2f    ", totalDays, totalPics, (double) totalPics / totalDays));
 
 			for (int i = 0; i < 12; i++)
 			{
-				toReturn = toReturn + String.format(" %5.2f  ", totalDays == 0 ? 0 : averageRate[i] / totalDays);
+				toReturn.append(String.format(" %5.2f  ", totalDays == 0 ? 0 : averageRate[i] / totalDays));
 			}
 
-			toReturn = toReturn + "\n\n";
+			toReturn.append("\n\n");
 		}
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -358,17 +358,17 @@ public class DetectionRateFormatter extends TextFormatter
 	 */
 	public String printDetectionRateLocationMonthSummary()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "DETECTION RATE SUMMARY FOR EACH LOCATION BY MONTH\n";
-		toReturn = toReturn + "  One record of each species per location per PERIOD\n";
+		toReturn.append("DETECTION RATE SUMMARY FOR EACH LOCATION BY MONTH\n");
+		toReturn.append("  One record of each species per location per PERIOD\n");
 
 		Integer numYears = analysis.getAllImageYears().size();
 		if (!analysis.getAllImageYears().isEmpty())
-			toReturn = toReturn + "Years " + analysis.getAllImageYears().get(0) + " to " + analysis.getAllImageYears().get(numYears - 1) + "\n";
+			toReturn.append("Years ").append(analysis.getAllImageYears().get(0)).append(" to ").append(analysis.getAllImageYears().get(numYears - 1)).append("\n");
 
-		toReturn = toReturn + "                            Total   Total       Pics          Months \n";
-		toReturn = toReturn + "Location                     days    pics       /prd       Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec\n";
+		toReturn.append("                            Total   Total       Pics          Months \n");
+		toReturn.append("Location                     days    pics       /prd       Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec\n");
 
 		Integer totalPics = 0;
 		Integer totalDays = 0;
@@ -376,7 +376,7 @@ public class DetectionRateFormatter extends TextFormatter
 
 		for (Location location : analysis.getAllImageLocations())
 		{
-			toReturn = toReturn + String.format("%-28s", location.getName());
+			toReturn.append(String.format("%-28s", location.getName()));
 
 			List<ImageEntry> byLocation = new ImageQuery().locationOnly(location).query(analysis.getImagesSortedByDate());
 
@@ -427,7 +427,7 @@ public class DetectionRateFormatter extends TextFormatter
 
 			totalPics = totalPics + periodTotal;
 
-			toReturn = toReturn + String.format("  %3d %7d    %7.2f    ", totalDaysLoc, periodTotal, (double) periodTotal / totalDaysLoc);
+			toReturn.append(String.format("  %3d %7d    %7.2f    ", totalDaysLoc, periodTotal, (double) periodTotal / totalDaysLoc));
 
 			for (int i = 0; i < 12; i++)
 			{
@@ -435,26 +435,26 @@ public class DetectionRateFormatter extends TextFormatter
 				for (Species species : analysis.getAllImageSpecies())
 					for (Integer year : analysis.getAllImageYears())
 						period = period + analysis.periodForImageList(new ImageQuery().monthOnly(i).speciesOnly(species).yearOnly(year).query(byLocation));
-				toReturn = toReturn + String.format(" %5.2f  ", (double) period / totalDaysLoc);
+				toReturn.append(String.format(" %5.2f  ", (double) period / totalDaysLoc));
 
 				averageRate[i] = averageRate[i] + (double) period;
 			}
 
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 		}
 
-		toReturn = toReturn + "Total days pics; Avg rate   ";
+		toReturn.append("Total days pics; Avg rate   ");
 
-		toReturn = toReturn + String.format("  %3d %7d    %7.2f    ", totalDays, totalPics, (double) totalPics / totalDays);
+		toReturn.append(String.format("  %3d %7d    %7.2f    ", totalDays, totalPics, (double) totalPics / totalDays));
 
 		for (int i = 0; i < 12; i++)
 		{
-			toReturn = toReturn + String.format(" %5.2f  ", totalDays == 0 ? 0 : averageRate[i] / totalDays);
+			toReturn.append(String.format(" %5.2f  ", totalDays == 0 ? 0 : averageRate[i] / totalDays));
 		}
 
-		toReturn = toReturn + "\n\n";
+		toReturn.append("\n\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**

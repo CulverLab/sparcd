@@ -24,10 +24,7 @@ import model.species.SpeciesEntry;
 public class ImageQuery
 {
 	// A base predicate to add to
-	private Predicate<ImageEntry> predicate = entry ->
-	{
-		return true;
-	};
+	private Predicate<ImageEntry> predicate = entry -> true;
 
 	public ImageQuery()
 	{
@@ -101,11 +98,7 @@ public class ImageQuery
 	public ImageQuery anyValidSpecies()
 	{
 		this.predicate = this.predicate.and(entry ->
-		{
-			if (!entry.getSpeciesPresent().isEmpty())
-				return true;
-			return false;
-		});
+				!entry.getSpeciesPresent().isEmpty());
 		return this;
 	}
 
@@ -192,7 +185,7 @@ public class ImageQuery
 	public List<ImageEntry> query(List<ImageEntry> images, Comparator<ImageEntry> sorter)
 	{
 		List<ImageEntry> result = query(images);
-		Collections.sort(result, sorter);
+		result.sort(sorter);
 		return result;
 	}
 }

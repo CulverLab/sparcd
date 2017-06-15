@@ -11,6 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import library.ImageViewPane?>
 
+<?import library.TreeViewAutomatic?>
 <BorderPane fx:id="" minHeight="500" minWidth="1000" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalImportController">
     <stylesheets>
         <URL value="@SanimalImport.css" />
@@ -46,7 +47,7 @@
     <right>
         <VBox styleClass="lightBorder" maxWidth="310" minWidth="310" prefHeight="200.0" BorderPane.alignment="CENTER">
          <children>
-            <TreeView fx:id="imageTree" VBox.vgrow="ALWAYS" />
+            <TreeViewAutomatic fx:id="imageTree" VBox.vgrow="ALWAYS" />
             <HBox alignment="CENTER" maxHeight="60" maxWidth="310" minHeight="60" minWidth="310" prefHeight="60" spacing="40">
                <children>
                   <Button styleClass="importBtn" onAction="#importImages" prefWidth="115" mnemonicParsing="false" text="Import Images" />

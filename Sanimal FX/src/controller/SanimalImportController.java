@@ -1,8 +1,5 @@
 package controller;
 
-import javafx.beans.Observable;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -11,17 +8,19 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import library.ImageViewPane;
+import library.TreeViewAutomatic;
+import model.SanimalData;
+import model.image.ImageContainer;
+import model.image.ImageDirectory;
+import model.image.ImageImporter;
 import model.species.Species;
 
 import javax.swing.filechooser.FileSystemView;
@@ -38,24 +37,18 @@ public class SanimalImportController implements Initializable {
     @FXML
     public ImageView imagePreview;
 
+    // Will contain ImageEntries and ImageDirectories
     @FXML
-    public TreeView imageTree;
+    public TreeViewAutomatic<ImageContainer> imageTree;
 
     @FXML
     private ListView<Species> speciesListView;
 
-    private ObservableList<Species> speciesList;
-
-    public SanimalImportController() {
-        this.speciesList = FXCollections.<Species>observableArrayList(species -> new Observable[]{species.getNameProperty(), species.getScientificNameProperty(), species.getSpeciesIconURLProperty()});
-        this.speciesList.add(new Species("Tiger", "Panthera tigris", "http://kids.nationalgeographic.com/content/dam/kids/photos/articles/Other%20Explore%20Photos/R-Z/Wacky%20Weekend/Wild%20Cats/ww-wild-cats-tiger.adapt.945.1.jpg"));
-        this.speciesList.add(new Species("Lion", "Panthera leo", "https://upload.wikimedia.org/wikipedia/commons/7/73/Lion_waiting_in_Namibia.jpg"));
-        this.speciesList.add(new Species("Unicorn", "Fakus Imaginus", "https://s-media-cache-ak0.pinimg.com/736x/3b/ca/b6/3bcab6f591ac1d61b1e6abded3ea06a7.jpg"));
-    }
+    private ImageImporter importedData = new ImageImporter();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        SortedList<Species> species = new SortedList<Species>(this.speciesList);
+        SortedList<Species> species = new SortedList<Species>(SanimalData.getInstance().getSpeciesList());
         species.setComparator(Comparator.comparing(Species::getName));
         this.speciesListView.setItems(species);
         this.speciesListView.setCellFactory(x ->
@@ -74,15 +67,18 @@ public class SanimalImportController implements Initializable {
                 }
         );
         this.imagePreview.setImage(new Image(new File("./src/images/importWindow/testImg.JPG").toURI().toString()));
-        //this.imagePreview.fitWidthProperty().bind(this.imageAnchor.widthProperty());
-        //this.imagePreview.fitHeightProperty().bind(this.imageAnchor.heightProperty());
+
+        final TreeItem<ImageContainer> ROOT = new TreeItem<ImageContainer>(SanimalData.getInstance().getImageTree());
+        this.imageTree.setShowRoot(false);
+        this.imageTree.setRoot(ROOT);
+        this.imageTree.setItems(SanimalData.getInstance().getImageTree().getChildren());
     }
 
     public void addNewSpecies(ActionEvent actionEvent) {
         Species newSpecies = new Species();
         requestEdit(newSpecies);
         if (!newSpecies.isUninitialized())
-            this.speciesList.add(newSpecies);
+            SanimalData.getInstance().getSpeciesList().add(newSpecies);
     }
 
     public void editCurrentSpecies(ActionEvent actionEvent) {
@@ -126,7 +122,8 @@ public class SanimalImportController implements Initializable {
 
     public void deleteCurrentSpecies(ActionEvent actionEvent) {
         Species selected = speciesListView.getSelectionModel().getSelectedItem();
-        this.speciesList.remove(selected);
+        SanimalData.getInstance().getSpeciesList().remove(selected);
+        actionEvent.consume();
     }
 
     public void importImages(ActionEvent actionEvent) {
@@ -136,11 +133,16 @@ public class SanimalImportController implements Initializable {
         File file = directoryChooser.showDialog(this.imagePreview.getScene().getWindow());
         if (file != null && file.isDirectory())
         {
-            //this.imageTree.
+            ImageDirectory directory = ImageImporter.loadDirectory(file);
+            ImageImporter.removeEmptyDirectories(directory);
+            SanimalData.getInstance().getImageTree().addSubDirectory(directory);
         }
+        actionEvent.consume();
     }
 
     public void deleteImages(ActionEvent actionEvent) {
-
+        TreeItem<ImageContainer> item = this.imageTree.getSelectionModel().getSelectedItem();
+        item.getParent().getChildren().remove(item);
+        actionEvent.consume();
     }
 }

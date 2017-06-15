@@ -32,22 +32,22 @@ public class SpeciesLocCoordFormatter extends TextFormatter
 	 */
 	public String printSpeciesByLocWithUTM()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "SPECIES BY LOCATION WITH UTM AND ELEVATION\n";
+		toReturn.append("SPECIES BY LOCATION WITH UTM AND ELEVATION\n");
 		for (Species species : analysis.getAllImageSpecies())
 		{
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
-			toReturn = toReturn + species.getName() + "\n";
-			toReturn = toReturn + "Location                        UTMe-w   UTMn-s    Elevation   Lat        Long\n";
+			toReturn.append(species.getName()).append("\n");
+			toReturn.append("Location                        UTMe-w   UTMn-s    Elevation   Lat        Long\n");
 			for (Location location : analysis.locationsForImageList(withSpecies))
 			{
 				UTMCoord coord = SanimalAnalysisUtils.Deg2UTM(location.getLat(), location.getLng());
-				toReturn = toReturn + String.format("%-28s  %8d  %8d  %7.0f      %8.6f  %8.6f\n", location.getName(), Math.round(coord.getEasting()), Math.round(coord.getNorthing()), location.getElevation(), location.getLat(), location.getLng());
+				toReturn.append(String.format("%-28s  %8d  %8d  %7.0f      %8.6f  %8.6f\n", location.getName(), Math.round(coord.getEasting()), Math.round(coord.getNorthing()), location.getElevation(), location.getLat(), location.getLng()));
 			}
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 		}
 
-		return toReturn;
+		return toReturn.toString();
 	}
 }

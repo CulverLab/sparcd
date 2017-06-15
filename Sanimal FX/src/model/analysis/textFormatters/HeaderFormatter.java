@@ -30,16 +30,16 @@ public class HeaderFormatter extends TextFormatter
 	 */
 	public String printLocations()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "LOCATIONS " + analysis.getAllImageLocations().size() + "\n";
+		toReturn.append("LOCATIONS ").append(analysis.getAllImageLocations().size()).append("\n");
 		for (Location location : analysis.getAllImageLocations())
-			toReturn = toReturn + location.getName() + " ";
+			toReturn.append(location.getName()).append(" ");
 		if (analysis.nullLocationsFound())
-			toReturn = toReturn + "Unknown ";
-		toReturn = toReturn + "\n\n";
+			toReturn.append("Unknown ");
+		toReturn.append("\n\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -52,14 +52,14 @@ public class HeaderFormatter extends TextFormatter
 	 */
 	public String printSpecies()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "SPECIES " + analysis.getAllImageSpecies().size() + "\n";
+		toReturn.append("SPECIES ").append(analysis.getAllImageSpecies().size()).append("\n");
 		for (Species species : analysis.getAllImageSpecies())
-			toReturn = toReturn + species.getName() + " ";
-		toReturn = toReturn + "\n\n";
+			toReturn.append(species.getName()).append(" ");
+		toReturn.append("\n\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**

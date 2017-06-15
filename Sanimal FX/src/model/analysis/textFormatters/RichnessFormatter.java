@@ -33,18 +33,18 @@ public class RichnessFormatter extends TextFormatter
 	 */
 	public String printLocationSpeciesRichness()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "LOCATIONS BY SPECIES AND LOCATION AND SPECIES RICHNESS\n";
-		toReturn = toReturn + "  One record of each species per location per PERIOD\n";
-		toReturn = toReturn + "Location                          ";
+		toReturn.append("LOCATIONS BY SPECIES AND LOCATION AND SPECIES RICHNESS\n");
+		toReturn.append("  One record of each species per location per PERIOD\n");
+		toReturn.append("Location                          ");
 		for (Species species : analysis.getAllImageSpecies())
-			toReturn = toReturn + String.format("%-6s ", StringUtils.left(species.getName(), 6));
-		toReturn = toReturn + "Rich\n";
+			toReturn.append(String.format("%-6s ", StringUtils.left(species.getName(), 6)));
+		toReturn.append("Rich\n");
 
 		for (Location location : analysis.getAllImageLocations())
 		{
-			toReturn = toReturn + String.format("%-28s       ", location.getName());
+			toReturn.append(String.format("%-28s       ", location.getName()));
 			List<ImageEntry> imagesAtLoc = new ImageQuery().locationOnly(location).query(analysis.getImagesSortedByDate());
 
 			Integer horizontalRichness = 0;
@@ -53,13 +53,13 @@ public class RichnessFormatter extends TextFormatter
 				List<ImageEntry> imagesAtLocWithSpecies = new ImageQuery().speciesOnly(species).query(imagesAtLoc);
 				Integer period = analysis.periodForImageList(imagesAtLocWithSpecies);
 				horizontalRichness = horizontalRichness + (period == 0 ? 0 : 1);
-				toReturn = toReturn + String.format("%5d  ", period);
+				toReturn.append(String.format("%5d  ", period));
 			}
-			toReturn = toReturn + String.format("%5d  ", horizontalRichness);
+			toReturn.append(String.format("%5d  ", horizontalRichness));
 
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 		}
-		toReturn = toReturn + "Richness                           ";
+		toReturn.append("Richness                           ");
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
@@ -70,12 +70,12 @@ public class RichnessFormatter extends TextFormatter
 				List<ImageEntry> imagesWithSpeciesAtLoc = new ImageQuery().locationOnly(location).query(imagesWithSpecies);
 				richness = richness + (imagesWithSpeciesAtLoc.size() == 0 ? 0 : 1);
 			}
-			toReturn = toReturn + String.format("%5d  ", richness);
+			toReturn.append(String.format("%5d  ", richness));
 		}
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 }

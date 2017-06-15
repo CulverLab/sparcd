@@ -38,20 +38,20 @@ public class LunarActivityFormatter extends TextFormatter
 	 */
 	public String printLunarActivity()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "LUNAR ACTIVITY PATTERN\n";
-		toReturn = toReturn + "  New and full moon +/- 5 days activity patterns\n";
-		toReturn = toReturn + "  Difference (large is greater difference)\n";
+		toReturn.append("LUNAR ACTIVITY PATTERN\n");
+		toReturn.append("  New and full moon +/- 5 days activity patterns\n");
+		toReturn.append("  Difference (large is greater difference)\n");
 
 		List<ImageEntry> imagesFull = new ImageQuery().fullMoonOnly(analysis.getFullMoons()).query(images);
 		List<ImageEntry> imagesNew = new ImageQuery().newMoonOnly(analysis.getNewMoons()).query(images);
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn = toReturn + species.getName() + "\n";
-			toReturn = toReturn + "                 Full moon activity    New moon activity\n";
-			toReturn = toReturn + "    Hour        Number    Frequency   Number    Frequency\n";
+			toReturn.append(species.getName()).append("\n");
+			toReturn.append("                 Full moon activity    New moon activity\n");
+			toReturn.append("    Hour        Number    Frequency   Number    Frequency\n");
 
 			List<ImageEntry> imagesWithSpeciesFull = new ImageQuery().speciesOnly(species).query(imagesFull);
 			int totalImagesFull = imagesWithSpeciesFull.size();
@@ -64,7 +64,7 @@ public class LunarActivityFormatter extends TextFormatter
 
 			double totalDifference = 0;
 
-			String toAdd = "";
+			StringBuilder toAdd = new StringBuilder();
 
 			// 24 hrs
 			for (int i = 0; i < 24; i++)
@@ -86,21 +86,21 @@ public class LunarActivityFormatter extends TextFormatter
 				double difference = frequencyFull - frequencyNew;
 				totalDifference = totalDifference + difference * difference;
 
-				toAdd = toAdd + String.format("%02d:00-%02d:00      %5d      %5.3f      %5d      %5.3f\n", i, i + 1, numImagesFull, frequencyFull, numImagesNew, frequencyNew);
+				toAdd.append(String.format("%02d:00-%02d:00      %5d      %5.3f      %5d      %5.3f\n", i, i + 1, numImagesFull, frequencyFull, numImagesNew, frequencyNew));
 			}
 
 			totalDifference = Math.sqrt(totalDifference);
 
-			toAdd = toAdd + String.format("Total            %5d                 %5d\n", numImagesTotalFull, numImagesTotalNew);
-			toAdd = toAdd + String.format("Difference       %5.2f\n", totalDifference);
+			toAdd.append(String.format("Total            %5d                 %5d\n", numImagesTotalFull, numImagesTotalNew));
+			toAdd.append(String.format("Difference       %5.2f\n", totalDifference));
 
-			toAdd = toAdd + "\n";
+			toAdd.append("\n");
 
 			if (totalDifference != 0)
-				toReturn = toReturn + toAdd;
+				toReturn.append(toAdd);
 		}
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -113,29 +113,27 @@ public class LunarActivityFormatter extends TextFormatter
 	 */
 	public String printLunarActivityMostDifferent()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
 		if (lunarActivities == null)
 			this.createLunarActivityTable();
 
 		if (!lunarActivities.isEmpty())
 		{
-			Collections.sort(lunarActivities, (entry1, entry2) ->
-			{
-				return entry2.getDifference().compareTo(entry1.getDifference());
-			});
+			lunarActivities.sort((entry1, entry2) ->
+					entry2.getDifference().compareTo(entry1.getDifference()));
 
-			toReturn = toReturn + "SPECIES LUNAR ACTIVITY MOST DIFFERENT: ";
+			toReturn.append("SPECIES LUNAR ACTIVITY MOST DIFFERENT: ");
 
-			toReturn = toReturn + lunarActivities.get(0).getSpecies().getName() + "\n";
+			toReturn.append(lunarActivities.get(0).getSpecies().getName()).append("\n");
 
-			toReturn = toReturn + "\nSpecies                   Difference Number of records\n";
+			toReturn.append("\nSpecies                   Difference Number of records\n");
 			for (LunarActivityEntry entry : lunarActivities)
-				toReturn = toReturn + String.format("%-28s %4.2f      %7d\n", entry.getSpecies(), entry.getDifference(), entry.getNumRecords());
-			toReturn = toReturn + "\n";
+				toReturn.append(String.format("%-28s %4.2f      %7d\n", entry.getSpecies(), entry.getDifference(), entry.getNumRecords()));
+			toReturn.append("\n");
 		}
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	// Algorithm copied from "public String printLunarActivity()"

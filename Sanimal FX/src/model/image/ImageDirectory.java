@@ -1,105 +1,126 @@
 package model.image;
 
+import javafx.beans.Observable;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * A class representing a directory containing images
+ * A class representing a directoryProperty containing images
  * 
  * @author David Slovikosky
  */
-public class ImageDirectory
+public class ImageDirectory extends ImageContainer
 {
-	// A list of images in the directory
-	private List<ImageEntry> images = new ArrayList<ImageEntry>();
-	// A list of subdirectories
-	private List<ImageDirectory> subDirectories = new ArrayList<ImageDirectory>();
+	private ObservableList<ImageContainer> children = FXCollections.observableArrayList(imageContainer -> {
+		if (imageContainer instanceof ImageEntry)
+		{
+			ImageEntry image = (ImageEntry) imageContainer;
+			return new Observable[] {
+					image.getDateTakenProperty(),
+					image.getFileProperty(),
+					image.getLocationTakenProperty(),
+					// Do we need a ListProperty?
+					image.getSpeciesPresent()
+			};
+		}
+		else if (imageContainer instanceof ImageDirectory)
+		{
+			ImageDirectory directory = (ImageDirectory) imageContainer;
+			return new Observable[] {
+					directory.getFileProperty(),
+					// Do we need a ListProperty?
+					directory.getChildren()
+			};
+		}
+		else
+			return new Observable[0];
+	});
+
 	// The file representing the directory
-	private File directory;
+	private ObjectProperty<File> directoryProperty = new SimpleObjectProperty<File>();
 
 	/**
-	 * Construct an image directory
+	 * Construct an image directoryProperty
 	 * 
 	 * @param directory
-	 *            The file that represents the directory
+	 *            The file that represents the directoryProperty
 	 */
 	public ImageDirectory(File directory)
 	{
 		if (!directory.isDirectory())
 			throw new RuntimeException("The specified file is not a directory!");
-		this.directory = directory;
+		this.directoryProperty.setValue(directory);
+	}
+
+	@Override
+	public ObservableList<ImageContainer> getChildren()
+	{
+		return this.children;
 	}
 
 	/**
-	 * Add a new subdirctory to this directory
+	 * Add a new subdirctory to this directoryProperty
 	 * 
 	 * @param subDirectory
-	 *            The directory to add
+	 *            The directoryProperty to add
 	 */
 	public void addSubDirectory(ImageDirectory subDirectory)
 	{
-		this.subDirectories.add(subDirectory);
+		this.children.add(subDirectory);
 	}
 
 	/**
-	 * Add an image to this directory
+	 * Add an image to this directoryProperty
 	 * 
 	 * @param imageEntry
 	 *            The image to add
 	 */
 	public void addImage(ImageEntry imageEntry)
 	{
-		this.images.add(imageEntry);
+		this.children.add(imageEntry);
 	}
 
 	/**
-	 * Get the file representing this directory
+	 * Get the file representing this directoryProperty
 	 * 
-	 * @return The file representing this directory
+	 * @return The file representing this directoryProperty
 	 */
 	public File getFile()
 	{
-		return directory;
+		return directoryProperty.getValue();
 	}
 
 	/**
-	 * Set the file that this directory represents
+	 * Set the file that this directoryProperty represents
 	 * 
 	 * @param file
-	 *            The file that this directory represents
+	 *            The file that this directoryProperty represents
 	 */
 	public void setFile(File file)
 	{
-		this.directory = file;
+		this.directoryProperty.setValue(file);
 	}
 
 	/**
-	 * Get the subdirectories
-	 * 
-	 * @return The list of subdirectories
+	 * Grab the file property
+	 * @return The source file property
 	 */
-	public List<ImageDirectory> getSubDirectories()
+	public ObjectProperty<File> getFileProperty()
 	{
-		return subDirectories;
+		return this.directoryProperty;
 	}
 
 	/**
-	 * Get the list of images in the directory
-	 * 
-	 * @return The list of images
-	 */
-	public List<ImageEntry> getImages()
-	{
-		return images;
-	}
-
-	/**
-	 * @return The string representing this directory
+	 * @return The string representing this directoryProperty
 	 */
 	@Override
 	public String toString()
 	{
-		return this.directory.getName();
+		return this.getFile().getName();
 	}
+
 }

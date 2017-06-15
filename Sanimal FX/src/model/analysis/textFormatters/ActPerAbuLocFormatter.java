@@ -45,10 +45,10 @@ public class ActPerAbuLocFormatter extends TextFormatter
 	 */
 	public String printNumberOfPicturesByYear()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "NUMBER OF PICTURES AND FILTERED PICTURES PER YEAR\n";
-		toReturn = toReturn + "        Year       All Activity   Period Abundance\n";
+		toReturn.append("NUMBER OF PICTURES AND FILTERED PICTURES PER YEAR\n");
+		toReturn.append("        Year       All Activity   Period Abundance\n");
 
 		int imageTotal = 0;
 		int activityTotal = 0;
@@ -73,13 +73,13 @@ public class ActPerAbuLocFormatter extends TextFormatter
 			activityTotal = activityTotal + yearActivityTotal;
 			periodTotal = periodTotal + yearPeriodTotal;
 			abundanceTotal = abundanceTotal + yearAbundanceTotal;
-			toReturn = toReturn + String.format("        %4d   %7d  %7d  %7d  %7d\n", year, yearImageTotal, yearActivityTotal, yearPeriodTotal, yearAbundanceTotal);
+			toReturn.append(String.format("        %4d   %7d  %7d  %7d  %7d\n", year, yearImageTotal, yearActivityTotal, yearPeriodTotal, yearAbundanceTotal));
 		}
-		toReturn = toReturn + String.format("        Total  %7d  %7d  %7d  %7d\n", imageTotal, activityTotal, periodTotal, abundanceTotal);
+		toReturn.append(String.format("        Total  %7d  %7d  %7d  %7d\n", imageTotal, activityTotal, periodTotal, abundanceTotal));
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -94,13 +94,13 @@ public class ActPerAbuLocFormatter extends TextFormatter
 	 */
 	public String printNumberOfPicturesBySpeciesByYear()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "NUMBER OF PICTURES BY SPECIES BY YEAR\n";
+		toReturn.append("NUMBER OF PICTURES BY SPECIES BY YEAR\n");
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn = toReturn + "  " + species.getName() + "\n";
-			toReturn = toReturn + "        Year       All Activity   Period Abundance Locations\n";
+			toReturn.append("  ").append(species.getName()).append("\n");
+			toReturn.append("        Year       All Activity   Period Abundance Locations\n");
 			int speciesImageTotal = 0;
 			int speciesActivityTotal = 0;
 			int speciesPeriodTotal = 0;
@@ -120,15 +120,15 @@ public class ActPerAbuLocFormatter extends TextFormatter
 				speciesPeriodTotal = speciesPeriodTotal + speciesPeriod;
 				speciesAbundanceTotal = speciesAbundanceTotal + speciesAbundance;
 				speciesLocationTotal = speciesLocationTotal + speciesLocation;
-				toReturn = toReturn + String.format("        %4d   %7d  %7d  %7d  %7d  %7d\n", year, speciesImage, speciesActivity, speciesPeriod, speciesAbundance, speciesLocation);
+				toReturn.append(String.format("        %4d   %7d  %7d  %7d  %7d  %7d\n", year, speciesImage, speciesActivity, speciesPeriod, speciesAbundance, speciesLocation));
 			}
 
-			toReturn = toReturn + String.format("        Total  %7d  %7d  %7d  %7d  %7d\n", speciesImageTotal, speciesActivityTotal, speciesPeriodTotal, speciesAbundanceTotal, speciesLocationTotal);
+			toReturn.append(String.format("        Total  %7d  %7d  %7d  %7d  %7d\n", speciesImageTotal, speciesActivityTotal, speciesPeriodTotal, speciesAbundanceTotal, speciesLocationTotal));
 
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 		}
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -142,11 +142,11 @@ public class ActPerAbuLocFormatter extends TextFormatter
 	 */
 	public String printNumberOfPicturesByPercentTotal()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "SPECIES RANKED BY NUMBER OF INDEPENDENT PICTURES AND PERCENT OF TOTAL\n";
+		toReturn.append("SPECIES RANKED BY NUMBER OF INDEPENDENT PICTURES AND PERCENT OF TOTAL\n");
 
-		toReturn = toReturn + "     Species                   Total  Percent\n";
+		toReturn.append("     Species                   Total  Percent\n");
 
 		Integer periodTotal = 0;
 		for (Integer year : analysis.getAllImageYears())
@@ -164,12 +164,12 @@ public class ActPerAbuLocFormatter extends TextFormatter
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
 			for (Integer year : analysis.getAllImageYears())
 				speciesPeriodTotal = speciesPeriodTotal + analysis.periodForImageList(new ImageQuery().yearOnly(year).query(withSpecies));
-			toReturn = toReturn + String.format("  %-28s %5d  %7.2f\n", species.getName(), speciesPeriodTotal, (speciesPeriodTotal.doubleValue() / periodTotal) * 100.0);
+			toReturn.append(String.format("  %-28s %5d  %7.2f\n", species.getName(), speciesPeriodTotal, (speciesPeriodTotal.doubleValue() / periodTotal) * 100.0));
 		}
-		toReturn = toReturn + String.format("  Total pictures               %5d   100.00\n", periodTotal);
-		toReturn = toReturn + "\n";
+		toReturn.append(String.format("  Total pictures               %5d   100.00\n", periodTotal));
+		toReturn.append("\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -185,11 +185,11 @@ public class ActPerAbuLocFormatter extends TextFormatter
 	 */
 	public String printSpeciesAbundance()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "SPECIES ABUNDANCE\n";
-		toReturn = toReturn + "  One record of each species per location per PERIOD\n";
-		toReturn = toReturn + "SPECIES                      NUMBER PICS      RELATIVE ABUNDANCE     AVG NUM INDIVS     ABUNDANCE OF INDIVS\n";
+		toReturn.append("SPECIES ABUNDANCE\n");
+		toReturn.append("  One record of each species per location per PERIOD\n");
+		toReturn.append("SPECIES                      NUMBER PICS      RELATIVE ABUNDANCE     AVG NUM INDIVS     ABUNDANCE OF INDIVS\n");
 		Integer periodOverAllSpecies = 0;
 		Integer numAnimalsPhotographed = 0;
 		for (Species species : analysis.getAllImageSpecies())
@@ -213,13 +213,13 @@ public class ActPerAbuLocFormatter extends TextFormatter
 				abundanceTotal = abundanceTotal + analysis.abundanceForImageList(withSpeciesYear, species);
 				periodTotal = periodTotal + analysis.periodForImageList(withSpeciesYear);
 			}
-			toReturn = toReturn + String.format("%-28s %7d               %7.2f             %7.2f             %7.2f\n", species.getName(), periodTotal, 100.0D * (double) periodTotal / periodOverAllSpecies, (double) abundanceTotal / periodTotal, (double) abundanceTotal / numAnimalsPhotographed * 100);
+			toReturn.append(String.format("%-28s %7d               %7.2f             %7.2f             %7.2f\n", species.getName(), periodTotal, 100.0D * (double) periodTotal / periodOverAllSpecies, (double) abundanceTotal / periodTotal, (double) abundanceTotal / numAnimalsPhotographed * 100));
 		}
-		toReturn = toReturn + String.format("Total                        %7d                100.00", periodOverAllSpecies);
+		toReturn.append(String.format("Total                        %7d                100.00", periodOverAllSpecies));
 
-		toReturn = toReturn + "\n\n";
+		toReturn.append("\n\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -232,38 +232,38 @@ public class ActPerAbuLocFormatter extends TextFormatter
 	 */
 	public String printSpeciesAbundanceYearSite()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "SPECIES AVERAGE ABUNDANCE BY YEAR AND SITE\n";
-		toReturn = toReturn + "One record of each species per location per PERIOD\n";
-		toReturn = toReturn + "               Use maximum number of individuals per PERIOD\n";
+		toReturn.append("SPECIES AVERAGE ABUNDANCE BY YEAR AND SITE\n");
+		toReturn.append("One record of each species per location per PERIOD\n");
+		toReturn.append("               Use maximum number of individuals per PERIOD\n");
 
 		for (Integer year : analysis.getAllImageYears())
 		{
 			List<ImageEntry> withYear = new ImageQuery().yearOnly(year).query(analysis.getImagesSortedByDate());
-			toReturn = toReturn + year + "\n";
-			toReturn = toReturn + "Species                     ";
+			toReturn.append(year).append("\n");
+			toReturn.append("Species                     ");
 			for (Location location : analysis.getAllImageLocations())
-				toReturn = toReturn + String.format("%-5s ", StringUtils.left(location.getName(), 5));
-			toReturn = toReturn + "\n";
+				toReturn.append(String.format("%-5s ", StringUtils.left(location.getName(), 5)));
+			toReturn.append("\n");
 			for (Species species : analysis.getAllImageSpecies())
 			{
 				List<ImageEntry> withYearSpecies = new ImageQuery().speciesOnly(species).query(withYear);
-				toReturn = toReturn + String.format("%-28s", species.getName());
+				toReturn.append(String.format("%-28s", species.getName()));
 				for (Location location : analysis.getAllImageLocations())
 				{
 					List<ImageEntry> withYearSpeciesLoc = new ImageQuery().locationOnly(location).query(withYearSpecies);
 					Integer abundance = analysis.abundanceForImageList(withYearSpeciesLoc, species);
 					Integer period = analysis.periodForImageList(new ImageQuery().locationOnly(location).speciesOnly(species).query(images));
-					toReturn = toReturn + String.format("%5.2f ", period == 0 ? 0 : (double) abundance / period);
+					toReturn.append(String.format("%5.2f ", period == 0 ? 0 : (double) abundance / period));
 				}
-				toReturn = toReturn + "\n";
+				toReturn.append("\n");
 			}
 
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 		}
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -276,35 +276,35 @@ public class ActPerAbuLocFormatter extends TextFormatter
 	 */
 	public String printSpeciesAbundanceSite()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "SPECIES AVERAGE ABUNDANCE BY SITE ALL YEARS\n";
+		toReturn.append("SPECIES AVERAGE ABUNDANCE BY SITE ALL YEARS\n");
 
 		Integer numYears = analysis.getAllImageYears().size();
 		if (!analysis.getAllImageYears().isEmpty())
-			toReturn = toReturn + "Years " + analysis.getAllImageYears().get(0) + " to " + analysis.getAllImageYears().get(numYears - 1) + "\n";
+			toReturn.append("Years ").append(analysis.getAllImageYears().get(0)).append(" to ").append(analysis.getAllImageYears().get(numYears - 1)).append("\n");
 
-		toReturn = toReturn + "Species                     ";
+		toReturn.append("Species                     ");
 		for (Location location : analysis.getAllImageLocations())
-			toReturn = toReturn + String.format("%-5s ", StringUtils.left(location.getName(), 5));
-		toReturn = toReturn + "\n";
+			toReturn.append(String.format("%-5s ", StringUtils.left(location.getName(), 5)));
+		toReturn.append("\n");
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
-			toReturn = toReturn + String.format("%-28s", species.getName());
+			toReturn.append(String.format("%-28s", species.getName()));
 			for (Location location : analysis.getAllImageLocations())
 			{
 				List<ImageEntry> withSpeciesLoc = new ImageQuery().locationOnly(location).query(withSpecies);
 				Integer abundance = analysis.abundanceForImageList(withSpeciesLoc, species);
 				Integer period = analysis.periodForImageList(new ImageQuery().locationOnly(location).speciesOnly(species).query(images));
-				toReturn = toReturn + String.format("%5.2f ", period == 0 ? 0 : (double) abundance / period);
+				toReturn.append(String.format("%5.2f ", period == 0 ? 0 : (double) abundance / period));
 			}
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 		}
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 }

@@ -60,12 +60,10 @@ public class SanimalAnalysisUtils
 		{
 			result = Files.probeContentType(file.toPath());
 		}
-		catch (IOException e)
+		catch (IOException ignored)
 		{
 		}
-		if (result == null || !result.startsWith("image"))
-			return false;
-		return true;
+		return !(result == null || !result.startsWith("image"));
 	}
 
 	/**

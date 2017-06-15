@@ -2,6 +2,7 @@ package model.analysis.textFormatters;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,22 +36,22 @@ public class OccouranceFormatter extends TextFormatter
 	 */
 	public String printCoOccuranceMatrix()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "SPECIES CO-OCCURRENCE MATRIX\n";
-		toReturn = toReturn + "  The number of locations each species pair co-occurs\n";
-		toReturn = toReturn + "                            ";
+		toReturn.append("SPECIES CO-OCCURRENCE MATRIX\n");
+		toReturn.append("  The number of locations each species pair co-occurs\n");
+		toReturn.append("                            ");
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn = toReturn + String.format("%3s ", StringUtils.left(species.getName(), 3));
+			toReturn.append(String.format("%3s ", StringUtils.left(species.getName(), 3)));
 		}
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn = toReturn + String.format("%-28s", species.getName());
+			toReturn.append(String.format("%-28s", species.getName()));
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
 
 			for (Species other : analysis.getAllImageSpecies())
@@ -67,15 +68,15 @@ public class OccouranceFormatter extends TextFormatter
 						numLocations = numLocations + 1;
 				}
 
-				toReturn = toReturn + String.format("%3d ", numLocations);
+				toReturn.append(String.format("%3d ", numLocations));
 			}
 
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 		}
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -88,47 +89,44 @@ public class OccouranceFormatter extends TextFormatter
 	 */
 	public String printAbsensePresenceMatrix()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "ABSENCE-PRESENCE MATRIX\n";
-		toReturn = toReturn + "  Species vs locations matrix (locations in alphabetical order)\n";
-		toReturn = toReturn + "          Species (";
-		toReturn = toReturn + String.format("%3d", analysis.getAllImageSpecies().size());
-		toReturn = toReturn + ")               Locations (";
-		toReturn = toReturn + String.format("%3d", analysis.getAllImageLocations().size());
-		toReturn = toReturn + ")\n";
-		toReturn = toReturn + "                            ";
+		toReturn.append("ABSENCE-PRESENCE MATRIX\n");
+		toReturn.append("  Species vs locations matrix (locations in alphabetical order)\n");
+		toReturn.append("          Species (");
+		toReturn.append(String.format("%3d", analysis.getAllImageSpecies().size()));
+		toReturn.append(")               Locations (");
+		toReturn.append(String.format("%3d", analysis.getAllImageLocations().size()));
+		toReturn.append(")\n");
+		toReturn.append("                            ");
 
 		List<Location> alphabetical = new ArrayList<Location>(analysis.getAllImageLocations());
 
-		Collections.sort(alphabetical, (loc1, loc2) ->
-		{
-			return loc1.getName().compareTo(loc2.getName());
-		});
+		alphabetical.sort(Comparator.comparing(Location::getName));
 
 		for (Integer location = 0; location < alphabetical.size(); location++)
-			toReturn = toReturn + String.format("%2d ", location + 1);
+			toReturn.append(String.format("%2d ", location + 1));
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn = toReturn + String.format("%-28s", species.getName());
+			toReturn.append(String.format("%-28s", species.getName()));
 
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
 
 			for (Location location : alphabetical)
 			{
 				List<ImageEntry> withSpeciesAtLoc = new ImageQuery().locationOnly(location).query(withSpecies);
-				toReturn = toReturn + String.format("%2d ", (withSpeciesAtLoc.size() == 0 ? 0 : 1));
+				toReturn.append(String.format("%2d ", (withSpeciesAtLoc.size() == 0 ? 0 : 1)));
 			}
 
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 		}
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -141,58 +139,55 @@ public class OccouranceFormatter extends TextFormatter
 	 */
 	public String printMaxMinSpeciesElevation()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "SPECIES MIN AND MAX ELEVATION\n";
-		toReturn = toReturn + "  Species vs locations matrix (location sorted from low to high elevation)\n";
-		toReturn = toReturn + "          Species (";
-		toReturn = toReturn + String.format("%3d", analysis.getAllImageSpecies().size());
-		toReturn = toReturn + ")               Locations (";
-		toReturn = toReturn + String.format("%3d", analysis.getAllImageLocations().size());
-		toReturn = toReturn + ")\n";
-		toReturn = toReturn + "                            ";
+		toReturn.append("SPECIES MIN AND MAX ELEVATION\n");
+		toReturn.append("  Species vs locations matrix (location sorted from low to high elevation)\n");
+		toReturn.append("          Species (");
+		toReturn.append(String.format("%3d", analysis.getAllImageSpecies().size()));
+		toReturn.append(")               Locations (");
+		toReturn.append(String.format("%3d", analysis.getAllImageLocations().size()));
+		toReturn.append(")\n");
+		toReturn.append("                            ");
 
 		List<Location> elevationLocs = new ArrayList<Location>(analysis.getAllImageLocations());
 
-		Collections.sort(elevationLocs, (loc1, loc2) ->
-		{
-			return Double.compare(loc1.getElevation(), loc2.getElevation());
-		});
+		elevationLocs.sort(Comparator.comparingDouble(Location::getElevation));
 
 		for (Integer location = 0; location < elevationLocs.size(); location++)
-			toReturn = toReturn + String.format("%2d ", location + 1);
+			toReturn.append(String.format("%2d ", location + 1));
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn = toReturn + String.format("%-28s", species.getName());
+			toReturn.append(String.format("%-28s", species.getName()));
 
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
 
 			for (Location location : elevationLocs)
 			{
 				List<ImageEntry> withSpeciesAtLoc = new ImageQuery().locationOnly(location).query(withSpecies);
-				toReturn = toReturn + String.format("%2d ", (withSpeciesAtLoc.size() == 0 ? 0 : 1));
+				toReturn.append(String.format("%2d ", (withSpeciesAtLoc.size() == 0 ? 0 : 1)));
 			}
 
-			toReturn = toReturn + "\n";
+			toReturn.append("\n");
 		}
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		toReturn = toReturn + "  List of elevations and locations\n";
+		toReturn.append("  List of elevations and locations\n");
 
 		for (Location location : analysis.getAllImageLocations())
 		{
-			toReturn = toReturn + String.format(" %2d %5.0f ", analysis.getAllImageLocations().indexOf(location) + 1, location.getElevation()) + location.getName() + "\n";
+			toReturn.append(String.format(" %2d %5.0f ", analysis.getAllImageLocations().indexOf(location) + 1, location.getElevation())).append(location.getName()).append("\n");
 		}
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		toReturn = toReturn + "  Minimum and maximum elevation for each species\n";
+		toReturn.append("  Minimum and maximum elevation for each species\n");
 
-		toReturn = toReturn + "   SPECIES                     Min   Max\n";
+		toReturn.append("   SPECIES                     Min   Max\n");
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
@@ -214,12 +209,12 @@ public class OccouranceFormatter extends TextFormatter
 				}
 			}
 
-			toReturn = toReturn + String.format("%-28s %5.0f %5.0f\n", species.getName(), minElevation, maxElevation);
+			toReturn.append(String.format("%-28s %5.0f %5.0f\n", species.getName(), minElevation, maxElevation));
 		}
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**
@@ -235,13 +230,13 @@ public class OccouranceFormatter extends TextFormatter
 	 */
 	public String printNativeOccupancy()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
-		toReturn = toReturn + "NAIVE OCCUPANCY\n";
-		toReturn = toReturn + "  Species naive location occupancy proportion\n";
-		toReturn = toReturn + "  To create occupancy matrix run program OccupancyMatrix\n";
-		toReturn = toReturn + "                               Fraction of locations   Number of locations\n";
-		toReturn = toReturn + "Species                              Occupied             Occupied (" + String.format("%3d", analysis.getAllImageLocations().size()) + ")\n";
+		toReturn.append("NAIVE OCCUPANCY\n");
+		toReturn.append("  Species naive location occupancy proportion\n");
+		toReturn.append("  To create occupancy matrix run program OccupancyMatrix\n");
+		toReturn.append("                               Fraction of locations   Number of locations\n");
+		toReturn.append("Species                              Occupied             Occupied (").append(String.format("%3d", analysis.getAllImageLocations().size())).append(")\n");
 
 		Integer totalLocations = analysis.getAllImageLocations().size();
 
@@ -262,17 +257,15 @@ public class OccouranceFormatter extends TextFormatter
 			pairsToPrint.add(Pair.of((double) locationsWithSpecies / totalLocations, String.format("%-28s           %5.3f                  %3d\n", species.getName(), (double) locationsWithSpecies / totalLocations, locationsWithSpecies)));
 		}
 
-		Collections.sort(pairsToPrint, (pair1, pair2) ->
-		{
-			return pair2.getLeft().compareTo(pair1.getLeft());
-		});
+		pairsToPrint.sort((pair1, pair2) ->
+				pair2.getLeft().compareTo(pair1.getLeft()));
 
 		for (Pair<Double, String> toPrint : pairsToPrint)
-			toReturn = toReturn + toPrint.getRight();
+			toReturn.append(toPrint.getRight());
 
-		toReturn = toReturn + "\n";
+		toReturn.append("\n");
 
-		return toReturn;
+		return toReturn.toString();
 	}
 
 	/**

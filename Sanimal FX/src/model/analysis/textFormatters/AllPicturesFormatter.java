@@ -28,7 +28,7 @@ public class AllPicturesFormatter extends TextFormatter
 	 */
 	public String createAllPictures()
 	{
-		String toReturn = "";
+		StringBuilder toReturn = new StringBuilder();
 
 		for (Location location : analysis.getAllImageLocations())
 		{
@@ -38,14 +38,14 @@ public class AllPicturesFormatter extends TextFormatter
 				List<ImageEntry> withLocationSpecies = new ImageQuery().speciesOnly(species).query(withLocation);
 				for (ImageEntry imageEntry : withLocationSpecies)
 				{
-					toReturn = toReturn + String.format("%-28s %-28s %-28s\n", location.getName(), species.getName(), imageEntry.getFile().getName());
+					toReturn.append(String.format("%-28s %-28s %-28s\n", location.getName(), species.getName(), imageEntry.getFile().getName()));
 				}
 			}
 		}
 
-		if (!toReturn.isEmpty())
-			toReturn = toReturn.substring(0, toReturn.length() - 1);
+		if (toReturn.length() > 0)
+			toReturn = new StringBuilder(toReturn.substring(0, toReturn.length() - 1));
 
-		return toReturn;
+		return toReturn.toString();
 	}
 }

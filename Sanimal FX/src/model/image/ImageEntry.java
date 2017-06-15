@@ -1,17 +1,17 @@
 package model.image;
 
-import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-import javax.swing.ImageIcon;
-
+import javafx.beans.Observable;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
@@ -21,19 +21,22 @@ import model.species.SpeciesEntry;
  * 
  * @author David Slovikosky
  */
-public class ImageEntry
+public class ImageEntry extends ImageContainer
 {
 	// The format with which to print the date out in
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("YYYY MM dd hh mm ss");
 
 	// The actual file 
-	private File imageFile;
+	private ObjectProperty<File> imageFileProperty = new SimpleObjectProperty<File>();
 	// The date that the image was taken
-	private Date dateTaken;
+	private ObjectProperty<Date> dateTakenProperty = new SimpleObjectProperty<Date>();
 	// The location that the image was taken
-	private Location locationTaken;
+	private ObjectProperty<Location> locationTakenProperty = new SimpleObjectProperty<Location>();
 	// The species present in the image
-	private List<SpeciesEntry> speciesPresent = new ArrayList<SpeciesEntry>();
+	private ObservableList<SpeciesEntry> speciesPresent = FXCollections.<SpeciesEntry> observableArrayList(image -> new Observable[] {
+			image.getAmountProperty(),
+			image.getSpeciesProperty()
+	});
 
 	/**
 	 * Create a new image entry with an image file
@@ -43,10 +46,10 @@ public class ImageEntry
 	 */
 	public ImageEntry(File file)
 	{
-		this.imageFile = file;
+		this.imageFileProperty.setValue(file);
 		try
 		{
-			this.dateTaken = new Date(Files.readAttributes(file.toPath(), BasicFileAttributes.class).lastModifiedTime().toMillis());
+			this.dateTakenProperty.setValue(new Date(Files.readAttributes(file.toPath(), BasicFileAttributes.class).lastModifiedTime().toMillis()));
 		}
 		catch (IOException e)
 		{
@@ -60,7 +63,7 @@ public class ImageEntry
 	 */
 	public File getFile()
 	{
-		return this.imageFile;
+		return this.imageFileProperty.getValue();
 	}
 
 	/**
@@ -71,7 +74,12 @@ public class ImageEntry
 	 */
 	public void setFile(File file)
 	{
-		this.imageFile = file;
+		this.imageFileProperty.setValue(file);
+	}
+
+	public ObjectProperty<File> getFileProperty()
+	{
+		return this.imageFileProperty;
 	}
 
 	/**
@@ -82,7 +90,7 @@ public class ImageEntry
 	public String getDateTakenFormatted()
 	{
 		//this.validateDate();
-		return dateTaken.toString();
+		return this.getDateTaken().toString();
 	}
 
 	/**
@@ -93,7 +101,17 @@ public class ImageEntry
 	public Date getDateTaken()
 	{
 		//this.validateDate();
-		return dateTaken;
+		return dateTakenProperty.getValue();
+	}
+
+	/**
+	 * Returns the date property of the image
+	 *
+	 * @return The date the image was taken property
+	 */
+	public ObjectProperty<Date> getDateTakenProperty()
+	{
+		return dateTakenProperty;
 	}
 
 	/**
@@ -104,7 +122,7 @@ public class ImageEntry
 	 */
 	public void setLocationTaken(Location location)
 	{
-		this.locationTaken = location;
+		this.locationTakenProperty.setValue(location);
 	}
 
 	/**
@@ -114,7 +132,12 @@ public class ImageEntry
 	 */
 	public Location getLocationTaken()
 	{
-		return locationTaken;
+		return locationTakenProperty.getValue();
+	}
+
+	public ObjectProperty<Location> getLocationTakenProperty()
+	{
+		return locationTakenProperty;
 	}
 
 	/**
@@ -141,9 +164,7 @@ public class ImageEntry
 	public void removeSpecies(Species species)
 	{
 		this.speciesPresent.removeIf(entry ->
-		{
-			return entry.getSpecies() == species;
-		});
+				entry.getSpecies() == species);
 	}
 
 	/**
@@ -151,7 +172,7 @@ public class ImageEntry
 	 * 
 	 * @return A list of present species
 	 */
-	public List<SpeciesEntry> getSpeciesPresent()
+	public ObservableList<SpeciesEntry> getSpeciesPresent()
 	{
 		return speciesPresent;
 	}
@@ -162,9 +183,9 @@ public class ImageEntry
 	public void renameByDate()
 	{
 		//this.validateDate();
-		String newFilePath = imageFile.getParentFile() + File.separator;
-		String newFileName = DATE_FORMAT.format(this.dateTaken);
-		String newFileExtension = imageFile.getName().substring(imageFile.getName().lastIndexOf('.'));
+		String newFilePath = this.getFile().getParentFile() + File.separator;
+		String newFileName = DATE_FORMAT.format(this.getDateTaken());
+		String newFileExtension = this.getFile().getName().substring(this.getFile().getName().lastIndexOf('.'));
 		String newFileCompletePath = newFilePath + newFileName + newFileExtension;
 		File newFile = new File(newFileCompletePath);
 		int numberOfDuplicateFiles = 0;
@@ -173,18 +194,9 @@ public class ImageEntry
 			newFileCompletePath = newFilePath + newFileName + " (" + numberOfDuplicateFiles++ + ")" + newFileExtension;
 			newFile = new File(newFileCompletePath);
 		}
-		boolean result = this.imageFile.renameTo(newFile);
+		boolean result = this.getFile().renameTo(newFile);
 		if (result == false)
-			System.err.println("Error renaming file: " + this.imageFile.getAbsolutePath());
-	}
-
-	/**
-	 * Returns the name of this image entry
-	 */
-	@Override
-	public String toString()
-	{
-		return this.imageFile.getName();
+			System.err.println("Error renaming file: " + this.getFile().getAbsolutePath());
 	}
 
 	//	private void validateDate()
