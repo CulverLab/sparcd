@@ -421,11 +421,13 @@ public class SanimalImportController implements Initializable
 		fadeIn.play();
 	}
 
+	// Found here: https://gist.github.com/james-d/ce5ec1fd44ce6c64e81a
 	public void onImagePressed(MouseEvent mouseEvent)
 	{
 		mouseDown.set(imageViewToImage(this.imagePreview, new Point2D(mouseEvent.getX(), mouseEvent.getY())));
 	}
 
+	// Found here: https://gist.github.com/james-d/ce5ec1fd44ce6c64e81a
 	public void onImageDragged(MouseEvent mouseEvent)
 	{
 		Point2D dragPoint = imageViewToImage(this.imagePreview, new Point2D(mouseEvent.getX(), mouseEvent.getY()));
@@ -433,8 +435,49 @@ public class SanimalImportController implements Initializable
 		mouseDown.set(imageViewToImage(this.imagePreview, new Point2D(mouseEvent.getX(), mouseEvent.getY())));
 	}
 
+	// Found here: https://gist.github.com/james-d/ce5ec1fd44ce6c64e81a
 	public void onImageClicked(MouseEvent mouseEvent)
 	{
+	}
+
+	// Found here: https://gist.github.com/james-d/ce5ec1fd44ce6c64e81a
+	public void onImageScroll(ScrollEvent scrollEvent)
+	{
+		double delta = -scrollEvent.getDeltaY();
+		Rectangle2D viewport = this.imagePreview.getViewport();
+
+		double scale = clamp(Math.pow(1.01, delta),
+
+				// don't scale so we're zoomed in to fewer than MIN_PIXELS in any direction:
+				Math.min(10 / viewport.getWidth(), 10 / viewport.getHeight()),
+
+				// don't scale so that we're bigger than image dimensions:
+				Math.max(this.imagePreview.getImage().getWidth() / viewport.getWidth(), this.imagePreview.getImage().getHeight() / viewport.getHeight())
+
+		);
+
+		Point2D mouse = imageViewToImage(imagePreview, new Point2D(scrollEvent.getX(), scrollEvent.getY()));
+
+		double newWidth = viewport.getWidth() * scale;
+		double newHeight = viewport.getHeight() * scale;
+
+		// To keep the visual point under the mouse from moving, we need
+		// (x - newViewportMinX) / (x - currentViewportMinX) = scale
+		// where x is the mouse X coordinate in the image
+
+		// solving this for newViewportMinX gives
+
+		// newViewportMinX = x - (x - currentViewportMinX) * scale
+
+		// we then clamp this value so the image never scrolls out
+		// of the imageview:
+
+		double newMinX = clamp(mouse.getX() - (mouse.getX() - viewport.getMinX()) * scale,
+				0, this.imagePreview.getImage().getWidth() - newWidth);
+		double newMinY = clamp(mouse.getY() - (mouse.getY() - viewport.getMinY()) * scale,
+				0, this.imagePreview.getImage().getHeight() - newHeight);
+
+		imagePreview.setViewport(new Rectangle2D(newMinX, newMinY, newWidth, newHeight));
 	}
 
 	// convert mouse coordinates in the imageView to coordinates in the actual image:

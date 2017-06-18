@@ -30,7 +30,7 @@
                     <children>
                         <ImageViewPane fx:id="imagePreviewPane" onDragOver="#imagePaneDragOver" onDragEntered="#speciesListDragEntered" onDragExited="#speciesListDragExited" onDragDropped="#speciesListDragDropped"  prefHeight="400" prefWidth="600" styleClass="imageViewBackground">
                             <imageView>
-                                <ImageView fx:id="imagePreview" onMouseDragged="#onImageDragged" onMousePressed="#onImagePressed" onMouseClicked="#onImageClicked" preserveRatio="true" styleClass="imageView"/>
+                                <ImageView fx:id="imagePreview" onScroll="#onImageScroll" onMouseDragged="#onImageDragged" onMousePressed="#onImagePressed" onMouseClicked="#onImageClicked" preserveRatio="true" styleClass="imageView"/>
                             </imageView>
                         </ImageViewPane>
                         <ListView styleClass="transparent10ListView" onMouseEntered="#onMouseEnteredSpeciesEntryList" onMouseExited="#onMouseExitedSpeciesEntryList" StackPane.alignment="TOP_LEFT" minHeight="100" prefHeight="100" maxHeight="100" maxWidth="160" minWidth="160" prefWidth="160" fx:id="speciesEntryListView" />
