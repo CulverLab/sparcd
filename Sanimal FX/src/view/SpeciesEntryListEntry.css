@@ -1,0 +1,6 @@
+.removeBtnBackground {
+    -fx-background-image: url("../images/importWindow/delete.png");
+    -fx-background-size: 18 18;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: 5px center;
+}

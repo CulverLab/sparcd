@@ -565,7 +565,7 @@ public class TotalDayFormatter extends TextFormatter
 						List<ImageEntry> imagesBySpeciesLocationAndYear = new ImageQuery().locationOnly(location).query(imagesBySpeciesAndYear);
 						if (!imagesBySpeciesLocationAndYear.isEmpty())
 						{
-							toReturn.append(String.format("%-28s %6d", location.getName(), (int) location.getElevation()));
+							toReturn.append(String.format("%-28s %6d", location.getName(), location.getElevation().intValue()));
 							Integer total = 0;
 							for (int i = 0; i < 12; i++)
 							{
@@ -672,7 +672,7 @@ public class TotalDayFormatter extends TextFormatter
 				List<ImageEntry> imagesBySpeciesLocation = new ImageQuery().locationOnly(location).speciesOnly(species).query(analysis.getImagesSortedByDate());
 				if (!imagesBySpeciesLocation.isEmpty())
 				{
-					toReturn.append(String.format("%-28s %6d", location.getName(), (int) location.getElevation()));
+					toReturn.append(String.format("%-28s %6d", location.getName(), location.getElevation().intValue()));
 					Integer total = 0;
 					for (int i = 0; i < 12; i++)
 					{
@@ -819,7 +819,7 @@ public class TotalDayFormatter extends TextFormatter
 
 						if (!withSpeciesYearLocation.isEmpty())
 						{
-							toReturn.append(String.format("%-28s %6d", location.getName(), (int) location.getElevation()));
+							toReturn.append(String.format("%-28s %6d", location.getName(), location.getElevation().intValue()));
 							Integer total = 0;
 							for (int i = 0; i < 12; i++)
 							{
@@ -956,7 +956,7 @@ public class TotalDayFormatter extends TextFormatter
 
 				if (!withSpeciesLocation.isEmpty())
 				{
-					toReturn.append(String.format("%-28s %6d", location.getName(), (int) location.getElevation()));
+					toReturn.append(String.format("%-28s %6d", location.getName(), (int) location.getElevation().intValue()));
 					Integer total = 0;
 					for (int i = 0; i < 12; i++)
 					{

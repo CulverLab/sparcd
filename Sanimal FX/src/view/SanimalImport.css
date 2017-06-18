@@ -43,3 +43,11 @@
     -fx-border-style: solid;
     -fx-border-width: 2px;
 }
+
+.transparent10ListView {
+    -fx-opacity: 0.1;
+}
+
+.transparent10ListView:empty {
+    -fx-opacity: 0;
+}

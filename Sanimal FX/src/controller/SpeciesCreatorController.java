@@ -2,6 +2,7 @@ package controller;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableStringValue;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -43,9 +44,9 @@ public class SpeciesCreatorController implements Initializable
     public Label lblErrorBox;
 
     private Species speciesToEdit;
-    private SimpleStringProperty newName = new SimpleStringProperty("");
-    private SimpleStringProperty newScientificName = new SimpleStringProperty("");
-    private SimpleStringProperty newIconURL = new SimpleStringProperty("");
+    private StringProperty newName = new SimpleStringProperty("");
+    private StringProperty newScientificName = new SimpleStringProperty("");
+    private StringProperty newIconURL = new SimpleStringProperty("");
     private String newIconLocal = "";
 
     @Override

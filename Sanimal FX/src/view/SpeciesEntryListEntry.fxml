@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<?import java.net.URL?>
+<GridPane fx:id="mainPane" minHeight="30" maxHeight="30" prefHeight="30" prefWidth="100" minWidth="150" maxWidth="150" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SpeciesEntryListEntryController">
+    <stylesheets>
+        <URL value="@SpeciesEntryListEntry.css" />
+    </stylesheets>
+    <padding>
+        <Insets left="5" right="5" />
+    </padding>
+    <columnConstraints>
+        <ColumnConstraints hgrow="ALWAYS" />
+        <ColumnConstraints hgrow="NEVER" minWidth="28" maxWidth="28"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+    </rowConstraints>
+    <children>
+        <Label alignment="CENTER_LEFT" fx:id="lblName" text="Name" HBox.hgrow="ALWAYS" />
+        <Button alignment="CENTER_RIGHT" fx:id="btnRemove" styleClass="removeBtnBackground" minWidth="28" maxWidth="28" minHeight="25" maxHeight="25" GridPane.columnIndex="1" />
+    </children>
+</GridPane>

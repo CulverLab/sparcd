@@ -5,6 +5,7 @@ import javafx.beans.property.StringProperty;
 
 import java.io.Serializable;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A class representing a species
@@ -13,9 +14,12 @@ import java.net.URL;
  */
 public class Species implements Serializable
 {
+    private static final AtomicInteger ID_GENERATOR = new AtomicInteger();
+
     private StringProperty name = new SimpleStringProperty();
     private StringProperty scientificName = new SimpleStringProperty();
     private StringProperty speciesIconURL = new SimpleStringProperty();
+    private final Integer uniqueID;
 
     public static final String UNINITIALIZED = "UNINITIALIZED";
 
@@ -34,6 +38,7 @@ public class Species implements Serializable
         this.name.setValue(name);
         this.scientificName.setValue(scientificName);
         this.speciesIconURL.setValue(speciesIconURL);
+        this.uniqueID = ID_GENERATOR.getAndIncrement();
     }
 
     /**
@@ -44,6 +49,7 @@ public class Species implements Serializable
         this.name.setValue(UNINITIALIZED);
         this.scientificName.setValue(UNINITIALIZED);
         this.speciesIconURL.setValue(UNINITIALIZED);
+        this.uniqueID = ID_GENERATOR.getAndIncrement();
     }
 
     public Boolean isUninitialized()
@@ -64,6 +70,16 @@ public class Species implements Serializable
     public Boolean iconValid()
     {
         return !this.speciesIconURL.getValue().equals(UNINITIALIZED);
+    }
+
+    /**
+     * Getter for this species' unique identifier
+     *
+     * @return This species' unique identifier
+     */
+    public Integer getUniqueID()
+    {
+        return uniqueID;
     }
 
     /**

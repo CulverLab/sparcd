@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
 
 import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
@@ -151,7 +152,7 @@ public class ImageEntry extends ImageContainer
 
 	/**
 	 * Add a new species to the image
-	 * 
+	 *
 	 * @param species
 	 *            The species of the animal
 	 * @param amount
@@ -159,9 +160,11 @@ public class ImageEntry extends ImageContainer
 	 */
 	public void addSpecies(Species species, Integer amount)
 	{
-		// Remove any other occurrences of the species from the image
+		// Grab the old species entry for the given species if present, and then add the amounts
+		Optional<SpeciesEntry> currentEntry = this.speciesPresent.stream().filter(speciesEntry -> speciesEntry.getSpecies().equals(species)).findFirst();
+		int oldAmount = currentEntry.map(SpeciesEntry::getAmount).orElse(0);
 		this.removeSpecies(species);
-		this.speciesPresent.add(new SpeciesEntry(species, amount));
+		this.speciesPresent.add(new SpeciesEntry(species, amount + oldAmount));
 	}
 
 	/**
