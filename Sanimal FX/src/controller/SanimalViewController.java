@@ -45,7 +45,7 @@ public class SanimalViewController implements Initializable
                 // Initialize it
                 importStage = new Stage();
                 // Load the FXML document
-                URL document = getClass().getResource("../view/SanimalImport.fxml");
+                URL document = getClass().getResource("/view/SanimalImport.fxml");
                 Parent importRoot = FXMLLoader.load(document);
                 // Create the scene
                 Scene scene = new Scene(importRoot);

@@ -23,6 +23,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import library.FXMLLoaderUtils;
 import library.ImageViewPane;
 import library.TreeViewAutomatic;
 import model.SanimalData;
@@ -51,6 +52,7 @@ public class SanimalImportController implements Initializable
 
 	@FXML
 	public ImageView imagePreview;
+
 	@FXML
 	public Slider sldBrightness;
 	@FXML
@@ -74,12 +76,15 @@ public class SanimalImportController implements Initializable
 	public ListView<Location> locationListView;
 
 	@FXML
+	public Button btnResetImage;
+
+	@FXML
 	private ListView<Species> speciesListView;
 
 	private ObjectProperty<ColorAdjust> colorAdjust = new SimpleObjectProperty<ColorAdjust>(new ColorAdjust());
 
 	private Border tempBorderStorage = null;
-	private ImageEntry currentlySelectedImage = null;
+	private ObjectProperty<ImageEntry> currentlySelectedImage = new SimpleObjectProperty<ImageEntry>(null);
 	private FadeTransition fadeIn;
 	private FadeTransition fadeOut;
 	private ObjectProperty<Point2D> mouseDown = new SimpleObjectProperty<Point2D>();
@@ -90,34 +95,15 @@ public class SanimalImportController implements Initializable
 		SortedList<Species> species = new SortedList<Species>(SanimalData.getInstance().getSpeciesList());
 		species.setComparator(Comparator.comparing(Species::getName));
 		this.speciesListView.setItems(species);
-		this.speciesListView.setCellFactory(x ->
-				{
-					FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/SpeciesListEntry.fxml"));
-
-					try
-					{
-						loader.load();
-					}
-					catch (IOException exception)
-					{
-						System.err.println("Could not load the FXML file for the species list entry!");
-						exception.printStackTrace();
-						return null;
-					}
-
-					return loader.getController();
-				}
-		);
+		this.speciesListView.setCellFactory(x -> FXMLLoaderUtils.loadFXML("SpeciesListEntry.fxml").getController());
 		this.imageTree.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) ->
 		{
-			ImageContainer oldOne = newValue.getValue();
-			if (oldOne != null)
+			if (oldValue != null)
 			{
+				ImageContainer oldOne = oldValue.getValue();
 				if (oldOne instanceof ImageEntry)
-				{
-					ImageEntry imageEntry = (ImageEntry) oldOne;
-					txtDateTaken.textProperty().unbind();
-				} else if (oldOne instanceof ImageDirectory)
+					oldValue.setGraphic(new ImageView(oldOne.getTreeIcon()));
+				else if (oldOne instanceof ImageDirectory)
 				{
 					// Ignored
 				}
@@ -125,61 +111,45 @@ public class SanimalImportController implements Initializable
 
 			ImageContainer newOne = newValue.getValue();
 			if (newOne instanceof ImageEntry)
-			{
-				currentlySelectedImage = (ImageEntry) newOne;
-				txtDateTaken.textProperty().bind(Bindings.createStringBinding(currentlySelectedImage::getDateTakenFormatted, currentlySelectedImage.getDateTakenProperty()));
-				imagePreview.setImage(new Image(currentlySelectedImage.getFile().toURI().toString()));
-				speciesEntryListView.setItems(currentlySelectedImage.getSpeciesPresent());
-				this.resetImageView(null);
-				this.reset(this.imagePreview, this.imagePreview.getFitWidth(), this.imagePreview.getFitHeight());
-			} else if (newOne instanceof ImageDirectory)
-			{
-				currentlySelectedImage = null;
-			}
+				currentlySelectedImage.setValue((ImageEntry) newOne);
+			else if (newOne instanceof ImageDirectory)
+				currentlySelectedImage.setValue(null);
 		}));
 
 		SortedList<Location> locations = new SortedList<Location>(SanimalData.getInstance().getLocationList());
 		locations.setComparator(Comparator.comparing(Location::getName));
 		this.locationListView.setItems(locations);
-		this.locationListView.setCellFactory(x ->
-		{
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/LocationListEntry.fxml"));
+		this.locationListView.setCellFactory(x -> FXMLLoaderUtils.loadFXML("LocationListEntry.fxml").getController());
+		this.locationListView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
+			if (newValue != null && currentlySelectedImage.getValue() != null)
+			{
+				currentlySelectedImage.getValue().setLocationTaken(newValue);
+			}
+		}));
 
-			try
-			{
-				loader.load();
-			}
-			catch (IOException exception)
-			{
-				System.err.println("Could not load the FXML file for the location list entry!");
-				exception.printStackTrace();
-				return null;
-			}
-			return loader.getController();
-		});
-
-		this.speciesEntryListView.setCellFactory(x ->
-		{
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/SpeciesEntryListEntry.fxml"));
-
-			try
-			{
-				loader.load();
-			}
-			catch (IOException exception)
-			{
-				System.err.println("Could not load the FXML file for the species entry list entry!");
-				exception.printStackTrace();
-				return null;
-			}
-			return loader.getController();
-		});
+		this.speciesEntryListView.setCellFactory(x -> FXMLLoaderUtils.loadFXML("SpeciesEntryListEntry.fxml").getController());
 
 		colorAdjust.getValue().brightnessProperty().bind(this.sldBrightness.valueProperty());
 		colorAdjust.getValue().contrastProperty().bind(this.sldContrast.valueProperty());
 		colorAdjust.getValue().hueProperty().bind(this.sldHue.valueProperty());
 		colorAdjust.getValue().saturationProperty().bind(this.sldSaturation.valueProperty());
 		this.imagePreview.effectProperty().bind(this.colorAdjust);
+
+		this.sldSaturation.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
+		this.sldHue.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
+		this.sldContrast.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
+		this.sldBrightness.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
+		this.btnResetImage.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
+		this.txtDateTaken.textProperty().bind(Bindings.createStringBinding(() -> currentlySelectedImage.getValue() != null ? currentlySelectedImage.getValue().getDateTakenFormatted() : "", currentlySelectedImage));
+		this.imagePreview.imageProperty().bind(Bindings.createObjectBinding(() -> currentlySelectedImage.getValue() != null ? new Image(currentlySelectedImage.getValue().getFile().toURI().toString()) : null, currentlySelectedImage));
+		this.speciesEntryListView.itemsProperty().bind(Bindings.createObjectBinding(() -> currentlySelectedImage.getValue() != null ? currentlySelectedImage.getValue().getSpeciesPresent() : null, currentlySelectedImage));
+		this.currentlySelectedImage.addListener((observable, oldValue, newValue) -> {
+			this.resetImageView(null);
+			if (this.currentlySelectedImage.getValue() != null && currentlySelectedImage.getValue().getLocationTaken() != null)
+				locationListView.getSelectionModel().select(currentlySelectedImage.getValue().getLocationTaken());
+			else
+				locationListView.getSelectionModel().clearSelection();
+		});
 
 		final TreeItem<ImageContainer> ROOT = new TreeItem<ImageContainer>(SanimalData.getInstance().getImageTree());
 		this.imageTree.setShowRoot(false);
@@ -203,6 +173,7 @@ public class SanimalImportController implements Initializable
 		requestEdit(newSpecies);
 		if (!newSpecies.isUninitialized())
 			SanimalData.getInstance().getSpeciesList().add(newSpecies);
+		actionEvent.consume();
 	}
 
 	public void editCurrentSpecies(ActionEvent actionEvent)
@@ -211,7 +182,8 @@ public class SanimalImportController implements Initializable
 		if (selected != null)
 		{
 			requestEdit(selected);
-		} else
+		}
+		else
 		{
 			Alert alert = new Alert(Alert.AlertType.WARNING);
 			alert.initOwner(this.imagePreview.getScene().getWindow());
@@ -220,22 +192,12 @@ public class SanimalImportController implements Initializable
 			alert.setContentText("Please select a species from the species list to edit.");
 			alert.showAndWait();
 		}
+		actionEvent.consume();
 	}
 
 	private void requestEdit(Species species)
 	{
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/SpeciesCreator.fxml"));
-		GridPane windowHead;
-		try
-		{
-			windowHead = loader.<GridPane>load();
-		}
-		catch (IOException exception)
-		{
-			System.err.println("Could not load the FXML file for the species list entry!");
-			exception.printStackTrace();
-			return;
-		}
+		FXMLLoader loader = FXMLLoaderUtils.loadFXML("SpeciesCreator.fxml");
 		SpeciesCreatorController controller = loader.<SpeciesCreatorController>getController();
 		controller.setSpecies(species);
 
@@ -243,9 +205,8 @@ public class SanimalImportController implements Initializable
 		dialogStage.setTitle("Species Creator/Editor");
 		dialogStage.initModality(Modality.WINDOW_MODAL);
 		dialogStage.initOwner(this.imagePreview.getScene().getWindow());
-		Scene scene = new Scene(windowHead);
+		Scene scene = new Scene(loader.getRoot());
 		dialogStage.setScene(scene);
-
 		dialogStage.showAndWait();
 	}
 
@@ -262,6 +223,7 @@ public class SanimalImportController implements Initializable
 		requestEdit(newLocation);
 		if (newLocation.locationValid())
 			SanimalData.getInstance().getLocationList().add(newLocation);
+		actionEvent.consume();
 	}
 
 	public void editCurrentLocation(ActionEvent actionEvent)
@@ -279,22 +241,12 @@ public class SanimalImportController implements Initializable
 			alert.setContentText("Please select a location from the location list to edit.");
 			alert.showAndWait();
 		}
+		actionEvent.consume();
 	}
 
 	private void requestEdit(Location location)
 	{
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/LocationCreator.fxml"));
-		GridPane windowHead;
-		try
-		{
-			windowHead = loader.<GridPane>load();
-		}
-		catch (IOException exception)
-		{
-			System.err.println("Could not load the FXML file for the location list entry!");
-			exception.printStackTrace();
-			return;
-		}
+		FXMLLoader loader = FXMLLoaderUtils.loadFXML("LocationCreator.fxml");
 		LocationCreatorController controller = loader.<LocationCreatorController>getController();
 		controller.setLocation(location);
 
@@ -302,9 +254,8 @@ public class SanimalImportController implements Initializable
 		dialogStage.setTitle("Location Creator/Editor");
 		dialogStage.initModality(Modality.WINDOW_MODAL);
 		dialogStage.initOwner(this.imagePreview.getScene().getWindow());
-		Scene scene = new Scene(windowHead);
+		Scene scene = new Scene(loader.getRoot());
 		dialogStage.setScene(scene);
-
 		dialogStage.showAndWait();
 	}
 
@@ -333,7 +284,7 @@ public class SanimalImportController implements Initializable
 	public void deleteImages(ActionEvent actionEvent)
 	{
 		TreeItem<ImageContainer> item = this.imageTree.getSelectionModel().getSelectedItem();
-		item.getParent().getChildren().remove(item);
+		SanimalData.getInstance().getImageTree().removeChildRecursive(item.getValue());
 		actionEvent.consume();
 	}
 
@@ -343,6 +294,10 @@ public class SanimalImportController implements Initializable
 		this.sldContrast.setValue(0);
 		this.sldHue.setValue(0);
 		this.sldSaturation.setValue(0);
+		if (this.imagePreview.getImage() != null)
+			this.imagePreview.setViewport(new Rectangle2D(0, 0, this.imagePreview.getImage().getWidth(), this.imagePreview.getImage().getHeight()));
+		if (actionEvent != null)
+			actionEvent.consume();
 	}
 
 	public void speciesListDrag(MouseEvent mouseEvent)
@@ -397,9 +352,9 @@ public class SanimalImportController implements Initializable
 				Integer ID = Integer.parseInt(stringID);
 				Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getUniqueID().equals(ID)).findFirst();
 				if (toAdd.isPresent())
-					if (currentlySelectedImage != null)
+					if (currentlySelectedImage.getValue() != null)
 					{
-						currentlySelectedImage.addSpecies(toAdd.get(), 1);
+						currentlySelectedImage.getValue().addSpecies(toAdd.get(), 1);
 						success = true;
 					}
 			}
@@ -413,12 +368,12 @@ public class SanimalImportController implements Initializable
 
 	public void onMouseEnteredSpeciesEntryList(MouseEvent mouseEvent)
 	{
-		fadeOut.play();
+		//fadeOut.play();
 	}
 
 	public void onMouseExitedSpeciesEntryList(MouseEvent mouseEvent)
 	{
-		fadeIn.play();
+		//fadeIn.play();
 	}
 
 	// Found here: https://gist.github.com/james-d/ce5ec1fd44ce6c64e81a
@@ -521,11 +476,5 @@ public class SanimalImportController implements Initializable
 		if (value > max)
 			return max;
 		return value;
-	}
-
-	// reset to the top left:
-	private void reset(ImageView imageView, double width, double height)
-	{
-		imageView.setViewport(new Rectangle2D(0, 0, width, height));
 	}
 }

@@ -33,7 +33,7 @@
                                 <ImageView fx:id="imagePreview" onScroll="#onImageScroll" onMouseDragged="#onImageDragged" onMousePressed="#onImagePressed" onMouseClicked="#onImageClicked" preserveRatio="true" styleClass="imageView"/>
                             </imageView>
                         </ImageViewPane>
-                        <ListView styleClass="transparent10ListView" onMouseEntered="#onMouseEnteredSpeciesEntryList" onMouseExited="#onMouseExitedSpeciesEntryList" StackPane.alignment="TOP_LEFT" minHeight="100" prefHeight="100" maxHeight="100" maxWidth="160" minWidth="160" prefWidth="160" fx:id="speciesEntryListView" />
+                        <ListView styleClass="transparent10ListView" onMouseEntered="#onMouseEnteredSpeciesEntryList" onMouseExited="#onMouseExitedSpeciesEntryList" StackPane.alignment="TOP_LEFT" minHeight="150" prefHeight="150" maxHeight="150" maxWidth="280" minWidth="280" prefWidth="280" fx:id="speciesEntryListView" />
                     </children>
                 </StackPane>
             </center>
@@ -85,7 +85,7 @@
                                 GridPane.rowIndex="3"/>
                         <Slider fx:id="sldSaturation" blockIncrement="0.1" majorTickUnit="1" max="1" min="-1" minorTickCount="5" GridPane.columnIndex="2"
                                 GridPane.rowIndex="4"/>
-                        <Button mnemonicParsing="false" onAction="#resetImageView" text="Reset Image" GridPane.columnIndex="1" GridPane.columnSpan="2"
+                        <Button fx:id="btnResetImage" mnemonicParsing="false" onAction="#resetImageView" text="Reset Image" GridPane.columnIndex="1" GridPane.columnSpan="2"
                                 GridPane.halignment="CENTER" GridPane.rowIndex="5"/>
                     </children>
                 </GridPane>

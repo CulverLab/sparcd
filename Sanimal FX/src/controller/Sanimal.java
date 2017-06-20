@@ -10,6 +10,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.net.URL;
 
 /**
  * Main class entry point
@@ -29,8 +30,10 @@ public class Sanimal extends Application
     {
         setUserAgentStylesheet(STYLESHEET_MODENA);
 
+        // Load the URL
+        URL rootLoc = getClass().getResource("/view/SanimalView.fxml");
         // Load the FXML document
-        Parent root = FXMLLoader.load(getClass().getResource("../view/SanimalView.fxml"));
+        Parent root = FXMLLoader.load(rootLoc);
         // Create the scene
         Scene scene = new Scene(root);
         // Put the scene on the stage

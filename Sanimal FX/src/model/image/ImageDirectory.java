@@ -17,7 +17,7 @@ import java.io.File;
 public class ImageDirectory extends ImageContainer
 {
 	// The icon to use for all images at the moment
-	private static final Image DEFAULT_DIRECTORY_ICON = new Image(ImageEntry.class.getResource("../../images/importWindow/directoryIcon.png").toString());
+	private static final Image DEFAULT_DIRECTORY_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/directoryIcon.png").toString());
 
 	private ObservableList<ImageContainer> children = FXCollections.observableArrayList(imageContainer -> {
 		if (imageContainer instanceof ImageEntry)
@@ -81,6 +81,35 @@ public class ImageDirectory extends ImageContainer
 	public void addSubDirectory(ImageDirectory subDirectory)
 	{
 		this.children.add(subDirectory);
+	}
+
+	/**
+	 * Remove the given container from the directory
+	 * @param container The container to remove from this directory
+	 * @return If the removal was successful
+	 */
+	public Boolean removeChild(ImageContainer container)
+	{
+		return this.children.remove(container);
+	}
+
+	/**
+	 * Remove the container from the directory and all sub-directories
+	 * @param container The container to remove
+	 * @return True if the removal was successful
+	 */
+	public Boolean removeChildRecursive(ImageContainer container)
+	{
+		if (this.removeChild(container))
+			return true;
+
+		for (int i = 0; i < this.children.size(); i++)
+		{
+			ImageContainer containerInList = this.children.get(i);
+			if (containerInList instanceof ImageDirectory && ((ImageDirectory) containerInList).removeChildRecursive(container))
+				return true;
+		}
+		return false;
 	}
 
 	/**

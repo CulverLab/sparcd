@@ -45,9 +45,20 @@
 }
 
 .transparent10ListView {
-    -fx-opacity: 0.1;
+    -fx-background-color: rgba(255, 255, 255, 0);
 }
 
-.transparent10ListView:empty {
-    -fx-opacity: 0;
+.transparent10ListView .list-cell {
+    -fx-background-color: rgba(255, 255, 255, 0);
+}
+
+.transparent10ListView .list-cell:selected .label {
+    -fx-text-fill: indigo;
+}
+
+.locationList .list-cell:selected {
+}
+
+.locationList .list-cell:selected .label {
+    -fx-text-fill: darkgreen;
 }

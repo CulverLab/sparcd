@@ -28,7 +28,9 @@ public class ImageEntry extends ImageContainer
 	// The format with which to print the date out in
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("YYYY MM dd hh mm ss");
 	// The icon to use for all images at the moment
-	private static final Image DEFAULT_IMAGE_ICON = new Image(ImageEntry.class.getResource("../../images/importWindow/imageIcon.png").toString());
+	private static final Image DEFAULT_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIcon.png").toString());
+	// The icon to use for all tagged images at the moment
+	private static final Image CHECKED_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIconDone.png").toString());
 
 	// The actual file 
 	private ObjectProperty<File> imageFileProperty = new SimpleObjectProperty<File>();
@@ -63,7 +65,7 @@ public class ImageEntry extends ImageContainer
 	@Override
 	public Image getTreeIcon()
 	{
-		return DEFAULT_IMAGE_ICON;
+		return this.getLocationTaken() == null ? DEFAULT_IMAGE_ICON : CHECKED_IMAGE_ICON;
 	}
 
 	/**
