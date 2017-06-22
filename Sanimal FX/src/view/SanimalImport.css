@@ -32,15 +32,15 @@
     -fx-border-width: 2px;
 }
 
-.transparent10ListView {
-    -fx-background-color: rgba(255, 255, 255, 0);
+.transparentListView {
+    -fx-background-color: transparent;
 }
 
-.transparent10ListView .list-cell {
-    -fx-background-color: rgba(255, 255, 255, 0);
+.transparentListView .list-cell {
+    -fx-background-color: transparent;
 }
 
-.transparent10ListView .list-cell:selected .label {
+.transparentListView .list-cell:selected .label {
     -fx-text-fill: indigo;
 }
 
@@ -49,4 +49,16 @@
 
 .locationList .list-cell:selected .label {
     -fx-text-fill: darkgreen;
+}
+
+.importPane {
+    -fx-background-image: url("../images/importWindow/addImage.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-size: contain;
+    -fx-border-radius: 10px;
+    -fx-border-width: 5px;
+    -fx-border-style: solid;
+    -fx-border-color: yellow;
+    -fx-opacity: 0;
 }

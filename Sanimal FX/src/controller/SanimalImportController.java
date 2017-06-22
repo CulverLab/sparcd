@@ -37,7 +37,6 @@ import model.species.SpeciesEntry;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.Optional;
@@ -79,14 +78,18 @@ public class SanimalImportController implements Initializable
 	public Button btnResetImage;
 
 	@FXML
+	public Region imageAddOverlay;
+
+	@FXML
 	private ListView<Species> speciesListView;
 
 	private ObjectProperty<ColorAdjust> colorAdjust = new SimpleObjectProperty<ColorAdjust>(new ColorAdjust());
 
-	private Border tempBorderStorage = null;
 	private ObjectProperty<ImageEntry> currentlySelectedImage = new SimpleObjectProperty<ImageEntry>(null);
-	private FadeTransition fadeIn;
-	private FadeTransition fadeOut;
+	private FadeTransition fadeSpeciesEntryListIn;
+	private FadeTransition fadeSpeciesEntryListOut;
+	private FadeTransition fadeAddPanelIn;
+	private FadeTransition fadeAddPanelOut;
 	private ObjectProperty<Point2D> mouseDown = new SimpleObjectProperty<Point2D>();
 
 	@Override
@@ -156,15 +159,26 @@ public class SanimalImportController implements Initializable
 		this.imageTree.setRoot(ROOT);
 		this.imageTree.setItems(SanimalData.getInstance().getImageTree().getChildren());
 
-		this.fadeIn = new FadeTransition(Duration.millis(100), this.speciesEntryListView);
-		this.fadeIn.setFromValue(0.9);
-		this.fadeIn.setToValue(0.02);
-		this.fadeIn.setCycleCount(1);
+		this.fadeSpeciesEntryListIn = new FadeTransition(Duration.millis(100), this.speciesEntryListView);
+		this.fadeSpeciesEntryListIn.setFromValue(0.9);
+		this.fadeSpeciesEntryListIn.setToValue(0.4);
+		this.fadeSpeciesEntryListIn.setCycleCount(1);
 
-		this.fadeOut = new FadeTransition(Duration.millis(100), this.speciesEntryListView);
-		this.fadeOut.setFromValue(0.02);
-		this.fadeOut.setToValue(0.9);
-		this.fadeOut.setCycleCount(1);
+		this.fadeSpeciesEntryListOut = new FadeTransition(Duration.millis(100), this.speciesEntryListView);
+		this.fadeSpeciesEntryListOut.setFromValue(0.4);
+		this.fadeSpeciesEntryListOut.setToValue(0.9);
+		this.fadeSpeciesEntryListOut.setCycleCount(1);
+
+		this.fadeAddPanelIn = new FadeTransition(Duration.millis(100), this.imageAddOverlay);
+		this.fadeAddPanelIn.setFromValue(0.5);
+		this.fadeAddPanelIn.setToValue(0);
+		this.fadeAddPanelIn.setCycleCount(1);
+
+		this.fadeAddPanelOut = new FadeTransition(Duration.millis(100), this.imageAddOverlay);
+		this.fadeAddPanelOut.setFromValue(0);
+		this.fadeAddPanelOut.setToValue(0.5);
+		this.fadeAddPanelOut.setCycleCount(1);
+
 	}
 
 	public void addNewSpecies(ActionEvent actionEvent)
@@ -327,16 +341,13 @@ public class SanimalImportController implements Initializable
 	public void speciesListDragEntered(DragEvent dragEvent)
 	{
 		if (dragEvent.getGestureSource() == this.speciesListView && dragEvent.getDragboard().hasString())
-		{
-			this.tempBorderStorage = this.imagePreviewPane.getBorder();
-			this.imagePreviewPane.setBorder(new Border(new BorderStroke(Color.YELLOW, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.THICK)));
-		}
+			this.fadeAddPanelOut.play();
 		dragEvent.consume();
 	}
 
 	public void speciesListDragExited(DragEvent dragEvent)
 	{
-		this.imagePreviewPane.setBorder(tempBorderStorage);
+		this.fadeAddPanelIn.play();
 		dragEvent.consume();
 	}
 
@@ -368,12 +379,12 @@ public class SanimalImportController implements Initializable
 
 	public void onMouseEnteredSpeciesEntryList(MouseEvent mouseEvent)
 	{
-		//fadeOut.play();
+		fadeSpeciesEntryListOut.play();
 	}
 
 	public void onMouseExitedSpeciesEntryList(MouseEvent mouseEvent)
 	{
-		//fadeIn.play();
+		fadeSpeciesEntryListIn.play();
 	}
 
 	// Found here: https://gist.github.com/james-d/ce5ec1fd44ce6c64e81a

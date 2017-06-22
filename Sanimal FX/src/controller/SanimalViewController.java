@@ -19,6 +19,7 @@ import java.util.ResourceBundle;
 public class SanimalViewController implements Initializable
 {
     private Stage importStage = null;
+    private Stage mapStage = null;
 
     @FXML
     public Button btnImport;
@@ -57,7 +58,7 @@ public class SanimalViewController implements Initializable
             }
             catch (IOException e)
             {
-                System.err.println("Could not load the SanimalView FXML file. This is an error.");
+                System.err.println("Could not load the Sanimal Import FXML file. This is an error.");
                 e.printStackTrace();
                 return;
             }
@@ -76,7 +77,33 @@ public class SanimalViewController implements Initializable
     @FXML
     public void mapPressed(ActionEvent actionEvent)
     {
-        System.out.println("Map");
+        if (mapStage == null)
+        {
+            try
+            {
+                // Initialize it
+                mapStage = new Stage();
+                // Load the FXML document
+                URL document = getClass().getResource("/view/SanimalMap.fxml");
+                Parent mapRoot = FXMLLoader.load(document);
+                // Create the scene
+                Scene scene = new Scene(mapRoot);
+                // Put the scene on the stage
+                Image icon = new Image("images/mainMenu/paw.png");
+                mapStage.getIcons().add(icon);
+                mapStage.setTitle("SANIMAL Map");
+                mapStage.setScene(scene);
+            }
+            catch (IOException e)
+            {
+                System.err.println("Could not load the Sanimal Map FXML file. This is an error.");
+                e.printStackTrace();
+                return;
+            }
+        }
+
+        if (!mapStage.isShowing())
+            mapStage.show();
     }
 
     @FXML

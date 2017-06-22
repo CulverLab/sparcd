@@ -18,6 +18,7 @@
 <?import library.ImageViewPane?>
 <?import library.TreeViewAutomatic?>
 
+<?import javafx.scene.layout.Region?>
 <BorderPane minHeight="500" minWidth="1250" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controller.SanimalImportController">
     <stylesheets>
@@ -26,14 +27,15 @@
     <center>
         <BorderPane>
             <center>
-                <StackPane>
+                <StackPane onDragOver="#imagePaneDragOver" onDragEntered="#speciesListDragEntered" onDragExited="#speciesListDragExited" onDragDropped="#speciesListDragDropped">
                     <children>
-                        <ImageViewPane fx:id="imagePreviewPane" onDragOver="#imagePaneDragOver" onDragEntered="#speciesListDragEntered" onDragExited="#speciesListDragExited" onDragDropped="#speciesListDragDropped"  prefHeight="400" prefWidth="600" styleClass="imageViewBackground">
+                        <ImageViewPane fx:id="imagePreviewPane" styleClass="imageViewBackground">
                             <imageView>
                                 <ImageView fx:id="imagePreview" onScroll="#onImageScroll" onMouseDragged="#onImageDragged" onMousePressed="#onImagePressed" onMouseClicked="#onImageClicked" preserveRatio="true" styleClass="imageView"/>
                             </imageView>
                         </ImageViewPane>
-                        <ListView styleClass="transparent10ListView" onMouseEntered="#onMouseEnteredSpeciesEntryList" onMouseExited="#onMouseExitedSpeciesEntryList" StackPane.alignment="TOP_LEFT" minHeight="150" prefHeight="150" maxHeight="150" maxWidth="280" minWidth="280" prefWidth="280" fx:id="speciesEntryListView" />
+                        <ListView styleClass="transparentListView" pickOnBounds="false" onMouseEntered="#onMouseEnteredSpeciesEntryList" onMouseExited="#onMouseExitedSpeciesEntryList" StackPane.alignment="TOP_LEFT" maxWidth="280" minWidth="280" prefWidth="280" fx:id="speciesEntryListView" />
+                        <Region fx:id="imageAddOverlay" styleClass="importPane" pickOnBounds="false" />
                     </children>
                 </StackPane>
             </center>
