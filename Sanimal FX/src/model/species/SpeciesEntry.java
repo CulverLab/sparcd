@@ -41,6 +41,11 @@ public class SpeciesEntry implements Comparable<SpeciesEntry>
 		return speciesProperty.getValue();
 	}
 
+	public void setAmount(Integer amountProperty)
+	{
+		this.amountProperty.setValue(amountProperty);
+	}
+
 	/**
 	 * @return The amount of the given species in the entry
 	 */
@@ -49,15 +54,16 @@ public class SpeciesEntry implements Comparable<SpeciesEntry>
 		return amountProperty.getValue();
 	}
 
+	public IntegerProperty getAmountProperty()
+	{
+		return this.amountProperty;
+	}
+
 	public ObjectProperty<Species> getSpeciesProperty()
 	{
 		return this.speciesProperty;
 	}
 
-	public IntegerProperty getAmountProperty()
-	{
-		return this.amountProperty;
-	}
 
 	/**
 	 * Returns the name of the species and the amount of that species

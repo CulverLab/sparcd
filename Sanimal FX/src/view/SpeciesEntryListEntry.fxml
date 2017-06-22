@@ -10,6 +10,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
+<?import javafx.scene.control.Spinner?>
 <GridPane fx:id="mainPane" hgap="5.0" maxHeight="60" maxWidth="260" minHeight="60" minWidth="260" prefHeight="60" prefWidth="260" styleClass="mainBackground" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SpeciesEntryListEntryController">
     <stylesheets>
         <URL value="@SpeciesEntryListEntry.css" />
@@ -27,7 +28,7 @@
     </rowConstraints>
     <children>
         <Label fx:id="lblName" alignment="CENTER_LEFT" styleClass="font18" text="Name" HBox.hgrow="ALWAYS" />
-        <TextField fx:id="txtCount" maxHeight="50" maxWidth="80" minHeight="50" minWidth="80" styleClass="font18" GridPane.columnIndex="1" />
-        <Button fx:id="btnRemove" alignment="CENTER_RIGHT" maxHeight="50" maxWidth="50" minHeight="50" minWidth="50" styleClass="removeBtnBackground" GridPane.columnIndex="2" />
+        <Spinner fx:id="txtCount" maxHeight="50" maxWidth="80" minHeight="50" minWidth="80" styleClass="font18" GridPane.columnIndex="1" />
+        <Button fx:id="btnRemove" onAction="#removeEntry" alignment="CENTER_RIGHT" maxHeight="50" maxWidth="50" minHeight="50" minWidth="50" styleClass="removeBtnBackground" GridPane.columnIndex="2" />
     </children>
 </GridPane>

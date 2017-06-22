@@ -64,9 +64,9 @@
                                 <ListView fx:id="locationListView" orientation="HORIZONTAL" styleClass="locationList" VBox.vgrow="ALWAYS"/>
                                 <HBox alignment="CENTER" maxHeight="60" minHeight="60" spacing="20">
                                     <children>
-                                        <Button mnemonicParsing="false" onAction="#addNewLocation" prefWidth="115" styleClass="addBtn" text="New Location"/>
-                                        <Button mnemonicParsing="false" onAction="#editCurrentLocation" prefWidth="60" styleClass="editBtn" text="Edit"/>
-                                        <Button mnemonicParsing="false" onAction="#deleteCurrentLocation" prefWidth="70" styleClass="deleteBtn" text="Delete"/>
+                                        <Button mnemonicParsing="false" onAction="#addNewLocation" styleClass="addBtn" text="New Location"/>
+                                        <Button mnemonicParsing="false" onAction="#editCurrentLocation" styleClass="editBtn" text="Edit"/>
+                                        <Button mnemonicParsing="false" onAction="#deleteCurrentLocation" styleClass="deleteBtn" text="Delete"/>
                                     </children>
                                 </HBox>
                             </children>
@@ -85,7 +85,7 @@
                                 GridPane.rowIndex="3"/>
                         <Slider fx:id="sldSaturation" blockIncrement="0.1" majorTickUnit="1" max="1" min="-1" minorTickCount="5" GridPane.columnIndex="2"
                                 GridPane.rowIndex="4"/>
-                        <Button fx:id="btnResetImage" mnemonicParsing="false" onAction="#resetImageView" text="Reset Image" GridPane.columnIndex="1" GridPane.columnSpan="2"
+                        <Button fx:id="btnResetImage" styleClass="resetBtn" mnemonicParsing="false" onAction="#resetImageView" text="Reset Image" GridPane.columnIndex="1" GridPane.columnSpan="2"
                                 GridPane.halignment="CENTER" GridPane.rowIndex="5"/>
                     </children>
                 </GridPane>
@@ -98,9 +98,9 @@
                 <ListView fx:id="speciesListView" onDragDetected="#speciesListDrag" VBox.vgrow="ALWAYS"/>
                 <HBox alignment="CENTER" maxHeight="60" maxWidth="310" minHeight="60" minWidth="310" prefHeight="60" spacing="10">
                     <children>
-                        <Button mnemonicParsing="false" onAction="#addNewSpecies" prefWidth="105" styleClass="addBtn" text="New Species"/>
-                        <Button mnemonicParsing="false" onAction="#editCurrentSpecies" prefWidth="60" styleClass="editBtn" text="Edit"/>
-                        <Button mnemonicParsing="false" onAction="#deleteCurrentSpecies" prefWidth="70" styleClass="deleteBtn" text="Delete"/>
+                        <Button mnemonicParsing="false" onAction="#addNewSpecies" styleClass="addBtn" text="New Species"/>
+                        <Button mnemonicParsing="false" onAction="#editCurrentSpecies" styleClass="editBtn" text="Edit"/>
+                        <Button mnemonicParsing="false" onAction="#deleteCurrentSpecies" styleClass="deleteBtn" text="Delete"/>
                     </children>
                 </HBox>
             </children>
@@ -112,8 +112,8 @@
                 <TreeViewAutomatic fx:id="imageTree" VBox.vgrow="ALWAYS"/>
                 <HBox alignment="CENTER" maxHeight="60" maxWidth="310" minHeight="60" minWidth="310" prefHeight="60" spacing="40">
                     <children>
-                        <Button mnemonicParsing="false" onAction="#importImages" prefWidth="115" styleClass="importBtn" text="Import Images"/>
-                        <Button mnemonicParsing="false" onAction="#deleteImages" prefWidth="70" styleClass="deleteBtn" text="Delete"/>
+                        <Button mnemonicParsing="false" onAction="#importImages" styleClass="importBtn" text="Import Images"/>
+                        <Button mnemonicParsing="false" onAction="#deleteImages" styleClass="deleteBtn" text="Delete"/>
                     </children>
                 </HBox>
             </children>

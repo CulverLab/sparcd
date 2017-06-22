@@ -1,14 +1,14 @@
 package controller;
 
+import javafx.beans.value.ChangeListener;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import model.SanimalData;
 import model.species.Species;
 import model.species.SpeciesEntry;
 
@@ -27,24 +27,12 @@ public class SpeciesEntryListEntryController extends ListCell<SpeciesEntry>
 	public Button btnRemove;
 
 	@FXML
-	public TextField txtCount;
+	public Spinner<Integer> txtCount;
 
-	public SpeciesEntryListEntryController()
+	@FXML
+	public void initialize()
 	{
-		super();
-		/*
-		this.txtCount.textProperty().addListener(((observable, oldValue, newValue) -> {
-			if (!newValue.matches("\\d*"))
-				this.txtCount.setText(newValue.replaceAll("[^\\d]", ""));
-			try
-			{
-
-			}
-			catch (NumberFormatException ignored)
-			{
-
-			}
-		}));*/
+		this.txtCount.valueProperty().addListener(((observable, oldValue, newValue) -> this.getItem().setAmount(newValue)));
 	}
 
 	@Override
@@ -61,8 +49,13 @@ public class SpeciesEntryListEntryController extends ListCell<SpeciesEntry>
 		else
 		{
 			this.lblName.setText(speciesEntry.getSpecies().getName());
-			this.txtCount.setText(speciesEntry.getAmount().toString());
+			this.txtCount.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE, speciesEntry.getAmount()));
 			this.setGraphic(mainPane);
 		}
+	}
+
+	public void removeEntry(ActionEvent actionEvent)
+	{
+		this.getListView().getItems().remove(this.getItem());
 	}
 }

@@ -1,33 +1,21 @@
 .editBtn {
-    -fx-background-image: url("../images/importWindow/edit.png");
-    -fx-background-size: 18 18;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: 5px center;
-    -fx-alignment: center-right;
+    -fx-graphic: url("../images/importWindow/edit16.png");
 }
 
 .addBtn {
-    -fx-background-image: url("../images/importWindow/add.png");
-    -fx-background-size: 18 18;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: 5px center;
-    -fx-alignment: center-right;
+    -fx-graphic: url("../images/importWindow/add16.png");
 }
 
 .deleteBtn {
-    -fx-background-image: url("../images/importWindow/delete.png");
-    -fx-background-size: 18 18;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: 5px center;
-    -fx-alignment: center-right;
+    -fx-graphic: url("../images/importWindow/delete16.png");
 }
 
 .importBtn {
-    -fx-background-image: url("../images/importWindow/import.png");
-    -fx-background-size: 18 18;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: 5px center;
-    -fx-alignment: center-right;
+    -fx-graphic: url("../images/importWindow/import16.png");
+}
+
+.resetBtn {
+    -fx-graphic: url("../images/importWindow/reset16.png");
 }
 
 .imageViewBackground {
