@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane fx:id="gridBackground" minWidth="340" prefWidth="340.0" minHeight="210" prefHeight="210.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SpeciesCreatorController">
+<GridPane fx:id="gridBackground" minWidth="340" prefWidth="340.0" minHeight="180" prefHeight="180.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SpeciesCreatorController">
     <stylesheets>
         <URL value="@SpeciesCreator.css" />
     </stylesheets>
@@ -22,7 +22,6 @@
         <ColumnConstraints hgrow="SOMETIMES" />
     </columnConstraints>
     <rowConstraints>
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
         <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
         <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
         <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
@@ -49,8 +48,7 @@
                 </Label>
             </children>
         </HBox>
-      <Label fx:id="lblErrorBox" styleClass="errorLbl" text="" GridPane.columnSpan="2" GridPane.rowIndex="5" />
-      <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6" alignment="CENTER_RIGHT">
+      <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5" alignment="CENTER_RIGHT">
           <padding>
               <Insets bottom="0" left="5" right="5" top="0" />
           </padding>

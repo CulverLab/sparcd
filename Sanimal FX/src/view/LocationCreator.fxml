@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane minHeight="180" minWidth="340" prefHeight="180.0" prefWidth="340.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.LocationCreatorController">
+<GridPane minHeight="150" minWidth="340" prefHeight="150.0" prefWidth="340.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.LocationCreatorController">
     <stylesheets>
         <URL value="@LocationCreator.css" />
     </stylesheets>
@@ -27,7 +27,6 @@
         <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
         <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
         <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
     </rowConstraints>
    <children>
       <Label text="Name: " />
@@ -38,7 +37,7 @@
       <TextField fx:id="txtLatitude" GridPane.columnIndex="1" GridPane.rowIndex="1" />
       <TextField fx:id="txtLongitude" GridPane.columnIndex="1" GridPane.rowIndex="2" />
       <TextField fx:id="txtElevation" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-      <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5" alignment="CENTER_RIGHT">
+      <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" alignment="CENTER_RIGHT">
           <padding>
               <Insets bottom="0" left="5" right="5" top="0" />
           </padding>
@@ -47,6 +46,5 @@
               <Button mnemonicParsing="false" text="Cancel" onAction="#cancelPressed"/>
           </children>
       </HBox>
-      <Label fx:id="lblErrorBox" styleClass="errorLbl" text="" GridPane.rowIndex="4" GridPane.columnSpan="2" />
    </children>
 </GridPane>

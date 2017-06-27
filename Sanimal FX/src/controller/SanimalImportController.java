@@ -44,8 +44,6 @@ import java.util.ResourceBundle;
 
 public class SanimalImportController implements Initializable
 {
-	private static final double LIST_CELL_HEIGHT = 25;
-
 	@FXML
 	public ImageViewPane imagePreviewPane;
 

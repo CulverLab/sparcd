@@ -20,6 +20,7 @@ public class SanimalViewController implements Initializable
 {
     private Stage importStage = null;
     private Stage mapStage = null;
+    private Stage analysisStage = null;
 
     @FXML
     public Button btnImport;
@@ -71,7 +72,33 @@ public class SanimalViewController implements Initializable
     @FXML
     public void analyzePressed(ActionEvent actionEvent)
     {
-        System.out.println("Analyze");
+        if (analysisStage == null)
+        {
+            try
+            {
+                // Initialize it
+                analysisStage = new Stage();
+                // Load the FXML document
+                URL document = getClass().getResource("/view/SanimalAnalysis.fxml");
+                Parent analysisRoot = FXMLLoader.load(document);
+                // Create the scene
+                Scene scene = new Scene(analysisRoot);
+                // Put the scene on the stage
+                Image icon = new Image("images/mainMenu/paw.png");
+                analysisStage.getIcons().add(icon);
+                analysisStage.setTitle("SANIMAL Analysis");
+                analysisStage.setScene(scene);
+            }
+            catch (IOException e)
+            {
+                System.err.println("Could not load the Sanimal Analysis FXML file. This is an error.");
+                e.printStackTrace();
+                return;
+            }
+        }
+
+        if (!analysisStage.isShowing())
+            analysisStage.show();
     }
 
     @FXML

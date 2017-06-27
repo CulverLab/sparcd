@@ -1,10 +1,7 @@
 package controller;
 
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableStringValue;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -15,9 +12,9 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.species.Species;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
-import org.apache.commons.validator.util.ValidatorUtils;
+import org.controlsfx.validation.ValidationSupport;
+import org.controlsfx.validation.Validator;
 
 import java.io.File;
 import java.net.URL;
@@ -40,8 +37,8 @@ public class SpeciesCreatorController implements Initializable
     @FXML
     public GridPane gridBackground;
 
-    @FXML
-    public Label lblErrorBox;
+    private ValidationSupport nameAndImageValidator = new ValidationSupport();
+    private UrlValidator URLvalidator = new UrlValidator();
 
     private Species speciesToEdit;
     private StringProperty newName = new SimpleStringProperty("");
@@ -65,6 +62,12 @@ public class SpeciesCreatorController implements Initializable
                 }
             }
         });
+        nameAndImageValidator.registerValidator(this.txtName, true, Validator.createEmptyValidator("Species Name is Required!"));
+        nameAndImageValidator.setErrorDecorationEnabled(true);
+        nameAndImageValidator.registerValidator(this.txtImageURL, true, Validator. <String>createPredicateValidator(url -> {
+            if (url.trim().isEmpty()) return true;
+            else return URLvalidator.isValid(url.trim()) && !new Image(url.trim()).isError();
+        }, "URL Given is invalid!"));
     }
 
     public void grabFileName(ActionEvent actionEvent)
@@ -93,8 +96,7 @@ public class SpeciesCreatorController implements Initializable
         if (this.speciesToEdit.iconValid())
         {
             String icon = species.getSpeciesIcon();
-            UrlValidator urlChecker = new UrlValidator();
-            if (urlChecker.isValid(icon))
+            if (URLvalidator.isValid(icon))
                 this.newIconURL.set(icon);
             else
             {
@@ -111,10 +113,10 @@ public class SpeciesCreatorController implements Initializable
 
     public void confirmPressed(ActionEvent actionEvent)
     {
-        if (this.fieldsValid())
+        if (!this.nameAndImageValidator.isInvalid())
         {
             speciesToEdit.setName(newName.getValue());
-            speciesToEdit.setScientificName(newScientificName.getValue());
+            speciesToEdit.setScientificName(newScientificName.getValue().trim().isEmpty() ? "Unknown" : newScientificName.getValue());
             speciesToEdit.setSpeciesIcon(!this.newIconURL.getValue().isEmpty() ? this.newIconURL.getValue().trim() : !this.newIconLocal.isEmpty() ? this.newIconLocal : new File("./src/images/importWindow/defaultAnimalIcon.png").toURI().toString());
             ((Stage) this.gridBackground.getScene().getWindow()).close();
         }
@@ -123,38 +125,5 @@ public class SpeciesCreatorController implements Initializable
     public void cancelPressed(ActionEvent actionEvent)
     {
         ((Stage) this.gridBackground.getScene().getWindow()).close();
-    }
-
-    private Boolean fieldsValid()
-    {
-        if (this.newName.getValue().equals(Species.UNINITIALIZED) || this.newName.getValue().trim().isEmpty())
-        {
-            lblErrorBox.setText("*Species Name is Invalid!");
-            return false;
-        }
-
-        if (this.newScientificName.getValue().equals(Species.UNINITIALIZED) || this.newScientificName.getValue().trim().isEmpty())
-        {
-            lblErrorBox.setText("*Species Scientific Name is Invalid!");
-            return false;
-        }
-
-        if (!this.newIconURL.getValue().isEmpty())
-        {
-            UrlValidator validator = new UrlValidator();
-            if (!validator.isValid(this.newIconURL.getValue()))
-            {
-                lblErrorBox.setText("*Species Icon URL is invalid!");
-                return false;
-            }
-
-            if (new Image(this.newIconURL.getValue()).isError())
-            {
-                lblErrorBox.setText("*Species Icon URL is not an image!");
-                return false;
-            }
-        }
-
-        return true;
     }
 }

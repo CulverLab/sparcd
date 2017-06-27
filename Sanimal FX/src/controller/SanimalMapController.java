@@ -13,6 +13,7 @@ import javafx.fxml.Initializable;
 import netscape.javascript.JSObject;
 
 import java.net.URL;
+import java.sql.Connection;
 import java.util.ResourceBundle;
 
 public class SanimalMapController implements Initializable

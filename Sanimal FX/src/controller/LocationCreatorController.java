@@ -16,134 +16,125 @@ import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter;
 import model.location.Location;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.controlsfx.validation.ValidationSupport;
+import org.controlsfx.validation.Validator;
 
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
-public class LocationCreatorController implements Initializable {
+public class LocationCreatorController implements Initializable
+{
 
-    @FXML
-    public TextField txtName;
+	@FXML
+	public TextField txtName;
 
-    @FXML
-    public TextField txtLatitude;
+	@FXML
+	public TextField txtLatitude;
 
-    @FXML
-    public TextField txtLongitude;
+	@FXML
+	public TextField txtLongitude;
 
-    @FXML
-    public TextField txtElevation;
+	@FXML
+	public TextField txtElevation;
 
-    @FXML
-    public Label lblErrorBox;
+	private ValidationSupport fieldValidator = new ValidationSupport();
 
-    private Location locationToEdit;
-    private StringProperty newName = new SimpleStringProperty("");
-    private StringProperty newLatitude = new SimpleStringProperty("");
-    private StringProperty newLongitude = new SimpleStringProperty("");
-    private StringProperty newElevation = new SimpleStringProperty("");
+	private Location locationToEdit;
+	private StringProperty newName = new SimpleStringProperty("");
+	private StringProperty newLatitude = new SimpleStringProperty("");
+	private StringProperty newLongitude = new SimpleStringProperty("");
+	private StringProperty newElevation = new SimpleStringProperty("");
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources)
-    {
-        this.txtName.textProperty().bindBidirectional(newName);
-        this.txtLatitude.textProperty().bindBidirectional(newLatitude);
-        this.txtLongitude.textProperty().bindBidirectional(newLongitude);
-        this.txtElevation.textProperty().bindBidirectional(newElevation);
+	@Override
+	public void initialize(URL location, ResourceBundle resources)
+	{
+		this.txtName.textProperty().bindBidirectional(newName);
+		this.txtLatitude.textProperty().bindBidirectional(newLatitude);
+		this.txtLongitude.textProperty().bindBidirectional(newLongitude);
+		this.txtElevation.textProperty().bindBidirectional(newElevation);
 
-        Pattern validDoubleText = Pattern.compile("-?((\\d*)|(\\d+\\.\\d*))");
+		Pattern validDoubleText = Pattern.compile("-?((\\d*)|(\\d+\\.\\d*))");
 
-        this.txtLatitude.setTextFormatter(new TextFormatter<Double>(new DoubleStringConverter(), 0.0, change -> {
-            String newText = change.getControlNewText();
-            if (validDoubleText.matcher(newText).matches())
-                return change;
-            else
-                return null;
-        }));
-        this.txtLongitude.setTextFormatter(new TextFormatter<Double>(new DoubleStringConverter(), 0.0, change -> {
-            String newText = change.getControlNewText();
-            if (validDoubleText.matcher(newText).matches())
-                return change;
-            else
-                return null;
-        }));
-        this.txtElevation.setTextFormatter(new TextFormatter<Double>(new DoubleStringConverter(), 0.0, change -> {
-            String newText = change.getControlNewText();
-            if (validDoubleText.matcher(newText).matches())
-                return change;
-            else
-                return null;
-        }));
-    }
+		this.txtLatitude.setTextFormatter(new TextFormatter<Double>(new DoubleStringConverter(), 0.0, change ->
+		{
+			String newText = change.getControlNewText();
+			if (validDoubleText.matcher(newText).matches())
+				return change;
+			else
+				return null;
+		}));
+		this.txtLongitude.setTextFormatter(new TextFormatter<Double>(new DoubleStringConverter(), 0.0, change ->
+		{
+			String newText = change.getControlNewText();
+			if (validDoubleText.matcher(newText).matches())
+				return change;
+			else
+				return null;
+		}));
+		this.txtElevation.setTextFormatter(new TextFormatter<Double>(new DoubleStringConverter(), 0.0, change ->
+		{
+			String newText = change.getControlNewText();
+			if (validDoubleText.matcher(newText).matches())
+				return change;
+			else
+				return null;
+		}));
 
-    public void setLocation(Location location)
-    {
-        this.locationToEdit = location;
-        if (this.locationToEdit.nameValid())
-            this.newName.set(location.getName());
-        if (this.locationToEdit.latValid())
-            this.newLatitude.set(locationToEdit.getLat().toString());
-        if (this.locationToEdit.lngValid())
-            this.newLongitude.set(locationToEdit.getLng().toString());
-        if (this.locationToEdit.elevationValid())
-            this.newElevation.set(locationToEdit.getElevation().toString());
-    }
+		this.fieldValidator.setErrorDecorationEnabled(true);
+		this.fieldValidator.registerValidator(this.txtName, true, Validator.createEmptyValidator("Location Name must not be empty!"));
+		this.fieldValidator.registerValidator(this.txtLatitude, true, Validator.<String>createPredicateValidator(value ->
+		{
+			return this.isValidNumber(value) && Double.parseDouble(value) <= 85 && Double.parseDouble(value) >= -85;
+		}, "Latitude must be +/-85!"));
+		this.fieldValidator.registerValidator(this.txtLongitude, true, Validator.<String>createPredicateValidator(value ->
+		{
+			return this.isValidNumber(value) && Double.parseDouble(value) <= 180 && Double.parseDouble(value) >= -180;
+		}, "Longitude must be +/-180!"));
+		this.fieldValidator.registerValidator(this.txtElevation, true, Validator.createPredicateValidator(this::isValidNumber, "Elevation must be a number!"));
+	}
 
-    public void confirmPressed(ActionEvent actionEvent) {
-        if (this.fieldsValid())
-        {
-            locationToEdit.setName(newName.getValue());
-            locationToEdit.setLat(Double.parseDouble(newLatitude.getValue()));
-            locationToEdit.setLng(Double.parseDouble(newLongitude.getValue()));
-            locationToEdit.setElevation(Double.parseDouble(newElevation.getValue()));
-            ((Stage) this.txtName.getScene().getWindow()).close();
-        }
-    }
+	public void setLocation(Location location)
+	{
+		this.locationToEdit = location;
+		if (this.locationToEdit.nameValid())
+			this.newName.set(location.getName());
+		if (this.locationToEdit.latValid())
+			this.newLatitude.set(locationToEdit.getLat().toString());
+		if (this.locationToEdit.lngValid())
+			this.newLongitude.set(locationToEdit.getLng().toString());
+		if (this.locationToEdit.elevationValid())
+			this.newElevation.set(locationToEdit.getElevation().toString());
+	}
 
-    public void cancelPressed(ActionEvent actionEvent) {
-        ((Stage) this.txtName.getScene().getWindow()).close();
-    }
+	public void confirmPressed(ActionEvent actionEvent)
+	{
+		if (!this.fieldValidator.isInvalid())
+		{
+			locationToEdit.setName(newName.getValue());
+			locationToEdit.setLat(Double.parseDouble(newLatitude.getValue()));
+			locationToEdit.setLng(Double.parseDouble(newLongitude.getValue()));
+			locationToEdit.setElevation(Double.parseDouble(newElevation.getValue()));
+			((Stage) this.txtName.getScene().getWindow()).close();
+		}
+	}
 
-    private Boolean fieldsValid() {
-        if (this.newName.getValue().trim().isEmpty())
-        {
-            this.lblErrorBox.setText("*Location Name is Invalid!");
-            return false;
-        }
+	public void cancelPressed(ActionEvent actionEvent)
+	{
+		((Stage) this.txtName.getScene().getWindow()).close();
+	}
 
-        if (!isValidNumber(this.newLatitude.getValue()))
-        {
-            this.lblErrorBox.setText("*Location Latitude is Invalid! It must be a number.");
-            return false;
-        }
-
-        if (!isValidNumber(this.newLongitude.getValue()))
-        {
-            this.lblErrorBox.setText("*Location Longitude is Invalid! It must be a number.");
-            return false;
-        }
-
-        if (!isValidNumber(this.newElevation.getValue()))
-        {
-            this.lblErrorBox.setText("*Location Elevation is Invalid! It must be a number.");
-            return false;
-        }
-
-        return true;
-    }
-
-    private Boolean isValidNumber(String number)
-    {
-        try
-        {
-            Double.parseDouble(number);
-            return true;
-        }
-        catch (NumberFormatException ignored)
-        {
-            return false;
-        }
-    }
+	private Boolean isValidNumber(String number)
+	{
+		try
+		{
+			Double.parseDouble(number);
+			return true;
+		}
+		catch (NumberFormatException ignored)
+		{
+			return false;
+		}
+	}
 }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<?import javafx.geometry.Insets?>
+<GridPane minHeight="500" minWidth="1000" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalAnalysisController">
+    <padding>
+        <Insets top="5" left="5" bottom="5" right="5"/>
+    </padding>
+    <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="165.0" minWidth="10.0" prefWidth="133.0" />
+        <ColumnConstraints hgrow="SOMETIMES" />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
+        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
+        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
+        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
+        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
+        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
+        <RowConstraints vgrow="ALWAYS" />
+    </rowConstraints>
+   <children>
+      <TextArea fx:id="txtResults" GridPane.rowIndex="6" GridPane.columnSpan="2" />
+   </children>
+</GridPane>
