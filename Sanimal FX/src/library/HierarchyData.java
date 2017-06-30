@@ -1,5 +1,6 @@
 package library;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
 
@@ -23,5 +24,5 @@ public interface HierarchyData<T extends HierarchyData> {
      *
      * @return The image to be put as the tree icon
      */
-    Image getTreeIcon();
+    ObjectProperty<Image> getTreeIconProperty();
 }

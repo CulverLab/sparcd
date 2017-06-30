@@ -4,13 +4,16 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 
-<GridPane minHeight="150" minWidth="340" prefHeight="150.0" prefWidth="340.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.LocationCreatorController">
+<GridPane minHeight="240" minWidth="400" prefHeight="240" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.LocationCreatorController">
     <stylesheets>
         <URL value="@LocationCreator.css" />
     </stylesheets>
@@ -18,33 +21,77 @@
         <Insets bottom="0" left="5" right="5" top="0" />
     </padding>
     <columnConstraints>
-        <ColumnConstraints hgrow="SOMETIMES" maxWidth="110.0" minWidth="110.0" prefWidth="110.0" />
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="180.0" minWidth="180.0" prefWidth="180.0" />
         <ColumnConstraints hgrow="SOMETIMES" />
     </columnConstraints>
     <rowConstraints>
         <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
         <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
+        <RowConstraints maxHeight="120" minHeight="60.0" prefHeight="60" vgrow="SOMETIMES" />
         <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
         <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
     </rowConstraints>
-   <children>
-      <Label text="Name: " />
-      <Label text="Latitude (+/-85): " GridPane.rowIndex="1" />
-      <Label text="Longitude (+/-180): " GridPane.rowIndex="2" />
-      <Label text="Elevation: " GridPane.rowIndex="3" />
-      <TextField fx:id="txtName" GridPane.columnIndex="1" />
-      <TextField fx:id="txtLatitude" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-      <TextField fx:id="txtLongitude" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-      <TextField fx:id="txtElevation" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-      <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" alignment="CENTER_RIGHT">
-          <padding>
-              <Insets bottom="0" left="5" right="5" top="0" />
-          </padding>
-          <children>
-              <Button mnemonicParsing="false" text="Confirm" onAction="#confirmPressed" />
-              <Button mnemonicParsing="false" text="Cancel" onAction="#cancelPressed"/>
-          </children>
-      </HBox>
-   </children>
+    <children>
+        <Label text="Name: " />
+        <TextField fx:id="txtName" GridPane.columnIndex="1" />
+        <Label text="Location Type: " GridPane.rowIndex="1" />
+        <HBox alignment="CENTER_LEFT" spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <RadioButton fx:id="rbnLatLng" selected="true" text="Lat/Lng">
+            <toggleGroup>
+               <ToggleGroup fx:id="locTypeBtnGroup" />
+            </toggleGroup></RadioButton>
+            <RadioButton fx:id="rbnUTM" text="UTM" toggleGroup="$locTypeBtnGroup" />
+        </HBox>
+        <StackPane GridPane.columnSpan="2" GridPane.rowIndex="2">
+            <GridPane fx:id="pneLatLng">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="180.0" minWidth="180.0" prefWidth="180.0" />
+                    <ColumnConstraints hgrow="SOMETIMES" />
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
+                    <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
+                </rowConstraints>
+                <children>
+                    <Label text="Latitude (+/-85): " GridPane.rowIndex="0" />
+                    <Label text="Longitude (+/-180): " GridPane.rowIndex="1" />
+                    <TextField fx:id="txtLatitude" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                    <TextField fx:id="txtLongitude" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                </children>
+            </GridPane>
+            <GridPane fx:id="pneUTM" >
+                <columnConstraints>
+                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="180.0" minWidth="180.0" prefWidth="180.0" />
+                    <ColumnConstraints hgrow="SOMETIMES" />
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
+                    <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
+                    <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
+                    <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
+                </rowConstraints>
+                <children>
+                    <Label text="Letter (C-X excluding I and O): " GridPane.rowIndex="0" />
+                    <Label text="Zone (1-60): " GridPane.rowIndex="1" />
+                    <Label text="Easting (0m-1000000m): " GridPane.rowIndex="2" />
+                    <Label text="Northing (0m to 10000000m): " GridPane.rowIndex="3" />
+                    <TextField fx:id="txtLetter" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                    <TextField fx:id="txtZone" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                    <TextField fx:id="txtEasting" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                    <TextField fx:id="txtNorthing" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                </children>
+            </GridPane>
+        </StackPane>
+        <Label text="Elevation: " GridPane.rowIndex="3" />
+        <TextField fx:id="txtElevation" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <padding>
+                <Insets bottom="0" left="5" right="5" top="0" />
+            </padding>
+            <children>
+                <Button mnemonicParsing="false" onAction="#confirmPressed" text="Confirm" />
+                <Button mnemonicParsing="false" onAction="#cancelPressed" text="Cancel" />
+            </children>
+        </HBox>
+    </children>
 </GridPane>

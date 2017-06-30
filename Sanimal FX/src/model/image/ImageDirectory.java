@@ -17,7 +17,8 @@ import java.io.File;
 public class ImageDirectory extends ImageContainer
 {
 	// The icon to use for all images at the moment
-	private static final Image DEFAULT_DIRECTORY_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/directoryIcon.png").toString());
+	private static final Image DEFAULT_DIR_IMAGE = new Image(ImageEntry.class.getResource("/images/importWindow/directoryIcon.png").toString());
+	private final ObjectProperty<Image> DEFAULT_DIRECTORY_ICON = new SimpleObjectProperty<>(DEFAULT_DIR_IMAGE);
 
 	private ObservableList<ImageContainer> children = FXCollections.observableArrayList(imageContainer -> {
 		if (imageContainer instanceof ImageEntry)
@@ -61,7 +62,7 @@ public class ImageDirectory extends ImageContainer
 	}
 
 	@Override
-	public Image getTreeIcon()
+	public ObjectProperty<Image> getTreeIconProperty()
 	{
 		return DEFAULT_DIRECTORY_ICON;
 	}

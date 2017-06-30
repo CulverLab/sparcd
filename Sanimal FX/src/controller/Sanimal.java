@@ -20,6 +20,7 @@ import java.net.URL;
  */
 public class Sanimal extends Application
 {
+    // Main just launches the application
     public static void main(String[] args)
     {
         Application.launch(args);

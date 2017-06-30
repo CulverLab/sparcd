@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -31,6 +32,7 @@ public class ImageEntry extends ImageContainer
 	private static final Image DEFAULT_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIcon.png").toString());
 	// The icon to use for all tagged images at the moment
 	private static final Image CHECKED_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIconDone.png").toString());
+	private final ObjectProperty<Image> SELECTED_IMAGE_PROPERTY = new SimpleObjectProperty<>(DEFAULT_IMAGE_ICON);
 
 	// The actual file 
 	private ObjectProperty<File> imageFileProperty = new SimpleObjectProperty<File>();
@@ -60,12 +62,13 @@ public class ImageEntry extends ImageContainer
 		catch (IOException e)
 		{
 		}
+		SELECTED_IMAGE_PROPERTY.bind(Bindings.createObjectBinding(() -> this.getLocationTaken() != null && this.getLocationTaken().locationValid() ? CHECKED_IMAGE_ICON : DEFAULT_IMAGE_ICON, this.locationTakenProperty));
 	}
 
 	@Override
-	public Image getTreeIcon()
+	public ObjectProperty<Image> getTreeIconProperty()
 	{
-		return this.getLocationTaken() == null ? DEFAULT_IMAGE_ICON : CHECKED_IMAGE_ICON;
+		return SELECTED_IMAGE_PROPERTY;
 	}
 
 	/**

@@ -7,8 +7,10 @@
     -fx-border-color: grey;
     -fx-border-width: 2px;
     -fx-border-style: solid;
+    -fx-font-weight: bold;
 }
 
 .locationBackground:hover {
     -fx-font-weight: bolder;
+    -fx-border-color: darkorange;
 }
