@@ -367,22 +367,39 @@ public class SanimalImportController implements Initializable
 		actionEvent.consume();
 	}
 
+	/**
+	 * If the new location button is clicked...
+	 *
+	 * @param actionEvent consumed when the button is clicked
+	 */
 	public void addNewLocation(ActionEvent actionEvent)
 	{
+		// Create a new location, and request edit of the location
 		Location newLocation = new Location();
+		// After the edit is complete, check if it's uninitialized. If it isn't, add it to the global location list
 		requestEdit(newLocation);
 		if (newLocation.locationValid())
 			SanimalData.getInstance().getLocationList().add(newLocation);
+		// Consume the event
 		actionEvent.consume();
 	}
 
+	/**
+	 * If the edit location button is clicked...
+	 *
+	 * @param actionEvent consumed when the button is clicked
+	 */
 	public void editCurrentLocation(ActionEvent actionEvent)
 	{
+		// Grab the selected location
 		Location selected = locationListView.getSelectionModel().getSelectedItem();
+		// If it's not null (so something is indeed selected), request the edit of the location
 		if (selected != null)
 		{
 			requestEdit(selected);
-		} else
+		}
+		// Otherwise show an alert that no location was selected
+		else
 		{
 			Alert alert = new Alert(Alert.AlertType.WARNING);
 			alert.initOwner(this.imagePreview.getScene().getWindow());
@@ -391,82 +408,158 @@ public class SanimalImportController implements Initializable
 			alert.setContentText("Please select a location from the location list to edit.");
 			alert.showAndWait();
 		}
+		// Consume the event
 		actionEvent.consume();
 	}
 
+	/**
+	 * Create a popup that requests that the player edits the location
+	 *
+	 * @param location The location to edit
+	 */
 	private void requestEdit(Location location)
 	{
+		// Load the FXML file of the editor window
 		FXMLLoader loader = FXMLLoaderUtils.loadFXML("LocationCreator.fxml");
+		// Grab the controller and set the location of that controller
 		LocationCreatorController controller = loader.<LocationCreatorController>getController();
 		controller.setLocation(location);
 
+		// Create the stage that will have the species creator/editor
 		Stage dialogStage = new Stage();
+		// Set the title
 		dialogStage.setTitle("Location Creator/Editor");
+		// Set the modality and initialize the owner to be this current window
 		dialogStage.initModality(Modality.WINDOW_MODAL);
 		dialogStage.initOwner(this.imagePreview.getScene().getWindow());
+		// Set the scene to the root of the FXML file
 		Scene scene = new Scene(loader.getRoot());
+		// Set the scene of the stage, and show it!
 		dialogStage.setScene(scene);
 		dialogStage.showAndWait();
 	}
 
+	/**
+	 * When the delete location is clicked we delete the selected location
+	 *
+	 * @param actionEvent consumed when the button is clicked
+	 */
 	public void deleteCurrentLocation(ActionEvent actionEvent)
 	{
 		Location selected = locationListView.getSelectionModel().getSelectedItem();
-		SanimalData.getInstance().getLocationList().remove(selected);
-		actionEvent.consume();
-	}
-
-	public void importImages(ActionEvent actionEvent)
-	{
-		DirectoryChooser directoryChooser = new DirectoryChooser();
-		directoryChooser.setTitle("Select Folder with Images");
-		directoryChooser.setInitialDirectory(FileSystemView.getFileSystemView().getDefaultDirectory());
-		File file = directoryChooser.showDialog(this.imagePreview.getScene().getWindow());
-		if (file != null && file.isDirectory())
+		// If it's not null (so something is indeed selected), request the edit of the location
+		if (selected != null)
 		{
-			ImageDirectory directory = ImageImporter.loadDirectory(file);
-			ImageImporter.removeEmptyDirectories(directory);
-			SanimalData.getInstance().getImageTree().addSubDirectory(directory);
+			SanimalData.getInstance().getLocationList().remove(selected);
+		}
+		// Otherwise show an alert that no location was selected
+		else
+		{
+			Alert alert = new Alert(Alert.AlertType.WARNING);
+			alert.initOwner(this.imagePreview.getScene().getWindow());
+			alert.setTitle("No Selection");
+			alert.setHeaderText("No Location Selected");
+			alert.setContentText("Please select a location from the location list to remove.");
+			alert.showAndWait();
 		}
 		actionEvent.consume();
 	}
 
-	public void deleteImages(ActionEvent actionEvent)
+	/**
+	 * Fired when the import images button is pressed
+	 *
+	 * @param actionEvent consumed when the button is pressed
+	 */
+	public void importImages(ActionEvent actionEvent)
 	{
-		TreeItem<ImageContainer> item = this.imageTree.getSelectionModel().getSelectedItem();
-		SanimalData.getInstance().getImageTree().removeChildRecursive(item.getValue());
+		// Create a directory chooser to let the user choose where to get the images from
+		DirectoryChooser directoryChooser = new DirectoryChooser();
+		directoryChooser.setTitle("Select Folder with Images");
+		// Set the directory to be in documents
+		directoryChooser.setInitialDirectory(FileSystemView.getFileSystemView().getDefaultDirectory());
+		// Show the dialog
+		File file = directoryChooser.showDialog(this.imagePreview.getScene().getWindow());
+		// If the file chosen is a file and a directory process it
+		if (file != null && file.isDirectory())
+		{
+			// Convert the file to a recursive image directory data structure
+			ImageDirectory directory = ImageImporter.loadDirectory(file);
+			// Remove any directories that are empty and contain no images
+			ImageImporter.removeEmptyDirectories(directory);
+			// Add the directory to the image tree
+			SanimalData.getInstance().getImageTree().addSubDirectory(directory);
+		}
+		// Consume the event
 		actionEvent.consume();
 	}
 
+	/**
+	 * if the delete images button is pressed
+	 *
+	 * @param actionEvent Button click is consumed
+	 */
+	public void deleteImages(ActionEvent actionEvent)
+	{
+		// Grab the selected item
+		TreeItem<ImageContainer> item = this.imageTree.getSelectionModel().getSelectedItem();
+		// Remove that item from the image tree
+		SanimalData.getInstance().getImageTree().removeChildRecursive(item.getValue());
+		// Consume the event
+		actionEvent.consume();
+	}
+
+	/**
+	 * Reset the image view if the reset button is clicked or a new image is selected
+	 *
+	 * @param actionEvent consumed if an event is given, otherwise ignored
+	 */
 	public void resetImageView(ActionEvent actionEvent)
 	{
+		// Reset the sliders to their default value of 0
 		this.sldBrightness.setValue(0);
 		this.sldContrast.setValue(0);
 		this.sldHue.setValue(0);
 		this.sldSaturation.setValue(0);
+		// Reset the image preview viewport to its default state
 		if (this.imagePreview.getImage() != null)
 			this.imagePreview.setViewport(new Rectangle2D(0, 0, this.imagePreview.getImage().getWidth(), this.imagePreview.getImage().getHeight()));
+		// Consume the event if possible
 		if (actionEvent != null)
 			actionEvent.consume();
 	}
 
+	/**
+	 * Allow the species list to be drag & dropable onto the image view
+	 *
+	 * @param mouseEvent consumed if a species is selected
+	 */
 	public void speciesListDrag(MouseEvent mouseEvent)
 	{
+		// Grab the selected species, make sure it's not null
 		Species selected = this.speciesListView.getSelectionModel().getSelectedItem();
 		if (selected != null)
 		{
+			// Create a dragboard and begin the drag and drop
 			Dragboard dragboard = this.speciesListView.startDragAndDrop(TransferMode.ANY);
 
+			// Create a clipboard and put the species unique ID into that clipboard
 			ClipboardContent content = new ClipboardContent();
 			content.putString(selected.getUniqueID().toString());
+			// Set the dragboard's context, and then consume the event
 			dragboard.setContent(content);
 
 			mouseEvent.consume();
 		}
 	}
 
+	/**
+	 * If our mouse hovers over the image pane and we're dragging, we accept the transfer
+	 *
+	 * @param dragEvent The event that means we are dragging over the image pane
+	 */
 	public void imagePaneDragOver(DragEvent dragEvent)
 	{
+		// If we started dragging at the species lit view and the dragboard has a string we accept the transfer and consume the event
 		if (dragEvent.getGestureSource() == this.speciesListView && dragEvent.getDragboard().hasString())
 		{
 			dragEvent.acceptTransferModes(TransferMode.COPY);
@@ -474,30 +567,55 @@ public class SanimalImportController implements Initializable
 		dragEvent.consume();
 	}
 
+	/**
+	 * When the drag from the species list enters the image
+	 *
+	 * @param dragEvent The event that means we are dragging over the image pane
+	 */
 	public void speciesListDragEntered(DragEvent dragEvent)
 	{
+		// If we started dragging at the species lit view and the dragboard has a string we play the fade animation and consume the event
 		if (dragEvent.getGestureSource() == this.speciesListView && dragEvent.getDragboard().hasString())
 			this.fadeAddPanelOut.play();
 		dragEvent.consume();
 	}
 
+	/**
+	 * When the drag from the species list exits the image
+	 *
+	 * @param dragEvent The event that means we are dragging away from the image pane
+	 */
 	public void speciesListDragExited(DragEvent dragEvent)
 	{
-		this.fadeAddPanelIn.play();
+		// If we started dragging at the species lit view and the dragboard has a string we play the fade animation and consume the event
+		if (dragEvent.getGestureSource() == this.speciesListView && dragEvent.getDragboard().hasString())
+			this.fadeAddPanelIn.play();
 		dragEvent.consume();
 	}
 
+	/**
+	 * When we drop the species onto the image, we add that species to the list
+	 *
+	 * @param dragEvent The event that means we are dragging away from the image pane
+	 */
 	public void speciesListDragDropped(DragEvent dragEvent)
 	{
+		// Grab the dragboard
 		Dragboard dragboard = dragEvent.getDragboard();
+		// Create a flag that will be set to true if everything went well
 		Boolean success = false;
+		// If our dragboard has a string, grab it
 		if (dragboard.hasString())
 		{
 			String stringID = dragboard.getString();
+			// Begin a try catch to make sure we have 1 piece of drag data
 			try
 			{
+				// Grab the id of the species
 				Integer ID = Integer.parseInt(stringID);
+				// Grab the species with the given ID
 				Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getUniqueID().equals(ID)).findFirst();
+				// Add the species to the image
 				if (toAdd.isPresent())
 					if (currentlySelectedImage.getValue() != null)
 					{
@@ -509,19 +627,35 @@ public class SanimalImportController implements Initializable
 			{
 			}
 		}
+		// Set the success equal to the flag, and consume the event
 		dragEvent.setDropCompleted(success);
 		dragEvent.consume();
 	}
 
+	/**
+	 * When we move our mouse over the species entry list we play a fade animation
+	 *
+	 * @param mouseEvent ignored
+	 */
 	public void onMouseEnteredSpeciesEntryList(MouseEvent mouseEvent)
 	{
 		fadeSpeciesEntryListOut.play();
 	}
 
+	/**
+	 * When we move our mouse away from the species entry list we play a fade animation
+	 *
+	 * @param mouseEvent ignored
+	 */
 	public void onMouseExitedSpeciesEntryList(MouseEvent mouseEvent)
 	{
 		fadeSpeciesEntryListIn.play();
 	}
+
+	///
+	/// Everything after this point allows the user to scroll the image view. The library used was found here:
+	/// https://gist.github.com/james-d/ce5ec1fd44ce6c64e81a
+	///
 
 	// Found here: https://gist.github.com/james-d/ce5ec1fd44ce6c64e81a
 	public void onImagePressed(MouseEvent mouseEvent)
