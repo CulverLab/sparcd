@@ -1,41 +1,25 @@
 package controller;
 
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.util.converter.CharacterStringConverter;
 import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.IntegerStringConverter;
-import library.CustomBinding;
 import model.analysis.SanimalAnalysisUtils;
 import model.location.Location;
 import model.location.UTMCoord;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.validator.routines.UrlValidator;
-import org.controlsfx.validation.ValidationMessage;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
 
-import java.io.File;
 import java.net.URL;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.regex.Pattern;
-
-import static model.analysis.SanimalAnalysisUtils.UTM2Deg;
 
 /**
  * Controller class for the species creator form
