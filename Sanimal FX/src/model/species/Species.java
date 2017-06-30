@@ -14,13 +14,19 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Species implements Serializable
 {
+    // We need a species ID to be used later in the drag and drop system, so create a static ID generator.
     private static final AtomicInteger ID_GENERATOR = new AtomicInteger();
 
+    // The name of the species
     private StringProperty name = new SimpleStringProperty();
+    // The scientific name of the species
     private StringProperty scientificName = new SimpleStringProperty();
+    // The species icon URL
     private StringProperty speciesIconURL = new SimpleStringProperty();
+    // The species ID
     private final Integer uniqueID;
 
+    // Default uninitialized value
     public static final String UNINITIALIZED = "UNINITIALIZED";
 
     /**
@@ -52,21 +58,33 @@ public class Species implements Serializable
         this.uniqueID = ID_GENERATOR.getAndIncrement();
     }
 
+    /**
+     * @return True if the name, scientific name, or icon are invalid
+     */
     public Boolean isUninitialized()
     {
         return !this.nameValid() || !this.scientificNameValid() || !this.iconValid();
     }
 
+    /**
+     * @return True if the name is not uninitialized
+     */
     public Boolean nameValid()
     {
         return !this.name.getValue().equals(UNINITIALIZED);
     }
 
+    /**
+     * @return True if the scientific name is not uninitialized
+     */
     public Boolean scientificNameValid()
     {
         return !this.scientificName.getValue().equals(UNINITIALIZED);
     }
 
+    /**
+     * @return True if the icon is not uninitialized
+     */
     public Boolean iconValid()
     {
         return !this.speciesIconURL.getValue().equals(UNINITIALIZED);
@@ -142,16 +160,25 @@ public class Species implements Serializable
         return this.getName();
     }
 
+    /**
+     * @return The name property
+     */
     public StringProperty getNameProperty()
     {
         return this.name;
     }
 
+    /**
+     * @return The scientific name property
+     */
     public StringProperty getScientificNameProperty()
     {
         return this.scientificName;
     }
 
+    /**
+     * @return The species icon URL property
+     */
     public StringProperty getSpeciesIconURLProperty()
     {
         return this.speciesIconURL;

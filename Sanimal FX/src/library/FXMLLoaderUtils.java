@@ -4,12 +4,23 @@ import javafx.fxml.FXMLLoader;
 
 import java.io.IOException;
 
+/**
+ * Utility class for loading FXML files
+ */
 public class FXMLLoaderUtils
 {
+	/**
+	 * Given a file name of a file in ./view/<FILENAME> this function loads it
+	 *
+	 * @param FXMLFileName The file name in /view/<FILENAME> to load
+	 * @return The FXMLLoader representing that FXML file
+	 */
 	public static FXMLLoader loadFXML(String FXMLFileName)
 	{
+		// Create the loader
 		FXMLLoader loader = new FXMLLoader(FXMLLoaderUtils.class.getResource("/view/" + FXMLFileName));
 
+		// Attempt to load the file. If we get an error throw an exception
 		try
 		{
 			loader.load();
@@ -20,6 +31,8 @@ public class FXMLLoaderUtils
 			exception.printStackTrace();
 			System.exit(-1);
 		}
+
+		// Return the result
 		return loader;
 	}
 }

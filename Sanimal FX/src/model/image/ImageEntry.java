@@ -32,6 +32,7 @@ public class ImageEntry extends ImageContainer
 	private static final Image DEFAULT_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIcon.png").toString());
 	// The icon to use for all tagged images at the moment
 	private static final Image CHECKED_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIconDone.png").toString());
+	// A property to wrap the currently selected image property. Must not be static!
 	private final ObjectProperty<Image> SELECTED_IMAGE_PROPERTY = new SimpleObjectProperty<>(DEFAULT_IMAGE_ICON);
 
 	// The actual file 
@@ -62,9 +63,16 @@ public class ImageEntry extends ImageContainer
 		catch (IOException e)
 		{
 		}
-		SELECTED_IMAGE_PROPERTY.bind(Bindings.createObjectBinding(() -> this.getLocationTaken() != null && this.getLocationTaken().locationValid() ? CHECKED_IMAGE_ICON : DEFAULT_IMAGE_ICON, this.locationTakenProperty));
+		// Bind the image property to a conditional expression.
+		// The image is checked if the location is valid and the species present list is not empty
+		SELECTED_IMAGE_PROPERTY.bind(Bindings.createObjectBinding(() -> this.getLocationTaken() != null && this.getLocationTaken().locationValid() && !this.getSpeciesPresent().isEmpty() ? CHECKED_IMAGE_ICON : DEFAULT_IMAGE_ICON, this.locationTakenProperty));
 	}
 
+	/**
+	 * Getter for the tree icon property
+	 *
+	 * @return The tree icon to be used
+	 */
 	@Override
 	public ObjectProperty<Image> getTreeIconProperty()
 	{
@@ -92,6 +100,11 @@ public class ImageEntry extends ImageContainer
 		this.imageFileProperty.setValue(file);
 	}
 
+	/**
+	 * Get the image file property that this image represents
+	 *
+	 * @return The file property that this image represents
+	 */
 	public ObjectProperty<File> getFileProperty()
 	{
 		return this.imageFileProperty;
@@ -195,7 +208,7 @@ public class ImageEntry extends ImageContainer
 	}
 
 	/**
-	 * Renames the image file based on the formatted date
+	 * Renames the image file based on the formatted date. Unused right now
 	 */
 	public void renameByDate()
 	{

@@ -54,11 +54,17 @@ public class SpeciesEntry implements Comparable<SpeciesEntry>
 		return amountProperty.getValue();
 	}
 
+	/**
+	 * @return The property representing the amount of a species
+	 */
 	public IntegerProperty getAmountProperty()
 	{
 		return this.amountProperty;
 	}
 
+	/**
+	 * @return The property representing the species type
+	 */
 	public ObjectProperty<Species> getSpeciesProperty()
 	{
 		return this.speciesProperty;

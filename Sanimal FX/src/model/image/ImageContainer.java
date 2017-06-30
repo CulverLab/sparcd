@@ -13,18 +13,32 @@ import library.HierarchyData;
 import java.io.File;
 import java.io.Serializable;
 
+/**
+ * A recursive datatype containing more image containers
+ */
 public abstract class ImageContainer implements HierarchyData<ImageContainer>
 {
+	// The file that this container represents. May be a directory or file
 	public abstract File getFile();
 
+	// Setter for the file or directory that this container represents
 	public abstract void setFile(File file);
 
+	/**
+	 * To string just prints out the file name by default
+	 * @return The file name
+	 */
 	@Override
 	public String toString()
 	{
 		return this.getFile().getName();
 	}
 
+	/**
+	 * Since this datatype is recursive, return an empty list by default. Override this to get other behavior
+	 *
+	 * @return A list of children which makes this datatype recursive
+	 */
 	@Override
 	public ObservableList<ImageContainer> getChildren()
 	{

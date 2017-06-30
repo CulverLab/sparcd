@@ -14,6 +14,7 @@ import java.io.Serializable;
  */
 public class Location implements Serializable
 {
+	// Properties of a location are the name, latitude, longitude, and elevation
 	private final StringProperty nameProperty = new SimpleStringProperty();
 	private final DoubleProperty latProperty = new SimpleDoubleProperty();
 	private final DoubleProperty lngProperty = new SimpleDoubleProperty();
@@ -40,7 +41,7 @@ public class Location implements Serializable
 	}
 
 	/**
-	 * Default constructor
+	 * Default constructor sets values to invalid values
 	 */
 	public Location()
 	{
@@ -50,16 +51,36 @@ public class Location implements Serializable
 		this.elevationProperty.setValue(-20000);
 	}
 
+	/**
+	 * @return True if the name is not empty
+	 */
 	public Boolean nameValid() { return !this.nameProperty.getValue().isEmpty(); }
 
+	/**
+	 * @return True if latitude is between -85 and +85
+	 */
 	public Boolean latValid() { return this.latProperty.getValue() <= 85.0 && this.latProperty.getValue() >= -85.0; }
 
+	/**
+	 * @return True if longitude is between -180 and +180
+	 */
 	public Boolean lngValid() { return this.lngProperty.getValue() <= 180.0 && this.lngProperty.getValue() >= -180; }
 
+	/**
+	 * @return True if elevation is not the default -20000 value
+	 */
 	public Boolean elevationValid() { return this.elevationProperty.getValue() != -20000; }
 
+	/**
+	 * @return True if the name, latitude, longitude, and elevation are valid
+	 */
 	public Boolean locationValid() { return nameValid() && latValid() && lngValid() && elevationValid(); }
 
+	/**
+	 * Set the name of the location
+	 *
+	 * @param name the name of the location
+	 */
 	public void setName(String name)
 	{
 		this.nameProperty.setValue(name);
@@ -85,6 +106,11 @@ public class Location implements Serializable
 		return nameProperty;
 	}
 
+	/**
+	 * Set the latitude property
+	 *
+	 * @param lat The latitude property
+	 */
 	public void setLat(Double lat)
 	{
 		this.latProperty.setValue(lat);
@@ -110,6 +136,11 @@ public class Location implements Serializable
 		return latProperty;
 	}
 
+	/**
+	 * Set the longitude of the location
+	 *
+	 * @param lng The new longitude
+	 */
 	public void setLng(Double lng)
 	{
 		this.lngProperty.setValue(lng);
@@ -135,6 +166,11 @@ public class Location implements Serializable
 		return lngProperty;
 	}
 
+	/**
+	 * Set the elevation of the location
+	 *
+	 * @param elevation the new elevation
+	 */
 	public void setElevation(Double elevation)
 	{
 		this.elevationProperty.setValue(elevation);

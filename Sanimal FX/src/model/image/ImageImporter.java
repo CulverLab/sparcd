@@ -13,29 +13,45 @@ import model.analysis.SanimalAnalysisUtils;
  */
 public class ImageImporter
 {
-	public static void performDirectoryValidation(ImageDirectory directory, List<ImageContainer> invalidContainers)
+	/**
+	 * Given a directory this function validates that each file exists and if they don't adds them to the invalid containers list
+	 *
+	 * @param directory The directory to validate
+	 * @param invalidContainers The invalid containers in this directory
+	 */
+	public static void performDirectoryValidation(ImageContainer directory, List<ImageContainer> invalidContainers)
 	{
+		if (invalidContainers == null)
+			return;
+
+		// Ensure that the file exists, otherwise add it to the invalid containers list
 		if (!directory.getFile().exists())
 			invalidContainers.add(directory);
 
+		// Go through each of the children and validate them
 		for (ImageContainer container : directory.getChildren())
-		{
-			if (!container.getFile().exists())
-				invalidContainers.add(container);
-			if (container instanceof ImageDirectory)
-				ImageImporter.performDirectoryValidation((ImageDirectory) container, invalidContainers);
-		}
+			ImageImporter.performDirectoryValidation(container, invalidContainers);
 	}
 
+	/**
+	 * Wipe out any empty sub-directories
+	 *
+	 * @param directory The directory to remove empty sub-directories from
+	 */
 	public static void removeEmptyDirectories(ImageDirectory directory)
 	{
+		// Go through each child
 		for (int i = 0; i < directory.getChildren().size(); i++)
 		{
+			// Grab the current image container
 			ImageContainer imageContainer = directory.getChildren().get(i);
+			// If it's a directory, recursively remove image directories from it
 			if (imageContainer instanceof ImageDirectory)
 			{
-				removeEmptyDirectories((ImageDirectory) imageContainer);
-				if (((ImageDirectory) imageContainer).getChildren().isEmpty())
+				// Remove empty directories from this directory
+				ImageImporter.removeEmptyDirectories((ImageDirectory) imageContainer);
+				// If it's empty, remove this directory and reduce I since we don't want to get an index out of bounds exception
+				if (imageContainer.getChildren().isEmpty())
 				{
 					directory.getChildren().remove(i);
 					i--;
