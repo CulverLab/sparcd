@@ -4,6 +4,7 @@ import javafx.animation.FadeTransition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -11,6 +12,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.ColorAdjust;
@@ -120,7 +122,7 @@ public class SanimalImportController implements Initializable
 	/**
 	 * Initialize the sanimal import view and data bindings
 	 *
-	 * @param location ignored
+	 * @param location  ignored
 	 * @param resources ignored
 	 */
 	@Override
@@ -148,7 +150,8 @@ public class SanimalImportController implements Initializable
 		// Set the cell factory to be our custom location list cell
 		this.locationListView.setCellFactory(x -> FXMLLoaderUtils.loadFXML("LocationListEntry.fxml").getController());
 		// When we select a location, we need to set the location on the selected image or directory of images
-		this.locationListView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
+		this.locationListView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) ->
+		{
 			// Make sure we got a new value
 			if (newValue != null)
 				// Check if we have a selected image or directory to update!
@@ -180,6 +183,8 @@ public class SanimalImportController implements Initializable
 		this.sldHue.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
 		this.sldContrast.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
 		this.sldBrightness.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
+		// Also bind the date taken text field's disable property if an image is selected
+		this.txtDateTaken.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
 		// Also bind the disable button's disable property if an adjustable image is selected
 		this.btnResetImage.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
 		// Finally bind the date taken's disable property if an adjustable image is selected
@@ -188,8 +193,31 @@ public class SanimalImportController implements Initializable
 		this.imagePreview.imageProperty().bind(Bindings.createObjectBinding(() -> currentlySelectedImage.getValue() != null ? new Image(currentlySelectedImage.getValue().getFile().toURI().toString()) : null, currentlySelectedImage));
 		// Bind the species entry list view items to the selected image species present
 		this.speciesEntryListView.itemsProperty().bind(Bindings.createObjectBinding(() -> currentlySelectedImage.getValue() != null ? currentlySelectedImage.getValue().getSpeciesPresent() : null, currentlySelectedImage));
+		// The listener we will apply to each species entry list
+		final ListChangeListener<SpeciesEntry> listener = change ->
+		{
+			// Here we use a magic number of 75. This is the height of a list cell. Unfortunately I have no other way of getting the cell height.
+			// Possibly this.speciesEntryListView.lookup(".list-cell")? Or new ListCell().getHeight()? These don't seem to work right now.
+			this.speciesEntryListView.setMaxHeight(this.speciesEntryListView.getItems().size() * 75);
+		};
+		// Make the species entry list view dynamically resize using the above listener
+		this.speciesEntryListView.itemsProperty().addListener((observable, oldValue, newValue) ->
+		{
+			if (oldValue != null)
+				// Remove the old listener
+				oldValue.removeListener(listener);
+			if (newValue != null)
+			{
+				// Add the new listener
+				newValue.addListener(listener);
+				// Force an on changed event to trigger a resize
+				listener.onChanged(null);
+			}
+		});
+
 		// When we select a new image, reset the image viewport to center and zoomed out. We also check the location that the image has selected
-		this.currentlySelectedImage.addListener((observable, oldValue, newValue) -> {
+		this.currentlySelectedImage.addListener((observable, oldValue, newValue) ->
+		{
 			this.resetImageView(null);
 			if (this.currentlySelectedImage.getValue() != null && currentlySelectedImage.getValue().getLocationTaken() != null)
 				locationListView.getSelectionModel().select(currentlySelectedImage.getValue().getLocationTaken());
@@ -217,8 +245,7 @@ public class SanimalImportController implements Initializable
 			{
 				currentlySelectedImage.setValue((ImageEntry) newOne);
 				currentlySelectedDirectory.setValue(null);
-			}
-			else if (newOne instanceof ImageDirectory)
+			} else if (newOne instanceof ImageDirectory)
 			{
 				currentlySelectedImage.setValue(null);
 				currentlySelectedDirectory.setValue((ImageDirectory) newOne);
@@ -257,14 +284,14 @@ public class SanimalImportController implements Initializable
 	 * Recursively set the location of all images in the given container
 	 *
 	 * @param container The container to set the location of, if it's a directory recursively set the location on all its children
-	 * @param location The location to recursively set
+	 * @param location  The location to recursively set
 	 */
 	private void setContainerLocation(ImageContainer container, Location location)
 	{
 		// If it's an image, set the location taken of the image and return
 		if (container instanceof ImageEntry)
 			((ImageEntry) container).setLocationTaken(location);
-		// If it's a directory, recursively call this function on all children
+			// If it's a directory, recursively call this function on all children
 		else
 			container.getChildren().forEach(child -> setContainerLocation(child, location));
 	}

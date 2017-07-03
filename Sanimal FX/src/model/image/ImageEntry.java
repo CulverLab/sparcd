@@ -1,11 +1,14 @@
 package model.image;
 
-import java.io.File;
-import java.io.IOException;
+import java.awt.image.ImagingOpException;
+import java.io.*;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Optional;
 
 import javafx.beans.Observable;
@@ -15,9 +18,25 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
+import model.SanimalData;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
+import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.imaging.ImageWriteException;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.common.IImageMetadata;
+import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
+import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
+import org.apache.commons.imaging.formats.tiff.TiffField;
+import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
+import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
+import org.apache.commons.imaging.formats.tiff.constants.TiffTagConstants;
+import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoAscii;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputField;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
+import org.apache.commons.io.FileUtils;
 
 /**
  * A class representing an image file
@@ -34,7 +53,6 @@ public class ImageEntry extends ImageContainer
 	private static final Image CHECKED_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIconDone.png").toString());
 	// A property to wrap the currently selected image property. Must not be static!
 	private final ObjectProperty<Image> SELECTED_IMAGE_PROPERTY = new SimpleObjectProperty<>(DEFAULT_IMAGE_ICON);
-
 	// The actual file 
 	private ObjectProperty<File> imageFileProperty = new SimpleObjectProperty<File>();
 	// The date that the image was taken
@@ -65,7 +83,11 @@ public class ImageEntry extends ImageContainer
 		}
 		// Bind the image property to a conditional expression.
 		// The image is checked if the location is valid and the species present list is not empty
-		SELECTED_IMAGE_PROPERTY.bind(Bindings.createObjectBinding(() -> this.getLocationTaken() != null && this.getLocationTaken().locationValid() && !this.getSpeciesPresent().isEmpty() ? CHECKED_IMAGE_ICON : DEFAULT_IMAGE_ICON, this.locationTakenProperty));
+		SELECTED_IMAGE_PROPERTY.bind(Bindings.createObjectBinding(() -> this.getLocationTaken() != null && this.getLocationTaken().locationValid() && !this.getSpeciesPresent().isEmpty() ? CHECKED_IMAGE_ICON : DEFAULT_IMAGE_ICON, this.locationTakenProperty, this.speciesPresent));
+
+		// We create the EXIF data we'll need on the image entry to write to later
+		// We do this in a thread since it takes some time to complete...
+		SanimalData.getInstance().getTaskPerformer().submit(this::initFileMetadata);
 	}
 
 	/**
@@ -246,4 +268,52 @@ public class ImageEntry extends ImageContainer
 	//			}
 	//		}
 	//	}
+
+
+	/**
+	 * Gets called once to initialize the file with metadata
+	 */
+	private void initFileMetadata()
+	{
+		try
+		{
+			IImageMetadata metadata = Imaging.getMetadata(this.getFile());
+
+			TiffOutputSet outputSet = null;
+			if (metadata instanceof JpegImageMetadata)
+			{
+				JpegImageMetadata jpegImageMetadata = (JpegImageMetadata) metadata;
+				TiffImageMetadata tiffImageMetadata = jpegImageMetadata.getExif();
+
+				if (tiffImageMetadata != null)
+					outputSet = tiffImageMetadata.getOutputSet();
+			}
+			if (outputSet == null)
+				outputSet = new TiffOutputSet();
+
+
+			if (this.getLocationTaken() != null)
+				outputSet.setGPSInDegrees(this.getLocationTaken().getLng(), this.getLocationTaken().getLat());
+
+			TiffOutputDirectory exifDirectory = outputSet.getOrCreateExifDirectory();
+			exifDirectory.removeField(ExifTagConstants.EXIF_TAG_USER_COMMENT);
+			exifDirectory.add(ExifTagConstants.EXIF_TAG_USER_COMMENT, "SANIMAL");
+
+			File tempToWriteTo = File.createTempFile("sanimalTMP", ".jpg");
+			OutputStream outputStream = new FileOutputStream(tempToWriteTo);
+			new ExifRewriter().updateExifMetadataLossless(this.getFile(), outputStream, outputSet);
+			outputStream.close();
+			this.getFile().delete();
+			FileUtils.copyFile(tempToWriteTo, this.getFile());
+			tempToWriteTo.delete();
+
+			System.out.println(metadata);
+		}
+		catch (ImageReadException | IOException | ImageWriteException e)
+		{
+			System.err.println("Exception occurred when trying to read the metadata from the file: " + this.getFile().getAbsolutePath());
+			System.err.println("The error was: ");
+			e.printStackTrace();
+		}
+	}
 }

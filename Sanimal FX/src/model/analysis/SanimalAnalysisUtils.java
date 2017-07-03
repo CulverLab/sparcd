@@ -55,6 +55,10 @@ public class SanimalAnalysisUtils
 	 */
 	public static boolean fileIsImage(File file)
 	{
+		return StringUtils.endsWithAny(file.getAbsolutePath(), "jpg", "jpeg", "JPEG", "JPG");
+
+		// This checks to see if the file is purely an image, we want JPGs only!
+		/*
 		String result = null;
 		try
 		{
@@ -64,6 +68,7 @@ public class SanimalAnalysisUtils
 		{
 		}
 		return !(result == null || !result.startsWith("image"));
+		*/
 	}
 
 	/**

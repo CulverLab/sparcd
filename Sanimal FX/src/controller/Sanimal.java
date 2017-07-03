@@ -8,6 +8,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import library.FXMLLoaderUtils;
 
 import java.io.File;
 import java.net.URL;
@@ -31,18 +32,18 @@ public class Sanimal extends Application
     {
         setUserAgentStylesheet(STYLESHEET_MODENA);
 
-        // Load the URL
-        URL rootLoc = getClass().getResource("/view/SanimalView.fxml");
         // Load the FXML document
-        Parent root = FXMLLoader.load(rootLoc);
+        FXMLLoader root = FXMLLoaderUtils.loadFXML("SanimalView.fxml");
         // Create the scene
-        Scene scene = new Scene(root);
+        Scene scene = new Scene(root.getRoot());
         // Put the scene on the stage
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         Image icon = new Image("images/mainMenu/paw.png");
         primaryStage.getIcons().add(icon);
         primaryStage.setTitle("Scientific Animal Image Analysis (SANIMAL)");
+        // When we exit the window exit the program
+        primaryStage.setOnCloseRequest(ignored -> root.<SanimalViewController> getController().exitPressed(null));
         // Show it
         primaryStage.show();
     }

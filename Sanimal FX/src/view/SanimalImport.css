@@ -52,7 +52,6 @@
     -fx-text-fill: darkgreen;
 }
 
-
 .importPane {
     -fx-background-image: url("../images/importWindow/addImage.png");
     -fx-background-repeat: no-repeat;

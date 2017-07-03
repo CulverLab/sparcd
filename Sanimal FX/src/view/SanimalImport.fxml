@@ -34,7 +34,7 @@
                                 <ImageView fx:id="imagePreview" onScroll="#onImageScroll" onMouseDragged="#onImageDragged" onMousePressed="#onImagePressed" onMouseClicked="#onImageClicked" preserveRatio="true" styleClass="imageView"/>
                             </imageView>
                         </ImageViewPane>
-                        <ListView styleClass="transparentListView" pickOnBounds="false" onMouseEntered="#onMouseEnteredSpeciesEntryList" onMouseExited="#onMouseExitedSpeciesEntryList" StackPane.alignment="TOP_LEFT" maxWidth="280" minWidth="280" prefWidth="280" fx:id="speciesEntryListView" />
+                        <ListView styleClass="transparentListView" pickOnBounds="false" onMouseEntered="#onMouseEnteredSpeciesEntryList" onMouseExited="#onMouseExitedSpeciesEntryList" StackPane.alignment="TOP_LEFT" maxHeight="0" maxWidth="290" minWidth="290" prefWidth="290" fx:id="speciesEntryListView" />
                         <Region fx:id="imageAddOverlay" styleClass="importPane" pickOnBounds="false" />
                     </children>
                 </StackPane>

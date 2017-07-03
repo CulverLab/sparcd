@@ -8,6 +8,8 @@ import model.location.Location;
 import model.species.Species;
 
 import java.io.File;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * A singleton class containing all data SANIMAL needs
@@ -31,6 +33,9 @@ public class SanimalData
 
     // A base directory to which we add all extra directories
     private ImageDirectory imageTree;
+
+    // Use a thread pool executor to perform tasks that take a while
+    private final ThreadPoolExecutor taskPerformer = new ScheduledThreadPoolExecutor(5);
 
     /**
      * Private constructor since we're using the singleton design pattern
@@ -74,5 +79,13 @@ public class SanimalData
     public ImageDirectory getImageTree()
     {
         return imageTree;
+    }
+
+    /**
+     * @return The task performing thread
+     */
+    public ThreadPoolExecutor getTaskPerformer()
+    {
+        return taskPerformer;
     }
 }
