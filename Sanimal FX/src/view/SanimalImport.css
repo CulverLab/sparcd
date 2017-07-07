@@ -63,3 +63,7 @@
     -fx-border-color: yellow;
     -fx-opacity: 0;
 }
+
+.sbrTaskProgress {
+    -fx-opacity: 60%;
+}

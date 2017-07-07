@@ -19,6 +19,7 @@
 <?import library.TreeViewAutomatic?>
 
 <?import javafx.scene.layout.Region?>
+<?import org.controlsfx.control.StatusBar?>
 <BorderPane minHeight="500" minWidth="1250" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controller.SanimalImportController">
     <stylesheets>
@@ -35,6 +36,11 @@
                             </imageView>
                         </ImageViewPane>
                         <ListView styleClass="transparentListView" pickOnBounds="false" onMouseEntered="#onMouseEnteredSpeciesEntryList" onMouseExited="#onMouseExitedSpeciesEntryList" StackPane.alignment="TOP_LEFT" maxHeight="0" maxWidth="290" minWidth="290" prefWidth="290" fx:id="speciesEntryListView" />
+                        <StatusBar styleClass="sbrTaskProgress" fx:id="sbrTaskProgress" pickOnBounds="false" text="" minHeight="30" maxHeight="30" minWidth="300" maxWidth="300" StackPane.alignment="BOTTOM_RIGHT">
+                            <StackPane.margin>
+                                <Insets bottom="5"/>
+                            </StackPane.margin>
+                        </StatusBar>
                         <Region fx:id="imageAddOverlay" styleClass="importPane" pickOnBounds="false" />
                     </children>
                 </StackPane>

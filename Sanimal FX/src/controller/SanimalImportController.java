@@ -35,6 +35,7 @@ import model.image.ImageImporter;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
+import org.controlsfx.control.StatusBar;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
@@ -96,6 +97,10 @@ public class SanimalImportController implements Initializable
 	// The region that hovers over the image which is used for its border
 	@FXML
 	public Region imageAddOverlay;
+
+	// Status bar for showing how far we have completed metadata image tasks
+	@FXML
+	public StatusBar sbrTaskProgress;
 
 	// The list view containing the species
 	@FXML
@@ -193,6 +198,13 @@ public class SanimalImportController implements Initializable
 		this.imagePreview.imageProperty().bind(Bindings.createObjectBinding(() -> currentlySelectedImage.getValue() != null ? new Image(currentlySelectedImage.getValue().getFile().toURI().toString()) : null, currentlySelectedImage));
 		// Bind the species entry list view items to the selected image species present
 		this.speciesEntryListView.itemsProperty().bind(Bindings.createObjectBinding(() -> currentlySelectedImage.getValue() != null ? currentlySelectedImage.getValue().getSpeciesPresent() : null, currentlySelectedImage));
+		// Hide the progress bar when progress == 1
+		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().getPendingTasksProperty().isEqualTo(0).not());
+		// Bind the progress bar's text property to tasks remaining
+		this.sbrTaskProgress.textProperty().bind(SanimalData.getInstance().getPendingTasksProperty().asString("Tasks remaining: %d"));
+		// Bind the progress bar's progress property go back and forth if at least one task is present
+		this.sbrTaskProgress.progressProperty().bind(Bindings.when(SanimalData.getInstance().getPendingTasksProperty().greaterThan(0)).then(-1).otherwise(1));
+
 		// The listener we will apply to each species entry list
 		final ListChangeListener<SpeciesEntry> listener = change ->
 		{

@@ -1,22 +1,22 @@
 package model.image;
 
-import java.awt.image.ImagingOpException;
 import java.io.*;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.scene.image.Image;
 import model.SanimalData;
 import model.location.Location;
@@ -28,15 +28,13 @@ import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.common.IImageMetadata;
 import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
 import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
-import org.apache.commons.imaging.formats.tiff.TiffField;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
-import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
-import org.apache.commons.imaging.formats.tiff.constants.TiffTagConstants;
-import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoAscii;
+import org.apache.commons.imaging.formats.tiff.write.TiffImageWriterLossless;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputField;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 import org.apache.commons.io.FileUtils;
+
 
 /**
  * A class representing an image file
@@ -87,7 +85,24 @@ public class ImageEntry extends ImageContainer
 
 		// We create the EXIF data we'll need on the image entry to write to later
 		// We do this in a thread since it takes some time to complete...
-		SanimalData.getInstance().getTaskPerformer().submit(this::initFileMetadata);
+		this.speciesPresent.addListener((ListChangeListener<SpeciesEntry>) change -> SanimalData.getInstance().addTask(new Task<Void>()
+		{
+			@Override
+			protected Void call() throws Exception
+			{
+				ImageEntry.this.rewriteSpecies();
+				return null;
+			}
+		}));
+		this.locationTakenProperty.addListener(change -> SanimalData.getInstance().addTask(new Task<Void>()
+		{
+			@Override
+			protected Void call() throws Exception
+			{
+				ImageEntry.this.rewriteLocation();
+				return null;
+			}
+		}));
 	}
 
 	/**
@@ -229,91 +244,116 @@ public class ImageEntry extends ImageContainer
 		return speciesPresent;
 	}
 
-	/**
-	 * Renames the image file based on the formatted date. Unused right now
-	 */
-	public void renameByDate()
-	{
-		//this.validateDate();
-		String newFilePath = this.getFile().getParentFile() + File.separator;
-		String newFileName = DATE_FORMAT.format(this.getDateTaken());
-		String newFileExtension = this.getFile().getName().substring(this.getFile().getName().lastIndexOf('.'));
-		String newFileCompletePath = newFilePath + newFileName + newFileExtension;
-		File newFile = new File(newFileCompletePath);
-		int numberOfDuplicateFiles = 0;
-		while (newFile.exists())
-		{
-			newFileCompletePath = newFilePath + newFileName + " (" + numberOfDuplicateFiles++ + ")" + newFileExtension;
-			newFile = new File(newFileCompletePath);
-		}
-		boolean result = this.getFile().renameTo(newFile);
-		if (result == false)
-			System.err.println("Error renaming file: " + this.getFile().getAbsolutePath());
-	}
-
-	//	private void validateDate()
-	//	{
-	//		if (this.dateTaken == null)
-	//		{
-	//			try
-	//			{
-	//				Metadata metadata = ImageMetadataReader.readMetadata(this.imageFile);
-	//				FileMetadataDirectory fileMetadata = metadata.<FileMetadataDirectory> getFirstDirectoryOfType(FileMetadataDirectory.class);
-	//				if (fileMetadata != null)
-	//					dateTaken = fileMetadata.getDate(FileMetadataDirectory.TAG_FILE_MODIFIED_DATE);
-	//			}
-	//			catch (ImageProcessingException | IOException e)
-	//			{
-	//				System.out.println("Error reading file metadata: " + this.imageFile.getAbsolutePath() + "\nError is:\n" + e.toString());
-	//			}
-	//		}
-	//	}
-
-
-	/**
-	 * Gets called once to initialize the file with metadata
-	 */
-	private void initFileMetadata()
+	private void rewriteSpecies()
 	{
 		try
 		{
-			IImageMetadata metadata = Imaging.getMetadata(this.getFile());
+			TiffOutputSet outputSet = this.readOutputSet();
 
-			TiffOutputSet outputSet = null;
-			if (metadata instanceof JpegImageMetadata)
-			{
-				JpegImageMetadata jpegImageMetadata = (JpegImageMetadata) metadata;
-				TiffImageMetadata tiffImageMetadata = jpegImageMetadata.getExif();
+			TiffOutputDirectory directory = this.getOrCreateSanimalDirectory(outputSet);
+			directory.removeField(SanimalMetadataFields.SPECIES_ENTRY);
+			String[] metaVals = this.speciesPresent.stream().map(speciesEntry -> speciesEntry.getSpecies().getScientificName() + " (" + speciesEntry.getAmount() + ")").toArray(String[]::new);
+			directory.add(SanimalMetadataFields.SPECIES_ENTRY, metaVals);
 
-				if (tiffImageMetadata != null)
-					outputSet = tiffImageMetadata.getOutputSet();
-			}
-			if (outputSet == null)
-				outputSet = new TiffOutputSet();
-
-
-			if (this.getLocationTaken() != null)
-				outputSet.setGPSInDegrees(this.getLocationTaken().getLng(), this.getLocationTaken().getLat());
-
-			TiffOutputDirectory exifDirectory = outputSet.getOrCreateExifDirectory();
-			exifDirectory.removeField(ExifTagConstants.EXIF_TAG_USER_COMMENT);
-			exifDirectory.add(ExifTagConstants.EXIF_TAG_USER_COMMENT, "SANIMAL");
-
-			File tempToWriteTo = File.createTempFile("sanimalTMP", ".jpg");
-			OutputStream outputStream = new FileOutputStream(tempToWriteTo);
-			new ExifRewriter().updateExifMetadataLossless(this.getFile(), outputStream, outputSet);
-			outputStream.close();
-			this.getFile().delete();
-			FileUtils.copyFile(tempToWriteTo, this.getFile());
-			tempToWriteTo.delete();
-
-			System.out.println(metadata);
+			this.writeOutputSet(outputSet);
 		}
 		catch (ImageReadException | IOException | ImageWriteException e)
 		{
-			System.err.println("Exception occurred when trying to read the metadata from the file: " + this.getFile().getAbsolutePath());
+			System.err.println("Exception occurred when trying to read/write the metadata from the file: " + this.getFile().getAbsolutePath());
 			System.err.println("The error was: ");
 			e.printStackTrace();
 		}
+	}
+
+	private void rewriteLocation()
+	{
+		try
+		{
+			TiffOutputSet outputSet = this.readOutputSet();
+
+			if (this.getLocationTaken() != null && this.getLocationTaken().locationValid())
+				outputSet.setGPSInDegrees(this.getLocationTaken().getLng(), this.getLocationTaken().getLat());
+
+			this.writeOutputSet(outputSet);
+		}
+		catch (ImageReadException | IOException | ImageWriteException e)
+		{
+			System.err.println("Exception occurred when trying to read/write the metadata from the file: " + this.getFile().getAbsolutePath());
+			System.err.println("The error was: ");
+			e.printStackTrace();
+		}
+	}
+
+	private TiffOutputSet readOutputSet() throws ImageWriteException, IOException, ImageReadException
+	{
+		// Read the image's metadata
+		IImageMetadata metadata = Imaging.getMetadata(this.getFile());
+
+		// Grab the tiff output set which we write the metadata to, or create a new one if it's empty
+		TiffOutputSet outputSet = null;
+		if (metadata instanceof JpegImageMetadata)
+		{
+			JpegImageMetadata jpegImageMetadata = (JpegImageMetadata) metadata;
+			TiffImageMetadata tiffImageMetadata = jpegImageMetadata.getExif();
+
+			if (tiffImageMetadata != null)
+				outputSet = tiffImageMetadata.getOutputSet();
+		}
+
+		if (outputSet == null)
+			outputSet = new TiffOutputSet();
+
+		return outputSet;
+	}
+
+	private void writeOutputSet(TiffOutputSet outputSet) throws IOException, ImageWriteException, ImageReadException
+	{
+		// Write the new metadata back to the image, first we write it to a temporary file
+		File tempToWriteTo = File.createTempFile("sanimalTMP", ".jpg");
+		// Copy the current image file to the temporary file
+		FileUtils.copyFile(this.getFile(), tempToWriteTo);
+		// Then we create an output stream to that file
+		if (tempToWriteTo.exists())
+		{
+			try (OutputStream outputStream = new FileOutputStream(tempToWriteTo))
+			{
+				// And perform the write to the temporary file
+				new ExifRewriter().updateExifMetadataLossless(this.getFile(), outputStream, outputSet);
+				// Then copy the temporary file over top of the current file to update it
+				this.getFile().delete();
+				FileUtils.moveFile(tempToWriteTo, this.getFile());
+			}
+		}
+	}
+
+	private TiffOutputDirectory getOrCreateSanimalDirectory(TiffOutputSet outputSet) throws ImageWriteException
+	{
+		// Sanimal directory type goes in 3? Currently -4, -3, -2, -1, 0, 1, and 2 are used by the JPEG format. Anything less than -4 is NOT allowed
+		Integer sanimalDirIndex = 1;
+
+		// Ensure we have a root directory
+		outputSet.getOrCreateRootDirectory();
+
+		TiffOutputDirectory sanimalDir = null;
+
+		for (; sanimalDir == null; sanimalDirIndex++)
+		{
+			TiffOutputDirectory current = outputSet.findDirectory(sanimalDirIndex);
+			if (current == null)
+			{
+				sanimalDir = new TiffOutputDirectory(sanimalDirIndex, outputSet.byteOrder);
+				sanimalDir.add(SanimalMetadataFields.SANIMAL, (short) 1);
+				outputSet.addDirectory(sanimalDir);
+			}
+			else
+			{
+				if (current.findField(SanimalMetadataFields.SANIMAL) != null)
+				{
+					sanimalDir = current;
+				}
+			}
+		}
+
+		return sanimalDir;
 	}
 }

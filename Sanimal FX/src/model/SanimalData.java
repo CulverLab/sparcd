@@ -1,8 +1,11 @@
 package model;
 
 import javafx.beans.Observable;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import model.image.ImageDirectory;
 import model.location.Location;
 import model.species.Species;
@@ -36,6 +39,7 @@ public class SanimalData
 
     // Use a thread pool executor to perform tasks that take a while
     private final ThreadPoolExecutor taskPerformer = new ScheduledThreadPoolExecutor(5);
+    private final IntegerProperty pendingTasks = new SimpleIntegerProperty(0);
 
     /**
      * Private constructor since we're using the singleton design pattern
@@ -81,11 +85,15 @@ public class SanimalData
         return imageTree;
     }
 
-    /**
-     * @return The task performing thread
-     */
-    public ThreadPoolExecutor getTaskPerformer()
+    public void addTask(Task<Void> task)
     {
-        return taskPerformer;
+        this.taskPerformer.submit(task);
+        this.pendingTasks.setValue(this.pendingTasks.getValue() + 1);
+        task.setOnSucceeded(taskEvent -> this.pendingTasks.setValue(this.pendingTasks.getValue() - 1));
+    }
+
+    public IntegerProperty getPendingTasksProperty()
+    {
+        return this.pendingTasks;
     }
 }
