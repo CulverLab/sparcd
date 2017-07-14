@@ -7,12 +7,15 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import model.image.ImageDirectory;
+import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
 
 import java.io.File;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * A singleton class containing all data SANIMAL needs
@@ -38,7 +41,7 @@ public class SanimalData
     private ImageDirectory imageTree;
 
     // Use a thread pool executor to perform tasks that take a while
-    private final ThreadPoolExecutor taskPerformer = new ScheduledThreadPoolExecutor(5);
+    private final ExecutorService taskPerformer = Executors.newSingleThreadExecutor();
     private final IntegerProperty pendingTasks = new SimpleIntegerProperty(0);
 
     /**
@@ -85,6 +88,23 @@ public class SanimalData
         return imageTree;
     }
 
+    /**
+     * @return The tree of images as a list
+     */
+    public List<ImageEntry> getAllImages()
+    {
+        return this.getImageTree()
+                .flattened()
+                .filter(container -> container instanceof ImageEntry)
+                .map(imageEntry -> (ImageEntry) imageEntry)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Add a task to the queue to be done in the background
+     *
+     * @param task The task to be performed
+     */
     public void addTask(Task<Void> task)
     {
         this.taskPerformer.submit(task);
@@ -92,6 +112,9 @@ public class SanimalData
         task.setOnSucceeded(taskEvent -> this.pendingTasks.setValue(this.pendingTasks.getValue() - 1));
     }
 
+    /**
+     * @return The property representing the number of active thread tasks
+     */
     public IntegerProperty getPendingTasksProperty()
     {
         return this.pendingTasks;

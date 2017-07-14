@@ -248,14 +248,14 @@ public class ImageEntry extends ImageContainer
 	{
 		try
 		{
-			TiffOutputSet outputSet = this.readOutputSet();
+			TiffOutputSet outputSet = MetadataUtils.readOutputSet(this);
 
-			TiffOutputDirectory directory = this.getOrCreateSanimalDirectory(outputSet);
+			TiffOutputDirectory directory = MetadataUtils.getOrCreateSanimalDirectory(outputSet);
 			directory.removeField(SanimalMetadataFields.SPECIES_ENTRY);
 			String[] metaVals = this.speciesPresent.stream().map(speciesEntry -> speciesEntry.getSpecies().getScientificName() + " (" + speciesEntry.getAmount() + ")").toArray(String[]::new);
 			directory.add(SanimalMetadataFields.SPECIES_ENTRY, metaVals);
 
-			this.writeOutputSet(outputSet);
+			MetadataUtils.writeOutputSet(outputSet, this);
 		}
 		catch (ImageReadException | IOException | ImageWriteException e)
 		{
@@ -269,12 +269,12 @@ public class ImageEntry extends ImageContainer
 	{
 		try
 		{
-			TiffOutputSet outputSet = this.readOutputSet();
+			TiffOutputSet outputSet = MetadataUtils.readOutputSet(this);
 
 			if (this.getLocationTaken() != null && this.getLocationTaken().locationValid())
 				outputSet.setGPSInDegrees(this.getLocationTaken().getLng(), this.getLocationTaken().getLat());
 
-			this.writeOutputSet(outputSet);
+			MetadataUtils.writeOutputSet(outputSet, this);
 		}
 		catch (ImageReadException | IOException | ImageWriteException e)
 		{
@@ -282,78 +282,5 @@ public class ImageEntry extends ImageContainer
 			System.err.println("The error was: ");
 			e.printStackTrace();
 		}
-	}
-
-	private TiffOutputSet readOutputSet() throws ImageWriteException, IOException, ImageReadException
-	{
-		// Read the image's metadata
-		IImageMetadata metadata = Imaging.getMetadata(this.getFile());
-
-		// Grab the tiff output set which we write the metadata to, or create a new one if it's empty
-		TiffOutputSet outputSet = null;
-		if (metadata instanceof JpegImageMetadata)
-		{
-			JpegImageMetadata jpegImageMetadata = (JpegImageMetadata) metadata;
-			TiffImageMetadata tiffImageMetadata = jpegImageMetadata.getExif();
-
-			if (tiffImageMetadata != null)
-				outputSet = tiffImageMetadata.getOutputSet();
-		}
-
-		if (outputSet == null)
-			outputSet = new TiffOutputSet();
-
-		return outputSet;
-	}
-
-	private void writeOutputSet(TiffOutputSet outputSet) throws IOException, ImageWriteException, ImageReadException
-	{
-		// Write the new metadata back to the image, first we write it to a temporary file
-		File tempToWriteTo = File.createTempFile("sanimalTMP", ".jpg");
-		// Copy the current image file to the temporary file
-		FileUtils.copyFile(this.getFile(), tempToWriteTo);
-		// Then we create an output stream to that file
-		if (tempToWriteTo.exists())
-		{
-			try (OutputStream outputStream = new FileOutputStream(tempToWriteTo))
-			{
-				// And perform the write to the temporary file
-				new ExifRewriter().updateExifMetadataLossless(this.getFile(), outputStream, outputSet);
-				// Then copy the temporary file over top of the current file to update it
-				this.getFile().delete();
-				FileUtils.moveFile(tempToWriteTo, this.getFile());
-			}
-		}
-	}
-
-	private TiffOutputDirectory getOrCreateSanimalDirectory(TiffOutputSet outputSet) throws ImageWriteException
-	{
-		// Sanimal directory type goes in 3? Currently -4, -3, -2, -1, 0, 1, and 2 are used by the JPEG format. Anything less than -4 is NOT allowed
-		Integer sanimalDirIndex = 1;
-
-		// Ensure we have a root directory
-		outputSet.getOrCreateRootDirectory();
-
-		TiffOutputDirectory sanimalDir = null;
-
-		for (; sanimalDir == null; sanimalDirIndex++)
-		{
-			TiffOutputDirectory current = outputSet.findDirectory(sanimalDirIndex);
-			if (current == null)
-			{
-				sanimalDir = new TiffOutputDirectory(sanimalDirIndex, outputSet.byteOrder);
-				sanimalDir.add(SanimalMetadataFields.SANIMAL, (short) 1);
-				outputSet.addDirectory(sanimalDir);
-			}
-			else
-			{
-				if (current.findField(SanimalMetadataFields.SANIMAL) != null)
-				{
-					sanimalDir = current;
-				}
-			}
-		}
-
-		return sanimalDir;
 	}
 }

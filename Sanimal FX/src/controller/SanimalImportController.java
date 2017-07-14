@@ -1,6 +1,7 @@
 package controller;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -12,7 +13,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.ColorAdjust;
@@ -31,7 +31,7 @@ import model.SanimalData;
 import model.image.ImageContainer;
 import model.image.ImageDirectory;
 import model.image.ImageEntry;
-import model.image.ImageImporter;
+import model.image.DirectoryManager;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
@@ -41,8 +41,10 @@ import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.net.URL;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /**
  * Controller class for the main import window
@@ -102,6 +104,12 @@ public class SanimalImportController implements Initializable
 	@FXML
 	public StatusBar sbrTaskProgress;
 
+	// Left and right arrow buttons to allow easy next and previous image selection
+	@FXML
+	public Button btnLeftArrow;
+	@FXML
+	public Button btnRightArrow;
+
 	// The list view containing the species
 	@FXML
 	private ListView<Species> speciesListView;
@@ -111,18 +119,22 @@ public class SanimalImportController implements Initializable
 	///
 
 	// The color adjust property is used to adjust the image preview's color FX
-	private ObjectProperty<ColorAdjust> colorAdjust = new SimpleObjectProperty<ColorAdjust>(new ColorAdjust());
+	private ObjectProperty<ColorAdjust> colorAdjust = new SimpleObjectProperty<>(new ColorAdjust());
 
 	// Fields to hold the currently selected image entry and image directory
-	private ObjectProperty<ImageEntry> currentlySelectedImage = new SimpleObjectProperty<ImageEntry>(null);
-	private ObjectProperty<ImageDirectory> currentlySelectedDirectory = new SimpleObjectProperty<ImageDirectory>(null);
+	private ObjectProperty<ImageEntry> currentlySelectedImage = new SimpleObjectProperty<>(null);
+	private ObjectProperty<ImageDirectory> currentlySelectedDirectory = new SimpleObjectProperty<>(null);
 	// Use fade transitions to fade the species list in and out
 	private FadeTransition fadeSpeciesEntryListIn;
 	private FadeTransition fadeSpeciesEntryListOut;
 	private FadeTransition fadeAddPanelIn;
 	private FadeTransition fadeAddPanelOut;
+	private FadeTransition fadeLeftIn;
+	private FadeTransition fadeLeftOut;
+	private FadeTransition fadeRightIn;
+	private FadeTransition fadeRightOut;
 	// A property used to process the image scrolling
-	private ObjectProperty<Point2D> mouseDown = new SimpleObjectProperty<Point2D>();
+	private ObjectProperty<Point2D> mouseDown = new SimpleObjectProperty<>();
 
 	/**
 	 * Initialize the sanimal import view and data bindings
@@ -136,18 +148,23 @@ public class SanimalImportController implements Initializable
 		// First we setup the species list
 
 		// Grab the global species list
-		SortedList<Species> species = new SortedList<Species>(SanimalData.getInstance().getSpeciesList());
+		SortedList<Species> species = new SortedList<>(SanimalData.getInstance().getSpeciesList());
 		// We set the comparator to be the name of the species
 		species.setComparator(Comparator.comparing(Species::getName));
 		// Set the items of the species list view to the newly sorted list
 		this.speciesListView.setItems(species);
 		// Set the cell factory to be our custom species list cell
 		this.speciesListView.setCellFactory(x -> FXMLLoaderUtils.loadFXML("SpeciesListEntry.fxml").getController());
+		// When we double click the species list view items, we want to edit the species
+		this.speciesListView.setOnMouseClicked(event -> {
+			if (event.getClickCount() >= 2 && this.speciesListView.getSelectionModel().getSelectedItem() != null)
+				this.requestEdit(this.speciesListView.getSelectionModel().getSelectedItem());
+		});
 
 		// Then we setup the locations list in a similar manner
 
 		// Grab the global location list
-		SortedList<Location> locations = new SortedList<Location>(SanimalData.getInstance().getLocationList());
+		SortedList<Location> locations = new SortedList<>(SanimalData.getInstance().getLocationList());
 		// Set the comparator to be the name of the location
 		locations.setComparator(Comparator.comparing(Location::getName));
 		// Set the items of the location list view to the newly sorted list
@@ -165,6 +182,11 @@ public class SanimalImportController implements Initializable
 				else if (currentlySelectedDirectory.getValue() != null)
 					this.setContainerLocation(currentlySelectedDirectory.getValue(), newValue);
 		}));
+		// When we double click the location list view items, we want to edit the location
+		this.locationListView.setOnMouseClicked(event -> {
+			if (event.getClickCount() >= 2 && this.locationListView.getSelectionModel().getSelectedItem() != null)
+				this.requestEdit(this.locationListView.getSelectionModel().getSelectedItem());
+		});
 
 		// Setup the species entry list view
 
@@ -241,7 +263,7 @@ public class SanimalImportController implements Initializable
 		// This is because a treeview must have ONE root.
 
 		// Create a fake invisible root node whos children
-		final TreeItem<ImageContainer> ROOT = new TreeItem<ImageContainer>(SanimalData.getInstance().getImageTree());
+		final TreeItem<ImageContainer> ROOT = new TreeItem<>(SanimalData.getInstance().getImageTree());
 		// Hide the fake invisible root
 		this.imageTree.setShowRoot(false);
 		// Set the fake invisible root
@@ -290,6 +312,25 @@ public class SanimalImportController implements Initializable
 		this.fadeAddPanelOut.setToValue(0.5);
 		this.fadeAddPanelOut.setCycleCount(1);
 
+		// Create a fade-in transition for the left and right arrow
+		this.fadeLeftIn = new FadeTransition(Duration.millis(100), this.btnLeftArrow);
+		this.fadeLeftIn.setFromValue(0);
+		this.fadeLeftIn.setToValue(1);
+		this.fadeLeftIn.setCycleCount(1);
+		this.fadeRightIn = new FadeTransition(Duration.millis(100), this.btnRightArrow);
+		this.fadeRightIn.setFromValue(0);
+		this.fadeRightIn.setToValue(1);
+		this.fadeRightIn.setCycleCount(1);
+
+		// Create a fade-out transition for the left and right arrow
+		this.fadeLeftOut = new FadeTransition(Duration.millis(100), this.btnLeftArrow);
+		this.fadeLeftOut.setFromValue(1);
+		this.fadeLeftOut.setToValue(0);
+		this.fadeLeftOut.setCycleCount(1);
+		this.fadeRightOut = new FadeTransition(Duration.millis(100), this.btnRightArrow);
+		this.fadeRightOut.setFromValue(1);
+		this.fadeRightOut.setToValue(0);
+		this.fadeRightOut.setCycleCount(1);
 	}
 
 	/**
@@ -363,7 +404,7 @@ public class SanimalImportController implements Initializable
 		// Load the FXML file of the editor window
 		FXMLLoader loader = FXMLLoaderUtils.loadFXML("SpeciesCreator.fxml");
 		// Grab the controller and set the species of that controller
-		SpeciesCreatorController controller = loader.<SpeciesCreatorController>getController();
+		SpeciesCreatorController controller = loader.getController();
 		controller.setSpecies(species);
 
 		// Create the stage that will have the species creator/editor
@@ -391,7 +432,40 @@ public class SanimalImportController implements Initializable
 		// If it's not null (so something is indeed selected), delete the species
 		if (selected != null)
 		{
-			SanimalData.getInstance().getSpeciesList().remove(selected);
+			// Grab a list of all images registered in the program
+			List<ImageEntry> imageList = SanimalData.getInstance().getAllImages();
+			// Count the number of images that contain the species
+			Long speciesUsages = imageList
+					.stream()
+					.flatMap(imageEntry -> imageEntry.getSpeciesPresent()
+							.stream())
+					.filter(speciesEntry -> speciesEntry.getSpecies() == selected).count();
+
+			// If no images contain the species, we're good to delete
+			if (speciesUsages == 0)
+			{
+				SanimalData.getInstance().getSpeciesList().remove(selected);
+			}
+			// Otherwise prompt the user if they want to untag all images with the species
+			else
+			{
+				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+				alert.initOwner(this.imagePreview.getScene().getWindow());
+				alert.setTitle("Species in Use");
+				alert.setHeaderText("Species is already in use");
+				alert.setContentText("This species (" + selected.getName() + ") has already been tagged in " + speciesUsages + " images.\nYes will untag all images with the species and remove it.");
+				Optional<ButtonType> responseOptional = alert.showAndWait();
+				responseOptional.ifPresent(response ->
+				{
+					// If they clicked OK
+					if (response.getButtonData() == ButtonBar.ButtonData.OK_DONE)
+					{
+						// Remove the species and remove each species entry that has its species set to the selected species
+						SanimalData.getInstance().getSpeciesList().remove(selected);
+						imageList.forEach(imageEntry -> imageEntry.getSpeciesPresent().removeIf(speciesEntry -> speciesEntry.getSpecies() == selected));
+					}
+				});
+			}
 		}
 		// Otherwise show an alert that no species was selected
 		else
@@ -461,7 +535,7 @@ public class SanimalImportController implements Initializable
 		// Load the FXML file of the editor window
 		FXMLLoader loader = FXMLLoaderUtils.loadFXML("LocationCreator.fxml");
 		// Grab the controller and set the location of that controller
-		LocationCreatorController controller = loader.<LocationCreatorController>getController();
+		LocationCreatorController controller = loader.getController();
 		controller.setLocation(location);
 
 		// Create the stage that will have the species creator/editor
@@ -522,11 +596,11 @@ public class SanimalImportController implements Initializable
 		if (file != null && file.isDirectory())
 		{
 			// Convert the file to a recursive image directory data structure
-			ImageDirectory directory = ImageImporter.loadDirectory(file);
+			ImageDirectory directory = DirectoryManager.loadDirectory(file);
 			// Remove any directories that are empty and contain no images
-			ImageImporter.removeEmptyDirectories(directory);
+			DirectoryManager.removeEmptyDirectories(directory);
 			// Add the directory to the image tree
-			SanimalData.getInstance().getImageTree().addSubDirectory(directory);
+			SanimalData.getInstance().getImageTree().addChild(directory);
 		}
 		// Consume the event
 		actionEvent.consume();
@@ -578,16 +652,20 @@ public class SanimalImportController implements Initializable
 		Species selected = this.speciesListView.getSelectionModel().getSelectedItem();
 		if (selected != null)
 		{
-			// Create a dragboard and begin the drag and drop
-			Dragboard dragboard = this.speciesListView.startDragAndDrop(TransferMode.ANY);
+			// Can only drag & drop if we have an image selected
+			if (this.currentlySelectedImage.getValue() != null)
+			{
+				// Create a dragboard and begin the drag and drop
+				Dragboard dragboard = this.speciesListView.startDragAndDrop(TransferMode.ANY);
 
-			// Create a clipboard and put the species unique ID into that clipboard
-			ClipboardContent content = new ClipboardContent();
-			content.putString(selected.getUniqueID().toString());
-			// Set the dragboard's context, and then consume the event
-			dragboard.setContent(content);
+				// Create a clipboard and put the species unique ID into that clipboard
+				ClipboardContent content = new ClipboardContent();
+				content.putString(selected.getUniqueID().toString());
+				// Set the dragboard's context, and then consume the event
+				dragboard.setContent(content);
 
-			mouseEvent.consume();
+				mouseEvent.consume();
+			}
 		}
 	}
 
@@ -672,6 +750,28 @@ public class SanimalImportController implements Initializable
 	}
 
 	/**
+	 * When the user moves their mouse over the image show the left & right arrows
+	 *
+	 * @param mouseEvent ignored
+	 */
+	public void imagePaneMouseEntered(MouseEvent mouseEvent)
+	{
+		this.fadeLeftIn.play();
+		this.fadeRightIn.play();
+	}
+
+	/**
+	 * When the user moves their mouse over the image hide the left & right arrows
+	 *
+	 * @param mouseEvent ignored
+	 */
+	public void imagePaneMouseExited(MouseEvent mouseEvent)
+	{
+		this.fadeLeftOut.play();
+		this.fadeRightOut.play();
+	}
+
+	/**
 	 * When we move our mouse over the species entry list we play a fade animation
 	 *
 	 * @param mouseEvent ignored
@@ -689,6 +789,26 @@ public class SanimalImportController implements Initializable
 	public void onMouseExitedSpeciesEntryList(MouseEvent mouseEvent)
 	{
 		fadeSpeciesEntryListIn.play();
+	}
+
+	/**
+	 * When we click the left arrow we want to advance the picture to the next untagged image
+	 *
+	 * @param actionEvent ignored
+	 */
+	public void onLeftArrowClicked(ActionEvent actionEvent)
+	{
+		this.imageTree.getSelectionModel().selectPrevious();
+	}
+
+	/**
+	 * When we click the right arrow we want to advance the picture to the next untagged image
+	 *
+	 * @param actionEvent ignored
+	 */
+	public void onRightArrowClicked(ActionEvent actionEvent)
+	{
+		this.imageTree.getSelectionModel().selectNext();
 	}
 
 	///
@@ -713,6 +833,8 @@ public class SanimalImportController implements Initializable
 	// Found here: https://gist.github.com/james-d/ce5ec1fd44ce6c64e81a
 	public void onImageClicked(MouseEvent mouseEvent)
 	{
+		if (mouseEvent.getClickCount() >= 2)
+			this.resetImageView(null);
 	}
 
 	// Found here: https://gist.github.com/james-d/ce5ec1fd44ce6c64e81a

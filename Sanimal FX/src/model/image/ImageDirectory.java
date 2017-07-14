@@ -8,6 +8,9 @@ import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
 
 import java.io.File;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A class representing a directoryProperty containing images
@@ -73,15 +76,30 @@ public class ImageDirectory extends ImageContainer
 		return this.children;
 	}
 
-	/**
-	 * Add a new subdirctory to this directoryProperty
-	 * 
-	 * @param subDirectory
-	 *            The directoryProperty to add
-	 */
-	public void addSubDirectory(ImageDirectory subDirectory)
+	public Stream<ImageContainer> flattened()
 	{
-		this.children.add(subDirectory);
+		return Stream.concat(
+				Stream.of(this),
+				Stream.concat(
+						this.getChildren()
+								.stream()
+								.filter(child -> !(child instanceof ImageDirectory)),
+						this.getChildren()
+								.stream()
+								.filter(child -> child instanceof ImageDirectory)
+								.map(child -> (ImageDirectory) child)
+								.flatMap(ImageDirectory::flattened)));
+	}
+
+	/**
+	 * Add a new child to this directory
+	 *
+	 * @param container
+	 *            The container to add
+	 */
+	public void addChild(ImageContainer container)
+	{
+		this.children.add(container);
 	}
 
 	/**

@@ -1,7 +1,6 @@
 package model.image;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import model.analysis.SanimalAnalysisUtils;
@@ -11,7 +10,7 @@ import model.analysis.SanimalAnalysisUtils;
  * 
  * @author David Slovikosky
  */
-public class ImageImporter
+public class DirectoryManager
 {
 	/**
 	 * Given a directory this function validates that each file exists and if they don't adds them to the invalid containers list
@@ -30,7 +29,7 @@ public class ImageImporter
 
 		// Go through each of the children and validate them
 		for (ImageContainer container : directory.getChildren())
-			ImageImporter.performDirectoryValidation(container, invalidContainers);
+			DirectoryManager.performDirectoryValidation(container, invalidContainers);
 	}
 
 	/**
@@ -49,7 +48,7 @@ public class ImageImporter
 			if (imageContainer instanceof ImageDirectory)
 			{
 				// Remove empty directories from this directory
-				ImageImporter.removeEmptyDirectories((ImageDirectory) imageContainer);
+				DirectoryManager.removeEmptyDirectories((ImageDirectory) imageContainer);
 				// If it's empty, remove this directory and reduce I since we don't want to get an index out of bounds exception
 				if (imageContainer.getChildren().isEmpty())
 				{
@@ -79,7 +78,7 @@ public class ImageImporter
 		{
 			// If it is a directory, recursively create it
 			toReturn = new ImageDirectory(imageOrLocation);
-			ImageImporter.createDirectoryAndImageTree(toReturn);
+			DirectoryManager.createDirectoryAndImageTree(toReturn);
 		}
 		return toReturn;
 	}
@@ -108,8 +107,8 @@ public class ImageImporter
 				else if (file.isDirectory())
 				{
 					ImageDirectory subDirectory = new ImageDirectory(file);
-					current.addSubDirectory(subDirectory);
-					ImageImporter.createDirectoryAndImageTree(subDirectory);
+					current.addChild(subDirectory);
+					DirectoryManager.createDirectoryAndImageTree(subDirectory);
 				}
 			}
 		}

@@ -18,6 +18,28 @@
     -fx-graphic: url("../images/importWindow/reset16.png");
 }
 
+.leftBtn {
+    -fx-graphic: url("../images/importWindow/leftArrow.png");
+    -fx-scale-x: 40%;
+    -fx-scale-y: 40%;
+    -fx-background-color: transparent;
+}
+
+.leftBtn:hover {
+    -fx-effect: dropshadow(gaussian, yellow, 10, 0.4, 0, 0);
+}
+
+.rightBtn {
+    -fx-graphic: url("../images/importWindow/rightArrow.png");
+    -fx-scale-x: 40%;
+    -fx-scale-y: 40%;
+    -fx-background-color: transparent;
+}
+
+.rightBtn:hover {
+    -fx-effect: dropshadow(gaussian, yellow, 10, 0.4, 0, 0);
+}
+
 .imageViewBackground {
     -fx-background-color: lightgrey;
 }

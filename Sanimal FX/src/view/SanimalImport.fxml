@@ -12,15 +12,16 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import library.ImageViewPane?>
 <?import library.TreeViewAutomatic?>
-
-<?import javafx.scene.layout.Region?>
 <?import org.controlsfx.control.StatusBar?>
-<BorderPane minHeight="500" minWidth="1250" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
+
+<?import javafx.scene.image.Image?>
+<BorderPane minHeight="700" minWidth="1300" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controller.SanimalImportController">
     <stylesheets>
         <URL value="@SanimalImport.css"/>
@@ -28,20 +29,33 @@
     <center>
         <BorderPane>
             <center>
-                <StackPane onDragOver="#imagePaneDragOver" onDragEntered="#speciesListDragEntered" onDragExited="#speciesListDragExited" onDragDropped="#speciesListDragDropped">
+                <StackPane onDragDropped="#speciesListDragDropped" onDragEntered="#speciesListDragEntered" onDragExited="#speciesListDragExited"
+                           onDragOver="#imagePaneDragOver" onMouseEntered="#imagePaneMouseEntered" onMouseExited="#imagePaneMouseExited">
                     <children>
                         <ImageViewPane fx:id="imagePreviewPane" styleClass="imageViewBackground">
                             <imageView>
-                                <ImageView fx:id="imagePreview" onScroll="#onImageScroll" onMouseDragged="#onImageDragged" onMousePressed="#onImagePressed" onMouseClicked="#onImageClicked" preserveRatio="true" styleClass="imageView"/>
+                                <ImageView fx:id="imagePreview" onMouseClicked="#onImageClicked" onMouseDragged="#onImageDragged"
+                                           onMousePressed="#onImagePressed" onScroll="#onImageScroll" preserveRatio="true" styleClass="imageView"/>
                             </imageView>
                         </ImageViewPane>
-                        <ListView styleClass="transparentListView" pickOnBounds="false" onMouseEntered="#onMouseEnteredSpeciesEntryList" onMouseExited="#onMouseExitedSpeciesEntryList" StackPane.alignment="TOP_LEFT" maxHeight="0" maxWidth="290" minWidth="290" prefWidth="290" fx:id="speciesEntryListView" />
-                        <StatusBar styleClass="sbrTaskProgress" fx:id="sbrTaskProgress" pickOnBounds="false" text="" minHeight="30" maxHeight="30" minWidth="300" maxWidth="300" StackPane.alignment="BOTTOM_RIGHT">
+                        <ListView fx:id="speciesEntryListView" maxHeight="0" maxWidth="290" minWidth="290" onMouseEntered="#onMouseEnteredSpeciesEntryList"
+                                  onMouseExited="#onMouseExitedSpeciesEntryList" pickOnBounds="false" prefWidth="290" styleClass="transparentListView"
+                                  StackPane.alignment="TOP_LEFT"/>
+                        <StatusBar fx:id="sbrTaskProgress" maxHeight="30" maxWidth="300" minHeight="30" minWidth="300" pickOnBounds="false"
+                                   styleClass="sbrTaskProgress" text="" StackPane.alignment="BOTTOM_RIGHT">
                             <StackPane.margin>
                                 <Insets bottom="5"/>
                             </StackPane.margin>
                         </StatusBar>
-                        <Region fx:id="imageAddOverlay" styleClass="importPane" pickOnBounds="false" />
+                        <BorderPane pickOnBounds="false">
+                            <left>
+                                <Button fx:id="btnLeftArrow" onAction="#onLeftArrowClicked" pickOnBounds="false" mnemonicParsing="false" BorderPane.alignment="CENTER" styleClass="leftBtn"/>
+                            </left>
+                            <right>
+                                <Button fx:id="btnRightArrow" onAction="#onRightArrowClicked" pickOnBounds="false" mnemonicParsing="false" BorderPane.alignment="CENTER" styleClass="rightBtn"/>
+                            </right>
+                        </BorderPane>
+                        <Region fx:id="imageAddOverlay" pickOnBounds="false" styleClass="importPane"/>
                     </children>
                 </StackPane>
             </center>
@@ -93,8 +107,8 @@
                                 GridPane.rowIndex="3"/>
                         <Slider fx:id="sldSaturation" blockIncrement="0.1" majorTickUnit="1" max="1" min="-1" minorTickCount="5" GridPane.columnIndex="2"
                                 GridPane.rowIndex="4"/>
-                        <Button fx:id="btnResetImage" styleClass="resetBtn" mnemonicParsing="false" onAction="#resetImageView" text="Reset Image" GridPane.columnIndex="1" GridPane.columnSpan="2"
-                                GridPane.halignment="CENTER" GridPane.rowIndex="5"/>
+                        <Button fx:id="btnResetImage" mnemonicParsing="false" onAction="#resetImageView" styleClass="resetBtn" text="Reset Image"
+                                GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="5"/>
                     </children>
                 </GridPane>
             </bottom>
