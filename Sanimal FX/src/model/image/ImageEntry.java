@@ -252,7 +252,7 @@ public class ImageEntry extends ImageContainer
 
 			TiffOutputDirectory directory = MetadataUtils.getOrCreateSanimalDirectory(outputSet);
 			directory.removeField(SanimalMetadataFields.SPECIES_ENTRY);
-			String[] metaVals = this.speciesPresent.stream().map(speciesEntry -> speciesEntry.getSpecies().getScientificName() + " (" + speciesEntry.getAmount() + ")").toArray(String[]::new);
+			String[] metaVals = this.speciesPresent.stream().map(speciesEntry -> speciesEntry.getSpecies().getName() + ", " + speciesEntry.getSpecies().getScientificName() + ", " + speciesEntry.getAmount()).toArray(String[]::new);
 			directory.add(SanimalMetadataFields.SPECIES_ENTRY, metaVals);
 
 			MetadataUtils.writeOutputSet(outputSet, this);
@@ -267,20 +267,27 @@ public class ImageEntry extends ImageContainer
 
 	private void rewriteLocation()
 	{
-		try
+		if (this.getLocationTaken().locationValid())
 		{
-			TiffOutputSet outputSet = MetadataUtils.readOutputSet(this);
+			try
+			{
+				TiffOutputSet outputSet = MetadataUtils.readOutputSet(this);
 
-			if (this.getLocationTaken() != null && this.getLocationTaken().locationValid())
-				outputSet.setGPSInDegrees(this.getLocationTaken().getLng(), this.getLocationTaken().getLat());
+				if (this.getLocationTaken() != null && this.getLocationTaken().locationValid())
+					outputSet.setGPSInDegrees(this.getLocationTaken().getLng(), this.getLocationTaken().getLat());
 
-			MetadataUtils.writeOutputSet(outputSet, this);
-		}
-		catch (ImageReadException | IOException | ImageWriteException e)
-		{
-			System.err.println("Exception occurred when trying to read/write the metadata from the file: " + this.getFile().getAbsolutePath());
-			System.err.println("The error was: ");
-			e.printStackTrace();
+				TiffOutputDirectory directory = MetadataUtils.getOrCreateSanimalDirectory(outputSet);
+				directory.removeField(SanimalMetadataFields.LOCATION_ENTRY);
+				directory.add(SanimalMetadataFields.LOCATION_ENTRY, this.getLocationTaken().getName(), this.getLocationTaken().getElevation().toString());
+
+				MetadataUtils.writeOutputSet(outputSet, this);
+			}
+			catch (ImageReadException | IOException | ImageWriteException e)
+			{
+				System.err.println("Exception occurred when trying to read/write the metadata from the file: " + this.getFile().getAbsolutePath());
+				System.err.println("The error was: ");
+				e.printStackTrace();
+			}
 		}
 	}
 }

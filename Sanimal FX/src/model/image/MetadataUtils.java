@@ -34,22 +34,17 @@ public class MetadataUtils
 	 */
 	public static TiffOutputSet readOutputSet(ImageEntry imageEntry) throws ImageWriteException, IOException, ImageReadException
 	{
-		// Read the image's metadata
-		IImageMetadata metadata = Imaging.getMetadata(imageEntry.getFile());
-
 		// Grab the tiff output set which we write the metadata to, or create a new one if it's empty
 		TiffOutputSet outputSet = null;
-		if (metadata instanceof JpegImageMetadata)
-		{
-			// Check if we have an exif directory
-			JpegImageMetadata jpegImageMetadata = (JpegImageMetadata) metadata;
-			TiffImageMetadata tiffImageMetadata = jpegImageMetadata.getExif();
 
-			if (tiffImageMetadata != null)
-				outputSet = tiffImageMetadata.getOutputSet();
-		}
+		// Grab the image metadata to read from
+		TiffImageMetadata tiffImageMetadata = MetadataUtils.readImageMetadata(imageEntry);
 
-		// If we don't have an output set yet, create one
+		// Check if it's not null, create the output set to write to
+		if (tiffImageMetadata != null)
+			outputSet = tiffImageMetadata.getOutputSet();
+
+		// If we don't have an output set, the image doesn't have any metadata so create one
 		if (outputSet == null)
 			outputSet = new TiffOutputSet();
 
@@ -128,5 +123,27 @@ public class MetadataUtils
 		}
 
 		return sanimalDir;
+	}
+
+	/**
+	 * Returns the tiff image metadata which we can read sanimal data from
+	 *
+	 * @param imageEntry The image to read the metadata from
+	 *
+	 * @return The Image's metadata or null if no metadata was found (this probably means it's not a jpeg image...)
+	 *
+	 * @throws ImageReadException If something went wrong reading the image...
+	 * @throws IOException If something went wrong reading the image...
+	 */
+	public static TiffImageMetadata readImageMetadata(ImageEntry imageEntry) throws ImageReadException, IOException
+	{
+		// Read the image's metadata
+		IImageMetadata metadata = Imaging.getMetadata(imageEntry.getFile());
+
+		// Grab the tiff metadata to read from, or return null
+		if (metadata instanceof JpegImageMetadata)
+			return ((JpegImageMetadata) metadata).getExif();
+		else
+			return null;
 	}
 }

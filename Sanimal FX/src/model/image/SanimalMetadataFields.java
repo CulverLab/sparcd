@@ -8,4 +8,5 @@ public class SanimalMetadataFields
 {
 	public static final TagInfoShort SANIMAL = new TagInfoShort("Sanimal Flag", 551, 1, TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);
 	public static final TagInfoAscii SPECIES_ENTRY = new TagInfoAscii("Species Entry", 552, -1, TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);
+	public static final TagInfoAscii LOCATION_ENTRY = new TagInfoAscii("Location Name", 553, -1, TiffDirectoryType.EXIF_DIRECTORY_UNKNOWN);
 }

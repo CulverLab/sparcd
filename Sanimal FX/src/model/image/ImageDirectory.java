@@ -76,6 +76,11 @@ public class ImageDirectory extends ImageContainer
 		return this.children;
 	}
 
+	/**
+	 * Turns the recursive tree-like image directory format into a flat list of image containers
+	 *
+	 * @return A flat list of all image directories and image entries found in the recursive data structure
+	 */
 	public Stream<ImageContainer> flattened()
 	{
 		return Stream.concat(

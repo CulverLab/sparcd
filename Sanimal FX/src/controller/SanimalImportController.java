@@ -1,7 +1,6 @@
 package controller;
 
 import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -20,6 +19,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -44,7 +44,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 /**
  * Controller class for the main import window
@@ -62,6 +61,10 @@ public class SanimalImportController implements Initializable
 	// The image view to be contained inside the image view pane
 	@FXML
 	public ImageView imagePreview;
+
+	// The stack pane containing the image preview
+	@FXML
+	public StackPane imagePane;
 
 	// The slider for image brightness
 	@FXML
@@ -273,16 +276,19 @@ public class SanimalImportController implements Initializable
 		// When a new image is selected...
 		this.imageTree.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) ->
 		{
-			// If it's an image, update the currently selected image, otherwise update the currently selected directory
-			ImageContainer newOne = newValue.getValue();
-			if (newOne instanceof ImageEntry)
+			if (newValue != null)
 			{
-				currentlySelectedImage.setValue((ImageEntry) newOne);
-				currentlySelectedDirectory.setValue(null);
-			} else if (newOne instanceof ImageDirectory)
-			{
-				currentlySelectedImage.setValue(null);
-				currentlySelectedDirectory.setValue((ImageDirectory) newOne);
+				// If it's an image, update the currently selected image, otherwise update the currently selected directory
+				ImageContainer newOne = newValue.getValue();
+				if (newOne instanceof ImageEntry)
+				{
+					currentlySelectedImage.setValue((ImageEntry) newOne);
+					currentlySelectedDirectory.setValue(null);
+				} else if (newOne instanceof ImageDirectory)
+				{
+					currentlySelectedImage.setValue(null);
+					currentlySelectedDirectory.setValue((ImageDirectory) newOne);
+				}
 			}
 		}));
 
@@ -599,6 +605,10 @@ public class SanimalImportController implements Initializable
 			ImageDirectory directory = DirectoryManager.loadDirectory(file);
 			// Remove any directories that are empty and contain no images
 			DirectoryManager.removeEmptyDirectories(directory);
+			// Check the list of pictures to see if there's any new species that were not there before
+			DirectoryManager.detectRegisterAndTagSpecies(directory);
+			// Check the list of pictures to see if there's any new locations that need to be added
+			DirectoryManager.detectRegisterAndTagLocations(directory);
 			// Add the directory to the image tree
 			SanimalData.getInstance().getImageTree().addChild(directory);
 		}
@@ -635,6 +645,7 @@ public class SanimalImportController implements Initializable
 		this.sldSaturation.setValue(0);
 		// Reset the image preview viewport to its default state
 		if (this.imagePreview.getImage() != null)
+			//                                                             this.imagePane.getWidth(), this.imagePane.getHeight()));
 			this.imagePreview.setViewport(new Rectangle2D(0, 0, this.imagePreview.getImage().getWidth(), this.imagePreview.getImage().getHeight()));
 		// Consume the event if possible
 		if (actionEvent != null)

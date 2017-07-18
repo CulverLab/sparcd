@@ -51,9 +51,10 @@ public class SanimalData
     {
         // Create the species list, and add some default species
         this.speciesList = FXCollections.<Species>observableArrayList(species -> new Observable[]{species.getNameProperty(), species.getScientificNameProperty(), species.getSpeciesIconURLProperty()});
-        this.speciesList.add(new Species("Tiger", "Panthera tigris", "http://kids.nationalgeographic.com/content/dam/kids/photos/articles/Other%20Explore%20Photos/R-Z/Wacky%20Weekend/Wild%20Cats/ww-wild-cats-tiger.adapt.945.1.jpg"));
-        this.speciesList.add(new Species("Lion", "Panthera leo", "https://upload.wikimedia.org/wikipedia/commons/7/73/Lion_waiting_in_Namibia.jpg"));
-        this.speciesList.add(new Species("Unicorn", "Fakus Imaginus", "https://s-media-cache-ak0.pinimg.com/736x/3b/ca/b6/3bcab6f591ac1d61b1e6abded3ea06a7.jpg"));
+            SanimalData.this.speciesList.add(new Species("Tiger", "Panthera tigris", "http://kids.nationalgeographic.com/content/dam/kids/photos/articles/Other%20Explore%20Photos/R-Z/Wacky%20Weekend/Wild%20Cats/ww-wild-cats-tiger.adapt.945.1.jpg"));
+            SanimalData.this.speciesList.add(new Species("Lion", "Panthera leo", "https://upload.wikimedia.org/wikipedia/commons/7/73/Lion_waiting_in_Namibia.jpg"));
+            SanimalData.this.speciesList.add(new Species("Unicorn", "Fakus Imaginus", "https://s-media-cache-ak0.pinimg.com/736x/3b/ca/b6/3bcab6f591ac1d61b1e6abded3ea06a7.jpg"));
+
 
         // Create the location list and add some default locations
         this.locationList = FXCollections.<Location> observableArrayList( location -> new Observable[] {location.getNameProperty(), location.getLatProperty(), location.getLngProperty(), location.getElevationProperty()});
