@@ -246,6 +246,16 @@ public class TreeViewAutomatic<T extends HierarchyData<T>> extends TreeView<T>
 		return treeItem;
 	}
 
+	/**
+	 * Added by David ***
+	 *
+	 * @return The items property used to hold the tree's items
+	 */
+	public ObjectProperty<ObservableList<? extends T>> itemsProperty()
+	{
+		return items;
+	}
+
 	public ObservableList<? extends T> getItems()
 	{
 		return items.get();

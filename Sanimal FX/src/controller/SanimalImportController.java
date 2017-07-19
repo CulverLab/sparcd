@@ -4,6 +4,8 @@ import javafx.animation.FadeTransition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
@@ -206,6 +208,37 @@ public class SanimalImportController implements Initializable
 		// Finally we bind the effect property to the color adjust so that the sliders are bound to the image adjustment
 		this.imagePreview.effectProperty().bind(this.colorAdjust);
 
+		// Initialize root of the right side directory/image tree and make the root invisible
+		// This is because a treeview must have ONE root.
+
+		// Create a fake invisible root node whos children
+		final TreeItem<ImageContainer> ROOT = new TreeItem<>(SanimalData.getInstance().getImageTree());
+		// Hide the fake invisible root
+		this.imageTree.setShowRoot(false);
+		// Set the fake invisible root
+		this.imageTree.setRoot(ROOT);
+		// Set the items of the tree to be the children of the fake invisible root
+		this.imageTree.setItems(SanimalData.getInstance().getImageTree().getChildren());
+		// When a new image is selected...
+		this.imageTree.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) ->
+		{
+			if (newValue != null)
+			{
+				// If it's an image, update the currently selected image, otherwise update the currently selected directory
+				ImageContainer newOne = newValue.getValue();
+				if (newOne instanceof ImageEntry)
+				{
+					currentlySelectedImage.setValue((ImageEntry) newOne);
+					currentlySelectedDirectory.setValue(null);
+				}
+				else if (newOne instanceof ImageDirectory)
+				{
+					currentlySelectedImage.setValue(null);
+					currentlySelectedDirectory.setValue((ImageDirectory) newOne);
+				}
+			}
+		}));
+
 		// Create bindings in the GUI
 
 		// First bind the 4 color adjustment sliders disable property to if an adjustable image is selected
@@ -227,8 +260,29 @@ public class SanimalImportController implements Initializable
 		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().getPendingTasksProperty().isEqualTo(0).not());
 		// Bind the progress bar's text property to tasks remaining
 		this.sbrTaskProgress.textProperty().bind(SanimalData.getInstance().getPendingTasksProperty().asString("Tasks remaining: %d"));
-		// Bind the progress bar's progress property go back and forth if at least one task is present
+		// Bind the progress bar's progress property go back and forth if at least one task is present. We do this by setting it to -1
 		this.sbrTaskProgress.progressProperty().bind(Bindings.when(SanimalData.getInstance().getPendingTasksProperty().greaterThan(0)).then(-1).otherwise(1));
+		// Bind the left arrow's visibility property to if there is a previous item available
+		this.btnLeftArrow.visibleProperty().bind(
+				this.imageTree.getSelectionModel().selectedIndexProperty()
+						// -1 Would mean that nothing is selected
+						.isEqualTo(-1)
+						// If 0 is selected, that means we're at the top element
+						.or(this.imageTree.getSelectionModel().selectedIndexProperty()
+								.isEqualTo(0))
+						// Make sure to negate because we want to hide the arrow when the above things are true
+						.not());
+		// Bind the left arrow's visibility property to if there is a next item available
+		this.btnRightArrow.visibleProperty().bind(
+				this.imageTree.getSelectionModel().selectedIndexProperty()
+						// Expanded item count property counts the total number of entries, so the last one is count - 1. If this is selected hide the right arrow
+						.isEqualTo(this.imageTree.expandedItemCountProperty()
+								.subtract(1))
+						// -1 Would mean that nothing is selected
+						.or(this.imageTree.getSelectionModel().selectedIndexProperty()
+								.isEqualTo(-1))
+						// Make sure to negate because we want to hide the arrow when the above things are true
+						.not());
 
 		// The listener we will apply to each species entry list
 		final ListChangeListener<SpeciesEntry> listener = change ->
@@ -261,36 +315,6 @@ public class SanimalImportController implements Initializable
 			else
 				locationListView.getSelectionModel().clearSelection();
 		});
-
-		// Initialize root of the right side directory/image tree and make the root invisible
-		// This is because a treeview must have ONE root.
-
-		// Create a fake invisible root node whos children
-		final TreeItem<ImageContainer> ROOT = new TreeItem<>(SanimalData.getInstance().getImageTree());
-		// Hide the fake invisible root
-		this.imageTree.setShowRoot(false);
-		// Set the fake invisible root
-		this.imageTree.setRoot(ROOT);
-		// Set the items of the tree to be the children of the fake invisible root
-		this.imageTree.setItems(SanimalData.getInstance().getImageTree().getChildren());
-		// When a new image is selected...
-		this.imageTree.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) ->
-		{
-			if (newValue != null)
-			{
-				// If it's an image, update the currently selected image, otherwise update the currently selected directory
-				ImageContainer newOne = newValue.getValue();
-				if (newOne instanceof ImageEntry)
-				{
-					currentlySelectedImage.setValue((ImageEntry) newOne);
-					currentlySelectedDirectory.setValue(null);
-				} else if (newOne instanceof ImageDirectory)
-				{
-					currentlySelectedImage.setValue(null);
-					currentlySelectedDirectory.setValue((ImageDirectory) newOne);
-				}
-			}
-		}));
 
 		// Initialize the fade transitions
 
@@ -627,6 +651,8 @@ public class SanimalImportController implements Initializable
 		TreeItem<ImageContainer> item = this.imageTree.getSelectionModel().getSelectedItem();
 		// Remove that item from the image tree
 		SanimalData.getInstance().getImageTree().removeChildRecursive(item.getValue());
+		// Make sure to clear the selection in the tree. This ensures that our left & right arrows will properly hide themselves if no more directories are present
+		this.imageTree.getSelectionModel().clearSelection();
 		// Consume the event
 		actionEvent.consume();
 	}
