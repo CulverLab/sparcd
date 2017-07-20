@@ -185,7 +185,7 @@ public class SpeciesCreatorController implements Initializable
 			// Set the scientific name to unknown if no name was given
 			speciesToEdit.setScientificName(newScientificName.getValue().trim().isEmpty() ? "Unknown" : newScientificName.getValue());
 			// Set the icon either to the local file name or URL
-			speciesToEdit.setSpeciesIcon(!this.newIconURL.getValue().isEmpty() ? this.newIconURL.getValue().trim() : !this.newIconLocal.isEmpty() ? this.newIconLocal : new File("./src/images/importWindow/defaultAnimalIcon.png").toURI().toString());
+			speciesToEdit.setSpeciesIcon(!this.newIconURL.getValue().isEmpty() ? this.newIconURL.getValue().trim() : !this.newIconLocal.isEmpty() ? this.newIconLocal : Species.DEFAULT_ICON);
 			((Stage) this.gridBackground.getScene().getWindow()).close();
 		}
 

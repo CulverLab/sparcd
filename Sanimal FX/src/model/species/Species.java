@@ -2,7 +2,9 @@ package model.species;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import model.image.ImageEntry;
 
+import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,6 +30,25 @@ public class Species implements Serializable
 
     // Default uninitialized value
     public static final String UNINITIALIZED = "UNINITIALIZED";
+
+    // Default Icon
+    public static final String DEFAULT_ICON = ImageEntry.class.getResource("/images/importWindow/defaultAnimalIcon.png").toString();
+
+    /**
+     * Constructor for the species, sets a default icon
+     *
+     * @param name
+     *            The name of the species
+     * @param scientificName
+     *            The scientific name of the species
+     */
+    public Species(String name, String scientificName)
+    {
+        this.name.setValue(name);
+        this.scientificName.setValue(scientificName);
+        this.speciesIconURL.setValue(DEFAULT_ICON);
+        this.uniqueID = ID_GENERATOR.getAndIncrement();
+    }
 
     /**
      * Constructor for the species

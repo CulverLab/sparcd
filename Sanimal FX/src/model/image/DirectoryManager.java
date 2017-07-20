@@ -2,6 +2,7 @@ package model.image;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -34,11 +35,14 @@ public class DirectoryManager
 	 * Given a directory, this function reads all the images in the directory and tags them with the species in the list, or asks the user to input a new species
 	 *
 	 * @param imageDirectory The directory to read from
+	 *
+	 * @return A list of newly added species
 	 */
-	public static void detectRegisterAndTagSpecies(ImageDirectory imageDirectory)
+	public static List<Species> detectRegisterAndTagSpecies(ImageDirectory imageDirectory)
 	{
 		// Grab all images in the directory
 		List<ImageEntry> newImages = imageDirectory.flattened().filter(container -> container instanceof ImageEntry).map(container -> (ImageEntry) container).collect(Collectors.toList());
+		List<Species> newlyAddedSpecies = new ArrayList<>();
 
 		// Go through each of the images
 		for (ImageEntry current : newImages)
@@ -87,13 +91,10 @@ public class DirectoryManager
 										// We got a species that was not registered in the program, what do we do?
 										else
 										{
-											System.out.println("Unknown species: " + speciesName + ", Scientific name: " + speciesScientificName + ", Count: " + speciesCount);
-
-											/*
-											Species newSpecies = new Species(speciesName, speciesScientificName, "");
+											Species newSpecies = new Species(speciesName, speciesScientificName);
 											SanimalData.getInstance().getSpeciesList().add(newSpecies);
+											newlyAddedSpecies.add(newSpecies);
 											current.addSpecies(newSpecies, Integer.parseInt(speciesCount));
-											*/
 										}
 									}
 									catch (NumberFormatException ignored)
@@ -113,17 +114,21 @@ public class DirectoryManager
 				e.printStackTrace();
 			}
 		}
+		return newlyAddedSpecies;
 	}
 
 	/**
 	 * Given a directory, this function reads all the images in the directory and tags them with the location
 	 *
 	 * @param imageDirectory The directory to read from
+	 *
+	 * @return A list of newly added locations
 	 */
-	public static void detectRegisterAndTagLocations(ImageDirectory imageDirectory)
+	public static List<Location> detectRegisterAndTagLocations(ImageDirectory imageDirectory)
 	{
 		// Grab all images in the directory
 		List<ImageEntry> newImages = imageDirectory.flattened().filter(container -> container instanceof ImageEntry).map(container -> (ImageEntry) container).collect(Collectors.toList());
+		List<Location> newlyAddedLocations = new ArrayList<>();
 
 		// Go through each of the images
 		for (ImageEntry current : newImages)
@@ -173,13 +178,10 @@ public class DirectoryManager
 								}
 								else
 								{
-									System.out.println("Unknown location: " + locationName + ", Latitude: " + locationLatitude + ", Longitude: " + locationLongitude + ", Elevation: " + locationElevation);
-
-									/*
 									Location newLocation = new Location(locationName, locationLatitude, locationLongitude, Double.parseDouble(locationElevation));
 									SanimalData.getInstance().getLocationList().add(newLocation);
+									newlyAddedLocations.add(newLocation);
 									current.setLocationTaken(newLocation);
-									*/
 								}
 							}
 							catch (NumberFormatException ignored)
@@ -197,6 +199,7 @@ public class DirectoryManager
 				e.printStackTrace();
 			}
 		}
+		return newlyAddedLocations;
 	}
 
 	/**

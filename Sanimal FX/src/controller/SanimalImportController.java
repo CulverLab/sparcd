@@ -44,6 +44,7 @@ import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Controller class for the main import window
@@ -637,12 +638,34 @@ public class SanimalImportController implements Initializable
 		{
 			// Convert the file to a recursive image directory data structure
 			ImageDirectory directory = DirectoryManager.loadDirectory(file);
+
 			// Remove any directories that are empty and contain no images
 			DirectoryManager.removeEmptyDirectories(directory);
+
 			// Check the list of pictures to see if there's any new species that were not there before
-			DirectoryManager.detectRegisterAndTagSpecies(directory);
+			List<Species> newSpecies = DirectoryManager.detectRegisterAndTagSpecies(directory);
+			if (!newSpecies.isEmpty())
+			{
+				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+				alert.initOwner(this.imagePreview.getScene().getWindow());
+				alert.setTitle("Species Added");
+				alert.setHeaderText("New Species Were Added");
+				alert.setContentText("Species found tagged on these images were automatically added to the list.\nThese include: " + newSpecies.stream().map(Species::getName).collect(Collectors.joining(", ")));
+				alert.showAndWait();
+			}
+
 			// Check the list of pictures to see if there's any new locations that need to be added
-			DirectoryManager.detectRegisterAndTagLocations(directory);
+			List<Location> newLocations = DirectoryManager.detectRegisterAndTagLocations(directory);
+			if (!newLocations.isEmpty())
+			{
+				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+				alert.initOwner(this.imagePreview.getScene().getWindow());
+				alert.setTitle("Locations Added");
+				alert.setHeaderText("New Locations Were Added");
+				alert.setContentText("Locations found tagged on these images were automatically added to the list.\nThese include: " + newLocations.stream().map(Location::getName).collect(Collectors.joining(", ")));
+				alert.showAndWait();
+			}
+
 			// Add the directory to the image tree
 			SanimalData.getInstance().getImageTree().addChild(directory);
 		}
