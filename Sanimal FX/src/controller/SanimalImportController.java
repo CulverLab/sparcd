@@ -38,14 +38,12 @@ import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
 import org.controlsfx.control.StatusBar;
+import org.fxmisc.easybind.EasyBind;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.net.URL;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * Controller class for the main import window
@@ -144,11 +142,11 @@ public class SanimalImportController implements Initializable
 	/**
 	 * Initialize the sanimal import view and data bindings
 	 *
-	 * @param location  ignored
+	 * @param ignored  ignored
 	 * @param resources ignored
 	 */
 	@Override
-	public void initialize(URL location, ResourceBundle resources)
+	public void initialize(URL ignored, ResourceBundle resources)
 	{
 		// First we setup the species list
 
@@ -283,6 +281,18 @@ public class SanimalImportController implements Initializable
 								.isEqualTo(-1))
 						// Make sure to negate because we want to hide the arrow when the above things are true
 						.not());
+		// Bind the species list visibility to if a location has been picked. We use easy bind to avoid using javafx reflection here.
+		this.speciesListView.disableProperty().bind(
+				// We begin by selecting the object we are listening for changes on
+				EasyBind.select(this.currentlySelectedImage)
+						// We then sub-select the location property to listen to. If the image entry in the currentlySelectedImage is null, this
+						// select object will ensure that we don't get a null pointer exception
+						.selectObject(ImageEntry::getLocationTakenProperty)
+						// If we did get an object with select object, we map it to the isNull function which will return true if the location is null,
+						// disabling the species list view
+						.map(Objects::isNull)
+						// If we did not get an object with select object, we simply disable the list view by returning true.
+						.orElse(true));
 
 		// The listener we will apply to each species entry list
 		final ListChangeListener<SpeciesEntry> listener = change ->

@@ -10,9 +10,11 @@ import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -50,19 +52,47 @@ public class SanimalData
     private SanimalData()
     {
         // Create the species list, and add some default species
-        this.speciesList = FXCollections.<Species>observableArrayList(species -> new Observable[]{species.getNameProperty(), species.getScientificNameProperty(), species.getSpeciesIconURLProperty()});
-            SanimalData.this.speciesList.add(new Species("Tiger", "Panthera tigris", "http://kids.nationalgeographic.com/content/dam/kids/photos/articles/Other%20Explore%20Photos/R-Z/Wacky%20Weekend/Wild%20Cats/ww-wild-cats-tiger.adapt.945.1.jpg"));
-            SanimalData.this.speciesList.add(new Species("Lion", "Panthera leo", "https://upload.wikimedia.org/wikipedia/commons/7/73/Lion_waiting_in_Namibia.jpg"));
-            SanimalData.this.speciesList.add(new Species("Unicorn", "Fakus Imaginus", "https://s-media-cache-ak0.pinimg.com/736x/3b/ca/b6/3bcab6f591ac1d61b1e6abded3ea06a7.jpg"));
+        this.speciesList = FXCollections.observableArrayList(species -> new Observable[]{species.getNameProperty(), species.getScientificNameProperty(), species.getSpeciesIconURLProperty()});
 
+        this.loadSpeciesFromFile();
 
         // Create the location list and add some default locations
-        this.locationList = FXCollections.<Location> observableArrayList( location -> new Observable[] {location.getNameProperty(), location.getLatProperty(), location.getLngProperty(), location.getElevationProperty()});
-        this.locationList.add(new Location("Tucson", 32D, 110D, 2388D));
-        this.locationList.add(new Location("Munich", 48D, 11D, 520D));
+        this.locationList = FXCollections.observableArrayList( location -> new Observable[] {location.getNameProperty(), location.getLatProperty(), location.getLngProperty(), location.getElevationProperty()});
 
         // The tree just starts in the current directory which is a dummy directory
         this.imageTree = new ImageDirectory(new File("./"));
+    }
+
+    /**
+     * Reads all species entries from species.txt
+     */
+    private void loadSpeciesFromFile()
+    {
+        File speciesFile = new File("./species.txt");
+        if (speciesFile.exists())
+        {
+            try
+            {
+                // Read each line of the file as a list of strings
+                Files.readAllLines(speciesFile.toPath())
+                        .stream()
+                        // Remove empty lines and lines that do not have 3 commas
+                        .filter(line -> !StringUtils.isEmpty(line) && StringUtils.countMatches(line, ",") == 2)
+                        // Map the line to an array of lines that should have 1st element as the name, 2nd element as scientific name, and 3rd element as image URL
+                        .map(line -> StringUtils.split(line, ","))
+                        // For each of these lines, add a new species entry
+                        .forEach(separated -> this.speciesList.add(new Species(separated[0], separated[1], separated[2])));
+            }
+            catch (IOException e)
+            {
+                System.err.println("Could not read species.txt. The file might be incorrectly formatted...");
+                e.printStackTrace();
+            }
+        }
+        else
+        {
+            System.err.println("Could not find species.txt...");
+        }
     }
 
     /**

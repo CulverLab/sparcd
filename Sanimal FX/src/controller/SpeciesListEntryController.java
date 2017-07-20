@@ -1,5 +1,7 @@
 package controller;
 
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -8,11 +10,14 @@ import javafx.scene.control.ListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import model.SanimalData;
 import model.species.Species;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -43,6 +48,9 @@ public class SpeciesListEntryController extends ListCell<Species>
     /// FXML bound fields end
     ///
 
+    // Used to cache species icons to avoid reloading them over and over again
+    private static final Map<String, Image> IMAGE_CACHE = new HashMap<>();
+
     /**
      * Update item is called when the list cell gets a new species
      *
@@ -69,8 +77,13 @@ public class SpeciesListEntryController extends ListCell<Species>
             this.lblName.setText(species.getName());
             // Set the scientific name to the species scientific name
             this.lblScientificName.setText(species.getScientificName());
+            // Check if the image cache contains the species unique key. If it does not, load it in a thread.
+            if (!IMAGE_CACHE.containsKey(species.getSpeciesIcon()))
+            {
+                IMAGE_CACHE.put(species.getSpeciesIcon(), new Image(species.getSpeciesIcon(), true));
+            }
             // Set the image in the image view to the given species icon
-            this.imageView.setImage(new Image(species.getSpeciesIcon()));
+            SpeciesListEntryController.this.imageView.setImage(IMAGE_CACHE.get(species.getSpeciesIcon()));
             // Set the graphic to display
             this.setGraphic(mainPane);
         }

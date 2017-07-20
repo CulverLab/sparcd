@@ -1,0 +1,52 @@
+Badger,Taxidea taxus,http://www.nhptv.org/wild/images/americanbadgerfws.jpg
+Bats,many ssp.,http://lubee.org/wp-content/uploads/2014/02/bat01.png
+Bear,Ursus americanus,http://imagess3.enature.com/mammals/mammals_l/ma0013_1l.jpg
+Bighorn,Ovis Canadensis nelsoni,http://stockpix.com/image/407423.jpg
+Birds,many ssp.,https://www.wbu.com/wp-content/uploads/2016/07/540x340-found-a-bird-450x283.jpg
+Bobcat,Lynx rufus,https://a-z-animals.com/media/animals/images/original/bobcat1.jpg
+Butterflies,many ssp.,http://www3.canisius.edu/~grandem/butterflylifecycle/Butterfly.jpg
+Coati,Nasua narica,http://www.nhptv.org/wild/images/whitenosedcoatilwikilizroy.jpg
+Cottontail,Sylvilagus auduboni,http://fireflyforest.net/images/firefly/2005/August/Desert-Cottontail.jpg
+Cow,Bos tarus,http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0113/1145.jpeg
+Coyote,Canis latrans,https://c1.staticflickr.com/3/2042/2167315030_f5843cd1f0.jpg
+Domestic Dog,Canis familiaris,http://www.biolib.cz/IMG/GAL/113548.jpg
+Domestic Cat,Felis catus,https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Domestic_cat_cropped.jpg/755px-Domestic_cat_cropped.jpg
+Gray fox,Urocyon cinereoargenteus,https://farm6.staticflickr.com/5004/5331733036_db261762a1.jpg
+Red fox,Vulpes vulpes,https://images.fineartamerica.com/images-medium-large-5/7-fox-red-vulpes-fulva-carol-gregory.jpg
+Frogs,many ssp.,http://s.hswstatic.com/gif/frog-1.jpg
+Ghost,na,https://static.wixstatic.com/media/958d1f_17dc5aef6615420c84a29b4698bdd19b~mv2.jpg
+Gila Monster,Heloderma suspectum,http://polyploid.net/swherps/images/Helod_susp_9-1804_8976.jpg
+Goat,Capra aegagrus,https://a-z-animals.com/media/animals/images/original/goat6.jpg
+Horse,Equus caballus,http://www.photomazza.com/IMG/jpg_Un_Cavallo_Maremmano_c_Giuseppe_Mazza.jpg
+Human,Homo sapiens,http://www.freeiconspng.com/uploads/person-outline-icon-png-person-outline-icon-png-person-17.png
+Antelope jackrabbit,Lepus alleni,http://www.rshantz.com/Animals/Mammals/Rabbits/Antelope/20120527Jackrabbit01N.jpg
+Blacktail jackrabbit,Lepus californicus,https://c1.staticflickr.com/1/204/510197785_e711890a15_z.jpg?zz=1
+Jaguar,Panthera onca,http://earthclassification.tripod.com/Jaguar_tree.JPG
+Javelina,Pecari tajacu,http://calphotos.berkeley.edu/imgs/512x768/0000_0000/1200/0251.jpeg
+Lizards,many ssp.,https://s-media-cache-ak0.pinimg.com/originals/52/fb/17/52fb170eb22a586070a14bd6a05b75e3.jpg
+Mule deer,Odocoileus hemionus,http://animaldiversity.org/collections/contributors/bruce_gill/Odocoileushemionus/large.jpg
+Ocelot,Leopardus pardalis,http://kimcampion.com/wp-content/uploads/2015/07/2-ocelot-leopardus-pardalis-standing-pete-oxford.jpg
+Mexican opossum,Didelphis marsupialis,https://upload.wikimedia.org/wikipedia/commons/2/25/Rabipelao2.jpg
+Virginia opossum,Didelphis virginiana,http://www.nhptv.org/wild/images/virginiaopossimwikimediacpope.jpg
+Pronghorn,Antilocapra americana,https://upload.wikimedia.org/wikipedia/commons/a/a3/Antilocapra_americana.jpg
+Puma,Puma concolor,http://www.oceanlight.com/stock-photo/puma-concolor-mountain-lion-photograph-15791-831057.jpg
+Racoon,Procyon lotor,http://www.planet-mammiferes.org/Photos/Carniv/Procyon/ProcLot5.jpg
+Ringtail,Bassariscus astutus,https://s-media-cache-ak0.pinimg.com/originals/eb/17/80/eb178055608ec317d6a58f02fcf534d3.jpg
+Pacrat,Neotoma albigula,http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0406/1103.jpeg
+Other rodents,many ssp.,https://cdn3.iconfinder.com/data/icons/pet-shop-glyph-black/614/5194_-_Pet_Mouse-512.png
+Hooded skunk,Mephitis macroura,http://farm4.static.flickr.com/3772/12708056885_fab408e0c4.jpg
+Striped skunk,Mephitis mephitis,https://farm4.staticflickr.com/3477/3225052660_a781f21e48.jpg
+Hog-nosed skunk,Conepatus leuconotus,https://static.inaturalist.org/photos/2788363/medium.jpg?1450456480
+Spotted skunk,Spilogale gragilis,http://farm4.static.flickr.com/3913/15045671516_712a66d50f.jpg
+Snakes,many ssp.,http://a.scpr.org/i/88e7e63b1ca71faba95c089e24a5e608/34621-full.jpg
+Mexican spotted owl,Strix occidentalis,http://www.owlpages.com/owls/species/images/spotted_owl_jared_hobbs-7.jpg
+Arizona gray squirrel,Sciurus arizonensis,http://m3.i.pbase.com/o9/94/339594/1/116207813.geRib5w0.IMG_2384.JPG
+Abert's squirrel,Sciurus aberti,http://www.biopix.com/photos/GDR-Sciurus-aberti-03172.jpg
+Rock squirrel,Spermophilus varegatus,http://www.nhptv.org/wild/images/americanbadgerfws.jpg
+Other squirrels,many ssp.,http://www.wildutah.us/images/mammals_reptiles_amphibians/squirrel_beaver_cnyn_beaver_cnty_utah_21may2015_3089.jpg
+Test,na,https://image.freepik.com/free-icon/picture-frame-with-mountain-image_318-40293.jpg
+Sonoran desert tortoise,Gopherus morafki,http://www.reptilesofaz.org/Graphics/Turtles-Amphibians/GOPAGA-WWells08.jpg
+Sonora mud turtle,Kinosternon sonoriense,http://www.southwesternherp.com/images/SonoranMudTurtle-SantaCruzCoAz-b.jpg
+Turkey,Meleagris gallopavo,https://upload.wikimedia.org/wikipedia/commons/4/4d/Wild_turkey_eastern_us.jpg
+Unknown,na,https://cdn0.iconfinder.com/data/icons/huge-black-icons/512/Help.png
+White-tailed deer,Odocoileus virginianus,http://fishesofgeorgia.uga.edu/gawildlife/images/Mammalia/ovirginianus.jpg
