@@ -270,9 +270,10 @@ public class LocationCreatorController implements Initializable
 		{
 			// Set the location's fields, and close the editor window
 			locationToEdit.setName(newName.getValue());
-			locationToEdit.setLat(Double.parseDouble(newLatitude.getValue()));
-			locationToEdit.setLng(Double.parseDouble(newLongitude.getValue()));
-			locationToEdit.setElevation(Double.parseDouble(newElevation.getValue()));
+			// Round to 4 decimal places
+			locationToEdit.setLat(Math.round(Double.parseDouble(newLatitude.getValue()) * 1000.0) / 1000.0);
+			locationToEdit.setLng(Math.round(Double.parseDouble(newLongitude.getValue()) * 1000.0) / 1000.0);
+			locationToEdit.setElevation((double) Math.round(Double.parseDouble(newElevation.getValue())));
 			((Stage) this.txtName.getScene().getWindow()).close();
 		}
 	}

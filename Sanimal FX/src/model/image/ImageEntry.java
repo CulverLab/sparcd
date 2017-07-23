@@ -76,7 +76,7 @@ public class ImageEntry extends ImageContainer
 		{
 			this.dateTakenProperty.setValue(new Date(Files.readAttributes(file.toPath(), BasicFileAttributes.class).lastModifiedTime().toMillis()));
 		}
-		catch (IOException e)
+		catch (IOException ignored)
 		{
 		}
 		// Bind the image property to a conditional expression.

@@ -7,7 +7,9 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -44,6 +46,7 @@ import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.net.URL;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -241,20 +244,20 @@ public class SanimalImportController implements Initializable
 		// Create bindings in the GUI
 
 		// First bind the 4 color adjustment sliders disable property to if an adjustable image is selected
-		this.sldSaturation.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
-		this.sldHue.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
-		this.sldContrast.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
-		this.sldBrightness.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
+		this.sldSaturation.disableProperty().bind(currentlySelectedImage.isNull());
+		this.sldHue.disableProperty().bind(currentlySelectedImage.isNull());
+		this.sldContrast.disableProperty().bind(currentlySelectedImage.isNull());
+		this.sldBrightness.disableProperty().bind(currentlySelectedImage.isNull());
 		// Also bind the date taken text field's disable property if an image is selected
-		this.txtDateTaken.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
+		this.txtDateTaken.disableProperty().bind(currentlySelectedImage.isNull());
 		// Also bind the disable button's disable property if an adjustable image is selected
-		this.btnResetImage.disableProperty().bind(Bindings.createBooleanBinding(() -> currentlySelectedImage.getValue() == null, currentlySelectedImage));
+		this.btnResetImage.disableProperty().bind(currentlySelectedImage.isNull());
 		// Finally bind the date taken's disable property if an adjustable image is selected
-		this.txtDateTaken.textProperty().bind(Bindings.createStringBinding(() -> currentlySelectedImage.getValue() != null ? currentlySelectedImage.getValue().getDateTakenFormatted() : "", currentlySelectedImage));
+		this.txtDateTaken.textProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getDateTakenFormatted).orElse(""));
 		// Bind the image preview to the selected image from the right side tree view
-		this.imagePreview.imageProperty().bind(Bindings.createObjectBinding(() -> currentlySelectedImage.getValue() != null ? new Image(currentlySelectedImage.getValue().getFile().toURI().toString()) : null, currentlySelectedImage));
+		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).map(imageEntry -> new Image(imageEntry.getFile().toURI().toString())));
 		// Bind the species entry list view items to the selected image species present
-		this.speciesEntryListView.itemsProperty().bind(Bindings.createObjectBinding(() -> currentlySelectedImage.getValue() != null ? currentlySelectedImage.getValue().getSpeciesPresent() : null, currentlySelectedImage));
+		this.speciesEntryListView.itemsProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getSpeciesPresent));
 		// Hide the progress bar when progress == 1
 		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().getPendingTasksProperty().isEqualTo(0).not());
 		// Bind the progress bar's text property to tasks remaining
@@ -296,12 +299,10 @@ public class SanimalImportController implements Initializable
 						.orElse(true));
 
 		// The listener we will apply to each species entry list
-		final ListChangeListener<SpeciesEntry> listener = change ->
-		{
-			// Here we use a magic number of 75. This is the height of a list cell. Unfortunately I have no other way of getting the cell height.
-			// Possibly this.speciesEntryListView.lookup(".list-cell")? Or new ListCell().getHeight()? These don't seem to work right now.
-			this.speciesEntryListView.setMaxHeight(this.speciesEntryListView.getItems().size() * 75);
-		};
+		// Here we use a magic number of 75. This is the height of a list cell. Unfortunately I have no other way of getting the cell height.
+		// Possibly this.speciesEntryListView.lookup(".list-cell")? Or new ListCell().getHeight()? These don't seem to work right now.
+		final ListChangeListener<SpeciesEntry> listener = change -> this.speciesEntryListView.setMaxHeight(this.speciesEntryListView.getItems().size() * 75);
+
 		// Make the species entry list view dynamically resize using the above listener
 		this.speciesEntryListView.itemsProperty().addListener((observable, oldValue, newValue) ->
 		{
@@ -647,7 +648,7 @@ public class SanimalImportController implements Initializable
 			if (!newSpecies.isEmpty())
 			{
 				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-				alert.initOwner(this.imagePreview.getScene().getWindow());
+				alert.initOwner(SanimalImportController.this.imagePreview.getScene().getWindow());
 				alert.setTitle("Species Added");
 				alert.setHeaderText("New Species Were Added");
 				alert.setContentText("Species found tagged on these images were automatically added to the list.\nThese include: " + newSpecies.stream().map(Species::getName).collect(Collectors.joining(", ")));
@@ -659,7 +660,7 @@ public class SanimalImportController implements Initializable
 			if (!newLocations.isEmpty())
 			{
 				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-				alert.initOwner(this.imagePreview.getScene().getWindow());
+				alert.initOwner(SanimalImportController.this.imagePreview.getScene().getWindow());
 				alert.setTitle("Locations Added");
 				alert.setHeaderText("New Locations Were Added");
 				alert.setContentText("Locations found tagged on these images were automatically added to the list.\nThese include: " + newLocations.stream().map(Location::getName).collect(Collectors.joining(", ")));
