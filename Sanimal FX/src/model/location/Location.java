@@ -169,7 +169,7 @@ public class Location implements Serializable
 	/**
 	 * Set the elevation of the location
 	 *
-	 * @param elevation the new elevation
+	 * @param elevation the new elevation in METERS
 	 */
 	public void setElevation(Double elevation)
 	{

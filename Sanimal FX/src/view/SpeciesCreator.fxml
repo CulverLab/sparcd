@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane fx:id="gridBackground" minWidth="340" prefWidth="340.0" minHeight="180" prefHeight="180.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SpeciesCreatorController">
+<GridPane fx:id="gridBackground" minWidth="380" prefWidth="380.0" minHeight="180" prefHeight="180.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SpeciesCreatorController">
     <stylesheets>
         <URL value="@SpeciesCreator.css" />
     </stylesheets>
@@ -40,7 +40,7 @@
         <TextField fx:id="txtImageURL" GridPane.columnIndex="1" GridPane.rowIndex="4" />
         <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
             <children>
-                <Button maxWidth="60" minWidth="60" mnemonicParsing="false" onAction="#grabFileName" prefWidth="60" text="Browse" />
+                <Button mnemonicParsing="false" onAction="#grabFileName" prefWidth="60" text="Browse" />
                 <Label fx:id="lblFileName" text="">
                     <padding>
                         <Insets bottom="0" left="5" right="5" top="0" />

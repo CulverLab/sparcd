@@ -61,8 +61,8 @@ public class LocationListEntryController extends ListCell<Location>
         else
         {
             this.lblName.setText(location.getName());
-            this.lblLocation.setText(location.getLat() + ", " + location.getLng());
-            this.lblElevation.setText(location.getElevation() + "ft");
+            this.lblLocation.setText(location.getLat() + "\n" + location.getLng());
+            this.lblElevation.setText(location.getElevation() + "m");
             this.setGraphic(mainPane);
         }
     }
