@@ -5,16 +5,29 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox styleClass="locationBackground" fx:id="mainPane" minHeight="100" maxHeight="100" prefHeight="100" prefWidth="100" minWidth="100" maxWidth="100" alignment="CENTER" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.LocationListEntryController">
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<VBox styleClass="locationBackground" fx:id="mainPane" minHeight="100" maxHeight="100" prefHeight="100" prefWidth="100" minWidth="100" maxWidth="100"
+      alignment="CENTER" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.LocationListEntryController">
     <stylesheets>
-        <URL value="@LocationListEntry.css" />
+        <URL value="@LocationListEntry.css"/>
     </stylesheets>
     <padding>
-        <Insets bottom="5" left="5" right="5" top="5" />
+        <Insets bottom="5" left="5" right="5" top="5"/>
     </padding>
-   <children>
-      <Label fx:id="lblName" text="Name" />
-      <Label fx:id="lblLocation" wrapText="true" text="Lat/Lng or UTM" />
-      <Label fx:id="lblElevation" text="Elevation" />
-   </children>
+    <fx:define>
+        <Tooltip fx:id="primaryTooltip" text="${controller.item}" style="-fx-font-size: 16px">
+            <graphic>
+                <ImageView>
+                    <Image url="@../images/importWindow/worldIcon.png"/>
+                </ImageView>
+            </graphic>
+        </Tooltip>
+    </fx:define>
+    <children>
+        <Label fx:id="lblName" text="Name" tooltip="$primaryTooltip"/>
+        <Label fx:id="lblLocation" wrapText="true" text="Lat/Lng or UTM" tooltip="$primaryTooltip"/>
+        <Label fx:id="lblElevation" text="Elevation" tooltip="$primaryTooltip"/>
+    </children>
 </VBox>

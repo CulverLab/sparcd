@@ -1,5 +1,9 @@
 package controller;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -36,6 +40,8 @@ public class LocationListEntryController extends ListCell<Location>
     ///
     /// FXML bound fields end
     ///
+
+    public ObjectProperty<Location> x = new SimpleObjectProperty<>();
 
     /**
      * Update item is called whenever the cell gets updated

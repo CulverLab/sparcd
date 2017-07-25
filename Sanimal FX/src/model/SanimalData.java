@@ -57,7 +57,7 @@ public class SanimalData
         this.loadSpeciesFromFile();
 
         // Create the location list and add some default locations
-        this.locationList = FXCollections.observableArrayList( location -> new Observable[] {location.getNameProperty(), location.getLatProperty(), location.getLngProperty(), location.getElevationProperty()});
+        this.locationList = FXCollections.observableArrayList( location -> new Observable[] {location.nameProperty(), location.getLatProperty(), location.getLngProperty(), location.getElevationProperty()});
 
         // The tree just starts in the current directory which is a dummy directory
         this.imageTree = new ImageDirectory(new File("./"));

@@ -101,7 +101,7 @@ public class Location implements Serializable
 	 *
 	 * @return The name property
 	 */
-	public StringProperty getNameProperty()
+	public StringProperty nameProperty()
 	{
 		return nameProperty;
 	}
@@ -202,16 +202,6 @@ public class Location implements Serializable
 	@Override
 	public String toString()
 	{
-		return this.getName();
-	}
-
-	/**
-	 * Get a formatted string
-	 * 
-	 * @return a string formatted to show more information about the location
-	 */
-	public String formattedString()
-	{
-		return this.getName() + " Latitude: " + this.getLat() + ", Longitude: " + this.getLng() + ", Elevation: " + this.getElevation();
+		return this.getName() + "\nLatitude: " + this.getLat() + "\nLongitude: " + this.getLng() + "\nElevation: " + this.getElevation();
 	}
 }
