@@ -681,22 +681,11 @@ public class SanimalImportController implements Initializable
 		// If the file chosen is a file and a directory process it
 		if (file != null && file.isDirectory())
 		{
-			long time = System.currentTimeMillis();
-			System.out.println("Begun loading");
-
 			// Convert the file to a recursive image directory data structure
 			ImageDirectory directory = DirectoryManager.loadDirectory(file);
 
-			System.out.println(System.currentTimeMillis() - time);
-			System.out.println("Begun removing empty");
-			time = System.currentTimeMillis();
-
 			// Remove any directories that are empty and contain no images
 			DirectoryManager.removeEmptyDirectories(directory);
-
-			System.out.println(System.currentTimeMillis() - time);
-			System.out.println("Begun species tagging");
-			time = System.currentTimeMillis();
 
 			// Check the list of pictures to see if there's any new species that were not there before
 			List<Species> newSpecies = DirectoryManager.detectRegisterAndTagSpecies(directory);
@@ -710,10 +699,6 @@ public class SanimalImportController implements Initializable
 				alert.showAndWait();
 			}
 
-			System.out.println(System.currentTimeMillis() - time);
-			System.out.println("Begun location tagging");
-			time = System.currentTimeMillis();
-
 			// Check the list of pictures to see if there's any new locations that need to be added
 			List<Location> newLocations = DirectoryManager.detectRegisterAndTagLocations(directory);
 			if (!newLocations.isEmpty())
@@ -726,16 +711,8 @@ public class SanimalImportController implements Initializable
 				alert.showAndWait();
 			}
 
-			System.out.println(System.currentTimeMillis() - time);
-			System.out.println("Begun adding");
-			time = System.currentTimeMillis();
-
 			// Add the directory to the image tree
 			SanimalData.getInstance().getImageTree().addChild(directory);
-
-			System.out.println(System.currentTimeMillis() - time);
-			System.out.println("Done!");
-			time = System.currentTimeMillis();
 		}
 		// Consume the event
 		actionEvent.consume();
