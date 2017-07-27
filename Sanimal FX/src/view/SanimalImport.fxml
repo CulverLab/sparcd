@@ -20,8 +20,7 @@
 <?import library.TreeViewAutomatic?>
 <?import org.controlsfx.control.StatusBar?>
 
-<?import javafx.scene.image.Image?>
-<BorderPane minHeight="700" minWidth="1300" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane fx:id="mainPain" minHeight="700" minWidth="1300" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controller.SanimalImportController">
     <stylesheets>
         <URL value="@SanimalImport.css"/>
@@ -29,8 +28,9 @@
     <center>
         <BorderPane>
             <center>
-                <StackPane fx:id="imagePane" onDragDropped="#speciesListDragDropped" onDragEntered="#speciesListDragEntered" onDragExited="#speciesListDragExited"
-                           onDragOver="#imagePaneDragOver" onMouseEntered="#imagePaneMouseEntered" onMouseExited="#imagePaneMouseExited">
+                <StackPane fx:id="imagePane" onDragDropped="#speciesListDragDropped" onDragEntered="#speciesListDragEntered"
+                           onDragExited="#speciesListDragExited" onDragOver="#imagePaneDragOver" onMouseEntered="#imagePaneMouseEntered"
+                           onMouseExited="#imagePaneMouseExited">
                     <children>
                         <ImageViewPane fx:id="imagePreviewPane" styleClass="imageViewBackground">
                             <imageView>
@@ -49,10 +49,12 @@
                         </StatusBar>
                         <BorderPane pickOnBounds="false">
                             <left>
-                                <Button fx:id="btnLeftArrow" onAction="#onLeftArrowClicked" pickOnBounds="false" mnemonicParsing="false" BorderPane.alignment="CENTER" styleClass="leftBtn"/>
+                                <Button fx:id="btnLeftArrow" mnemonicParsing="false" onAction="#onLeftArrowClicked" pickOnBounds="false" styleClass="leftBtn"
+                                        BorderPane.alignment="CENTER"/>
                             </left>
                             <right>
-                                <Button fx:id="btnRightArrow" onAction="#onRightArrowClicked" pickOnBounds="false" mnemonicParsing="false" BorderPane.alignment="CENTER" styleClass="rightBtn"/>
+                                <Button fx:id="btnRightArrow" mnemonicParsing="false" onAction="#onRightArrowClicked" pickOnBounds="false" styleClass="rightBtn"
+                                        BorderPane.alignment="CENTER"/>
                             </right>
                         </BorderPane>
                         <Region fx:id="imageAddOverlay" pickOnBounds="false" styleClass="importPane"/>
@@ -117,6 +119,12 @@
     <left>
         <VBox maxWidth="310" minWidth="310" styleClass="lightBorder" BorderPane.alignment="CENTER">
             <children>
+                <HBox>
+                    <children>
+                        <TextField fx:id="txtSpeciesSearch" promptText="Search Species" HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="btnResetSearch" onAction="#resetSpeciesSearch" styleClass="resetSearchBtn" HBox.hgrow="NEVER"/>
+                    </children>
+                </HBox>
                 <ListView fx:id="speciesListView" onDragDetected="#speciesListDrag" VBox.vgrow="ALWAYS"/>
                 <HBox alignment="CENTER" maxHeight="60" maxWidth="310" minHeight="60" minWidth="310" prefHeight="60" spacing="10">
                     <children>

@@ -25,6 +25,10 @@
     -fx-background-color: transparent;
 }
 
+.resetSearchBtn {
+    -fx-graphic: url("../images/importWindow/delete16.png");
+}
+
 .leftBtn:hover {
     -fx-effect: dropshadow(gaussian, yellow, 10, 0.4, 0, 0);
 }

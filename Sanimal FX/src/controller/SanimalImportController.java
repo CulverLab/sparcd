@@ -4,12 +4,9 @@ import javafx.animation.FadeTransition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -22,6 +19,7 @@ import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.DirectoryChooser;
@@ -39,6 +37,7 @@ import model.image.DirectoryManager;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
+import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.StatusBar;
 import org.fxmisc.easybind.EasyBind;
 
@@ -46,7 +45,6 @@ import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.net.URL;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -117,6 +115,17 @@ public class SanimalImportController implements Initializable
 	@FXML
 	public Button btnRightArrow;
 
+	// Search field for species entry list
+	@FXML
+	public TextField txtSpeciesSearch;
+	// Reset button for the search field
+	@FXML
+	public Button btnResetSearch;
+
+	// The main pane holding everything
+	@FXML
+	public BorderPane mainPain;
+
 	// The list view containing the species
 	@FXML
 	private ListView<Species> speciesListView;
@@ -143,10 +152,12 @@ public class SanimalImportController implements Initializable
 	// A property used to process the image scrolling
 	private ObjectProperty<Point2D> mouseDown = new SimpleObjectProperty<>();
 
+	private ObjectProperty<Image> speciesPreviewImage = new SimpleObjectProperty<>(null);
+
 	/**
 	 * Initialize the sanimal import view and data bindings
 	 *
-	 * @param ignored  ignored
+	 * @param ignored   ignored
 	 * @param resources ignored
 	 */
 	@Override
@@ -158,10 +169,23 @@ public class SanimalImportController implements Initializable
 		SortedList<Species> species = new SortedList<>(SanimalData.getInstance().getSpeciesList());
 		// We set the comparator to be the name of the species
 		species.setComparator(Comparator.comparing(Species::getName));
+		// We create a local wrapper of the species list to filter
+		FilteredList<Species> speciesFilteredList = new FilteredList<>(species);
+		// Set the filter to update whenever the species search text changes
+		this.txtSpeciesSearch.textProperty().addListener(observable -> {
+			speciesFilteredList.setPredicate(speciesToFilter ->
+					// Allow any species with a name or scientific name containing the species search text
+					(StringUtils.containsIgnoreCase(speciesToFilter.getName(), this.txtSpeciesSearch.getCharacters()) ||
+							StringUtils.containsIgnoreCase(speciesToFilter.getScientificName(), this.txtSpeciesSearch.getCharacters())));
+		});
 		// Set the items of the species list view to the newly sorted list
-		this.speciesListView.setItems(species);
+		this.speciesListView.setItems(speciesFilteredList);
 		// Set the cell factory to be our custom species list cell
-		this.speciesListView.setCellFactory(x -> FXMLLoaderUtils.loadFXML("SpeciesListEntry.fxml").getController());
+		this.speciesListView.setCellFactory(x -> {
+			SpeciesListEntryController controller = FXMLLoaderUtils.loadFXML("SpeciesListEntry.fxml").getController();
+			controller.setCurrentImagePreview(this.speciesPreviewImage);
+			return controller;
+		});
 		// When we double click the species list view items, we want to edit the species
 		this.speciesListView.setOnMouseClicked(event -> {
 			if (event.getClickCount() >= 2 && this.speciesListView.getSelectionModel().getSelectedItem() != null)
@@ -232,8 +256,7 @@ public class SanimalImportController implements Initializable
 				{
 					currentlySelectedImage.setValue((ImageEntry) newOne);
 					currentlySelectedDirectory.setValue(null);
-				}
-				else if (newOne instanceof ImageDirectory)
+				} else if (newOne instanceof ImageDirectory)
 				{
 					currentlySelectedImage.setValue(null);
 					currentlySelectedDirectory.setValue((ImageDirectory) newOne);
@@ -255,7 +278,7 @@ public class SanimalImportController implements Initializable
 		// Finally bind the date taken's disable property if an adjustable image is selected
 		this.txtDateTaken.textProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getDateTakenFormatted).orElse(""));
 		// Bind the image preview to the selected image from the right side tree view
-		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).map(imageEntry -> new Image(imageEntry.getFile().toURI().toString())));
+		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).map(imageEntry -> new Image(imageEntry.getFile().toURI().toString())).orElse(speciesPreviewImage));
 		// Bind the species entry list view items to the selected image species present
 		this.speciesEntryListView.itemsProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getSpeciesPresent));
 		// Hide the progress bar when progress == 1
@@ -285,7 +308,7 @@ public class SanimalImportController implements Initializable
 								.isEqualTo(-1))
 						// Make sure to negate because we want to hide the arrow when the above things are true
 						.not());
-		// Bind the species list visibility to if a location has been picked. We use easy bind to avoid using javafx reflection here.
+		// Bind the species list visibility to if a location has been picked. We use easy bind to avoid using java reflection here.
 		this.speciesListView.disableProperty().bind(
 				// We begin by selecting the object we are listening for changes on
 				EasyBind.select(this.currentlySelectedImage)
@@ -297,6 +320,10 @@ public class SanimalImportController implements Initializable
 						.map(Objects::isNull)
 						// If we did not get an object with select object, we simply disable the list view by returning true.
 						.orElse(true));
+		// If the species list view is not visible, hide the species list view search
+		this.txtSpeciesSearch.disableProperty().bind(this.speciesListView.disabledProperty());
+		// If the species list view is not visible, hide the search reset button
+		this.btnResetSearch.disableProperty().bind(this.speciesListView.disabledProperty());
 
 		// The listener we will apply to each species entry list
 		// Here we use a magic number of 75. This is the height of a list cell. Unfortunately I have no other way of getting the cell height.
@@ -326,6 +353,23 @@ public class SanimalImportController implements Initializable
 				locationListView.getSelectionModel().select(currentlySelectedImage.getValue().getLocationTaken());
 			else
 				locationListView.getSelectionModel().clearSelection();
+		});
+
+		// When we press a key, we want to add the bound species to the species entry
+		this.mainPain.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+			// If we have a selected image
+			if (this.currentlySelectedImage.getValue() != null)
+			{
+				// We don't want to trigger keybindings if we're typing into the search box
+				if (!this.txtSpeciesSearch.isFocused())
+				{
+					// Filter the species list by correctly key-bound species, and add them to the current image
+					SanimalData.getInstance().getSpeciesList().filtered(boundSpecies -> boundSpecies.getKeyBinding() == event.getCode()).forEach(boundSpecies -> {
+						this.currentlySelectedImage.getValue().addSpecies(boundSpecies, 1);
+					});
+					event.consume();
+				}
+			}
 		});
 
 		// Initialize the fade transitions
@@ -637,11 +681,22 @@ public class SanimalImportController implements Initializable
 		// If the file chosen is a file and a directory process it
 		if (file != null && file.isDirectory())
 		{
+			long time = System.currentTimeMillis();
+			System.out.println("Begun loading");
+
 			// Convert the file to a recursive image directory data structure
 			ImageDirectory directory = DirectoryManager.loadDirectory(file);
 
+			System.out.println(System.currentTimeMillis() - time);
+			System.out.println("Begun removing empty");
+			time = System.currentTimeMillis();
+
 			// Remove any directories that are empty and contain no images
 			DirectoryManager.removeEmptyDirectories(directory);
+
+			System.out.println(System.currentTimeMillis() - time);
+			System.out.println("Begun species tagging");
+			time = System.currentTimeMillis();
 
 			// Check the list of pictures to see if there's any new species that were not there before
 			List<Species> newSpecies = DirectoryManager.detectRegisterAndTagSpecies(directory);
@@ -655,6 +710,10 @@ public class SanimalImportController implements Initializable
 				alert.showAndWait();
 			}
 
+			System.out.println(System.currentTimeMillis() - time);
+			System.out.println("Begun location tagging");
+			time = System.currentTimeMillis();
+
 			// Check the list of pictures to see if there's any new locations that need to be added
 			List<Location> newLocations = DirectoryManager.detectRegisterAndTagLocations(directory);
 			if (!newLocations.isEmpty())
@@ -667,8 +726,16 @@ public class SanimalImportController implements Initializable
 				alert.showAndWait();
 			}
 
+			System.out.println(System.currentTimeMillis() - time);
+			System.out.println("Begun adding");
+			time = System.currentTimeMillis();
+
 			// Add the directory to the image tree
 			SanimalData.getInstance().getImageTree().addChild(directory);
+
+			System.out.println(System.currentTimeMillis() - time);
+			System.out.println("Done!");
+			time = System.currentTimeMillis();
 		}
 		// Consume the event
 		actionEvent.consume();
@@ -880,6 +947,16 @@ public class SanimalImportController implements Initializable
 	public void onRightArrowClicked(ActionEvent actionEvent)
 	{
 		this.imageTree.getSelectionModel().selectNext();
+	}
+
+	/**
+	 * When we click the X button we want to reset the species search box
+	 *
+	 * @param actionEvent ignored
+	 */
+	public void resetSpeciesSearch(ActionEvent actionEvent)
+	{
+		this.txtSpeciesSearch.clear();
 	}
 
 	///

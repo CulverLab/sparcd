@@ -4,15 +4,15 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<?import javafx.scene.control.Tooltip?>
 <HBox fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="80.0" spacing="5"
-      fx:controller="controller.SpeciesListEntryController" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1">
+      xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SpeciesListEntryController">
     <stylesheets>
         <URL value="@SpeciesListEntry.css"/>
     </stylesheets>
@@ -41,6 +41,12 @@
                         <Tooltip text="Scientific Species Name"/>
                     </tooltip>
                 </Label>
+                <HBox GridPane.rowIndex="2">
+                    <children>
+                        <Button fx:id="btnPreview" text="Preview"/>
+                        <Button fx:id="btnKeybind" mnemonicParsing="false"/>
+                    </children>
+                </HBox>
             </children>
         </GridPane>
     </children>

@@ -1,7 +1,10 @@
 package model.species;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.input.KeyCode;
 import model.image.ImageEntry;
 
 import java.io.File;
@@ -27,6 +30,8 @@ public class Species implements Serializable
     private StringProperty speciesIconURL = new SimpleStringProperty();
     // The species ID
     private final Integer uniqueID;
+    // Each species can have a keybind that represents that species. This is used in the GUI to quickly tag species
+    private final ObjectProperty<KeyCode> keyBinding = new SimpleObjectProperty<>(null);
 
     // Default uninitialized value
     public static final String UNINITIALIZED = "UNINITIALIZED";
@@ -139,6 +144,14 @@ public class Species implements Serializable
     }
 
     /**
+     * @return The name property
+     */
+    public StringProperty nameProperty()
+    {
+        return this.name;
+    }
+
+    /**
      * Set the scientific name of the species
      * @param scientificName The new scientific name of the species
      */
@@ -153,6 +166,14 @@ public class Species implements Serializable
     public String getScientificName()
     {
         return scientificName.getValue();
+    }
+
+    /**
+     * @return The scientific name property
+     */
+    public StringProperty scientificNameProperty()
+    {
+        return this.scientificName;
     }
 
     /**
@@ -173,35 +194,44 @@ public class Species implements Serializable
     }
 
     /**
+     * @return The species icon URL property
+     */
+    public StringProperty speciesIconURLProperty()
+    {
+        return this.speciesIconURL;
+    }
+
+    /**
+     * Set the keybinding of this species
+     * @param keyBinding The new keybinding of the species
+     */
+    public void setKeyBinding(KeyCode keyBinding)
+    {
+        this.keyBinding.setValue(keyBinding);
+    }
+
+    /**
+     * @return The keybinding of this species as a key code
+     */
+    public KeyCode getKeyBinding()
+    {
+        return this.keyBinding.getValue();
+    }
+
+    /**
+     * @return The keybinding property of this species
+     */
+    public ObjectProperty<KeyCode> keyBindingProperty()
+    {
+        return keyBinding;
+    }
+
+    /**
      * Return a string representing the species
      */
     @Override
     public String toString()
     {
         return this.getName();
-    }
-
-    /**
-     * @return The name property
-     */
-    public StringProperty getNameProperty()
-    {
-        return this.name;
-    }
-
-    /**
-     * @return The scientific name property
-     */
-    public StringProperty getScientificNameProperty()
-    {
-        return this.scientificName;
-    }
-
-    /**
-     * @return The species icon URL property
-     */
-    public StringProperty getSpeciesIconURLProperty()
-    {
-        return this.speciesIconURL;
     }
 }

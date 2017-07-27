@@ -79,7 +79,6 @@ public class DirectoryManager
 									// Check to see if we already have a species with the scientific and regular name
 									Optional<Species> correctSpecies = SanimalData.getInstance().getSpeciesList().stream().filter(species -> StringUtils.equalsIgnoreCase(species.getName(), speciesName) && StringUtils.equalsIgnoreCase(species.getScientificName(), speciesScientificName)).findFirst();
 
-
 									// We need to parse a string into an integer so ensure that this doesn't crash using a try & catch
 									try
 									{
@@ -178,7 +177,7 @@ public class DirectoryManager
 								}
 								else
 								{
-									Location newLocation = new Location(locationName, locationLatitude, locationLongitude, Double.parseDouble(locationElevation));
+									Location newLocation = new Location(locationName, (double) Math.round((locationLatitude * 1000.0) / 1000.0), (double) Math.round((locationLongitude * 1000.0) / 1000.0), Double.parseDouble(locationElevation));
 									SanimalData.getInstance().getLocationList().add(newLocation);
 									newlyAddedLocations.add(newLocation);
 									current.setLocationTaken(newLocation);

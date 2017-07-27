@@ -52,7 +52,7 @@ public class SanimalData
     private SanimalData()
     {
         // Create the species list, and add some default species
-        this.speciesList = FXCollections.observableArrayList(species -> new Observable[]{species.getNameProperty(), species.getScientificNameProperty(), species.getSpeciesIconURLProperty()});
+        this.speciesList = FXCollections.observableArrayList(species -> new Observable[]{species.nameProperty(), species.scientificNameProperty(), species.speciesIconURLProperty()});
 
         this.loadSpeciesFromFile();
 
