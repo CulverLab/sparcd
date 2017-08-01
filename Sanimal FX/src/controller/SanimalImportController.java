@@ -852,6 +852,8 @@ public class SanimalImportController implements Initializable
 					if (currentlySelectedImage.getValue() != null)
 					{
 						currentlySelectedImage.getValue().addSpecies(toAdd.get(), 1);
+						// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
+						this.imageTree.requestFocus();
 						success = true;
 					}
 			}
