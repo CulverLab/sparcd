@@ -1,5 +1,6 @@
 package controller;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
@@ -20,6 +21,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.controlsfx.control.SegmentedButton;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
+import org.controlsfx.validation.decoration.GraphicValidationDecoration;
+import org.controlsfx.validation.decoration.StyleClassValidationDecoration;
+import org.controlsfx.validation.decoration.ValidationDecoration;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -77,6 +81,9 @@ public class LocationCreatorController implements Initializable
 	public ToggleButton tbnFeet;
 	@FXML
 	public SegmentedButton sbnUnits;
+
+	@FXML
+	public Button btnConfirm;
 
 	///
 	/// FXML bound fields end
@@ -140,72 +147,6 @@ public class LocationCreatorController implements Initializable
 		this.tbnMeters.addEventFilter(MouseEvent.MOUSE_CLICKED, consumeMouseEventfilter);
 		this.tbnMeters.addEventFilter(MouseEvent.MOUSE_RELEASED, consumeMouseEventfilter);
 
-		// SIDE NOTE: You must have 1 formatter per field so we can't just create 1 double formatter =(
-
-		// Set the text formatter for latitude to accept any doubles
-		this.txtLatitude.setTextFormatter(new TextFormatter<Double>(new DoubleStringConverter(), 0.0, change ->
-		{
-			String newText = change.getControlNewText();
-			if (this.isValidDouble(newText))
-				return change;
-			else
-				return null;
-		}));
-		// Set the text formatter for longitude to accept any doubles
-		this.txtLongitude.setTextFormatter(new TextFormatter<Double>(new DoubleStringConverter(), 0.0, change ->
-		{
-			String newText = change.getControlNewText();
-			if (this.isValidDouble(newText))
-				return change;
-			else
-				return null;
-		}));
-		// Set the text formatter for the letter in UTM to accept any single character
-		this.txtLetter.setTextFormatter(new TextFormatter<Character>(new CharacterStringConverter(), null, change ->
-		{
-			String character = change.getControlNewText();
-			if (character.length() == 1 && Character.isLetter(character.charAt(0)))
-				return change;
-			else
-				return null;
-		}));
-		// Set the text formatter for the zone in UTM to be an integer
-		this.txtZone.setTextFormatter(new TextFormatter<Integer>(new IntegerStringConverter(), 1, change ->
-		{
-			String newText = change.getControlNewText();
-			if (this.isValidInteger(newText))
-				return change;
-			else
-				return null;
-		}));
-		// Set the text formatter for the easting to accept any doubles
-		this.txtEasting.setTextFormatter(new TextFormatter<Double>(new DoubleStringConverter(), 0.0, change ->
-		{
-			String newText = change.getControlNewText();
-			if (this.isValidDouble(newText))
-				return change;
-			else
-				return null;
-		}));
-		// Set the text formatter for the northing to accept any doubles
-		this.txtNorthing.setTextFormatter(new TextFormatter<Double>(new DoubleStringConverter(), 0.0, change ->
-		{
-			String newText = change.getControlNewText();
-			if (this.isValidDouble(newText))
-				return change;
-			else
-				return null;
-		}));
-		// Set the text formatter for the elevation to accept any doubles
-		this.txtElevation.setTextFormatter(new TextFormatter<Double>(new DoubleStringConverter(), 0.0, change ->
-		{
-			String newText = change.getControlNewText();
-			if (this.isValidDouble(newText))
-				return change;
-			else
-				return null;
-		}));
-
 		// We enable decoration so that errors are represented by a red outline of the text box
 		this.latLngValidator.setErrorDecorationEnabled(true);
 		this.UTMValidator.setErrorDecorationEnabled(true);
@@ -246,6 +187,13 @@ public class LocationCreatorController implements Initializable
 			if (newValue && !this.latLngValidator.isInvalid())
 				this.recalculateUTMFromLatLng();
 		}));
+
+		// Disable the confirm button if the validators are set to invalid
+		this.btnConfirm.disableProperty().bind(
+				this.basicFieldValidator.invalidProperty()
+						.or(Bindings.when(this.rbnLatLng.selectedProperty())
+										.then(this.latLngValidator.invalidProperty())
+										.otherwise(this.UTMValidator.invalidProperty())));
 	}
 
 	/**
@@ -279,23 +227,19 @@ public class LocationCreatorController implements Initializable
 	 */
 	public void confirmPressed(ActionEvent actionEvent)
 	{
-		// If the fields are valid...
-		if (!this.basicFieldValidator.isInvalid() && (!this.latLngValidator.isInvalid() || !this.UTMValidator.isInvalid()))
-		{
-			// We store the data as Lat & Lng, so if UTM is selected, recalculate them from UTM since that must be valid by the above condition
-			if (this.rbnUTM.isSelected())
-				this.recalculateLatLngFromUTM();
+		// We store the data as Lat & Lng, so if UTM is selected, recalculate them from UTM since that must be valid by the above condition
+		if (this.rbnUTM.isSelected())
+			this.recalculateLatLngFromUTM();
 
-			// Set the location's fields, and close the editor window
-			locationToEdit.setName(newName.getValue());
-			locationToEdit.setLat(Double.parseDouble(newLatitude.getValue()));
-			locationToEdit.setLng(Double.parseDouble(newLongitude.getValue()));
-			if (this.tbnMeters.isSelected())
-				locationToEdit.setElevation((double) Math.round(Double.parseDouble(newElevation.getValue())));
-			else if (this.tbnFeet.isSelected())
-				locationToEdit.setElevation((double) Math.round(Double.parseDouble(newElevation.getValue()) * FEET_TO_METERS));
-			((Stage) this.txtName.getScene().getWindow()).close();
-		}
+		// Set the location's fields, and close the editor window
+		locationToEdit.setName(newName.getValue());
+		locationToEdit.setLat(Double.parseDouble(newLatitude.getValue()));
+		locationToEdit.setLng(Double.parseDouble(newLongitude.getValue()));
+		if (this.tbnMeters.isSelected())
+			locationToEdit.setElevation((double) Math.round(Double.parseDouble(newElevation.getValue())));
+		else if (this.tbnFeet.isSelected())
+			locationToEdit.setElevation((double) Math.round(Double.parseDouble(newElevation.getValue()) * FEET_TO_METERS));
+		((Stage) this.txtName.getScene().getWindow()).close();
 	}
 
 	/**
@@ -339,8 +283,7 @@ public class LocationCreatorController implements Initializable
 	{
 		try
 		{
-			Double.parseDouble(number);
-			return true;
+			return !Double.isNaN(Double.parseDouble(number));
 		}
 		catch (NumberFormatException ignored)
 		{

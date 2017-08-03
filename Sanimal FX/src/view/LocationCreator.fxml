@@ -100,7 +100,7 @@
         </HBox>
         <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="4">
             <children>
-                <Button mnemonicParsing="false" onAction="#confirmPressed" text="Confirm"/>
+                <Button fx:id="btnConfirm" mnemonicParsing="false" onAction="#confirmPressed" text="Confirm"/>
                 <Button mnemonicParsing="false" onAction="#cancelPressed" text="Cancel"/>
             </children>
         </HBox>
