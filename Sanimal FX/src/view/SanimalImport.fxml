@@ -11,6 +11,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -35,13 +36,16 @@
                     </children>
                 </HBox>
                 <ListView fx:id="speciesListView" onDragDetected="#speciesListDrag" VBox.vgrow="ALWAYS" />
-                <HBox alignment="CENTER" maxHeight="60" minHeight="60" spacing="10">
+                <FlowPane alignment="CENTER" hgap="5" vgap="10">
+                    <padding>
+                        <Insets bottom="20" left="5" right="5" top="20" />
+                    </padding>
                     <children>
                         <Button mnemonicParsing="false" onAction="#addNewSpecies" styleClass="addBtn" text="New Species" />
                         <Button mnemonicParsing="false" onAction="#editCurrentSpecies" styleClass="editBtn" text="Edit" />
                         <Button mnemonicParsing="false" onAction="#deleteCurrentSpecies" styleClass="deleteBtn" text="Delete" />
                     </children>
-                </HBox>
+                </FlowPane>
             </children>
         </VBox>
         <BorderPane>
@@ -84,7 +88,7 @@
                 </StackPane>
             </center>
             <bottom>
-                <GridPane maxHeight="190" minHeight="190" BorderPane.alignment="CENTER">
+                <GridPane minHeight="200" prefHeight="200" prefWidth="655.0" BorderPane.alignment="CENTER">
                     <padding>
                         <Insets left="5" right="5" top="5" />
                     </padding>
@@ -94,12 +98,12 @@
                         <ColumnConstraints hgrow="NEVER" maxWidth="200.0" minWidth="200.0" />
                     </columnConstraints>
                     <rowConstraints>
-                        <RowConstraints maxHeight="30.0" minHeight="30.0" />
-                        <RowConstraints maxHeight="30.0" minHeight="30.0" />
-                        <RowConstraints maxHeight="30.0" minHeight="30.0" />
-                        <RowConstraints maxHeight="30.0" minHeight="30.0" />
-                        <RowConstraints maxHeight="30.0" minHeight="30.0" />
-                        <RowConstraints />
+                        <RowConstraints minHeight="30.0" />
+                        <RowConstraints minHeight="30.0" />
+                        <RowConstraints minHeight="30.0" />
+                        <RowConstraints minHeight="30.0" />
+                        <RowConstraints minHeight="30.0" />
+                        <RowConstraints minHeight="30.0" />
                     </rowConstraints>
                     <children>
                         <VBox styleClass="lightBorder" BorderPane.alignment="CENTER" GridPane.columnSpan="1" GridPane.rowSpan="6">
@@ -107,14 +111,17 @@
                                 <Insets right="10" />
                             </GridPane.margin>
                             <children>
-                                <ListView fx:id="locationListView" orientation="HORIZONTAL" styleClass="locationList" VBox.vgrow="ALWAYS" />
-                                <HBox alignment="CENTER" maxHeight="60" minHeight="60" spacing="20">
+                                <ListView fx:id="locationListView" orientation="HORIZONTAL" styleClass="locationList" />
+                                <FlowPane alignment="CENTER" hgap="5" vgap="10">
+                                    <padding>
+                                        <Insets bottom="20" left="5" right="5" top="20" />
+                                    </padding>
                                     <children>
                                         <Button mnemonicParsing="false" onAction="#addNewLocation" styleClass="addBtn" text="New Location" />
                                         <Button mnemonicParsing="false" onAction="#editCurrentLocation" styleClass="editBtn" text="Edit" />
                                         <Button mnemonicParsing="false" onAction="#deleteCurrentLocation" styleClass="deleteBtn" text="Delete" />
                                     </children>
-                                </HBox>
+                                </FlowPane>
                             </children>
                         </VBox>
                         <Label text="Date Taken: " GridPane.columnIndex="1" />
@@ -135,13 +142,16 @@
         <VBox prefWidth="310" styleClass="lightBorder" BorderPane.alignment="CENTER">
             <children>
                 <TreeViewAutomatic fx:id="imageTree" VBox.vgrow="ALWAYS" />
-                <HBox alignment="CENTER" maxHeight="60" minHeight="60" spacing="10">
+                <FlowPane alignment="CENTER" hgap="5" vgap="10">
+                    <padding>
+                        <Insets bottom="20" left="5" right="5" top="20" />
+                    </padding>
                     <children>
                         <Button fx:id="btnSave" mnemonicParsing="false" onAction="#saveImages" styleClass="saveBtn" text="Save" />
                         <Button mnemonicParsing="false" onAction="#importImages" styleClass="importBtn" text="Import Images" />
                         <Button mnemonicParsing="false" onAction="#deleteImages" styleClass="deleteBtn" text="Delete" />
                     </children>
-                </HBox>
+                </FlowPane>
             </children>
         </VBox>
     </items>

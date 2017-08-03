@@ -106,5 +106,5 @@
 }
 
 .clearPreviewBtn:hover {
-    -fx-background-color: lightyellow;
+    -fx-background-color: radial-gradient(focus-distance 0%, center 50% 50%, radius 55%, darkred, white);
 }
