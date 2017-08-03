@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.StackPane?>
 
 <?import org.controlsfx.control.SegmentedButton?>
-<GridPane minHeight="240" minWidth="400" prefHeight="240" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+<GridPane minHeight="280" minWidth="450" maxHeight="280" maxWidth="450.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
           fx:controller="controller.LocationCreatorController">
     <stylesheets>
         <URL value="@LocationCreator.css"/>
@@ -24,15 +24,15 @@
         <Insets left="5" right="5"/>
     </padding>
     <columnConstraints>
-        <ColumnConstraints hgrow="SOMETIMES" maxWidth="180.0" minWidth="180.0" prefWidth="180.0"/>
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="180.0" minWidth="180.0"/>
         <ColumnConstraints hgrow="SOMETIMES"/>
     </columnConstraints>
     <rowConstraints>
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
-        <RowConstraints maxHeight="120" minHeight="60.0" prefHeight="60" vgrow="SOMETIMES"/>
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
+        <RowConstraints maxHeight="35" minHeight="35.0" />
+        <RowConstraints maxHeight="35" minHeight="35.0" />
+        <RowConstraints maxHeight="140" minHeight="140.0" vgrow="SOMETIMES"/>
+        <RowConstraints maxHeight="35" minHeight="35.0" />
+        <RowConstraints maxHeight="35" minHeight="35.0" />
     </rowConstraints>
     <children>
         <Label text="Name: "/>
@@ -53,8 +53,8 @@
                     <ColumnConstraints hgrow="SOMETIMES"/>
                 </columnConstraints>
                 <rowConstraints>
-                    <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
-                    <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
+                    <RowConstraints maxHeight="35" minHeight="35.0"/>
+                    <RowConstraints maxHeight="35" minHeight="35.0"/>
                 </rowConstraints>
                 <children>
                     <Label text="Latitude (+/-85): " GridPane.rowIndex="0"/>
@@ -69,10 +69,10 @@
                     <ColumnConstraints hgrow="SOMETIMES"/>
                 </columnConstraints>
                 <rowConstraints>
-                    <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
-                    <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
-                    <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
-                    <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
+                    <RowConstraints maxHeight="35" minHeight="35.0"/>
+                    <RowConstraints maxHeight="35" minHeight="35.0"/>
+                    <RowConstraints maxHeight="35" minHeight="35.0"/>
+                    <RowConstraints maxHeight="35" minHeight="35.0"/>
                 </rowConstraints>
                 <children>
                     <Label text="Letter (C-X excluding I and O): " GridPane.rowIndex="0"/>
@@ -87,7 +87,7 @@
             </GridPane>
         </StackPane>
         <Label text="Elevation: " GridPane.rowIndex="3"/>
-        <HBox GridPane.columnIndex="1" GridPane.rowIndex="3">
+        <HBox alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="3">
             <children>
                 <TextField fx:id="txtElevation" HBox.hgrow="ALWAYS"/>
                 <SegmentedButton fx:id="sbnUnits" HBox.hgrow="NEVER">
@@ -98,10 +98,7 @@
                 </SegmentedButton>
             </children>
         </HBox>
-        <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-            <padding>
-                <Insets bottom="0" left="5" right="5" top="0"/>
-            </padding>
+        <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="4">
             <children>
                 <Button mnemonicParsing="false" onAction="#confirmPressed" text="Confirm"/>
                 <Button mnemonicParsing="false" onAction="#cancelPressed" text="Cancel"/>
