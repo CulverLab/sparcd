@@ -40,17 +40,17 @@
         <TextField fx:id="txtImageURL" GridPane.columnIndex="1" GridPane.rowIndex="4" />
         <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
             <children>
-                <Button mnemonicParsing="false" onAction="#grabFileName" prefWidth="60" text="Browse" />
-                <Label fx:id="lblFileName" text="">
+                <Button mnemonicParsing="false" onAction="#grabFileName" text="Browse" />
+                <Label fx:id="lblFileName" HBox.hgrow="ALWAYS">
                     <padding>
-                        <Insets bottom="0" left="5" right="5" top="0" />
+                        <Insets left="5" right="5" />
                     </padding>
                 </Label>
             </children>
         </HBox>
       <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5" alignment="CENTER_RIGHT">
           <padding>
-              <Insets bottom="0" left="5" right="5" top="0" />
+              <Insets left="5" right="5" />
           </padding>
           <children>
               <Button mnemonicParsing="false" text="Confirm" onAction="#confirmPressed" />
