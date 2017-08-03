@@ -76,19 +76,19 @@
             <bottom>
                 <GridPane maxHeight="190" minHeight="190" BorderPane.alignment="CENTER">
                     <padding>
-                        <Insets bottom="0" left="5" right="5" top="5"/>
+                        <Insets left="5" right="5" top="5"/>
                     </padding>
                     <columnConstraints>
-                        <ColumnConstraints hgrow="SOMETIMES"/>
-                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="100.0" minWidth="100.0"/>
-                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="200.0"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints hgrow="NEVER" maxWidth="100.0" minWidth="100.0"/>
+                        <ColumnConstraints hgrow="NEVER" maxWidth="200.0" minWidth="200.0"/>
                     </columnConstraints>
                     <rowConstraints>
-                        <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0"/>
-                        <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0"/>
-                        <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0"/>
-                        <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0"/>
-                        <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0"/>
+                        <RowConstraints maxHeight="30.0" minHeight="30.0"/>
+                        <RowConstraints maxHeight="30.0" minHeight="30.0"/>
+                        <RowConstraints maxHeight="30.0" minHeight="30.0"/>
+                        <RowConstraints maxHeight="30.0" minHeight="30.0"/>
+                        <RowConstraints maxHeight="30.0" minHeight="30.0"/>
                         <RowConstraints/>
                     </rowConstraints>
                     <children>
@@ -138,7 +138,7 @@
                     </children>
                 </HBox>
                 <ListView fx:id="speciesListView" onDragDetected="#speciesListDrag" VBox.vgrow="ALWAYS"/>
-                <HBox alignment="CENTER" maxHeight="60" maxWidth="310" minHeight="60" minWidth="310" prefHeight="60" spacing="10">
+                <HBox alignment="CENTER" maxHeight="60" minHeight="60" spacing="10">
                     <children>
                         <Button mnemonicParsing="false" onAction="#addNewSpecies" styleClass="addBtn" text="New Species"/>
                         <Button mnemonicParsing="false" onAction="#editCurrentSpecies" styleClass="editBtn" text="Edit"/>
@@ -149,10 +149,10 @@
         </VBox>
     </left>
     <right>
-        <VBox maxWidth="310" minWidth="310" prefHeight="200.0" styleClass="lightBorder" BorderPane.alignment="CENTER">
+        <VBox prefWidth="310" maxWidth="310" minWidth="310" styleClass="lightBorder" BorderPane.alignment="CENTER">
             <children>
                 <TreeViewAutomatic fx:id="imageTree" VBox.vgrow="ALWAYS"/>
-                <HBox alignment="CENTER" maxHeight="60" maxWidth="310" minHeight="60" minWidth="310" prefHeight="60" spacing="10">
+                <HBox alignment="CENTER" maxHeight="60" minHeight="60" spacing="10">
                     <children>
                         <Button fx:id="btnSave" mnemonicParsing="false" onAction="#saveImages" styleClass="saveBtn" text="Save"/>
                         <Button mnemonicParsing="false" onAction="#importImages" styleClass="importBtn" text="Import Images"/>
