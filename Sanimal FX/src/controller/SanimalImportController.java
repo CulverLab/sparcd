@@ -23,7 +23,6 @@ import javafx.scene.input.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -126,7 +125,7 @@ public class SanimalImportController implements Initializable
 
 	// The main pane holding everything
 	@FXML
-	public BorderPane mainPain;
+	public SplitPane mainPane;
 
 	// The save button to save all current images
 	@FXML
@@ -372,7 +371,7 @@ public class SanimalImportController implements Initializable
 		});
 
 		// When we press a key, we want to add the bound species to the species entry
-		this.mainPain.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+		this.mainPane.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
 			// If we have a selected image
 			if (this.currentlySelectedImage.getValue() != null)
 			{
