@@ -18,6 +18,10 @@
     -fx-graphic: url("../images/importWindow/reset16.png");
 }
 
+.saveBtn {
+    -fx-graphic: url("../images/importWindow/save16.png");
+}
+
 .leftBtn {
     -fx-graphic: url("../images/importWindow/leftArrow.png");
     -fx-scale-x: 40%;
@@ -60,6 +64,7 @@
 
 .transparentListView {
     -fx-background-color: transparent;
+    -fx-opacity: 40%;
 }
 
 .transparentListView .list-cell {
@@ -91,5 +96,15 @@
 }
 
 .sbrTaskProgress {
-    -fx-opacity: 60%;
+    -fx-opacity: 80%;
+}
+
+.clearPreviewBtn {
+    -fx-background-radius: 50%;
+    -fx-background-image: url("../images/importWindow/delete.png");
+    -fx-background-position: center;
+}
+
+.clearPreviewBtn:hover {
+    -fx-background-color: lightyellow;
 }

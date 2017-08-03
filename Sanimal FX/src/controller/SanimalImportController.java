@@ -1,12 +1,16 @@
 package controller;
 
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -125,6 +129,16 @@ public class SanimalImportController implements Initializable
 	// The main pane holding everything
 	@FXML
 	public BorderPane mainPain;
+
+	// The save button to save all current images
+	@FXML
+	public Button btnSave;
+
+	// The image pane used to do the species preview operation
+	@FXML
+	public StackPane speciesPreviewPane;
+	@FXML
+	public ImageView imageSpeciesPreview;
 
 	// The list view containing the species
 	@FXML
@@ -278,15 +292,15 @@ public class SanimalImportController implements Initializable
 		// Finally bind the date taken's disable property if an adjustable image is selected
 		this.txtDateTaken.textProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getDateTakenFormatted).orElse(""));
 		// Bind the image preview to the selected image from the right side tree view
-		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).map(imageEntry -> new Image(imageEntry.getFile().toURI().toString())).orElse(speciesPreviewImage));
+		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).map(imageEntry -> new Image(imageEntry.getFile().toURI().toString())));
 		// Bind the species entry list view items to the selected image species present
 		this.speciesEntryListView.itemsProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getSpeciesPresent));
-		// Hide the progress bar when progress == 1
-		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().getPendingTasksProperty().isEqualTo(0).not());
+		// Hide the progress bar when tasks remaining == 1
+		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().pendingTasksProperty().isEqualTo(0).not());
 		// Bind the progress bar's text property to tasks remaining
-		this.sbrTaskProgress.textProperty().bind(SanimalData.getInstance().getPendingTasksProperty().asString("Tasks remaining: %d"));
-		// Bind the progress bar's progress property go back and forth if at least one task is present. We do this by setting it to -1
-		this.sbrTaskProgress.progressProperty().bind(Bindings.when(SanimalData.getInstance().getPendingTasksProperty().greaterThan(0)).then(-1).otherwise(1));
+		this.sbrTaskProgress.textProperty().bind(EasyBind.select(SanimalData.getInstance().currentTaskProperty()).selectObject(Task::messageProperty).map(message -> "Tasks (" + SanimalData.getInstance().pendingTasksProperty().asString("%d").getValue() + "): " + message));
+		// Bind the progress bar's progress property to the current task's progress
+		this.sbrTaskProgress.progressProperty().bind(EasyBind.select(SanimalData.getInstance().currentTaskProperty()).selectObject(Task::progressProperty));
 		// Bind the left arrow's visibility property to if there is a previous item available
 		this.btnLeftArrow.visibleProperty().bind(
 				this.imageTree.getSelectionModel().selectedIndexProperty()
@@ -324,6 +338,10 @@ public class SanimalImportController implements Initializable
 		this.txtSpeciesSearch.disableProperty().bind(this.speciesListView.disabledProperty());
 		// If the species list view is not visible, hide the search reset button
 		this.btnResetSearch.disableProperty().bind(this.speciesListView.disabledProperty());
+		// When we preview an image, bind the image property to the image view
+		this.imageSpeciesPreview.imageProperty().bind(this.speciesPreviewImage);
+		// When we get a new species to preview, we show the preview pane
+		this.speciesPreviewPane.visibleProperty().bind(this.speciesPreviewImage.isNotNull());
 
 		// The listener we will apply to each species entry list
 		// Here we use a magic number of 75. This is the height of a list cell. Unfortunately I have no other way of getting the cell height.
@@ -681,38 +699,80 @@ public class SanimalImportController implements Initializable
 		// If the file chosen is a file and a directory process it
 		if (file != null && file.isDirectory())
 		{
-			// Convert the file to a recursive image directory data structure
-			ImageDirectory directory = DirectoryManager.loadDirectory(file);
-
-			// Remove any directories that are empty and contain no images
-			DirectoryManager.removeEmptyDirectories(directory);
-
-			// Check the list of pictures to see if there's any new species that were not there before
-			List<Species> newSpecies = DirectoryManager.detectRegisterAndTagSpecies(directory);
-			if (!newSpecies.isEmpty())
+			SanimalData.getInstance().addTask(new Task<Void>()
 			{
-				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-				alert.initOwner(SanimalImportController.this.imagePreview.getScene().getWindow());
-				alert.setTitle("Species Added");
-				alert.setHeaderText("New Species Were Added");
-				alert.setContentText("Species found tagged on these images were automatically added to the list.\nThese include: " + newSpecies.stream().map(Species::getName).collect(Collectors.joining(", ")));
-				alert.showAndWait();
-			}
+				@Override
+				protected Void call() throws Exception
+				{
+					final Long MAX_WORK = 6L;
 
-			// Check the list of pictures to see if there's any new locations that need to be added
-			List<Location> newLocations = DirectoryManager.detectRegisterAndTagLocations(directory);
-			if (!newLocations.isEmpty())
-			{
-				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-				alert.initOwner(SanimalImportController.this.imagePreview.getScene().getWindow());
-				alert.setTitle("Locations Added");
-				alert.setHeaderText("New Locations Were Added");
-				alert.setContentText("Locations found tagged on these images were automatically added to the list.\nThese include: " + newLocations.stream().map(Location::getName).collect(Collectors.joining(", ")));
-				alert.showAndWait();
-			}
+					this.updateProgress(1, MAX_WORK);
+					this.updateMessage("Loading directory...");
 
-			// Add the directory to the image tree
-			SanimalData.getInstance().getImageTree().addChild(directory);
+					// Convert the file to a recursive image directory data structure
+					ImageDirectory directory = DirectoryManager.loadDirectory(file);
+
+					this.updateProgress(2, MAX_WORK);
+					this.updateMessage("Removing empty directories...");
+
+					// Remove any directories that are empty and contain no images
+					DirectoryManager.removeEmptyDirectories(directory);
+
+					this.updateProgress(3, MAX_WORK);
+					this.updateMessage("Detecting species in images...");
+
+					// Check the list of pictures to see if there's any new species that were not there before
+					List<Species> newSpecies = DirectoryManager.detectRegisterAndTagSpecies(directory);
+
+					if (!newSpecies.isEmpty())
+					{
+						Platform.runLater(() ->
+						{
+							Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+							alert.initOwner(SanimalImportController.this.imagePreview.getScene().getWindow());
+							alert.setTitle("Species Added");
+							alert.setHeaderText("New Species Were Added");
+							alert.setContentText("Species found tagged on these images were automatically added to the list.\nThese include: " + newSpecies.stream().map(Species::getName).collect(Collectors.joining(", ")));
+							alert.show();
+							SanimalData.getInstance().getSpeciesList().addAll(newSpecies);
+						});
+					}
+
+					this.updateProgress(4, MAX_WORK);
+					this.updateMessage("Detecting locations in images...");
+
+					// Check the list of pictures to see if there's any new locations that need to be added
+					List<Location> newLocations = DirectoryManager.detectRegisterAndTagLocations(directory);
+
+					if (!newLocations.isEmpty())
+					{
+						Platform.runLater(() ->
+						{
+							Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+							alert.initOwner(SanimalImportController.this.imagePreview.getScene().getWindow());
+							alert.setTitle("Locations Added");
+							alert.setHeaderText("New Locations Were Added");
+							alert.setContentText("Locations found tagged on these images were automatically added to the list.\nThese include: " + newLocations.stream().map(Location::getName).collect(Collectors.joining(", ")));
+							alert.show();
+							SanimalData.getInstance().getLocationList().addAll(newLocations);
+						});
+					}
+
+					this.updateProgress(5, MAX_WORK);
+					this.updateMessage("Adding images to the visual tree...");
+
+					Platform.runLater(() ->
+					{
+						// Add the directory to the image tree
+						SanimalData.getInstance().getImageTree().addChild(directory);
+					});
+
+					this.updateProgress(6, MAX_WORK);
+					this.updateMessage("Finished!");
+
+					return null;
+				}
+			});
 		}
 		// Consume the event
 		actionEvent.consume();
@@ -736,6 +796,41 @@ public class SanimalImportController implements Initializable
 	}
 
 	/**
+	 * If the save images button is pressed
+	 *
+	 * @param actionEvent Button click is consumed
+	 */
+	public void saveImages(ActionEvent actionEvent)
+	{
+		// Hide the save button while saving is taking place
+		this.btnSave.setDisable(true);
+		Task<Void> writeImages = new Task<Void>()
+		{
+			@Override
+			protected Void call() throws Exception
+			{
+				// Write each image to disk
+				this.updateMessage("Writing images to disk...");
+				List<ImageEntry> allImages = SanimalData.getInstance().getAllImages();
+				// Go through each image and write it, then update the progress every 10th image (save performance)
+				for (int i = 0; i < allImages.size(); i++)
+				{
+					allImages.get(i).writeToDisk();
+					if (i % 10 == 0)
+						this.updateProgress(i, allImages.size());
+				}
+				return null;
+			}
+		};
+		// When the task completes in any manner, make the save button clickable again
+		writeImages.setOnSucceeded(event -> SanimalImportController.this.btnSave.setDisable(false));
+		writeImages.setOnFailed(event -> SanimalImportController.this.btnSave.setDisable(false));
+		writeImages.setOnCancelled(event -> SanimalImportController.this.btnSave.setDisable(false));
+		SanimalData.getInstance().addTask(writeImages);
+		actionEvent.consume();
+	}
+
+	/**
 	 * Reset the image view if the reset button is clicked or a new image is selected
 	 *
 	 * @param actionEvent consumed if an event is given, otherwise ignored
@@ -749,8 +844,11 @@ public class SanimalImportController implements Initializable
 		this.sldSaturation.setValue(0);
 		// Reset the image preview viewport to its default state
 		if (this.imagePreview.getImage() != null)
-			//                                                             this.imagePane.getWidth(), this.imagePane.getHeight()));
-			this.imagePreview.setViewport(new Rectangle2D(0, 0, this.imagePreview.getImage().getWidth(), this.imagePreview.getImage().getHeight()));
+		{
+			double imageWidth = this.imagePreview.getImage().getWidth();
+			double imageHeight = this.imagePreview.getImage().getHeight();
+			this.imagePreview.setViewport(new Rectangle2D(0, 0, imageWidth, imageHeight));
+		}
 		// Consume the event if possible
 		if (actionEvent != null)
 			actionEvent.consume();
@@ -768,7 +866,7 @@ public class SanimalImportController implements Initializable
 		if (selected != null)
 		{
 			// Can only drag & drop if we have an image selected
-			if (this.currentlySelectedImage.getValue() != null)
+			if (this.currentlySelectedImage.getValue() != null && !this.speciesPreviewPane.isVisible())
 			{
 				// Create a dragboard and begin the drag and drop
 				Dragboard dragboard = this.speciesListView.startDragAndDrop(TransferMode.ANY);
@@ -936,6 +1034,16 @@ public class SanimalImportController implements Initializable
 	public void resetSpeciesSearch(ActionEvent actionEvent)
 	{
 		this.txtSpeciesSearch.clear();
+	}
+
+	/**
+	 * When we click the species clear preview button in the top left
+	 *
+	 * @param actionEvent ignored
+	 */
+	public void clearSpeciesPreview(ActionEvent actionEvent)
+	{
+		this.speciesPreviewImage.setValue(null);
 	}
 
 	///

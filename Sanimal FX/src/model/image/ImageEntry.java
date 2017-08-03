@@ -34,6 +34,7 @@ import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputField;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 import org.apache.commons.io.FileUtils;
+import org.fxmisc.easybind.EasyBind;
 
 
 /**
@@ -82,27 +83,6 @@ public class ImageEntry extends ImageContainer
 		// Bind the image property to a conditional expression.
 		// The image is checked if the location is valid and the species present list is not empty
 		SELECTED_IMAGE_PROPERTY.bind(Bindings.createObjectBinding(() -> this.getLocationTaken() != null && this.getLocationTaken().locationValid() && !this.getSpeciesPresent().isEmpty() ? CHECKED_IMAGE_ICON : DEFAULT_IMAGE_ICON, this.locationTakenProperty, this.speciesPresent));
-
-		// We create the EXIF data we'll need on the image entry to write to later
-		// We do this in a thread since it takes some time to complete...
-		this.speciesPresent.addListener((ListChangeListener<SpeciesEntry>) change -> SanimalData.getInstance().addTask(new Task<Void>()
-		{
-			@Override
-			protected Void call() throws Exception
-			{
-				ImageEntry.this.rewriteSpecies();
-				return null;
-			}
-		}));
-		this.locationTakenProperty.addListener(change -> SanimalData.getInstance().addTask(new Task<Void>()
-		{
-			@Override
-			protected Void call() throws Exception
-			{
-				ImageEntry.this.rewriteLocation();
-				return null;
-			}
-		}));
 	}
 
 	/**
@@ -244,50 +224,46 @@ public class ImageEntry extends ImageContainer
 		return speciesPresent;
 	}
 
-	private void rewriteSpecies()
+	/**
+	 * Writes the species and location tagged in this image to the disk
+	 */
+	public void writeToDisk()
 	{
 		try
 		{
+			// Read the output set from the image entry
 			TiffOutputSet outputSet = MetadataUtils.readOutputSet(this);
 
+			// Grab the sanimal directory from the output set
 			TiffOutputDirectory directory = MetadataUtils.getOrCreateSanimalDirectory(outputSet);
+
+			// Remove the species field if it exists
 			directory.removeField(SanimalMetadataFields.SPECIES_ENTRY);
+			// Use the species format name, scientific name, count
 			String[] metaVals = this.speciesPresent.stream().map(speciesEntry -> speciesEntry.getSpecies().getName() + ", " + speciesEntry.getSpecies().getScientificName() + ", " + speciesEntry.getAmount()).toArray(String[]::new);
+			// Add the species entry field
 			directory.add(SanimalMetadataFields.SPECIES_ENTRY, metaVals);
 
+			// If we have a valid location, write that too
+			if (this.getLocationTaken() != null && this.getLocationTaken().locationValid())
+			{
+				// Write the lat/lng
+				outputSet.setGPSInDegrees(this.getLocationTaken().getLng(), this.getLocationTaken().getLat());
+				// Remove the location entry name and elevation
+				directory.removeField(SanimalMetadataFields.LOCATION_ENTRY);
+				// Add the new location entry name and elevation
+				directory.add(SanimalMetadataFields.LOCATION_ENTRY, this.getLocationTaken().getName(), this.getLocationTaken().getElevation().toString());
+			}
+
+			// Write the metadata
 			MetadataUtils.writeOutputSet(outputSet, this);
 		}
 		catch (ImageReadException | IOException | ImageWriteException e)
 		{
+			// If we get an error, print the error
 			System.err.println("Exception occurred when trying to read/write the metadata from the file: " + this.getFile().getAbsolutePath());
 			System.err.println("The error was: ");
 			e.printStackTrace();
-		}
-	}
-
-	private void rewriteLocation()
-	{
-		if (this.getLocationTaken().locationValid())
-		{
-			try
-			{
-				TiffOutputSet outputSet = MetadataUtils.readOutputSet(this);
-
-				if (this.getLocationTaken() != null && this.getLocationTaken().locationValid())
-					outputSet.setGPSInDegrees(this.getLocationTaken().getLng(), this.getLocationTaken().getLat());
-
-				TiffOutputDirectory directory = MetadataUtils.getOrCreateSanimalDirectory(outputSet);
-				directory.removeField(SanimalMetadataFields.LOCATION_ENTRY);
-				directory.add(SanimalMetadataFields.LOCATION_ENTRY, this.getLocationTaken().getName(), this.getLocationTaken().getElevation().toString());
-
-				MetadataUtils.writeOutputSet(outputSet, this);
-			}
-			catch (ImageReadException | IOException | ImageWriteException e)
-			{
-				System.err.println("Exception occurred when trying to read/write the metadata from the file: " + this.getFile().getAbsolutePath());
-				System.err.println("The error was: ");
-				e.printStackTrace();
-			}
 		}
 	}
 }

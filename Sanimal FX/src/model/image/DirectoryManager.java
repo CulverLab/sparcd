@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import model.SanimalData;
 import model.analysis.SanimalAnalysisUtils;
@@ -77,7 +78,14 @@ public class DirectoryManager
 									String speciesCount = StringUtils.trim(speciesEntryUnpacked[2]);
 
 									// Check to see if we already have a species with the scientific and regular name
-									Optional<Species> correctSpecies = SanimalData.getInstance().getSpeciesList().stream().filter(species -> StringUtils.equalsIgnoreCase(species.getName(), speciesName) && StringUtils.equalsIgnoreCase(species.getScientificName(), speciesScientificName)).findFirst();
+									Optional<Species> correctSpecies =
+											Stream.concat(
+													SanimalData.getInstance().getSpeciesList().stream(),
+													newlyAddedSpecies.stream())
+											.filter(species ->
+													StringUtils.equalsIgnoreCase(species.getName(), speciesName) &&
+													StringUtils.equalsIgnoreCase(species.getScientificName(), speciesScientificName))
+											.findFirst();
 
 									// We need to parse a string into an integer so ensure that this doesn't crash using a try & catch
 									try
@@ -91,7 +99,6 @@ public class DirectoryManager
 										else
 										{
 											Species newSpecies = new Species(speciesName, speciesScientificName);
-											SanimalData.getInstance().getSpeciesList().add(newSpecies);
 											newlyAddedSpecies.add(newSpecies);
 											current.addSpecies(newSpecies, Integer.parseInt(speciesCount));
 										}
@@ -162,8 +169,10 @@ public class DirectoryManager
 								// A latitude .00001 units apart from the original
 								// A longitude .00001 units apart from the original
 								// An elevation 25 units apart from the original location
-								Optional<Location> correctLocation = SanimalData.getInstance().getLocationList()
-										.stream()
+								Optional<Location> correctLocation =
+										Stream.concat(
+												SanimalData.getInstance().getLocationList().stream(),
+												newlyAddedLocations.stream())
 										.filter(location ->
 												StringUtils.equalsIgnoreCase(location.getName(), locationName) &&
 												Math.abs(location.getLat() - locationLatitude) < 0.00001 &&
@@ -178,7 +187,6 @@ public class DirectoryManager
 								else
 								{
 									Location newLocation = new Location(locationName, (double) Math.round((locationLatitude * 1000.0) / 1000.0), (double) Math.round((locationLongitude * 1000.0) / 1000.0), Double.parseDouble(locationElevation));
-									SanimalData.getInstance().getLocationList().add(newLocation);
 									newlyAddedLocations.add(newLocation);
 									current.setLocationTaken(newLocation);
 								}

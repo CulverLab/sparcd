@@ -41,7 +41,7 @@
                         <ListView fx:id="speciesEntryListView" maxHeight="0" maxWidth="390" minWidth="390" onMouseEntered="#onMouseEnteredSpeciesEntryList"
                                   onMouseExited="#onMouseExitedSpeciesEntryList" pickOnBounds="false" prefWidth="390" styleClass="transparentListView"
                                   StackPane.alignment="TOP_LEFT"/>
-                        <StatusBar fx:id="sbrTaskProgress" maxHeight="30" maxWidth="300" minHeight="30" minWidth="300" pickOnBounds="false"
+                        <StatusBar fx:id="sbrTaskProgress" maxHeight="30" minHeight="30" pickOnBounds="false"
                                    styleClass="sbrTaskProgress" text="" StackPane.alignment="BOTTOM_RIGHT">
                             <StackPane.margin>
                                 <Insets bottom="5"/>
@@ -58,6 +58,18 @@
                             </right>
                         </BorderPane>
                         <Region fx:id="imageAddOverlay" pickOnBounds="false" styleClass="importPane"/>
+                        <StackPane fx:id="speciesPreviewPane" >
+                            <ImageViewPane styleClass="imageViewBackground">
+                                <imageView>
+                                    <ImageView fx:id="imageSpeciesPreview" preserveRatio="true" styleClass="imageView"/>
+                                </imageView>
+                            </ImageViewPane>
+                            <Button StackPane.alignment="TOP_RIGHT" styleClass="clearPreviewBtn" onAction="#clearSpeciesPreview" minHeight="64" maxHeight="64" minWidth="64" maxWidth="64">
+                                <StackPane.margin>
+                                    <Insets top="10" right="5"/>
+                                </StackPane.margin>
+                            </Button>
+                        </StackPane>
                     </children>
                 </StackPane>
             </center>
@@ -140,8 +152,9 @@
         <VBox maxWidth="310" minWidth="310" prefHeight="200.0" styleClass="lightBorder" BorderPane.alignment="CENTER">
             <children>
                 <TreeViewAutomatic fx:id="imageTree" VBox.vgrow="ALWAYS"/>
-                <HBox alignment="CENTER" maxHeight="60" maxWidth="310" minHeight="60" minWidth="310" prefHeight="60" spacing="40">
+                <HBox alignment="CENTER" maxHeight="60" maxWidth="310" minHeight="60" minWidth="310" prefHeight="60" spacing="10">
                     <children>
+                        <Button fx:id="btnSave" mnemonicParsing="false" onAction="#saveImages" styleClass="saveBtn" text="Save"/>
                         <Button mnemonicParsing="false" onAction="#importImages" styleClass="importBtn" text="Import Images"/>
                         <Button mnemonicParsing="false" onAction="#deleteImages" styleClass="deleteBtn" text="Delete"/>
                     </children>
