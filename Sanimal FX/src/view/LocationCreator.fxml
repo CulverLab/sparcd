@@ -21,7 +21,7 @@
         <URL value="@LocationCreator.css"/>
     </stylesheets>
     <padding>
-        <Insets bottom="0" left="5" right="5" top="0"/>
+        <Insets left="5" right="5"/>
     </padding>
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" maxWidth="180.0" minWidth="180.0" prefWidth="180.0"/>
