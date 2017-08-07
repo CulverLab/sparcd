@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import library.ImageViewPane?>
+<?import library.TreeViewAutomatic?>
+<?import org.controlsfx.control.StatusBar?>
+
+<SplitPane fx:id="mainPane" dividerPositions="0.25, 0.75" minHeight="700" minWidth="1300" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalImportController">
+    <stylesheets>
+        <URL value="@SanimalImport.css" />
+    </stylesheets>
+    <items>
+        <VBox SplitPane.resizableWithParent="false" prefWidth="310" styleClass="lightBorder">
+            <children>
+                <HBox>
+                    <children>
+                        <TextField fx:id="txtSpeciesSearch" promptText="Search Species" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="btnResetSearch" onAction="#resetSpeciesSearch" styleClass="resetSearchBtn" HBox.hgrow="NEVER" />
+                    </children>
+                </HBox>
+                <ListView fx:id="speciesListView" onDragDetected="#speciesListDrag" VBox.vgrow="ALWAYS" />
+                <FlowPane alignment="CENTER" hgap="5" vgap="10">
+                    <padding>
+                        <Insets bottom="20" left="5" right="5" top="20" />
+                    </padding>
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#addNewSpecies" styleClass="addBtn" text="New Species" />
+                        <Button mnemonicParsing="false" onAction="#editCurrentSpecies" styleClass="editBtn" text="Edit" />
+                        <Button mnemonicParsing="false" onAction="#deleteCurrentSpecies" styleClass="deleteBtn" text="Delete" />
+                    </children>
+                </FlowPane>
+            </children>
+        </VBox>
+        <SplitPane dividerPositions="0.7" orientation="VERTICAL">
+            <items>
+                <StackPane fx:id="imagePane" onDragDropped="#speciesListDragDropped" onDragEntered="#speciesListDragEntered" onDragExited="#speciesListDragExited" onDragOver="#imagePaneDragOver" onMouseEntered="#imagePaneMouseEntered" onMouseExited="#imagePaneMouseExited">
+                    <children>
+                        <ImageViewPane fx:id="imagePreviewPane" styleClass="imageViewBackground">
+                            <imageView>
+                                <ImageView fx:id="imagePreview" onMouseClicked="#onImageClicked" onMouseDragged="#onImageDragged" onMousePressed="#onImagePressed" onScroll="#onImageScroll" preserveRatio="true" styleClass="imageView" />
+                            </imageView>
+                        </ImageViewPane>
+                        <ListView fx:id="speciesEntryListView" maxHeight="0" maxWidth="390" minWidth="390" onMouseEntered="#onMouseEnteredSpeciesEntryList" onMouseExited="#onMouseExitedSpeciesEntryList" pickOnBounds="false" prefWidth="390" styleClass="transparentListView" StackPane.alignment="TOP_LEFT" />
+                        <StatusBar fx:id="sbrTaskProgress" maxHeight="30" minHeight="30" pickOnBounds="false" styleClass="sbrTaskProgress" text="" StackPane.alignment="BOTTOM_RIGHT">
+                            <StackPane.margin>
+                                <Insets bottom="5" />
+                            </StackPane.margin>
+                        </StatusBar>
+                        <BorderPane pickOnBounds="false">
+                            <left>
+                                <Button fx:id="btnLeftArrow" mnemonicParsing="false" onAction="#onLeftArrowClicked" pickOnBounds="false" styleClass="leftBtn" BorderPane.alignment="CENTER" />
+                            </left>
+                            <right>
+                                <Button fx:id="btnRightArrow" mnemonicParsing="false" onAction="#onRightArrowClicked" pickOnBounds="false" styleClass="rightBtn" BorderPane.alignment="CENTER" />
+                            </right>
+                        </BorderPane>
+                        <Region fx:id="imageAddOverlay" pickOnBounds="false" styleClass="importPane" />
+                        <StackPane fx:id="speciesPreviewPane">
+                            <ImageViewPane styleClass="imageViewBackground">
+                                <imageView>
+                                    <ImageView fx:id="imageSpeciesPreview" preserveRatio="true" styleClass="imageView" />
+                                </imageView>
+                            </ImageViewPane>
+                            <Button maxHeight="64" maxWidth="64" minHeight="64" minWidth="64" onAction="#clearSpeciesPreview" styleClass="clearPreviewBtn" StackPane.alignment="TOP_RIGHT">
+                                <StackPane.margin>
+                                    <Insets right="5" top="10" />
+                                </StackPane.margin>
+                            </Button>
+                        </StackPane>
+                    </children>
+                </StackPane>
+                <SplitPane SplitPane.resizableWithParent="false" minHeight="200" prefHeight="200" prefWidth="655.0" >
+                    <VBox styleClass="lightBorder" GridPane.columnSpan="1" GridPane.rowSpan="6">
+                        <children>
+                            <ListView fx:id="locationListView" orientation="HORIZONTAL" styleClass="locationList" />
+                            <FlowPane alignment="CENTER" hgap="5" vgap="10">
+                                <padding>
+                                    <Insets bottom="20" left="5" right="5" top="20" />
+                                </padding>
+                                <children>
+                                    <Button mnemonicParsing="false" onAction="#addNewLocation" styleClass="addBtn" text="New Location" />
+                                    <Button mnemonicParsing="false" onAction="#editCurrentLocation" styleClass="editBtn" text="Edit" />
+                                    <Button mnemonicParsing="false" onAction="#deleteCurrentLocation" styleClass="deleteBtn" text="Delete" />
+                                </children>
+                            </FlowPane>
+                        </children>
+                    </VBox>
+                    <GridPane SplitPane.resizableWithParent="false" >
+                        <padding>
+                            <Insets left="5" right="5" top="5" />
+                        </padding>
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="NEVER" maxWidth="100.0" minWidth="100.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" />
+                        </columnConstraints>
+                        <rowConstraints>
+                            <RowConstraints vgrow="SOMETIMES" minHeight="30.0" />
+                            <RowConstraints vgrow="SOMETIMES" minHeight="30.0" />
+                            <RowConstraints vgrow="SOMETIMES" minHeight="30.0" />
+                            <RowConstraints vgrow="SOMETIMES" minHeight="30.0" />
+                            <RowConstraints vgrow="SOMETIMES" minHeight="30.0" />
+                            <RowConstraints vgrow="SOMETIMES" minHeight="30.0" />
+                        </rowConstraints>
+                        <children>
+                            <Label text="Date Taken: " GridPane.columnIndex="0" />
+                            <Label text="Brightness: " GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <Label text="Contrast" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                            <Label text="Hue: " GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                            <Label text="Saturation: " GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                            <TextField fx:id="txtDateTaken" editable="false" GridPane.columnIndex="1" />
+                            <Slider fx:id="sldBrightness" blockIncrement="0.1" majorTickUnit="1" max="1" min="-1" minorTickCount="5" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                            <Slider fx:id="sldContrast" blockIncrement="0.1" majorTickUnit="1" max="1" min="-1" minorTickCount="5" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                            <Slider fx:id="sldHue" blockIncrement="0.1" majorTickUnit="1" max="1" min="-1" minorTickCount="5" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                            <Slider fx:id="sldSaturation" blockIncrement="0.1" majorTickUnit="1" max="1" min="-1" minorTickCount="5" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                            <Button fx:id="btnResetImage" mnemonicParsing="false" onAction="#resetImageView" styleClass="resetBtn" text="Reset Image" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="5" />
+                        </children>
+                    </GridPane>
+                </SplitPane>
+            </items>
+        </SplitPane>
+        <VBox SplitPane.resizableWithParent="false" prefWidth="310" styleClass="lightBorder">
+            <children>
+                <TreeViewAutomatic fx:id="imageTree" VBox.vgrow="ALWAYS" />
+                <FlowPane alignment="CENTER" hgap="5" vgap="10">
+                    <padding>
+                        <Insets bottom="20" left="5" right="5" top="20" />
+                    </padding>
+                    <children>
+                        <Button fx:id="btnSave" mnemonicParsing="false" onAction="#saveImages" styleClass="saveBtn" text="Save" />
+                        <Button mnemonicParsing="false" onAction="#importImages" styleClass="importBtn" text="Import Images" />
+                        <Button mnemonicParsing="false" onAction="#deleteImages" styleClass="deleteBtn" text="Delete" />
+                    </children>
+                </FlowPane>
+            </children>
+        </VBox>
+    </items>
+</SplitPane>
