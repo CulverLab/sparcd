@@ -1,34 +1,40 @@
 .importBtn {
     -fx-background-image: url("../images/mainMenu/import.png");
-    -fx-background-size: 18 18;
+    -fx-background-position: 5%;
     -fx-background-repeat: no-repeat;
-    -fx-background-position: 5px center;
+    -fx-font-size: 18px;
 }
 
 .analyzeBtn {
     -fx-background-image: url("../images/mainMenu/analyze.png");
-    -fx-background-size: 18 18;
+    -fx-background-position: 5%;
     -fx-background-repeat: no-repeat;
-    -fx-background-position: 5px center;
+    -fx-font-size: 18px;
 }
 
 .mapBtn {
     -fx-background-image: url("../images/mainMenu/map.png");
-    -fx-background-size: 18 18;
+    -fx-background-position: 5%;
     -fx-background-repeat: no-repeat;
-    -fx-background-position: 5px center;
+    -fx-font-size: 18px;
 }
 
 .exitBtn {
     -fx-background-image: url("../images/mainMenu/exit.png");
-    -fx-background-size: 18 18;
+    -fx-background-position: 5%;
     -fx-background-repeat: no-repeat;
-    -fx-background-position: 5px center;
+    -fx-font-size: 18px;
 }
 
-.buttonPane {
-    -fx-border-color: black;
-    -fx-border-width: 3px;
-    -fx-border-radius: 3px;
-    -fx-border-style: solid;
+.loginBtn {
+    -fx-background-image: url("../images/mainMenu/login.png");
+    -fx-background-position: 5%;
+    -fx-background-repeat: no-repeat;
+    -fx-font-size: 18px;
+}
+
+.usernameLbl {
+    -fx-text-fill: white;
+    -fx-font-weight: bolder;
+    -fx-font-size: 18px;
 }

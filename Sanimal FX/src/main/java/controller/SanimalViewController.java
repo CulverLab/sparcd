@@ -1,15 +1,24 @@
 package controller;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.event.ActionEvent;
+import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.util.Pair;
+import model.SanimalData;
+import org.controlsfx.dialog.LoginDialog;
+import org.fxmisc.easybind.EasyBind;
 
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -32,9 +41,15 @@ public class SanimalViewController implements Initializable
     // The map button to open the map window
     @FXML
     public Button btnMap;
+    // The login button to connect to CyVerse
+    @FXML
+    public Button btnLogin;
     // The exit button to close the program
     @FXML
     public Button btnExit;
+    // After logging in this shows the username of the logged in person
+    @FXML
+    public Label lblUsername;
 
     ///
     /// FXML bound fields end
@@ -54,7 +69,12 @@ public class SanimalViewController implements Initializable
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-
+        BooleanBinding loggedIn = SanimalData.getInstance().userLoggedInPropertyProperty().isNotNull();
+        this.btnLogin.textProperty().bind(Bindings.when(loggedIn).then("Logout").otherwise("Login"));
+        this.lblUsername.textProperty().bind(EasyBind.monadic(SanimalData.getInstance().userLoggedInPropertyProperty()).map(username -> "Welcome " + username + "!").orElse(""));
+        this.btnAnalyze.disableProperty().bind(loggedIn.not());
+        this.btnImport.disableProperty().bind(loggedIn.not());
+        this.btnMap.disableProperty().bind(loggedIn.not());
     }
 
     /**
@@ -192,5 +212,29 @@ public class SanimalViewController implements Initializable
     public void exitPressed(ActionEvent actionEvent)
     {
         System.exit(0);
+    }
+
+    /**
+     * When the login button is pressed
+     *
+     * @param actionEvent ignored
+     */
+    @FXML
+    public void loginPressed(ActionEvent actionEvent)
+    {
+        if (SanimalData.getInstance().getUserLoggedIn() == null)
+        {
+            LoginDialog dialog = new LoginDialog(null, result -> {
+                String username = result.getKey();
+                String password = result.getValue();
+                SanimalData.getInstance().setUserLoggedIn(username);
+                return null;
+            });
+            dialog.showAndWait();
+        }
+        else
+        {
+            SanimalData.getInstance().setUserLoggedIn(null);
+        }
     }
 }

@@ -1,10 +1,7 @@
 package model;
 
 import javafx.beans.Observable;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -52,6 +49,9 @@ public class SanimalData
 	private final ExecutorService taskPerformer = Executors.newSingleThreadExecutor();
 	private final IntegerProperty pendingTasks = new SimpleIntegerProperty(0);
 	private final ObjectProperty<Task> currentTask = new SimpleObjectProperty<>(null);
+
+	// The username of the logged in person
+	private final StringProperty userLoggedInProperty = new SimpleStringProperty(null);
 
 	/**
 	 * Private constructor since we're using the singleton design pattern
@@ -169,5 +169,29 @@ public class SanimalData
 	public ObjectProperty<Task> currentTaskProperty()
 	{
 		return currentTask;
+	}
+
+	/**
+	 * @return The property representing the currently logged in user
+	 */
+	public StringProperty userLoggedInPropertyProperty()
+	{
+		return userLoggedInProperty;
+	}
+
+	/**
+	 * @param username The username of the new user that logged in
+	 */
+	public void setUserLoggedIn(String username)
+	{
+		this.userLoggedInProperty.setValue(username);
+	}
+
+	/**
+	 * @return The username of the logged in user
+	 */
+	public String getUserLoggedIn()
+	{
+		return this.userLoggedInProperty.getValue();
 	}
 }
