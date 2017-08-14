@@ -198,6 +198,16 @@ public class SanimalViewController implements Initializable
     @FXML
     public void analyzePressed(ActionEvent actionEvent)
     {
+        /*
+        SanimalData.getInstance().addTask(new Task<Void>() {
+            @Override
+            protected Void call() throws Exception
+            {
+                SanimalData.getInstance().getConnectionManager().test();
+                return null;
+            }
+        });
+        */
         // If the stage has not yet been initialized
         if (analysisStage == null)
         {
@@ -325,7 +335,7 @@ public class SanimalViewController implements Initializable
         if (!SanimalData.getInstance().getConnectionManager().loggedInProperty().getValue())
         {
             // Show the loading icon graphic
-            this.btnLogin.setGraphic(new ImageView(new Image("./images/mainMenu/loading.gif", 26, 26, true, true)));
+            this.btnLogin.setGraphic(new ImageView(new Image("/images/mainMenu/loading.gif", 26, 26, true, true)));
             // Grab our connection manager
             CyVerseConnectionManager connectionManager = SanimalData.getInstance().getConnectionManager();
             // Grab the username and password

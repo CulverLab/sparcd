@@ -2,6 +2,7 @@ package model.cyverse;
 
 import javafx.application.Platform;
 import javafx.beans.property.*;
+import org.irods.jargon.core.connection.AuthScheme;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.connection.IRODSSession;
 import org.irods.jargon.core.connection.IRODSSimpleProtocolManager;
@@ -9,8 +10,8 @@ import org.irods.jargon.core.connection.auth.AuthResponse;
 import org.irods.jargon.core.exception.AuthenticationException;
 import org.irods.jargon.core.exception.InvalidUserException;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
-import org.irods.jargon.core.pub.IRODSAccessObjectFactoryImpl;
+import org.irods.jargon.core.pub.*;
+import org.irods.jargon.core.pub.io.IRODSFileFactory;
 
 /**
  * A class used to wrap the CyVerse Jargon FTP library
@@ -26,8 +27,10 @@ public class CyVerseConnectionManager
 	private IRODSAccount account;
 	// The current user session
 	private IRODSSession session;
-	// The authenticator used to authenticate the CyVerse account
-	private IRODSAccessObjectFactory authenticator;
+	// The irodsAO used to authenticate the CyVerse account
+	private IRODSAccessObjectFactory irodsAO;
+	// The file system on the IRODS server
+	private IRODSFileSystem fileSystem;
 
 	// A username property which we can bind to in the rest of the program
 	private ReadOnlyStringWrapper usernameProperty = new ReadOnlyStringWrapper("");
@@ -51,15 +54,13 @@ public class CyVerseConnectionManager
 			{
 				// Create a new CyVerse account given the host address, port, username, password, homedirectory, and two fields I have no idea what they do...
 				// For whatever reason, username, and username causes the authentication to work, so let's use it...
-				this.account = IRODSAccount.instance(CYVERSE_HOST, 1247, username, password,HOME_DIRECTORY + username, username, username);
-				// Create an authenticator
-				this.authenticator = new IRODSAccessObjectFactoryImpl();
+				this.account = IRODSAccount.instance(CYVERSE_HOST, 1247, username, password,HOME_DIRECTORY + username, username, "./", AuthScheme.STANDARD);
 				// Create a new session
-				this.session = IRODSSession.instance(new IRODSSimpleProtocolManager());
-				// Set the irods session to our authenticator
-				this.authenticator.setIrodsSession(this.session);
+				this.session = IRODSSession.instance(IRODSSimpleProtocolManager.instance());
+				// Create an irodsAO
+				this.irodsAO = IRODSAccessObjectFactoryImpl.instance(this.session);
 				// Perform the authentication and get a response
-				AuthResponse authResponse = this.authenticator.authenticateIRODSAccount(account);
+				AuthResponse authResponse = this.irodsAO.authenticateIRODSAccount(this.account);
 				// If the authentication worked, return true and set the username and logged in fields
 				if (authResponse.isSuccessful())
 				{
@@ -70,6 +71,9 @@ public class CyVerseConnectionManager
 						// Set the logged in value to true
 						this.loggedInProperty.setValue(true);
 					});
+					// Cache the authenticated IRODS account
+					this.account = authResponse.getAuthenticatedIRODSAccount();
+					this.fileSystem = IRODSFileSystem.instance();
 					// We're good, return true
 					return true;
 				}
@@ -111,16 +115,28 @@ public class CyVerseConnectionManager
 		if (this.loggedInProperty.getValue())
 		{
 			// Also closes the session and account
-			this.authenticator.closeSessionAndEatExceptions(this.account);
+			this.irodsAO.closeSessionAndEatExceptions(this.account);
 			// Set logged in to false, and the username to the empty string
 			Platform.runLater(() -> {
 				this.loggedInProperty.setValue(false);
 				this.usernameProperty.setValue("");
 			});
-			// Reset the authenticator, account, an session to null
-			this.authenticator = null;
+			// Reset the irodsAO, account, an session to null
+			this.irodsAO = null;
 			this.account = null;
 			this.session = null;
+		}
+	}
+
+	public void test()
+	{
+		try
+		{
+			DataTransferOperations dataTransferOperations = this.irodsAO.getDataTransferOperations(this.account);
+		}
+		catch (JargonException e)
+		{
+			e.printStackTrace();
 		}
 	}
 
