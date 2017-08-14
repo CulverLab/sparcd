@@ -152,8 +152,8 @@ public class DirectoryManager
 					// Ensure that the field does actually exist...
 					if (locationField != null)
 					{
-						// We look for length 3 since the 3rd element will be null
-						if (locationField.length == 3)
+						// We look for length 2
+						if (locationField.length == 2)
 						{
 							// Grab the location, elevation, and lat/lng
 							String locationName = locationField[0];

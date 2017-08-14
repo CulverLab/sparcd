@@ -9,46 +9,116 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="300.0" prefWidth="524.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="controller.SanimalViewController">
-    <stylesheets>
-        <URL value="@SanimalView.css"/>
-    </stylesheets>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.PasswordField?>
+<?import org.controlsfx.control.HyperlinkLabel?>
+<StackPane prefHeight="300.0" prefWidth="524.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="controller.SanimalViewController">
     <children>
-        <ImageView pickOnBounds="true" preserveRatio="false" scaleX="1.03" scaleY="1.05">
-            <image>
-                <Image url="@../images/mainMenu/sanimalBackground.JPG"/>
-            </image>
-        </ImageView>
-        <ImageView fitHeight="161.0" fitWidth="405.0" layoutX="14.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
-            <image>
-                <Image url="@../images/mainMenu/sanimalTitle.png"/>
-            </image>
-        </ImageView>
-        <GridPane layoutX="20.0" layoutY="120.0" vgap="3">
-            <columnConstraints>
-                <ColumnConstraints maxWidth="156" minWidth="156" />
-                <ColumnConstraints maxWidth="Infinity" hgrow="ALWAYS"/>
-            </columnConstraints>
-            <rowConstraints>
-                <RowConstraints/>
-                <RowConstraints/>
-                <RowConstraints/>
-                <RowConstraints/>
-                <RowConstraints/>
-            </rowConstraints>
+        <AnchorPane fx:id="mainPane">
+            <stylesheets>
+                <URL value="@SanimalView.css"/>
+            </stylesheets>
             <children>
-                <Button fx:id="btnImport" minWidth="150" onAction="#importPressed" styleClass="importBtn" text="Import" textAlignment="CENTER"
-                        GridPane.rowIndex="0"/>
-                <Button fx:id="btnAnalyze" minWidth="150" onAction="#analyzePressed" styleClass="analyzeBtn" text="Analyze" textAlignment="CENTER"
-                        GridPane.rowIndex="1"/>
-                <Button fx:id="btnMap" minWidth="150" onAction="#mapPressed" styleClass="mapBtn" text="Map" textAlignment="CENTER" GridPane.rowIndex="2"/>
-                <Button fx:id="btnLogin" minWidth="150" onAction="#loginPressed" styleClass="loginBtn" text="Login" textAlignment="CENTER"
-                        GridPane.rowIndex="3"/>
-                <Label GridPane.hgrow="ALWAYS" fx:id="lblUsername" styleClass="usernameLbl" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-                <Button fx:id="btnExit" minWidth="150" onAction="#exitPressed" styleClass="exitBtn" text="Exit" textAlignment="CENTER" GridPane.rowIndex="4"/>
+                <ImageView pickOnBounds="true" scaleX="1.03" scaleY="1.05">
+                    <image>
+                        <Image url="@../images/mainMenu/sanimalBackground.JPG"/>
+                    </image>
+                </ImageView>
+                <ImageView fitHeight="161.0" fitWidth="405.0" layoutX="14.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@../images/mainMenu/sanimalTitle.png"/>
+                    </image>
+                </ImageView>
+                <GridPane layoutX="20.0" layoutY="120.0" vgap="3">
+                    <columnConstraints>
+                        <ColumnConstraints maxWidth="156" minWidth="156"/>
+                        <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints/>
+                        <RowConstraints/>
+                        <RowConstraints/>
+                        <RowConstraints/>
+                        <RowConstraints/>
+                    </rowConstraints>
+                    <children>
+                        <Button fx:id="btnImport" minWidth="150" onAction="#importPressed" styleClass="importBtn" text="Import" textAlignment="CENTER"
+                                GridPane.rowIndex="0"/>
+                        <Button fx:id="btnAnalyze" minWidth="150" onAction="#analyzePressed" styleClass="analyzeBtn" text="Analyze" textAlignment="CENTER"
+                                GridPane.rowIndex="1"/>
+                        <Button fx:id="btnMap" minWidth="150" onAction="#mapPressed" styleClass="mapBtn" text="Map" textAlignment="CENTER"
+                                GridPane.rowIndex="2"/>
+                        <Button fx:id="btnLogout" minWidth="150" onAction="#logoutPressed" styleClass="loginBtn" text="Logout" textAlignment="CENTER"
+                                GridPane.rowIndex="3"/>
+                        <Label fx:id="lblUsername" styleClass="usernameLbl" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3"/>
+                        <Button fx:id="btnExit" minWidth="150" onAction="#exitPressed" styleClass="exitBtn" text="Exit" textAlignment="CENTER"
+                                GridPane.rowIndex="4"/>
+                    </children>
+                </GridPane>
             </children>
-        </GridPane>
+        </AnchorPane>
+        <StackPane minWidth="300" maxWidth="300" minHeight="260" maxHeight="260" fx:id="loginPane">
+            <Rectangle fx:id="rctLoginBackground" arcHeight="15" arcWidth="15" fill="beige" stroke="black"
+                       StackPane.alignment="CENTER"/>
+            <GridPane>
+                <columnConstraints>
+                    <ColumnConstraints minWidth="300" maxWidth="300"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints/>
+                    <RowConstraints/>
+                    <RowConstraints/>
+                    <RowConstraints/>
+                    <RowConstraints/>
+                </rowConstraints>
+                <children>
+                    <Label text="CyVerse Sign In" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                        <GridPane.margin>
+                            <Insets top="10" bottom="10"/>
+                        </GridPane.margin>
+                        <font>
+                            <Font size="20.0"/>
+                        </font>
+                    </Label>
+                    <TextField fx:id="txtUsername" onKeyPressed="#enterPressed" HBox.hgrow="ALWAYS" promptText="Username" GridPane.rowIndex="1">
+                        <GridPane.margin>
+                            <Insets left="20" right="20" top="10" bottom="10"/>
+                        </GridPane.margin>
+                        <font>
+                            <Font size="16"/>
+                        </font>
+                    </TextField>
+                    <PasswordField fx:id="txtPassword" onKeyPressed="#enterPressed" HBox.hgrow="ALWAYS" promptText="Password" GridPane.rowIndex="3">
+                        <GridPane.margin>
+                            <Insets left="20" right="20" top="10" bottom="10"/>
+                        </GridPane.margin>
+                        <font>
+                            <Font size="16"/>
+                        </font>
+                    </PasswordField>
+                    <HyperlinkLabel fx:id="hypRegisterPassword" text="[Register] | Forgot [Password]?" onAction="#linkPressed" GridPane.rowIndex="4">
+                        <GridPane.margin>
+                            <Insets left="20" right="20" top="10" bottom="10"/>
+                        </GridPane.margin>
+                    </HyperlinkLabel>
+                    <Button fx:id="btnLogin" onAction="#loginPressed" GridPane.halignment="CENTER" text="Sign In" GridPane.rowIndex="5">
+                        <GridPane.margin>
+                            <Insets left="20" right="20" top="10" bottom="10"/>
+                        </GridPane.margin>
+                        <font>
+                            <Font size="16"/>
+                        </font>
+                    </Button>
+                </children>
+            </GridPane>
+        </StackPane>
     </children>
-</AnchorPane>
+</StackPane>

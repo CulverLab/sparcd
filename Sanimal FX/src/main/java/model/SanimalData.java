@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
+import model.cyverse.CyVerseConnectionManager;
 import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.location.Location;
@@ -14,10 +15,6 @@ import model.species.Species;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -37,21 +34,21 @@ public class SanimalData
 	}
 
 	// A global list of species
-	private ObservableList<Species> speciesList;
+	private final ObservableList<Species> speciesList;
 
 	// A global list of locations
-	private ObservableList<Location> locationList;
+	private final ObservableList<Location> locationList;
 
 	// A base directory to which we add all extra directories
-	private ImageDirectory imageTree;
+	private final ImageDirectory imageTree;
 
 	// Use a thread pool executor to perform tasks that take a while
 	private final ExecutorService taskPerformer = Executors.newSingleThreadExecutor();
 	private final IntegerProperty pendingTasks = new SimpleIntegerProperty(0);
 	private final ObjectProperty<Task> currentTask = new SimpleObjectProperty<>(null);
 
-	// The username of the logged in person
-	private final StringProperty userLoggedInProperty = new SimpleStringProperty(null);
+	// The connection manager used to authenticate the CyVerse user
+	private CyVerseConnectionManager connectionManager = new CyVerseConnectionManager();
 
 	/**
 	 * Private constructor since we're using the singleton design pattern
@@ -137,7 +134,6 @@ public class SanimalData
 	 */
 	public <T> void addTask(Task<T> task)
 	{
-		this.taskPerformer.submit(task);
 		this.pendingTasks.setValue(this.pendingTasks.getValue() + 1);
 		EventHandler<WorkerStateEvent> onSucceeded = task.getOnSucceeded();
 		task.setOnSucceeded(taskEvent ->
@@ -153,6 +149,7 @@ public class SanimalData
 				onRunning.handle(taskEvent);
 			currentTask.setValue(task);
 		});
+		this.taskPerformer.submit(task);
 	}
 
 	/**
@@ -172,26 +169,10 @@ public class SanimalData
 	}
 
 	/**
-	 * @return The property representing the currently logged in user
+	 * @return The Cyverse connection manager used to authenticate and upload the user's images
 	 */
-	public StringProperty userLoggedInPropertyProperty()
+	public CyVerseConnectionManager getConnectionManager()
 	{
-		return userLoggedInProperty;
-	}
-
-	/**
-	 * @param username The username of the new user that logged in
-	 */
-	public void setUserLoggedIn(String username)
-	{
-		this.userLoggedInProperty.setValue(username);
-	}
-
-	/**
-	 * @return The username of the logged in user
-	 */
-	public String getUserLoggedIn()
-	{
-		return this.userLoggedInProperty.getValue();
+		return connectionManager;
 	}
 }

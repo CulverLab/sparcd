@@ -164,6 +164,9 @@ public class SanimalImportController implements Initializable
 
 	private ObjectProperty<Image> speciesPreviewImage = new SimpleObjectProperty<>(null);
 
+	private final Species TEST_SPECIES = SanimalData.getInstance().getSpeciesList().filtered(species -> species.getName().equals("Test")).stream().findFirst().orElse(null);
+	private final Species GHOST_SPECIES = SanimalData.getInstance().getSpeciesList().filtered(species -> species.getName().equals("Ghost")).stream().findFirst().orElse(null);;
+
 	/**
 	 * Initialize the sanimal import view and data bindings
 	 *
@@ -379,6 +382,8 @@ public class SanimalImportController implements Initializable
 				{
 					// Filter the species list by correctly key-bound species, and add them to the current image
 					SanimalData.getInstance().getSpeciesList().filtered(boundSpecies -> boundSpecies.getKeyBinding() == event.getCode()).forEach(boundSpecies -> {
+						this.currentlySelectedImage.getValue().removeSpecies(TEST_SPECIES);
+						this.currentlySelectedImage.getValue().removeSpecies(GHOST_SPECIES);
 						this.currentlySelectedImage.getValue().addSpecies(boundSpecies, 1);
 					});
 					event.consume();
@@ -945,6 +950,8 @@ public class SanimalImportController implements Initializable
 				if (toAdd.isPresent())
 					if (currentlySelectedImage.getValue() != null)
 					{
+						currentlySelectedImage.getValue().removeSpecies(TEST_SPECIES);
+						currentlySelectedImage.getValue().removeSpecies(GHOST_SPECIES);
 						currentlySelectedImage.getValue().addSpecies(toAdd.get(), 1);
 						// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
 						this.imageTree.requestFocus();

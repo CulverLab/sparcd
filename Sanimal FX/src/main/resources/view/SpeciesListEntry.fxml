@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<HBox fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="80.0" spacing="5"
+<HBox fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" spacing="5"
       xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SpeciesListEntryController">
     <stylesheets>
         <URL value="@SpeciesListEntry.css"/>
@@ -20,28 +20,28 @@
         <Insets bottom="5" left="5" right="5" top="5"/>
     </padding>
     <children>
-        <ImageView fx:id="imageView" fitHeight="70.0" fitWidth="70.0" pickOnBounds="true"/>
+        <ImageView fx:id="imageView" fitHeight="90.0" fitWidth="90.0" pickOnBounds="true"/>
         <GridPane HBox.hgrow="ALWAYS">
             <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES"/>
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints vgrow="SOMETIMES"/>
+                <RowConstraints vgrow="SOMETIMES"/>
+                <RowConstraints vgrow="SOMETIMES"/>
             </rowConstraints>
             <children>
-                <Label fx:id="lblName" text="Name" GridPane.rowIndex="0">
+                <Label fx:id="lblName" styleClass="nameLbl" text="Name" GridPane.rowIndex="0">
                     <tooltip>
                         <Tooltip text="Common Species Name"/>
                     </tooltip>
                 </Label>
-                <Label fx:id="lblScientificName" text="Scientific Name" GridPane.rowIndex="1">
+                <Label fx:id="lblScientificName" styleClass="scientificNameLbl" text="Scientific Name" GridPane.rowIndex="1">
                     <tooltip>
                         <Tooltip text="Scientific Species Name"/>
                     </tooltip>
                 </Label>
-                <HBox GridPane.rowIndex="2">
+                <HBox alignment="CENTER_LEFT" spacing="5" GridPane.rowIndex="2">
                     <children>
                         <Button fx:id="btnPreview" text="Preview"/>
                         <Button fx:id="btnKeybind" mnemonicParsing="false"/>
