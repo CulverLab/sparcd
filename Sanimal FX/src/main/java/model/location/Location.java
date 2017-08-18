@@ -1,5 +1,6 @@
 package model.location;
 
+import com.google.gson.annotations.Expose;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;

@@ -1,5 +1,6 @@
 package model;
 
+import com.google.gson.Gson;
 import javafx.beans.Observable;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
@@ -13,6 +14,7 @@ import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
 import org.apache.commons.lang3.StringUtils;
+import org.hildan.fxgson.FxGson;
 
 import java.io.*;
 import java.util.List;
@@ -43,9 +45,12 @@ public class SanimalData
 	private final ImageDirectory imageTree;
 
 	// Use a thread pool executor to perform tasks that take a while
-	private final ExecutorService taskPerformer = Executors.newSingleThreadExecutor();
+	private ExecutorService taskPerformer = Executors.newSingleThreadExecutor();
 	private final IntegerProperty pendingTasks = new SimpleIntegerProperty(0);
 	private final ObjectProperty<Task> currentTask = new SimpleObjectProperty<>(null);
+
+	// GSon object used to serialize data
+	private final Gson gson = FxGson.fullBuilder().setPrettyPrinting().serializeNulls().create();
 
 	// The connection manager used to authenticate the CyVerse user
 	private CyVerseConnectionManager connectionManager = new CyVerseConnectionManager();
@@ -169,10 +174,32 @@ public class SanimalData
 	}
 
 	/**
+	 * Clears the task queue. Can be dangerous if some important task is queued
+	 */
+	public void clearTasks()
+	{
+		// Shutdown the task performer and throw away current tasks
+		this.taskPerformer.shutdownNow();
+		// Set the current task to null, and number of pending tasks to 0
+		this.currentTask.setValue(null);
+		this.pendingTasks.setValue(0);
+		// Create a new task performer and throw away the old one
+		this.taskPerformer = Executors.newSingleThreadExecutor();
+	}
+
+	/**
 	 * @return The Cyverse connection manager used to authenticate and upload the user's images
 	 */
 	public CyVerseConnectionManager getConnectionManager()
 	{
 		return connectionManager;
+	}
+
+	/**
+	 * @return The Gson serializer used to serialize properties
+	 */
+	public Gson getGson()
+	{
+		return this.gson;
 	}
 }

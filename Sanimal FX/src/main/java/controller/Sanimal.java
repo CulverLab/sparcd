@@ -5,7 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import library.FXMLLoaderUtils;
+import model.util.FXMLLoaderUtils;
 
 /**
  * Main class entry point

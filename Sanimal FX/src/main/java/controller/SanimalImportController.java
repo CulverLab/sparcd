@@ -26,7 +26,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import library.FXMLLoaderUtils;
+import model.util.FXMLLoaderUtils;
 import library.ImageViewPane;
 import library.TreeViewAutomatic;
 import model.SanimalData;
@@ -293,7 +293,7 @@ public class SanimalImportController implements Initializable
 		// Bind the image preview to the selected image from the right side tree view
 		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).map(imageEntry -> new Image(imageEntry.getFile().toURI().toString())));
 		// Bind the species entry list view items to the selected image species present
-		this.speciesEntryListView.itemsProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getSpeciesPresent));
+		this.speciesEntryListView.itemsProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getSpeciesPresent).map(x -> new SortedList<>(x, Comparator.comparing(y -> y.getSpecies().getName()))));
 		// Hide the progress bar when tasks remaining == 1
 		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().pendingTasksProperty().isEqualTo(0).not());
 		// Bind the progress bar's text property to tasks remaining
@@ -820,6 +820,11 @@ public class SanimalImportController implements Initializable
 					if (i % 10 == 0)
 						this.updateProgress(i, allImages.size());
 				}
+
+				// TEMP, for testing only
+				SanimalData.getInstance().getConnectionManager().pushLocalLocations(SanimalData.getInstance().getLocationList());
+				SanimalData.getInstance().getConnectionManager().pushLocalSpecies(SanimalData.getInstance().getSpeciesList());
+
 				return null;
 			}
 		};
@@ -874,7 +879,7 @@ public class SanimalImportController implements Initializable
 
 				// Create a clipboard and put the species unique ID into that clipboard
 				ClipboardContent content = new ClipboardContent();
-				content.putString(selected.getUniqueID().toString());
+				content.putString(selected.getScientificName());
 				// Set the dragboard's context, and then consume the event
 				dragboard.setContent(content);
 
@@ -938,29 +943,20 @@ public class SanimalImportController implements Initializable
 		// If our dragboard has a string, grab it
 		if (dragboard.hasString())
 		{
-			String stringID = dragboard.getString();
-			// Begin a try catch to make sure we have 1 piece of drag data
-			try
-			{
-				// Grab the id of the species
-				Integer ID = Integer.parseInt(stringID);
-				// Grab the species with the given ID
-				Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getUniqueID().equals(ID)).findFirst();
-				// Add the species to the image
-				if (toAdd.isPresent())
-					if (currentlySelectedImage.getValue() != null)
-					{
-						currentlySelectedImage.getValue().removeSpecies(TEST_SPECIES);
-						currentlySelectedImage.getValue().removeSpecies(GHOST_SPECIES);
-						currentlySelectedImage.getValue().addSpecies(toAdd.get(), 1);
-						// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
-						this.imageTree.requestFocus();
-						success = true;
-					}
-			}
-			catch (NumberFormatException ignored)
-			{
-			}
+			String scientificName = dragboard.getString();
+			// Grab the species with the given ID
+			Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getScientificName().equals(scientificName)).findFirst();
+			// Add the species to the image
+			if (toAdd.isPresent())
+				if (currentlySelectedImage.getValue() != null)
+				{
+					currentlySelectedImage.getValue().removeSpecies(TEST_SPECIES);
+					currentlySelectedImage.getValue().removeSpecies(GHOST_SPECIES);
+					currentlySelectedImage.getValue().addSpecies(toAdd.get(), 1);
+					// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
+					this.imageTree.requestFocus();
+					success = true;
+				}
 		}
 		// Set the success equal to the flag, and consume the event
 		dragEvent.setDropCompleted(success);

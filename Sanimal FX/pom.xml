@@ -92,6 +92,18 @@
             <artifactId>jargon-core</artifactId>
             <version>4.2.0.0-RELEASE</version>
         </dependency>
+        <!-- https://github.com/google/gson -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <!-- https://github.com/joffrey-bion/fx-gson -->
+        <dependency>
+            <groupId>org.hildan.fxgson</groupId>
+            <artifactId>fx-gson</artifactId>
+            <version>RELEASE</version> <!-- replace with latest version -->
+        </dependency>
 
     </dependencies>
 

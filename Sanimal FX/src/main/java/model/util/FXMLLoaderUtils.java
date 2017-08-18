@@ -1,4 +1,4 @@
-package library;
+package model.util;
 
 import controller.Sanimal;
 import javafx.fxml.FXMLLoader;

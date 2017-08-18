@@ -2,6 +2,7 @@ package controller;
 
 import ch.qos.logback.classic.Level;
 import javafx.animation.Animation;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -29,6 +30,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import model.SanimalData;
 import model.cyverse.CyVerseConnectionManager;
+import model.location.Location;
+import model.species.Species;
 import org.apache.commons.validator.util.ValidatorUtils;
 import org.controlsfx.control.HyperlinkLabel;
 import org.controlsfx.dialog.LoginDialog;
@@ -46,6 +49,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
@@ -70,6 +74,9 @@ public class SanimalViewController implements Initializable
     // The login button to connect to CyVerse
     @FXML
     public Button btnLogin;
+    // The button to open the upload manager
+    @FXML
+    public Button btnUpload;
     // The logout button to disconnect from CyVerse
     @FXML
     public Button btnLogout;
@@ -143,6 +150,10 @@ public class SanimalViewController implements Initializable
         // Hide the login pane when logged in
         this.loginPane.visibleProperty().bind(loggedIn.not());
 
+        // Hide the logout button and text when not logged in
+        this.btnLogout.visibleProperty().bind(loggedIn);
+        this.lblUsername.visibleProperty().bind(loggedIn);
+
         // Register validators for username and password. This simply makes sure that they're both not empty
         this.USER_PASS_VALIDATOR.registerValidator(this.txtUsername, Validator.createEmptyValidator("Username cannot be empty!"));
         this.USER_PASS_VALIDATOR.registerValidator(this.txtPassword, Validator.createEmptyValidator("Password cannot be empty!"));
@@ -198,16 +209,6 @@ public class SanimalViewController implements Initializable
     @FXML
     public void analyzePressed(ActionEvent actionEvent)
     {
-        /*
-        SanimalData.getInstance().addTask(new Task<Void>() {
-            @Override
-            protected Void call() throws Exception
-            {
-                SanimalData.getInstance().getConnectionManager().test();
-                return null;
-            }
-        });
-        */
         // If the stage has not yet been initialized
         if (analysisStage == null)
         {
@@ -285,6 +286,15 @@ public class SanimalViewController implements Initializable
     }
 
     /**
+     * When the upload button is pressed
+     *
+     * @param actionEvent consumed
+     */
+    public void uploadPressed(ActionEvent actionEvent)
+    {
+    }
+
+    /**
      * When exit is pressed close the program
      *
      * @param actionEvent ignored
@@ -347,8 +357,33 @@ public class SanimalViewController implements Initializable
                 @Override
                 protected Boolean call() throws Exception
                 {
-                    // Just login
-                    return connectionManager.login(username, password);
+                // First login
+                this.updateMessage("Logging in...");
+                this.updateProgress(1, 4);
+                Boolean loginSuccessful = connectionManager.login(username, password);
+
+                // Then initialize the remove sanimal directory
+                this.updateMessage("Initializing Sanimal remote directory...");
+                this.updateProgress(2, 4);
+                connectionManager.initSanimalRemoteDirectory();
+
+                // Pull any locations from the remote directory
+                this.updateMessage("Pulling locations from remote directory...");
+                this.updateProgress(3, 4);
+                List<Location> locations = connectionManager.pullRemoteLocations();
+                List<Species> species = connectionManager.pullRemoteSpecies();
+                // Set the location list to be these locations
+                Platform.runLater(() -> {
+                    SanimalData.getInstance().getLocationList().clear();
+                    SanimalData.getInstance().getLocationList().addAll(locations);
+                    //SanimalData.getInstance().getSpeciesList().clear();
+                    SanimalData.getInstance().getSpeciesList().addAll(species);
+                });
+
+                // Pull any species from the remote directory
+                this.updateMessage("Pulling locations from remote directory...");
+                this.updateProgress(3, 4);
+                return loginSuccessful;
                 }
             };
             // Once the task succeeds
@@ -389,7 +424,28 @@ public class SanimalViewController implements Initializable
                 @Override
                 protected Void call() throws Exception
                 {
-                    // Logout
+                    Platform.runLater(() -> {
+                        if (analysisStage != null)
+                        {
+                            analysisStage.close();
+                            analysisStage = null;
+                        }
+                        if (importStage != null)
+                        {
+                            importStage.close();
+                            importStage = null;
+                        }
+                        if (mapStage != null)
+                        {
+                            mapStage.close();
+                            mapStage = null;
+                        }
+                        // Clear locations, species, and images
+                        SanimalData.getInstance().getLocationList().clear();
+                        SanimalData.getInstance().getSpeciesList().clear();
+                        SanimalData.getInstance().getImageTree().getChildren().clear();
+                    });
+                    // Logout from CyVerse
                     SanimalData.getInstance().getConnectionManager().logout();
                     return null;
                 }
@@ -399,6 +455,8 @@ public class SanimalViewController implements Initializable
                 this.txtUsername.clear();
                 this.txtPassword.clear();
             });
+            // Clear all currently running tasks, then perform the rest of the logout
+            SanimalData.getInstance().clearTasks();
             // Perform the task
             SanimalData.getInstance().addTask(logoutAttempt);
         }

@@ -17,6 +17,7 @@ import javafx.util.converter.IntegerStringConverter;
 import model.analysis.SanimalAnalysisUtils;
 import model.location.Location;
 import model.location.UTMCoord;
+import model.util.RoundingUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.controlsfx.control.SegmentedButton;
 import org.controlsfx.validation.ValidationSupport;
@@ -233,8 +234,8 @@ public class LocationCreatorController implements Initializable
 
 		// Set the location's fields, and close the editor window
 		locationToEdit.setName(newName.getValue());
-		locationToEdit.setLat(Double.parseDouble(newLatitude.getValue()));
-		locationToEdit.setLng(Double.parseDouble(newLongitude.getValue()));
+		locationToEdit.setLat(RoundingUtils.roundLat(Double.parseDouble(newLatitude.getValue())));
+		locationToEdit.setLng(RoundingUtils.roundLng(Double.parseDouble(newLongitude.getValue())));
 		if (this.tbnMeters.isSelected())
 			locationToEdit.setElevation((double) Math.round(Double.parseDouble(newElevation.getValue())));
 		else if (this.tbnFeet.isSelected())
@@ -271,8 +272,8 @@ public class LocationCreatorController implements Initializable
 	{
 		Double[] equivalent = SanimalAnalysisUtils.UTM2Deg(new UTMCoord(Double.parseDouble(this.newEasting.getValue()), Double.parseDouble(this.newNorthing.getValue()), Integer.parseInt(this.newZone.getValue()), this.newLetter.getValue().charAt(0)));
 		// Round to 4 decimal places
-		this.newLatitude.setValue(Double.toString(Math.round(equivalent[0] * 1000.0) / 1000.0));
-		this.newLongitude.setValue(Double.toString(Math.round(equivalent[1] * 1000.0) / 1000.0));
+		this.newLatitude.setValue(Double.toString(RoundingUtils.roundLat(equivalent[0])));
+		this.newLongitude.setValue(Double.toString(RoundingUtils.roundLng(equivalent[1])));
 	}
 
 	///

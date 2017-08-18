@@ -14,6 +14,7 @@ import model.analysis.SanimalAnalysisUtils;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
+import model.util.RoundingUtils;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.ImageWriteException;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
@@ -158,8 +159,8 @@ public class DirectoryManager
 							// Grab the location, elevation, and lat/lng
 							String locationName = locationField[0];
 							String locationElevation = locationField[1];
-							double locationLatitude = metadata.getGPS().getLatitudeAsDegreesNorth();
-							double locationLongitude = metadata.getGPS().getLongitudeAsDegreesEast();
+							double locationLatitude = RoundingUtils.roundLat(metadata.getGPS().getLatitudeAsDegreesNorth());
+							double locationLongitude = RoundingUtils.roundLng(metadata.getGPS().getLongitudeAsDegreesEast());
 
 							// Use a try & catch to parse the elevation
 							try
@@ -175,9 +176,8 @@ public class DirectoryManager
 												newlyAddedLocations.stream())
 										.filter(location ->
 												StringUtils.equalsIgnoreCase(location.getName(), locationName) &&
-												Math.abs(location.getLat() - locationLatitude) < 0.00001 &&
-												Math.abs(location.getLng() - locationLongitude) < 0.00001 &&
-												Math.abs(location.getElevation() - Double.parseDouble(locationElevation)) < 25)
+												Math.abs(location.getLat() - locationLatitude) < 0.0001 &&
+												Math.abs(location.getLng() - locationLongitude) < 0.0001)// For now, ignore elevation Math.abs(location.getElevation() - Double.parseDouble(locationElevation)) < 25)
 										.findFirst();
 
 								if (correctLocation.isPresent())
@@ -186,7 +186,7 @@ public class DirectoryManager
 								}
 								else
 								{
-									Location newLocation = new Location(locationName, (double) Math.round((locationLatitude * 1000.0) / 1000.0), (double) Math.round((locationLongitude * 1000.0) / 1000.0), Double.parseDouble(locationElevation));
+									Location newLocation = new Location(locationName, locationLatitude, locationLongitude, Double.parseDouble(locationElevation));
 									newlyAddedLocations.add(newLocation);
 									current.setLocationTaken(newLocation);
 								}

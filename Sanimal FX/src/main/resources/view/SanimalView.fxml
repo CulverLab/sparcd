@@ -37,6 +37,8 @@
                         <Image url="@../images/mainMenu/sanimalTitle.png"/>
                     </image>
                 </ImageView>
+                <Button AnchorPane.topAnchor="10" AnchorPane.rightAnchor="10" fx:id="btnLogout" minWidth="130" maxWidth="130" onAction="#logoutPressed" styleClass="loginBtn" text="Logout" textAlignment="CENTER"/>
+                <Label AnchorPane.topAnchor="15" AnchorPane.rightAnchor="150" textAlignment="RIGHT" fx:id="lblUsername" styleClass="usernameLbl" GridPane.hgrow="ALWAYS" />
                 <GridPane layoutX="20.0" layoutY="120.0" vgap="3">
                     <columnConstraints>
                         <ColumnConstraints maxWidth="156" minWidth="156"/>
@@ -56,9 +58,7 @@
                                 GridPane.rowIndex="1"/>
                         <Button fx:id="btnMap" minWidth="150" onAction="#mapPressed" styleClass="mapBtn" text="Map" textAlignment="CENTER"
                                 GridPane.rowIndex="2"/>
-                        <Button fx:id="btnLogout" minWidth="150" onAction="#logoutPressed" styleClass="loginBtn" text="Logout" textAlignment="CENTER"
-                                GridPane.rowIndex="3"/>
-                        <Label fx:id="lblUsername" styleClass="usernameLbl" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3"/>
+                        <Button fx:id="btnUpload" minWidth="150" onAction="#uploadPressed" styleClass="uploadBtn" text="Upload" textAlignment="CENTER" GridPane.rowIndex="3"/>
                         <Button fx:id="btnExit" minWidth="150" onAction="#exitPressed" styleClass="exitBtn" text="Exit" textAlignment="CENTER"
                                 GridPane.rowIndex="4"/>
                     </children>

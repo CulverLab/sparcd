@@ -1,5 +1,6 @@
 package model.species;
 
+import com.google.gson.annotations.Expose;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -17,24 +18,21 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Species implements Serializable
 {
-    // We need a species ID to be used later in the drag and drop system, so create a static ID generator.
-    private static final AtomicInteger ID_GENERATOR = new AtomicInteger();
-
     // The name of the species
     private StringProperty name = new SimpleStringProperty();
     // The scientific name of the species
     private StringProperty scientificName = new SimpleStringProperty();
     // The species icon URL
     private StringProperty speciesIconURL = new SimpleStringProperty();
-    // The species ID
-    private final Integer uniqueID;
     // Each species can have a keybind that represents that species. This is used in the GUI to quickly tag species
     private final ObjectProperty<KeyCode> keyBinding = new SimpleObjectProperty<>(null);
 
     // Default uninitialized value
+    @Expose(serialize = false, deserialize = false)
     public static final String UNINITIALIZED = "UNINITIALIZED";
 
     // Default Icon
+    @Expose(serialize = false, deserialize = false)
     public static final String DEFAULT_ICON = ImageEntry.class.getResource("/images/importWindow/defaultAnimalIcon.png").toString();
 
     /**
@@ -50,7 +48,6 @@ public class Species implements Serializable
         this.name.setValue(name);
         this.scientificName.setValue(scientificName);
         this.speciesIconURL.setValue(DEFAULT_ICON);
-        this.uniqueID = ID_GENERATOR.getAndIncrement();
     }
 
     /**
@@ -68,7 +65,6 @@ public class Species implements Serializable
         this.name.setValue(name);
         this.scientificName.setValue(scientificName);
         this.speciesIconURL.setValue(speciesIconURL);
-        this.uniqueID = ID_GENERATOR.getAndIncrement();
     }
 
     /**
@@ -79,7 +75,6 @@ public class Species implements Serializable
         this.name.setValue(UNINITIALIZED);
         this.scientificName.setValue(UNINITIALIZED);
         this.speciesIconURL.setValue(UNINITIALIZED);
-        this.uniqueID = ID_GENERATOR.getAndIncrement();
     }
 
     /**
@@ -112,16 +107,6 @@ public class Species implements Serializable
     public Boolean iconValid()
     {
         return !this.speciesIconURL.getValue().equals(UNINITIALIZED);
-    }
-
-    /**
-     * Getter for this species' unique identifier
-     *
-     * @return This species' unique identifier
-     */
-    public Integer getUniqueID()
-    {
-        return uniqueID;
     }
 
     /**
