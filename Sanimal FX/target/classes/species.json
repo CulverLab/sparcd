@@ -1,0 +1,314 @@
+[
+  {
+    "name": "Badger",
+    "scientificName": "Taxidea taxus",
+    "speciesIconURL": "http://www.nhptv.org/wild/images/americanbadgerfws.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Bats",
+    "scientificName": "many ssp.",
+    "speciesIconURL": "http://lubee.org/wp-content/uploads/2014/02/bat01.png",
+    "keyBinding": null
+  },
+  {
+    "name": "Bear",
+    "scientificName": "Ursus americanus",
+    "speciesIconURL": "http://imagess3.enature.com/mammals/mammals_l/ma0013_1l.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Bighorn",
+    "scientificName": "Ovis Canadensis nelsoni",
+    "speciesIconURL": "http://stockpix.com/image/407423.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Birds",
+    "scientificName": "many ssp.",
+    "speciesIconURL": "https://www.wbu.com/wp-content/uploads/2016/07/540x340-found-a-bird-450x283.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Bobcat",
+    "scientificName": "Lynx rufus",
+    "speciesIconURL": "https://a-z-animals.com/media/animals/images/original/bobcat1.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Butterflies",
+    "scientificName": "many ssp.",
+    "speciesIconURL": "http://www3.canisius.edu/~grandem/butterflylifecycle/Butterfly.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Coati",
+    "scientificName": "Nasua narica",
+    "speciesIconURL": "http://www.nhptv.org/wild/images/whitenosedcoatilwikilizroy.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Cottontail",
+    "scientificName": "Sylvilagus auduboni",
+    "speciesIconURL": "http://fireflyforest.net/images/firefly/2005/August/Desert-Cottontail.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Cow",
+    "scientificName": "Bos tarus",
+    "speciesIconURL": "http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0113/1145.jpeg",
+    "keyBinding": null
+  },
+  {
+    "name": "Coyote",
+    "scientificName": "Canis latrans",
+    "speciesIconURL": "https://c1.staticflickr.com/3/2042/2167315030_f5843cd1f0.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Domestic Dog",
+    "scientificName": "Canis familiaris",
+    "speciesIconURL": "http://www.biolib.cz/IMG/GAL/113548.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Domestic Cat",
+    "scientificName": "Felis catus",
+    "speciesIconURL": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Domestic_cat_cropped.jpg/755px-Domestic_cat_cropped.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Gray fox",
+    "scientificName": "Urocyon cinereoargenteus",
+    "speciesIconURL": "https://farm6.staticflickr.com/5004/5331733036_db261762a1.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Red fox",
+    "scientificName": "Vulpes vulpes",
+    "speciesIconURL": "https://images.fineartamerica.com/images-medium-large-5/7-fox-red-vulpes-fulva-carol-gregory.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Frogs",
+    "scientificName": "many ssp.",
+    "speciesIconURL": "http://s.hswstatic.com/gif/frog-1.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Ghost",
+    "scientificName": "na",
+    "speciesIconURL": "https://static.wixstatic.com/media/958d1f_17dc5aef6615420c84a29b4698bdd19b~mv2.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Gila Monster",
+    "scientificName": "Heloderma suspectum",
+    "speciesIconURL": "http://polyploid.net/swherps/images/Helod_susp_9-1804_8976.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Goat",
+    "scientificName": "Capra aegagrus",
+    "speciesIconURL": "https://a-z-animals.com/media/animals/images/original/goat6.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Horse",
+    "scientificName": "Equus caballus",
+    "speciesIconURL": "http://www.photomazza.com/IMG/jpg_Un_Cavallo_Maremmano_c_Giuseppe_Mazza.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Human",
+    "scientificName": "Homo sapiens",
+    "speciesIconURL": "http://www.freeiconspng.com/uploads/person-outline-icon-png-person-outline-icon-png-person-17.png",
+    "keyBinding": null
+  },
+  {
+    "name": "Antelope jackrabbit",
+    "scientificName": "Lepus alleni",
+    "speciesIconURL": "http://www.rshantz.com/Animals/Mammals/Rabbits/Antelope/20120527Jackrabbit01N.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Blacktail jackrabbit",
+    "scientificName": "Lepus californicus",
+    "speciesIconURL": "https://c1.staticflickr.com/1/204/510197785_e711890a15_z.jpg?zz\u003d1",
+    "keyBinding": null
+  },
+  {
+    "name": "Jaguar",
+    "scientificName": "Panthera onca",
+    "speciesIconURL": "http://earthclassification.tripod.com/Jaguar_tree.JPG",
+    "keyBinding": null
+  },
+  {
+    "name": "Javelina",
+    "scientificName": "Pecari tajacu",
+    "speciesIconURL": "http://calphotos.berkeley.edu/imgs/512x768/0000_0000/1200/0251.jpeg",
+    "keyBinding": null
+  },
+  {
+    "name": "Lizards",
+    "scientificName": "many ssp.",
+    "speciesIconURL": "https://s-media-cache-ak0.pinimg.com/originals/52/fb/17/52fb170eb22a586070a14bd6a05b75e3.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Mule deer",
+    "scientificName": "Odocoileus hemionus",
+    "speciesIconURL": "http://animaldiversity.org/collections/contributors/bruce_gill/Odocoileushemionus/large.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Ocelot",
+    "scientificName": "Leopardus pardalis",
+    "speciesIconURL": "http://kimcampion.com/wp-content/uploads/2015/07/2-ocelot-leopardus-pardalis-standing-pete-oxford.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Mexican opossum",
+    "scientificName": "Didelphis marsupialis",
+    "speciesIconURL": "https://upload.wikimedia.org/wikipedia/commons/2/25/Rabipelao2.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Virginia opossum",
+    "scientificName": "Didelphis virginiana",
+    "speciesIconURL": "http://www.nhptv.org/wild/images/virginiaopossimwikimediacpope.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Pronghorn",
+    "scientificName": "Antilocapra americana",
+    "speciesIconURL": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Antilocapra_americana.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Puma",
+    "scientificName": "Puma concolor",
+    "speciesIconURL": "http://www.oceanlight.com/stock-photo/puma-concolor-mountain-lion-photograph-15791-831057.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Racoon",
+    "scientificName": "Procyon lotor",
+    "speciesIconURL": "http://www.planet-mammiferes.org/Photos/Carniv/Procyon/ProcLot5.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Ringtail",
+    "scientificName": "Bassariscus astutus",
+    "speciesIconURL": "https://s-media-cache-ak0.pinimg.com/originals/eb/17/80/eb178055608ec317d6a58f02fcf534d3.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Pacrat",
+    "scientificName": "Neotoma albigula",
+    "speciesIconURL": "http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0406/1103.jpeg",
+    "keyBinding": null
+  },
+  {
+    "name": "Other rodents",
+    "scientificName": "many ssp.",
+    "speciesIconURL": "https://cdn3.iconfinder.com/data/icons/pet-shop-glyph-black/614/5194_-_Pet_Mouse-512.png",
+    "keyBinding": null
+  },
+  {
+    "name": "Hooded skunk",
+    "scientificName": "Mephitis macroura",
+    "speciesIconURL": "http://farm4.static.flickr.com/3772/12708056885_fab408e0c4.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Striped skunk",
+    "scientificName": "Mephitis mephitis",
+    "speciesIconURL": "https://farm4.staticflickr.com/3477/3225052660_a781f21e48.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Hog-nosed skunk",
+    "scientificName": "Conepatus leuconotus",
+    "speciesIconURL": "https://static.inaturalist.org/photos/2788363/medium.jpg?1450456480",
+    "keyBinding": null
+  },
+  {
+    "name": "Spotted skunk",
+    "scientificName": "Spilogale gragilis",
+    "speciesIconURL": "http://farm4.static.flickr.com/3913/15045671516_712a66d50f.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Snakes",
+    "scientificName": "many ssp.",
+    "speciesIconURL": "http://a.scpr.org/i/88e7e63b1ca71faba95c089e24a5e608/34621-full.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Mexican spotted owl",
+    "scientificName": "Strix occidentalis",
+    "speciesIconURL": "http://www.owlpages.com/owls/species/images/spotted_owl_jared_hobbs-7.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Arizona gray squirrel",
+    "scientificName": "Sciurus arizonensis",
+    "speciesIconURL": "http://m3.i.pbase.com/o9/94/339594/1/116207813.geRib5w0.IMG_2384.JPG",
+    "keyBinding": null
+  },
+  {
+    "name": "Abert\u0027s squirrel",
+    "scientificName": "Sciurus aberti",
+    "speciesIconURL": "http://www.biopix.com/photos/GDR-Sciurus-aberti-03172.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Rock squirrel",
+    "scientificName": "Spermophilus varegatus",
+    "speciesIconURL": "http://www.nhptv.org/wild/images/americanbadgerfws.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Other squirrels",
+    "scientificName": "many ssp.",
+    "speciesIconURL": "http://www.wildutah.us/images/mammals_reptiles_amphibians/squirrel_beaver_cnyn_beaver_cnty_utah_21may2015_3089.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Test",
+    "scientificName": "na",
+    "speciesIconURL": "https://image.freepik.com/free-icon/picture-frame-with-mountain-image_318-40293.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Sonoran desert tortoise",
+    "scientificName": "Gopherus morafki",
+    "speciesIconURL": "http://www.reptilesofaz.org/Graphics/Turtles-Amphibians/GOPAGA-WWells08.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Sonora mud turtle",
+    "scientificName": "Kinosternon sonoriense",
+    "speciesIconURL": "http://www.southwesternherp.com/images/SonoranMudTurtle-SantaCruzCoAz-b.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Turkey",
+    "scientificName": "Meleagris gallopavo",
+    "speciesIconURL": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Wild_turkey_eastern_us.jpg",
+    "keyBinding": null
+  },
+  {
+    "name": "Unknown",
+    "scientificName": "na",
+    "speciesIconURL": "https://cdn0.iconfinder.com/data/icons/huge-black-icons/512/Help.png",
+    "keyBinding": null
+  },
+  {
+    "name": "White-tailed deer",
+    "scientificName": "Odocoileus virginianus",
+    "speciesIconURL": "http://fishesofgeorgia.uga.edu/gawildlife/images/Mammalia/ovirginianus.jpg",
+    "keyBinding": null
+  }
+]

@@ -293,7 +293,7 @@ public class SanimalImportController implements Initializable
 		// Bind the image preview to the selected image from the right side tree view
 		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).map(imageEntry -> new Image(imageEntry.getFile().toURI().toString())));
 		// Bind the species entry list view items to the selected image species present
-		this.speciesEntryListView.itemsProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getSpeciesPresent).map(x -> new SortedList<>(x, Comparator.comparing(y -> y.getSpecies().getName()))));
+		this.speciesEntryListView.itemsProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getSpeciesPresent));
 		// Hide the progress bar when tasks remaining == 1
 		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().pendingTasksProperty().isEqualTo(0).not());
 		// Bind the progress bar's text property to tasks remaining
@@ -455,6 +455,26 @@ public class SanimalImportController implements Initializable
 	}
 
 	/**
+	 * If the save species button is clicked
+	 *
+	 * @param actionEvent consumed when the button is clicked
+	 */
+	public void saveSpecies(ActionEvent actionEvent)
+	{
+		SanimalData.getInstance().addTask(new Task<Void>()
+		{
+			@Override
+			protected Void call() throws Exception
+			{
+				this.updateMessage("Uploading species to CyVerse...");
+				SanimalData.getInstance().getConnectionManager().pushLocalSpecies(SanimalData.getInstance().getSpeciesList());
+				return null;
+			}
+		});
+		actionEvent.consume();
+	}
+
+	/**
 	 * If the new species button is clicked...
 	 *
 	 * @param actionEvent consumed when the button is clicked
@@ -586,6 +606,26 @@ public class SanimalImportController implements Initializable
 	}
 
 	/**
+	 * If the save location button is clicked
+	 *
+	 * @param actionEvent consumed when the button is clicked
+	 */
+	public void saveLocations(ActionEvent actionEvent)
+	{
+		SanimalData.getInstance().addTask(new Task<Void>()
+		{
+			@Override
+			protected Void call() throws Exception
+			{
+				this.updateMessage("Uploading locations to CyVerse...");
+				SanimalData.getInstance().getConnectionManager().pushLocalLocations(SanimalData.getInstance().getLocationList());
+				return null;
+			}
+		});
+		actionEvent.consume();
+	}
+
+	/**
 	 * If the new location button is clicked...
 	 *
 	 * @param actionEvent consumed when the button is clicked
@@ -668,7 +708,37 @@ public class SanimalImportController implements Initializable
 		// If it's not null (so something is indeed selected), request the edit of the location
 		if (selected != null)
 		{
-			SanimalData.getInstance().getLocationList().remove(selected);
+			// Grab a list of all images registered in the program
+			List<ImageEntry> imageList = SanimalData.getInstance().getAllImages();
+			Long locationUsages = imageList
+					.stream()
+					.filter(imageEntry -> imageEntry.getLocationTaken() == selected).count();
+
+			// If no images contain the location, we're good to delete
+			if (locationUsages == 0)
+			{
+				SanimalData.getInstance().getLocationList().remove(selected);
+			}
+			// Otherwise prompt the user if they want to untag all images with the location
+			else
+			{
+				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+				alert.initOwner(this.imagePreview.getScene().getWindow());
+				alert.setTitle("Location in Use");
+				alert.setHeaderText("Location is already in use");
+				alert.setContentText("This location (" + selected.getName() + ") has already been tagged in " + locationUsages + " images.\nYes will untag all images with the location and remove it.");
+				Optional<ButtonType> responseOptional = alert.showAndWait();
+				responseOptional.ifPresent(response ->
+				{
+					// If they clicked OK
+					if (response.getButtonData() == ButtonBar.ButtonData.OK_DONE)
+					{
+						// Remove the location and remove each image that has its location set to the selected location
+						SanimalData.getInstance().getLocationList().remove(selected);
+						imageList.stream().filter(imageEntry -> imageEntry.getLocationTaken() == selected).forEach(imageEntry -> imageEntry.setLocationTaken(null));
+					}
+				});
+			}
 		}
 		// Otherwise show an alert that no location was selected
 		else
@@ -820,10 +890,6 @@ public class SanimalImportController implements Initializable
 					if (i % 10 == 0)
 						this.updateProgress(i, allImages.size());
 				}
-
-				// TEMP, for testing only
-				SanimalData.getInstance().getConnectionManager().pushLocalLocations(SanimalData.getInstance().getLocationList());
-				SanimalData.getInstance().getConnectionManager().pushLocalSpecies(SanimalData.getInstance().getSpeciesList());
 
 				return null;
 			}

@@ -8,6 +8,9 @@ import javafx.beans.property.*;
 import model.SanimalData;
 import model.location.Location;
 import model.species.Species;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.irods.jargon.core.connection.AuthScheme;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.connection.IRODSSession;
@@ -24,9 +27,7 @@ import org.irods.jargon.core.pub.io.*;
 import org.irods.jargon.core.transfer.TransferStatus;
 import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -36,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A class used to wrap the CyVerse Jargon FTP library
@@ -191,6 +193,46 @@ public class CyVerseConnectionManager
 				if (!sanimalSettings.exists())
 					sanimalSettings.mkdir();
 
+				// If we don't have a default species.json file, put a default one onto the storage location
+				IRODSFile sanimalSpeciesFile = this.irodsFileFactory.instanceIRODSFile("./Sanimal/Settings/species.json");
+				if (!sanimalSpeciesFile.exists())
+				{
+					// Pull the default species.json file
+					try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/species.json"));
+						 BufferedReader fileReader = new BufferedReader(inputStreamReader))
+					{
+						// Read the Json file
+						String json = fileReader.lines().collect(Collectors.joining("\n"));
+						// Write it to the directory
+						this.writeRemoteFile("./Sanimal/Settings/species.json", json);
+					}
+					catch (IOException e)
+					{
+						System.err.println("Could not read species.json. The file might be incorrectly formatted...");
+						e.printStackTrace();
+					}
+				}
+
+				// If we don't have a default locations.json file, put a default one onto the storage location
+				IRODSFile sanimalLocationsFile = this.irodsFileFactory.instanceIRODSFile("./Sanimal/Settings/locations.json");
+				if (!sanimalLocationsFile.exists())
+				{
+					// Pull the default locations.json file
+					try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/locations.json"));
+						 BufferedReader fileReader = new BufferedReader(inputStreamReader))
+					{
+						// Read the Json file
+						String json = fileReader.lines().collect(Collectors.joining("\n"));
+						// Write it to the directory
+						this.writeRemoteFile("./Sanimal/Settings/locations.json", json);
+					}
+					catch (IOException e)
+					{
+						System.err.println("Could not read locations.json. The file might be incorrectly formatted...");
+						e.printStackTrace();
+					}
+				}
+
 				// Create a subfolder containing all images uploaded with Sanimal
 				IRODSFile sanimalUploads = this.irodsFileFactory.instanceIRODSFile("./Sanimal/Uploads");
 				if (!sanimalUploads.exists())
@@ -211,40 +253,98 @@ public class CyVerseConnectionManager
 	public List<Location> pullRemoteLocations()
 	{
 		List<Location> remoteLocations = new ArrayList<>();
-		if (this.loggedInProperty.getValue())
+
+		String fileName = "./Sanimal/Settings/locations.json";
+		String fileContents = this.readRemoteFile(fileName);
+		if (fileContents != null)
 		{
-			// Read the contents of the locations folder and see if there's any pre-saved locations
 			try
 			{
-				Path localLocationPath = Files.createTempFile("locations", ".json");
-				File localLocationFile = localLocationPath.toFile();
-				localLocationFile.delete();
-				IRODSFile remoteLocationFile = this.irodsFileFactory.instanceIRODSFile("./Sanimal/Settings/locations.json");
-				if (remoteLocationFile.exists())
+				List<Location> locations = SanimalData.getInstance().getGson().fromJson(fileContents, LOCATION_LIST_TYPE);
+				remoteLocations.addAll(locations);
+			}
+			catch (JsonSyntaxException e)
+			{
+				System.out.println("Error reading the Json file " + fileName + ", Error was:\n");
+				e.printStackTrace();
+			}
+		}
+
+		return remoteLocations;
+	}
+
+	public void pushLocalLocations(List<Location> newLocations)
+	{
+		String json = SanimalData.getInstance().getGson().toJson(newLocations);
+		this.writeRemoteFile("./Sanimal/Settings/locations.json", json);
+	}
+
+	public List<Species> pullRemoteSpecies()
+	{
+		List<Species> remoteSpecies = new ArrayList<>();
+
+		String fileName = "./Sanimal/Settings/species.json";
+		String fileContents = this.readRemoteFile(fileName);
+		if (fileContents != null)
+		{
+			try
+			{
+				List<Species> species = SanimalData.getInstance().getGson().fromJson(fileContents, SPECIES_LIST_TYPE);
+				remoteSpecies.addAll(species);
+			}
+			catch (JsonSyntaxException e)
+			{
+				System.out.println("Error reading the Json file " + fileName + ", Error was:\n");
+				e.printStackTrace();
+			}
+		}
+
+		return remoteSpecies;
+	}
+
+	public void pushLocalSpecies(List<Species> newSpecies)
+	{
+		String json = SanimalData.getInstance().getGson().toJson(newSpecies);
+		this.writeRemoteFile("./Sanimal/Settings/species.json", json);
+	}
+
+	private String readRemoteFile(String file)
+	{
+		if (this.loggedInProperty.getValue())
+		{
+			try
+			{
+				// Create a temporary file to write to
+				Path localPath = Files.createTempFile("sanimalTemp", "." + FilenameUtils.getExtension(file));
+				File localFile = localPath.toFile();
+				// Delete the temporary file before copying so that we don't need to specify overwriting
+				localFile.delete();
+				// Create the remote file instance
+				IRODSFile remoteFile = this.irodsFileFactory.instanceIRODSFile(file);
+				// Ensure it exists
+				if (remoteFile.exists())
 				{
-					if (remoteLocationFile.canRead())
+					// Ensure it can be read
+					if (remoteFile.canRead())
 					{
-						this.irodsDataTransfer.getOperation(remoteLocationFile, localLocationFile, null, null);
-						localLocationFile.deleteOnExit();
-						if (localLocationFile.exists())
+						this.irodsDataTransfer.getOperation(remoteFile, localFile, null, null);
+						// Delete the local file after exiting
+						localFile.deleteOnExit();
+						// Ensure that the file exists and transfered
+						if (localFile.exists())
 						{
-							try
-							{
-								String fileContents = new String(Files.readAllBytes(localLocationFile.toPath()));
-								List<Location> locations = SanimalData.getInstance().getGson().fromJson(fileContents, LOCATION_LIST_TYPE);
-								remoteLocations.addAll(locations);
-							}
-							catch (JsonSyntaxException e)
-							{
-								System.out.println("Error reading the Json file " + localLocationFile.getAbsolutePath() + ", Error was:\n");
-								e.printStackTrace();
-							}
+							// Read the contents of the file and return them
+							return new String(Files.readAllBytes(localFile.toPath()));
 						}
 					}
 					else
 					{
-						System.err.println("Error reading location json file.\n");
+						System.err.println("Remote file cannot be read.\n");
 					}
+				}
+				else
+				{
+					System.err.println("Remote file does not exist.\n");
 				}
 			}
 			catch (IOException e)
@@ -253,43 +353,42 @@ public class CyVerseConnectionManager
 			}
 			catch (JargonException e)
 			{
-				System.err.println("Error pulling remote locations. Error was:\n");
+				System.err.println("Error pulling remote file (" + file + "). Error was:\n");
 				e.printStackTrace();
 			}
 		}
 		else
 		{
-			System.out.println("Must be logged in to initialize the sanimal remote directory!");
+			System.out.println("Must be logged in to read the sanimal remote directory!");
 		}
-		return remoteLocations;
+		return null;
 	}
 
-	public void pushLocalLocations(List<Location> newLocations)
+	private void writeRemoteFile(String file, String value)
 	{
 		if (this.loggedInProperty.getValue())
 		{
 			// Create a temporary file to write each location to before uploading
 			try
 			{
-				Path localLocationFilePath = Files.createTempFile("locations", ".json");
-				File localLocationFile = localLocationFilePath.toFile();
-				localLocationFile.deleteOnExit();
-				if (localLocationFile.exists())
+				Path localPath = Files.createTempFile("sanimalTemp", "." + FilenameUtils.getExtension(file));
+				File localFile = localPath.toFile();
+				localFile.deleteOnExit();
+				if (localFile.exists())
 				{
-					IRODSFile remoteLocationFile = this.irodsFileFactory.instanceIRODSFile("./Sanimal/Settings/locations.json");
+					IRODSFile remoteLocationFile = this.irodsFileFactory.instanceIRODSFile(file);
 					if (remoteLocationFile.exists())
 						remoteLocationFile.delete();
 
-					String json = SanimalData.getInstance().getGson().toJson(newLocations);
-					try (PrintWriter fileWriter = new PrintWriter(localLocationFile))
+					try (PrintWriter fileWriter = new PrintWriter(localFile))
 					{
-						fileWriter.write(json);
+						fileWriter.write(value);
 					}
-					this.irodsDataTransfer.putOperation(localLocationFile, remoteLocationFile, null, null);
+					this.irodsDataTransfer.putOperation(localFile, remoteLocationFile, null, null);
 				}
 				else
 				{
-					System.err.println("Error creating a temporary file to write locations to.\n");
+					System.err.println("Error creating a temporary file to write to.");
 				}
 			}
 			catch (IOException e)
@@ -298,113 +397,13 @@ public class CyVerseConnectionManager
 			}
 			catch (JargonException e)
 			{
-				System.err.println("Error pulling remote locations. Error was:\n");
+				System.err.println("Error pushing remote file (" + file + "). Error was:\n");
 				e.printStackTrace();
 			}
 		}
 		else
 		{
-			System.out.println("Must be logged in to push the sanimal local locations!");
-		}
-	}
-
-	public List<Species> pullRemoteSpecies()
-	{
-		List<Species> remoteSpecies = new ArrayList<>();
-		if (this.loggedInProperty.getValue())
-		{
-			// Read the contents of the species folder and see if there's any pre-saved species
-			try
-			{
-				Path localSpeciesPath = Files.createTempFile("species", ".json");
-				File localSpeciesFile = localSpeciesPath.toFile();
-				localSpeciesFile.delete();
-				IRODSFile remoteSpeciesFile = this.irodsFileFactory.instanceIRODSFile("./Sanimal/Settings/species.json");
-				if (remoteSpeciesFile.exists())
-				{
-					if (remoteSpeciesFile.canRead())
-					{
-						this.irodsDataTransfer.getOperation(remoteSpeciesFile, localSpeciesFile, null, null);
-						localSpeciesFile.deleteOnExit();
-						if (localSpeciesFile.exists())
-						{
-							try
-							{
-								String fileContents = new String(Files.readAllBytes(localSpeciesFile.toPath()));
-								List<Species> species = SanimalData.getInstance().getGson().fromJson(fileContents, SPECIES_LIST_TYPE);
-								remoteSpecies.addAll(species);
-							}
-							catch (JsonSyntaxException e)
-							{
-								System.out.println("Error reading the Json file " + localSpeciesFile.getAbsolutePath() + ", Error was:\n");
-								e.printStackTrace();
-							}
-						}
-					}
-					else
-					{
-						System.err.println("Error reading species json file.\n");
-					}
-				}
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-			catch (JargonException e)
-			{
-				System.err.println("Error pulling remote species. Error was:\n");
-				e.printStackTrace();
-			}
-		}
-		else
-		{
-			System.out.println("Must be logged in to initialize the sanimal remote directory!");
-		}
-		return remoteSpecies;
-	}
-
-	public void pushLocalSpecies(List<Species> newSpecies)
-	{
-		if (this.loggedInProperty.getValue())
-		{
-			// Create a temporary file to write each species to before uploading
-			try
-			{
-				Path localSpeciesFilePath = Files.createTempFile("species", ".json");
-				File localSpeciesFile = localSpeciesFilePath.toFile();
-				localSpeciesFile.deleteOnExit();
-				if (localSpeciesFile.exists())
-				{
-					IRODSFile remoteSpeciesFile = this.irodsFileFactory.instanceIRODSFile("./Sanimal/Settings/species.json");
-					if (remoteSpeciesFile.exists())
-						remoteSpeciesFile.delete();
-
-					String json = SanimalData.getInstance().getGson().toJson(newSpecies);
-					try (PrintWriter fileWriter = new PrintWriter(localSpeciesFile))
-					{
-						fileWriter.write(json);
-					}
-					this.irodsDataTransfer.putOperation(localSpeciesFile, remoteSpeciesFile, null, null);
-				}
-				else
-				{
-					System.err.println("Error creating a temporary file to write species to.\n");
-				}
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-			catch (JargonException e)
-			{
-				System.err.println("Error pulling remote species. Error was:\n");
-				e.printStackTrace();
-			}
-		}
-		else
-		{
-			System.out.println("Must be logged in to push the sanimal local species!");
+			System.out.println("Must be logged in to push a file to the Sanimal directory!");
 		}
 	}
 

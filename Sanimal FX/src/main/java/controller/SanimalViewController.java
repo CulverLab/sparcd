@@ -115,6 +115,7 @@ public class SanimalViewController implements Initializable
     private Stage importStage = null;
     private Stage mapStage = null;
     private Stage analysisStage = null;
+    private Stage uploadStage = null;
 
     // Guassian blur is used to hide the other buttons before logging in
     private final GaussianBlur backgroundBlur = new GaussianBlur();
@@ -184,6 +185,7 @@ public class SanimalViewController implements Initializable
                 importStage.getIcons().add(icon);
                 importStage.setTitle("SANIMAL Image Importer");
                 importStage.setScene(scene);
+                importStage.setMaximized(true);
             }
             catch (IOException e)
             {
@@ -292,6 +294,38 @@ public class SanimalViewController implements Initializable
      */
     public void uploadPressed(ActionEvent actionEvent)
     {
+        // If the stage has not yet been initialized
+        if (uploadStage == null)
+        {
+            try
+            {
+                // Initialize it
+                uploadStage = new Stage();
+                // Load the FXML document
+                URL document = getClass().getResource("/view/SanimalUpload.fxml");
+                Parent uploadRoot = FXMLLoader.load(document);
+                // Create the scene
+                Scene scene = new Scene(uploadRoot);
+                // Put the scene on the stage
+                Image icon = new Image("images/mainMenu/paw.png");
+                uploadStage.getIcons().add(icon);
+                uploadStage.setTitle("SANIMAL Upload");
+                uploadStage.setScene(scene);
+            }
+            catch (IOException e)
+            {
+                System.err.println("Could not load the Sanimal Upload FXML file. This is an error.");
+                e.printStackTrace();
+                return;
+            }
+        }
+
+        // Show the stage
+        if (!uploadStage.isShowing())
+            uploadStage.show();
+
+        // Consume the event
+        actionEvent.consume();
     }
 
     /**
@@ -357,33 +391,38 @@ public class SanimalViewController implements Initializable
                 @Override
                 protected Boolean call() throws Exception
                 {
-                // First login
-                this.updateMessage("Logging in...");
-                this.updateProgress(1, 4);
-                Boolean loginSuccessful = connectionManager.login(username, password);
+                    // First login
+                    this.updateMessage("Logging in...");
+                    this.updateProgress(1, 5);
+                    Boolean loginSuccessful = connectionManager.login(username, password);
 
-                // Then initialize the remove sanimal directory
-                this.updateMessage("Initializing Sanimal remote directory...");
-                this.updateProgress(2, 4);
-                connectionManager.initSanimalRemoteDirectory();
+                    // Then initialize the remove sanimal directory
+                    this.updateMessage("Initializing Sanimal remote directory...");
+                    this.updateProgress(2, 5);
+                    connectionManager.initSanimalRemoteDirectory();
 
-                // Pull any locations from the remote directory
-                this.updateMessage("Pulling locations from remote directory...");
-                this.updateProgress(3, 4);
-                List<Location> locations = connectionManager.pullRemoteLocations();
-                List<Species> species = connectionManager.pullRemoteSpecies();
-                // Set the location list to be these locations
-                Platform.runLater(() -> {
-                    SanimalData.getInstance().getLocationList().clear();
-                    SanimalData.getInstance().getLocationList().addAll(locations);
-                    //SanimalData.getInstance().getSpeciesList().clear();
-                    SanimalData.getInstance().getSpeciesList().addAll(species);
-                });
+                    // Pull any locations from the remote directory
+                    this.updateMessage("Pulling locations from remote directory...");
+                    this.updateProgress(3, 5);
+                    List<Location> locations = connectionManager.pullRemoteLocations();
 
-                // Pull any species from the remote directory
-                this.updateMessage("Pulling locations from remote directory...");
-                this.updateProgress(3, 4);
-                return loginSuccessful;
+                    // Pull any species from the remote directory
+                    this.updateMessage("Pulling species from remote directory...");
+                    this.updateProgress(4, 5);
+                    List<Species> species = connectionManager.pullRemoteSpecies();
+
+                    // Set the locations and species on the FXApplication thread
+                    Platform.runLater(() ->
+                    {
+                        // Set the location list to be these locations
+                        SanimalData.getInstance().getLocationList().clear();
+                        SanimalData.getInstance().getLocationList().addAll(locations);
+                        // Set the species list to be these species
+                        SanimalData.getInstance().getSpeciesList().clear();
+                        SanimalData.getInstance().getSpeciesList().addAll(species);
+                    });
+
+                    return loginSuccessful;
                 }
             };
             // Once the task succeeds
@@ -439,6 +478,11 @@ public class SanimalViewController implements Initializable
                         {
                             mapStage.close();
                             mapStage = null;
+                        }
+                        if (uploadStage != null)
+                        {
+                            uploadStage.close();
+                            uploadStage = null;
                         }
                         // Clear locations, species, and images
                         SanimalData.getInstance().getLocationList().clear();

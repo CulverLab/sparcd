@@ -22,12 +22,12 @@
 <?import library.TreeViewAutomatic?>
 <?import org.controlsfx.control.StatusBar?>
 
-<SplitPane fx:id="mainPane" dividerPositions="0.25, 0.75" minHeight="700" minWidth="1300" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalImportController">
+<SplitPane fx:id="mainPane" dividerPositions="0.28, 0.75" minHeight="700" minWidth="1300" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalImportController">
     <stylesheets>
         <URL value="@SanimalImport.css" />
     </stylesheets>
     <items>
-        <VBox SplitPane.resizableWithParent="false" prefWidth="310" styleClass="lightBorder">
+        <VBox prefWidth="310" styleClass="lightBorder" SplitPane.resizableWithParent="false">
             <children>
                 <HBox>
                     <children>
@@ -41,6 +41,7 @@
                         <Insets bottom="20" left="5" right="5" top="20" />
                     </padding>
                     <children>
+                        <Button mnemonicParsing="false" onAction="#saveSpecies" styleClass="saveBtn" text="Save" />
                         <Button mnemonicParsing="false" onAction="#addNewSpecies" styleClass="addBtn" text="New Species" />
                         <Button mnemonicParsing="false" onAction="#editCurrentSpecies" styleClass="editBtn" text="Edit" />
                         <Button mnemonicParsing="false" onAction="#deleteCurrentSpecies" styleClass="deleteBtn" text="Delete" />
@@ -86,7 +87,7 @@
                         </StackPane>
                     </children>
                 </StackPane>
-                <SplitPane SplitPane.resizableWithParent="false" minHeight="200" prefHeight="200" prefWidth="655.0" >
+                <SplitPane dividerPositions="0.5" minHeight="200" prefHeight="200" prefWidth="655.0" SplitPane.resizableWithParent="false">
                     <VBox styleClass="lightBorder" GridPane.columnSpan="1" GridPane.rowSpan="6">
                         <children>
                             <ListView fx:id="locationListView" orientation="HORIZONTAL" styleClass="locationList" />
@@ -95,6 +96,7 @@
                                     <Insets bottom="20" left="5" right="5" top="20" />
                                 </padding>
                                 <children>
+                                    <Button mnemonicParsing="false" onAction="#saveLocations" styleClass="saveBtn" text="Save" />
                                     <Button mnemonicParsing="false" onAction="#addNewLocation" styleClass="addBtn" text="New Location" />
                                     <Button mnemonicParsing="false" onAction="#editCurrentLocation" styleClass="editBtn" text="Edit" />
                                     <Button mnemonicParsing="false" onAction="#deleteCurrentLocation" styleClass="deleteBtn" text="Delete" />
@@ -102,7 +104,7 @@
                             </FlowPane>
                         </children>
                     </VBox>
-                    <GridPane SplitPane.resizableWithParent="false" >
+                    <GridPane SplitPane.resizableWithParent="false">
                         <padding>
                             <Insets left="5" right="5" top="5" />
                         </padding>
@@ -111,12 +113,12 @@
                             <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" />
                         </columnConstraints>
                         <rowConstraints>
-                            <RowConstraints vgrow="SOMETIMES" minHeight="30.0" />
-                            <RowConstraints vgrow="SOMETIMES" minHeight="30.0" />
-                            <RowConstraints vgrow="SOMETIMES" minHeight="30.0" />
-                            <RowConstraints vgrow="SOMETIMES" minHeight="30.0" />
-                            <RowConstraints vgrow="SOMETIMES" minHeight="30.0" />
-                            <RowConstraints vgrow="SOMETIMES" minHeight="30.0" />
+                            <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
                         </rowConstraints>
                         <children>
                             <Label text="Date Taken: " GridPane.columnIndex="0" />
@@ -135,7 +137,7 @@
                 </SplitPane>
             </items>
         </SplitPane>
-        <VBox SplitPane.resizableWithParent="false" prefWidth="310" styleClass="lightBorder">
+        <VBox prefWidth="310" styleClass="lightBorder" SplitPane.resizableWithParent="false">
             <children>
                 <TreeViewAutomatic fx:id="imageTree" VBox.vgrow="ALWAYS" />
                 <FlowPane alignment="CENTER" hgap="5" vgap="10">

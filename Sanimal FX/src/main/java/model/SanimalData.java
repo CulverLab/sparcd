@@ -77,6 +77,7 @@ public class SanimalData
 	 */
 	private void loadSpeciesFromFile()
 	{
+		/*
 		try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/species.txt"));
 			 BufferedReader fileReader = new BufferedReader(inputStreamReader))
 		{
@@ -94,6 +95,7 @@ public class SanimalData
 			System.err.println("Could not read species.txt. The file might be incorrectly formatted...");
 			e.printStackTrace();
 		}
+		*/
 	}
 
 	/**
