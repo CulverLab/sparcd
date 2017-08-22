@@ -19,6 +19,7 @@ import org.hildan.fxgson.FxGson;
 import java.io.*;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 /**
@@ -55,6 +56,8 @@ public class SanimalData
 	// The connection manager used to authenticate the CyVerse user
 	private CyVerseConnectionManager connectionManager = new CyVerseConnectionManager();
 
+	private final Preferences sanimalPreferences = Preferences.userNodeForPackage(SanimalData.class);
+
 	/**
 	 * Private constructor since we're using the singleton design pattern
 	 */
@@ -63,39 +66,11 @@ public class SanimalData
 		// Create the species list, and add some default species
 		this.speciesList = FXCollections.observableArrayList(species -> new Observable[]{species.nameProperty(), species.scientificNameProperty(), species.speciesIconURLProperty()});
 
-		this.loadSpeciesFromFile();
-
 		// Create the location list and add some default locations
 		this.locationList = FXCollections.observableArrayList(location -> new Observable[]{location.nameProperty(), location.getLatProperty(), location.getLngProperty(), location.getElevationProperty()});
 
 		// The tree just starts in the current directory which is a dummy directory
 		this.imageTree = new ImageDirectory(new File("./"));
-	}
-
-	/**
-	 * Reads all species entries from species.txt
-	 */
-	private void loadSpeciesFromFile()
-	{
-		/*
-		try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/species.txt"));
-			 BufferedReader fileReader = new BufferedReader(inputStreamReader))
-		{
-			// Read each line of the file as a list of strings
-			fileReader.lines()
-					// Remove empty lines and lines that do not have 3 commas
-					.filter(line -> !StringUtils.isEmpty(line) && StringUtils.countMatches(line, ",") == 2)
-					// Map the line to an array of lines that should have 1st element as the name, 2nd element as scientific name, and 3rd element as image URL
-					.map(line -> StringUtils.split(line, ","))
-					// For each of these lines, add a new species entry
-					.forEach(separated -> this.speciesList.add(new Species(separated[0], separated[1], separated[2])));
-		}
-		catch (IOException e)
-		{
-			System.err.println("Could not read species.txt. The file might be incorrectly formatted...");
-			e.printStackTrace();
-		}
-		*/
 	}
 
 	/**
@@ -203,5 +178,13 @@ public class SanimalData
 	public Gson getGson()
 	{
 		return this.gson;
+	}
+
+	/**
+	 * @return Preference file used to store usernames and passwords
+	 */
+	public Preferences getSanimalPreferences()
+	{
+		return sanimalPreferences;
 	}
 }

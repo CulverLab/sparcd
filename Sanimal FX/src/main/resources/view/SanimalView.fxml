@@ -19,6 +19,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.PasswordField?>
 <?import org.controlsfx.control.HyperlinkLabel?>
+<?import javafx.scene.control.CheckBox?>
 <StackPane prefHeight="300.0" prefWidth="524.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="controller.SanimalViewController">
     <children>
@@ -36,6 +37,9 @@
                     <image>
                         <Image url="@../images/mainMenu/sanimalTitle.png"/>
                     </image>
+                </ImageView>
+                <ImageView AnchorPane.rightAnchor="10" AnchorPane.bottomAnchor="10" fitWidth="300" preserveRatio="true">
+                    <Image url="@../images/mainMenu/poweredByCyverse.png"/>
                 </ImageView>
                 <Button AnchorPane.topAnchor="10" AnchorPane.rightAnchor="10" fx:id="btnLogout" minWidth="130" maxWidth="130" onAction="#logoutPressed" styleClass="loginBtn" text="Logout" textAlignment="CENTER"/>
                 <Label AnchorPane.topAnchor="15" AnchorPane.rightAnchor="150" textAlignment="RIGHT" fx:id="lblUsername" styleClass="usernameLbl" GridPane.hgrow="ALWAYS" />
@@ -58,14 +62,15 @@
                                 GridPane.rowIndex="1"/>
                         <Button fx:id="btnMap" minWidth="150" onAction="#mapPressed" styleClass="mapBtn" text="Map" textAlignment="CENTER"
                                 GridPane.rowIndex="2"/>
-                        <Button fx:id="btnUpload" minWidth="150" onAction="#uploadPressed" styleClass="uploadBtn" text="Upload" textAlignment="CENTER" GridPane.rowIndex="3"/>
+                        <Button fx:id="btnUpload" minWidth="150" onAction="#uploadPressed" styleClass="uploadBtn" text="Upload" textAlignment="CENTER"
+                                GridPane.rowIndex="3"/>
                         <Button fx:id="btnExit" minWidth="150" onAction="#exitPressed" styleClass="exitBtn" text="Exit" textAlignment="CENTER"
                                 GridPane.rowIndex="4"/>
                     </children>
                 </GridPane>
             </children>
         </AnchorPane>
-        <StackPane minWidth="300" maxWidth="300" minHeight="260" maxHeight="260" fx:id="loginPane">
+        <StackPane minWidth="300" maxWidth="300" minHeight="320" maxHeight="320" fx:id="loginPane">
             <Rectangle fx:id="rctLoginBackground" arcHeight="15" arcWidth="15" fill="beige" stroke="black"
                        StackPane.alignment="CENTER"/>
             <GridPane>
@@ -78,16 +83,15 @@
                     <RowConstraints/>
                     <RowConstraints/>
                     <RowConstraints/>
+                    <RowConstraints/>
                 </rowConstraints>
                 <children>
-                    <Label text="CyVerse Sign In" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                    <ImageView GridPane.halignment="CENTER" GridPane.valignment="CENTER" fitWidth="220" preserveRatio="true">
                         <GridPane.margin>
                             <Insets top="10" bottom="10"/>
                         </GridPane.margin>
-                        <font>
-                            <Font size="20.0"/>
-                        </font>
-                    </Label>
+                        <Image url="@../images/mainMenu/cyverse.png" />
+                    </ImageView>
                     <TextField fx:id="txtUsername" onKeyPressed="#enterPressed" HBox.hgrow="ALWAYS" promptText="Username" GridPane.rowIndex="1">
                         <GridPane.margin>
                             <Insets left="20" right="20" top="10" bottom="10"/>
@@ -104,12 +108,17 @@
                             <Font size="16"/>
                         </font>
                     </PasswordField>
-                    <HyperlinkLabel fx:id="hypRegisterPassword" text="[Register] | Forgot [Password]?" onAction="#linkPressed" GridPane.rowIndex="4">
+                    <CheckBox fx:id="cbxRememberUsername" text="Remember Username" GridPane.rowIndex="4">
+                        <GridPane.margin>
+                            <Insets left="20" right="20" top="10" bottom="10"/>
+                        </GridPane.margin>
+                    </CheckBox>
+                    <HyperlinkLabel fx:id="hypRegisterPassword" text="[Register] | Forgot [Password]?" onAction="#linkPressed" GridPane.rowIndex="5">
                         <GridPane.margin>
                             <Insets left="20" right="20" top="10" bottom="10"/>
                         </GridPane.margin>
                     </HyperlinkLabel>
-                    <Button fx:id="btnLogin" onAction="#loginPressed" GridPane.halignment="CENTER" text="Sign In" GridPane.rowIndex="5">
+                    <Button fx:id="btnLogin" onAction="#loginPressed" GridPane.halignment="CENTER" text="Sign In" GridPane.rowIndex="6">
                         <GridPane.margin>
                             <Insets left="20" right="20" top="10" bottom="10"/>
                         </GridPane.margin>

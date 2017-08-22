@@ -107,9 +107,15 @@ public class SanimalViewController implements Initializable
     @FXML
     public PasswordField txtPassword;
 
+    // Check box to remember username
+    @FXML
+    public CheckBox cbxRememberUsername;
+
     ///
     /// FXML bound fields end
     ///
+
+    private static final String USERNAME_PREF = "username";
 
     // Store the stages to re-open them if they get closed
     private Stage importStage = null;
@@ -158,6 +164,20 @@ public class SanimalViewController implements Initializable
         // Register validators for username and password. This simply makes sure that they're both not empty
         this.USER_PASS_VALIDATOR.registerValidator(this.txtUsername, Validator.createEmptyValidator("Username cannot be empty!"));
         this.USER_PASS_VALIDATOR.registerValidator(this.txtPassword, Validator.createEmptyValidator("Password cannot be empty!"));
+
+        String storedUsername = SanimalData.getInstance().getSanimalPreferences().get(USERNAME_PREF, "");
+
+        // Load default username if it was stored
+        if (!storedUsername.isEmpty())
+        {
+            this.txtUsername.setText(storedUsername);
+            this.cbxRememberUsername.setSelected(true);
+        }
+
+        this.cbxRememberUsername.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue)
+                SanimalData.getInstance().getSanimalPreferences().put(USERNAME_PREF, "");
+        });
     }
 
     /**
@@ -351,6 +371,9 @@ public class SanimalViewController implements Initializable
     {
         // Login
         this.performLogin();
+        // Save username preference if the box is checked
+        if (this.cbxRememberUsername.isSelected())
+            SanimalData.getInstance().getSanimalPreferences().put(USERNAME_PREF, this.txtUsername.getText());
         actionEvent.consume();
     }
 
@@ -489,6 +512,7 @@ public class SanimalViewController implements Initializable
                         SanimalData.getInstance().getSpeciesList().clear();
                         SanimalData.getInstance().getImageTree().getChildren().clear();
                     });
+
                     // Logout from CyVerse
                     SanimalData.getInstance().getConnectionManager().logout();
                     return null;
