@@ -41,7 +41,7 @@
                         <Insets bottom="20" left="5" right="5" top="20" />
                     </padding>
                     <children>
-                        <Button mnemonicParsing="false" onAction="#saveSpecies" styleClass="saveBtn" text="Save" />
+                        <Button mnemonicParsing="false" fx:id="btnSaveSpecies" onAction="#saveSpecies" styleClass="saveBtn" text="Save" />
                         <Button mnemonicParsing="false" onAction="#addNewSpecies" styleClass="addBtn" text="New Species" />
                         <Button mnemonicParsing="false" onAction="#editCurrentSpecies" styleClass="editBtn" text="Edit" />
                         <Button mnemonicParsing="false" onAction="#deleteCurrentSpecies" styleClass="deleteBtn" text="Delete" />
@@ -96,7 +96,7 @@
                                     <Insets bottom="20" left="5" right="5" top="20" />
                                 </padding>
                                 <children>
-                                    <Button mnemonicParsing="false" onAction="#saveLocations" styleClass="saveBtn" text="Save" />
+                                    <Button mnemonicParsing="false" fx:id="btnSaveLocations" onAction="#saveLocations" styleClass="saveBtn" text="Save" />
                                     <Button mnemonicParsing="false" onAction="#addNewLocation" styleClass="addBtn" text="New Location" />
                                     <Button mnemonicParsing="false" onAction="#editCurrentLocation" styleClass="editBtn" text="Edit" />
                                     <Button mnemonicParsing="false" onAction="#deleteCurrentLocation" styleClass="deleteBtn" text="Delete" />
@@ -145,8 +145,8 @@
                         <Insets bottom="20" left="5" right="5" top="20" />
                     </padding>
                     <children>
-                        <Button fx:id="btnSave" mnemonicParsing="false" onAction="#saveImages" styleClass="saveBtn" text="Save" />
-                        <Button mnemonicParsing="false" onAction="#importImages" styleClass="importBtn" text="Import Images" />
+                        <Button fx:id="btnSaveImages" mnemonicParsing="false" onAction="#saveImages" styleClass="saveBtn" text="Save" />
+                        <Button fx:id="btnImportImages" mnemonicParsing="false" onAction="#importImages" styleClass="importBtn" text="Import Images" />
                         <Button mnemonicParsing="false" onAction="#deleteImages" styleClass="deleteBtn" text="Delete" />
                     </children>
                 </FlowPane>

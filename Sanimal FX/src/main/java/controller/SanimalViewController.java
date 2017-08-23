@@ -1,6 +1,5 @@
 package controller;
 
-import ch.qos.logback.classic.Level;
 import javafx.animation.Animation;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -32,7 +31,11 @@ import model.SanimalData;
 import model.cyverse.CyVerseConnectionManager;
 import model.location.Location;
 import model.species.Species;
+import model.util.FinishableTask;
 import org.apache.commons.validator.util.ValidatorUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.controlsfx.control.HyperlinkLabel;
 import org.controlsfx.dialog.LoginDialog;
 import org.controlsfx.validation.ValidationSupport;
@@ -43,15 +46,18 @@ import org.irods.jargon.core.connection.auth.AuthResponse;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactoryImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.impl.StaticLoggerBinder;
 
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 /**
  * Controller class for the main program
@@ -178,6 +184,8 @@ public class SanimalViewController implements Initializable
             if (!newValue)
                 SanimalData.getInstance().getSanimalPreferences().put(USERNAME_PREF, "");
         });
+
+
     }
 
     /**
@@ -409,7 +417,7 @@ public class SanimalViewController implements Initializable
             String username = this.txtUsername.getText();
             String password = this.txtPassword.getText();
             // Thread off logging in...
-            Task<Boolean> loginAttempt = new Task<Boolean>()
+            FinishableTask<Boolean> loginAttempt = new FinishableTask<Boolean>()
             {
                 @Override
                 protected Boolean call() throws Exception
@@ -419,37 +427,42 @@ public class SanimalViewController implements Initializable
                     this.updateProgress(1, 5);
                     Boolean loginSuccessful = connectionManager.login(username, password);
 
-                    // Then initialize the remove sanimal directory
-                    this.updateMessage("Initializing Sanimal remote directory...");
-                    this.updateProgress(2, 5);
-                    connectionManager.initSanimalRemoteDirectory();
-
-                    // Pull any locations from the remote directory
-                    this.updateMessage("Pulling locations from remote directory...");
-                    this.updateProgress(3, 5);
-                    List<Location> locations = connectionManager.pullRemoteLocations();
-
-                    // Pull any species from the remote directory
-                    this.updateMessage("Pulling species from remote directory...");
-                    this.updateProgress(4, 5);
-                    List<Species> species = connectionManager.pullRemoteSpecies();
-
-                    // Set the locations and species on the FXApplication thread
-                    Platform.runLater(() ->
+                    if (loginSuccessful)
                     {
-                        // Set the location list to be these locations
-                        SanimalData.getInstance().getLocationList().clear();
-                        SanimalData.getInstance().getLocationList().addAll(locations);
-                        // Set the species list to be these species
-                        SanimalData.getInstance().getSpeciesList().clear();
-                        SanimalData.getInstance().getSpeciesList().addAll(species);
-                    });
+                        // Then initialize the remove sanimal directory
+                        this.updateMessage("Initializing Sanimal remote directory...");
+                        this.updateProgress(2, 5);
+                        connectionManager.initSanimalRemoteDirectory();
+
+                        // Pull any locations from the remote directory
+                        this.updateMessage("Pulling locations from remote directory...");
+                        this.updateProgress(3, 5);
+                        List<Location> locations = connectionManager.pullRemoteLocations();
+
+                        // Pull any species from the remote directory
+                        this.updateMessage("Pulling species from remote directory...");
+                        this.updateProgress(4, 5);
+                        List<Species> species = connectionManager.pullRemoteSpecies();
+
+                        // Set the locations and species on the FXApplication thread
+                        Platform.runLater(() ->
+                        {
+                            // Set the location list to be these locations
+                            SanimalData.getInstance().getLocationList().clear();
+                            SanimalData.getInstance().getLocationList().addAll(locations);
+                            // Set the species list to be these species
+                            SanimalData.getInstance().getSpeciesList().clear();
+                            SanimalData.getInstance().getSpeciesList().addAll(species);
+                        });
+
+                        this.updateProgress(5, 5);
+                    }
 
                     return loginSuccessful;
                 }
             };
             // Once the task succeeds
-            loginAttempt.setOnSucceeded(event -> {
+            loginAttempt.setOnFinished(event -> {
                 Boolean loginSucceeded = loginAttempt.getValue();
                 // If we did not succeed, notify the user
                 if (!loginSucceeded)
@@ -481,7 +494,7 @@ public class SanimalViewController implements Initializable
         if (SanimalData.getInstance().getConnectionManager().loggedInProperty().getValue())
         {
             // Thread off logging out
-            Task<Void> logoutAttempt = new Task<Void>()
+            FinishableTask<Void> logoutAttempt = new FinishableTask<Void>()
             {
                 @Override
                 protected Void call() throws Exception
@@ -519,7 +532,7 @@ public class SanimalViewController implements Initializable
                 }
             };
             // Once the thread completes, we clear the username and password
-            logoutAttempt.setOnSucceeded(event -> {
+            logoutAttempt.setOnFinished(event -> {
                 this.txtUsername.clear();
                 this.txtPassword.clear();
             });

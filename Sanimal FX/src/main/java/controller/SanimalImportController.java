@@ -37,6 +37,7 @@ import model.image.DirectoryManager;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
+import model.util.FinishableTask;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.StatusBar;
 import org.fxmisc.easybind.EasyBind;
@@ -101,6 +102,10 @@ public class SanimalImportController implements Initializable
 	@FXML
 	public Button btnResetImage;
 
+	// The button to begin importing images
+	@FXML
+	public Button btnImportImages;
+
 	// The region that hovers over the image which is used for its border
 	@FXML
 	public Region imageAddOverlay;
@@ -128,7 +133,13 @@ public class SanimalImportController implements Initializable
 
 	// The save button to save all current images
 	@FXML
-	public Button btnSave;
+	public Button btnSaveImages;
+	// The save button to save all current locations
+	@FXML
+	public Button btnSaveLocations;
+	// The save button to save all current species
+	@FXML
+	public Button btnSaveSpecies;
 
 	// The image pane used to do the species preview operation
 	@FXML
@@ -294,12 +305,12 @@ public class SanimalImportController implements Initializable
 		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).map(imageEntry -> new Image(imageEntry.getFile().toURI().toString())));
 		// Bind the species entry list view items to the selected image species present
 		this.speciesEntryListView.itemsProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getSpeciesPresent));
-		// Hide the progress bar when tasks remaining == 1
-		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().pendingTasksProperty().isEqualTo(0).not());
+		// Hide the progress bar when no tasks remain
+		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().currentTaskProperty().isNotNull());
 		// Bind the progress bar's text property to tasks remaining
-		this.sbrTaskProgress.textProperty().bind(EasyBind.select(SanimalData.getInstance().currentTaskProperty()).selectObject(Task::messageProperty).map(message -> "Tasks (" + SanimalData.getInstance().pendingTasksProperty().asString("%d").getValue() + "): " + message));
+		this.sbrTaskProgress.textProperty().bind(EasyBind.select(SanimalData.getInstance().currentTaskProperty()).selectObject(Task::messageProperty).orElse(""));
 		// Bind the progress bar's progress property to the current task's progress
-		this.sbrTaskProgress.progressProperty().bind(EasyBind.select(SanimalData.getInstance().currentTaskProperty()).selectObject(Task::progressProperty));
+		this.sbrTaskProgress.progressProperty().bind(EasyBind.select(SanimalData.getInstance().currentTaskProperty()).selectObject(Task::progressProperty).orElse(-1));
 		// Bind the left arrow's visibility property to if there is a previous item available
 		this.btnLeftArrow.visibleProperty().bind(
 				this.imageTree.getSelectionModel().selectedIndexProperty()
@@ -461,16 +472,20 @@ public class SanimalImportController implements Initializable
 	 */
 	public void saveSpecies(ActionEvent actionEvent)
 	{
-		SanimalData.getInstance().addTask(new Task<Void>()
+		this.btnSaveSpecies.setDisable(true);
+		FinishableTask<Void> uploadTask = new FinishableTask<Void>()
 		{
 			@Override
 			protected Void call() throws Exception
 			{
 				this.updateMessage("Uploading species to CyVerse...");
+				this.updateProgress(-1, -1);
 				SanimalData.getInstance().getConnectionManager().pushLocalSpecies(SanimalData.getInstance().getSpeciesList());
 				return null;
 			}
-		});
+		};
+		uploadTask.setOnFinished(event -> this.btnSaveSpecies.setDisable(false));
+		SanimalData.getInstance().addTask(uploadTask);
 		actionEvent.consume();
 	}
 
@@ -612,16 +627,20 @@ public class SanimalImportController implements Initializable
 	 */
 	public void saveLocations(ActionEvent actionEvent)
 	{
-		SanimalData.getInstance().addTask(new Task<Void>()
+		this.btnSaveLocations.setDisable(true);
+		FinishableTask<Void> uploadTask = new FinishableTask<Void>()
 		{
 			@Override
 			protected Void call() throws Exception
 			{
 				this.updateMessage("Uploading locations to CyVerse...");
+				this.updateProgress(-1, -1);
 				SanimalData.getInstance().getConnectionManager().pushLocalLocations(SanimalData.getInstance().getLocationList());
 				return null;
 			}
-		});
+		};
+		uploadTask.setOnFinished(event -> this.btnSaveLocations.setDisable(false));
+		SanimalData.getInstance().addTask(uploadTask);
 		actionEvent.consume();
 	}
 
@@ -770,7 +789,8 @@ public class SanimalImportController implements Initializable
 		// If the file chosen is a file and a directory process it
 		if (file != null && file.isDirectory())
 		{
-			SanimalData.getInstance().addTask(new Task<Void>()
+			this.btnImportImages.setDisable(true);
+			FinishableTask<Void> importTask = new FinishableTask<Void>()
 			{
 				@Override
 				protected Void call() throws Exception
@@ -843,7 +863,9 @@ public class SanimalImportController implements Initializable
 
 					return null;
 				}
-			});
+			};
+			importTask.setOnFinished(event -> this.btnImportImages.setDisable(false));
+			SanimalData.getInstance().addTask(importTask);
 		}
 		// Consume the event
 		actionEvent.consume();
@@ -874,8 +896,8 @@ public class SanimalImportController implements Initializable
 	public void saveImages(ActionEvent actionEvent)
 	{
 		// Hide the save button while saving is taking place
-		this.btnSave.setDisable(true);
-		Task<Void> writeImages = new Task<Void>()
+		this.btnSaveImages.setDisable(true);
+		FinishableTask<Void> writeImages = new FinishableTask<Void>()
 		{
 			@Override
 			protected Void call() throws Exception
@@ -895,9 +917,7 @@ public class SanimalImportController implements Initializable
 			}
 		};
 		// When the task completes in any manner, make the save button clickable again
-		writeImages.setOnSucceeded(event -> SanimalImportController.this.btnSave.setDisable(false));
-		writeImages.setOnFailed(event -> SanimalImportController.this.btnSave.setDisable(false));
-		writeImages.setOnCancelled(event -> SanimalImportController.this.btnSave.setDisable(false));
+		writeImages.setOnFinished(event -> SanimalImportController.this.btnSaveImages.setDisable(false));
 		SanimalData.getInstance().addTask(writeImages);
 		actionEvent.consume();
 	}

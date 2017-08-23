@@ -57,10 +57,11 @@
             <version>RELEASE</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.controlsfx/controlsfx -->
+        <!-- Using RELEASE version causes issues with the progress bar. Maybe this will be fixed later? -->
         <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
-            <version>RELEASE</version>
+            <version>8.40.12</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/commons-validator/commons-validator -->
         <dependency>
@@ -102,7 +103,7 @@
         <dependency>
             <groupId>org.hildan.fxgson</groupId>
             <artifactId>fx-gson</artifactId>
-            <version>RELEASE</version> <!-- replace with latest version -->
+            <version>RELEASE</version>
         </dependency>
 
     </dependencies>

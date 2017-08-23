@@ -47,7 +47,6 @@ public class SanimalData
 
 	// Use a thread pool executor to perform tasks that take a while
 	private ExecutorService taskPerformer = Executors.newSingleThreadExecutor();
-	private final IntegerProperty pendingTasks = new SimpleIntegerProperty(0);
 	private final ObjectProperty<Task> currentTask = new SimpleObjectProperty<>(null);
 
 	// GSon object used to serialize data
@@ -116,13 +115,12 @@ public class SanimalData
 	 */
 	public <T> void addTask(Task<T> task)
 	{
-		this.pendingTasks.setValue(this.pendingTasks.getValue() + 1);
 		EventHandler<WorkerStateEvent> onSucceeded = task.getOnSucceeded();
 		task.setOnSucceeded(taskEvent ->
 		{
 			if (onSucceeded != null)
 				onSucceeded.handle(taskEvent);
-			this.pendingTasks.setValue(this.pendingTasks.getValue() - 1);
+			currentTask.setValue(null);
 		});
 		EventHandler<WorkerStateEvent> onRunning = task.getOnRunning();
 		task.setOnRunning(taskEvent ->
@@ -132,14 +130,6 @@ public class SanimalData
 			currentTask.setValue(task);
 		});
 		this.taskPerformer.submit(task);
-	}
-
-	/**
-	 * @return The property representing the number of active thread tasks
-	 */
-	public IntegerProperty pendingTasksProperty()
-	{
-		return this.pendingTasks;
 	}
 
 	/**
@@ -159,7 +149,6 @@ public class SanimalData
 		this.taskPerformer.shutdownNow();
 		// Set the current task to null, and number of pending tasks to 0
 		this.currentTask.setValue(null);
-		this.pendingTasks.setValue(0);
 		// Create a new task performer and throw away the old one
 		this.taskPerformer = Executors.newSingleThreadExecutor();
 	}
