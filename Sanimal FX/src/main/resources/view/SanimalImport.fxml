@@ -51,7 +51,7 @@
         </VBox>
         <SplitPane dividerPositions="0.7" orientation="VERTICAL">
             <items>
-                <StackPane fx:id="imagePane" onDragDropped="#speciesListDragDropped" onDragEntered="#speciesListDragEntered" onDragExited="#speciesListDragExited" onDragOver="#imagePaneDragOver" onMouseEntered="#imagePaneMouseEntered" onMouseExited="#imagePaneMouseExited">
+                <StackPane fx:id="imagePane" onDragDropped="#imagePaneDragDropped" onDragEntered="#imagePaneDragEntered" onDragExited="#imagePaneDragExited" onDragOver="#imagePaneDragOver" onMouseEntered="#imagePaneMouseEntered" onMouseExited="#imagePaneMouseExited">
                     <children>
                         <ImageViewPane fx:id="imagePreviewPane" styleClass="imageViewBackground">
                             <imageView>
@@ -90,7 +90,7 @@
                 <SplitPane dividerPositions="0.5" minHeight="200" prefHeight="200" prefWidth="655.0" SplitPane.resizableWithParent="false">
                     <VBox styleClass="lightBorder" GridPane.columnSpan="1" GridPane.rowSpan="6">
                         <children>
-                            <ListView fx:id="locationListView" orientation="HORIZONTAL" styleClass="locationList" />
+                            <ListView fx:id="locationListView" onDragDetected="#locationListDrag" orientation="HORIZONTAL" styleClass="locationList" />
                             <FlowPane alignment="CENTER" hgap="5" vgap="10">
                                 <padding>
                                     <Insets bottom="20" left="5" right="5" top="20" />

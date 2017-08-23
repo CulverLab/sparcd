@@ -226,17 +226,6 @@ public class SanimalImportController implements Initializable
 		this.locationListView.setItems(locations);
 		// Set the cell factory to be our custom location list cell
 		this.locationListView.setCellFactory(x -> FXMLLoaderUtils.loadFXML("LocationListEntry.fxml").getController());
-		// When we select a location, we need to set the location on the selected image or directory of images
-		this.locationListView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) ->
-		{
-			// Make sure we got a new value
-			if (newValue != null)
-				// Check if we have a selected image or directory to update!
-				if (currentlySelectedImage.getValue() != null)
-					currentlySelectedImage.getValue().setLocationTaken(newValue);
-				else if (currentlySelectedDirectory.getValue() != null)
-					this.setContainerLocation(currentlySelectedDirectory.getValue(), newValue);
-		}));
 		// When we double click the location list view items, we want to edit the location
 		this.locationListView.setOnMouseClicked(event -> {
 			if (event.getClickCount() >= 2 && this.locationListView.getSelectionModel().getSelectedItem() != null)
@@ -373,15 +362,8 @@ public class SanimalImportController implements Initializable
 			}
 		});
 
-		// When we select a new image, reset the image viewport to center and zoomed out. We also check the location that the image has selected
-		this.currentlySelectedImage.addListener((observable, oldValue, newValue) ->
-		{
-			this.resetImageView(null);
-			if (this.currentlySelectedImage.getValue() != null && currentlySelectedImage.getValue().getLocationTaken() != null)
-				locationListView.getSelectionModel().select(currentlySelectedImage.getValue().getLocationTaken());
-			else
-				locationListView.getSelectionModel().clearSelection();
-		});
+		// When we select a new image, reset the image viewport to center and zoomed out.
+		this.currentlySelectedImage.addListener((observable, oldValue, newValue) -> this.resetImageView(null));
 
 		// When we press a key, we want to add the bound species to the species entry
 		this.mainPane.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
@@ -975,6 +957,34 @@ public class SanimalImportController implements Initializable
 	}
 
 	/**
+	 * Allow the location list to be drag & dropable onto the image view
+	 *
+	 * @param mouseEvent consumed if a location is selected
+	 */
+	public void locationListDrag(MouseEvent mouseEvent)
+	{
+		// Grab the selected location, make sure it's not null
+		Location selected = this.locationListView.getSelectionModel().getSelectedItem();
+		if (selected != null)
+		{
+			// Can only drag & drop if we have an image selected
+			if (this.currentlySelectedImage.getValue() != null || this.currentlySelectedDirectory != null)
+			{
+				// Create a dragboard and begin the drag and drop
+				Dragboard dragboard = this.locationListView.startDragAndDrop(TransferMode.ANY);
+
+				// Create a clipboard and put the location unique ID into that clipboard
+				ClipboardContent content = new ClipboardContent();
+				content.putString(selected.getName());
+				// Set the dragboard's context, and then consume the event
+				dragboard.setContent(content);
+
+				mouseEvent.consume();
+			}
+		}
+	}
+
+	/**
 	 * If our mouse hovers over the image pane and we're dragging, we accept the transfer
 	 *
 	 * @param dragEvent The event that means we are dragging over the image pane
@@ -982,7 +992,7 @@ public class SanimalImportController implements Initializable
 	public void imagePaneDragOver(DragEvent dragEvent)
 	{
 		// If we started dragging at the species lit view and the dragboard has a string we accept the transfer and consume the event
-		if (dragEvent.getGestureSource() == this.speciesListView && dragEvent.getDragboard().hasString())
+		if ((dragEvent.getGestureSource() == this.speciesListView || dragEvent.getGestureSource() == this.locationListView) && dragEvent.getDragboard().hasString())
 		{
 			dragEvent.acceptTransferModes(TransferMode.COPY);
 		}
@@ -990,59 +1000,94 @@ public class SanimalImportController implements Initializable
 	}
 
 	/**
-	 * When the drag from the species list enters the image
+	 * When the drag from the species or location list enters the image
 	 *
 	 * @param dragEvent The event that means we are dragging over the image pane
 	 */
-	public void speciesListDragEntered(DragEvent dragEvent)
+	public void imagePaneDragEntered(DragEvent dragEvent)
 	{
 		// If we started dragging at the species lit view and the dragboard has a string we play the fade animation and consume the event
-		if (dragEvent.getGestureSource() == this.speciesListView && dragEvent.getDragboard().hasString())
+		if ((dragEvent.getGestureSource() == this.speciesListView || dragEvent.getGestureSource() == this.locationListView) && dragEvent.getDragboard().hasString())
 			this.fadeAddPanelOut.play();
 		dragEvent.consume();
 	}
 
 	/**
-	 * When the drag from the species list exits the image
+	 * When the drag from the species or location list exits the image
 	 *
 	 * @param dragEvent The event that means we are dragging away from the image pane
 	 */
-	public void speciesListDragExited(DragEvent dragEvent)
+	public void imagePaneDragExited(DragEvent dragEvent)
 	{
 		// If we started dragging at the species lit view and the dragboard has a string we play the fade animation and consume the event
-		if (dragEvent.getGestureSource() == this.speciesListView && dragEvent.getDragboard().hasString())
+		if ((dragEvent.getGestureSource() == this.speciesListView || dragEvent.getGestureSource() == this.locationListView) && dragEvent.getDragboard().hasString())
 			this.fadeAddPanelIn.play();
 		dragEvent.consume();
 	}
 
 	/**
-	 * When we drop the species onto the image, we add that species to the list
+	 * When we drop the species or location onto the image, we add that species or location to the list
 	 *
 	 * @param dragEvent The event that means we are dragging away from the image pane
 	 */
-	public void speciesListDragDropped(DragEvent dragEvent)
+	public void imagePaneDragDropped(DragEvent dragEvent)
 	{
-		// Grab the dragboard
-		Dragboard dragboard = dragEvent.getDragboard();
 		// Create a flag that will be set to true if everything went well
 		Boolean success = false;
-		// If our dragboard has a string, grab it
-		if (dragboard.hasString())
+		if (dragEvent.getDragboard().hasString())
 		{
-			String scientificName = dragboard.getString();
-			// Grab the species with the given ID
-			Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getScientificName().equals(scientificName)).findFirst();
-			// Add the species to the image
-			if (toAdd.isPresent())
-				if (currentlySelectedImage.getValue() != null)
+			if (dragEvent.getGestureSource() == this.speciesListView)
+			{
+				// Grab the dragboard
+				Dragboard dragboard = dragEvent.getDragboard();
+				// If our dragboard has a string, grab it
+				if (dragboard.hasString())
 				{
-					currentlySelectedImage.getValue().removeSpecies(TEST_SPECIES);
-					currentlySelectedImage.getValue().removeSpecies(GHOST_SPECIES);
-					currentlySelectedImage.getValue().addSpecies(toAdd.get(), 1);
-					// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
-					this.imageTree.requestFocus();
-					success = true;
+					String scientificName = dragboard.getString();
+					// Grab the species with the given ID
+					Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getScientificName().equals(scientificName)).findFirst();
+					// Add the species to the image
+					if (toAdd.isPresent())
+						if (currentlySelectedImage.getValue() != null)
+						{
+							currentlySelectedImage.getValue().removeSpecies(TEST_SPECIES);
+							currentlySelectedImage.getValue().removeSpecies(GHOST_SPECIES);
+							currentlySelectedImage.getValue().addSpecies(toAdd.get(), 1);
+							// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
+							this.imageTree.requestFocus();
+							success = true;
+						}
 				}
+			}
+			else if (dragEvent.getGestureSource() == this.locationListView)
+			{
+				// Grab the dragboard
+				Dragboard dragboard = dragEvent.getDragboard();
+				// If our dragboard has a string, grab it
+				if (dragboard.hasString())
+				{
+					String locationName = dragboard.getString();
+					// Grab the species with the given ID
+					Optional<Location> toAdd = SanimalData.getInstance().getLocationList().stream().filter(location -> location.getName().equals(locationName)).findFirst();
+					// Add the species to the image
+					if (toAdd.isPresent())
+						// Check if we have a selected image or directory to update!
+						if (currentlySelectedImage.getValue() != null)
+						{
+							currentlySelectedImage.getValue().setLocationTaken(toAdd.get());
+							// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
+							this.imageTree.requestFocus();
+							success = true;
+						}
+						else if (currentlySelectedDirectory.getValue() != null)
+						{
+							this.setContainerLocation(currentlySelectedDirectory.getValue(), toAdd.get());
+							// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
+							this.imageTree.requestFocus();
+							success = true;
+						}
+				}
+			}
 		}
 		// Set the success equal to the flag, and consume the event
 		dragEvent.setDropCompleted(success);
