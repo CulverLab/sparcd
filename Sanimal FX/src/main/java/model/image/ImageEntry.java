@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import javafx.beans.Observable;
+import javafx.beans.binding.Binding;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -34,18 +35,22 @@ public class ImageEntry extends ImageContainer
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("YYYY MM dd hh mm ss");
 	// The icon to use for all images at the moment
 	private static final Image DEFAULT_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIcon.png").toString());
+	// The icon to use for all location only tagged images at the moment
+	private static final Image LOCATION_ONLY_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIconLocation.png").toString());
+	// The icon to use for all species only tagged images at the moment
+	private static final Image SPECIES_ONLY_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIconSpecies.png").toString());
 	// The icon to use for all tagged images at the moment
 	private static final Image CHECKED_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIconDone.png").toString());
 	// A property to wrap the currently selected image property. Must not be static!
-	private final ObjectProperty<Image> SELECTED_IMAGE_PROPERTY = new SimpleObjectProperty<>(DEFAULT_IMAGE_ICON);
+	private final ObjectProperty<Image> selectedImageProperty = new SimpleObjectProperty<>(DEFAULT_IMAGE_ICON);
 	// The actual file 
-	private ObjectProperty<File> imageFileProperty = new SimpleObjectProperty<File>();
+	private final ObjectProperty<File> imageFileProperty = new SimpleObjectProperty<File>();
 	// The date that the image was taken
-	private ObjectProperty<Date> dateTakenProperty = new SimpleObjectProperty<Date>();
+	private final ObjectProperty<Date> dateTakenProperty = new SimpleObjectProperty<Date>();
 	// The location that the image was taken
-	private ObjectProperty<Location> locationTakenProperty = new SimpleObjectProperty<Location>();
+	private final ObjectProperty<Location> locationTakenProperty = new SimpleObjectProperty<Location>();
 	// The species present in the image
-	private ObservableList<SpeciesEntry> speciesPresent = FXCollections.<SpeciesEntry> observableArrayList(image -> new Observable[] {
+	private final ObservableList<SpeciesEntry> speciesPresent = FXCollections.<SpeciesEntry> observableArrayList(image -> new Observable[] {
 			image.getAmountProperty(),
 			image.getSpeciesProperty()
 	});
@@ -68,7 +73,17 @@ public class ImageEntry extends ImageContainer
 		}
 		// Bind the image property to a conditional expression.
 		// The image is checked if the location is valid and the species present list is not empty
-		SELECTED_IMAGE_PROPERTY.bind(Bindings.createObjectBinding(() -> this.getLocationTaken() != null && this.getLocationTaken().locationValid() && !this.getSpeciesPresent().isEmpty() ? CHECKED_IMAGE_ICON : DEFAULT_IMAGE_ICON, this.locationTakenProperty, this.speciesPresent));
+		Binding<Image> imageBinding = Bindings.createObjectBinding(() ->
+		{
+			if (this.getLocationTaken() != null && this.getLocationTaken().locationValid() && !this.getSpeciesPresent().isEmpty())
+				return CHECKED_IMAGE_ICON;
+			else if (!this.getSpeciesPresent().isEmpty())
+				return SPECIES_ONLY_IMAGE_ICON;
+			else if (this.getLocationTaken() != null && this.getLocationTaken().locationValid())
+				return LOCATION_ONLY_IMAGE_ICON;
+			return DEFAULT_IMAGE_ICON;
+		}, this.locationTakenProperty, this.speciesPresent);
+		selectedImageProperty.bind(imageBinding);
 	}
 
 	/**
@@ -79,7 +94,7 @@ public class ImageEntry extends ImageContainer
 	@Override
 	public ObjectProperty<Image> getTreeIconProperty()
 	{
-		return SELECTED_IMAGE_PROPERTY;
+		return selectedImageProperty;
 	}
 
 	/**
@@ -238,7 +253,7 @@ public class ImageEntry extends ImageContainer
 				// Remove the location entry name and elevation
 				directory.removeField(SanimalMetadataFields.LOCATION_ENTRY);
 				// Add the new location entry name and elevation
-				directory.add(SanimalMetadataFields.LOCATION_ENTRY, this.getLocationTaken().getName(), this.getLocationTaken().getElevation().toString());
+				directory.add(SanimalMetadataFields.LOCATION_ENTRY, this.getLocationTaken().getName(), this.getLocationTaken().getElevation().toString(), this.getLocationTaken().getId());
 			}
 
 			// Write the metadata

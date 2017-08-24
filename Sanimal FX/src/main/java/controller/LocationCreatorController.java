@@ -41,6 +41,9 @@ public class LocationCreatorController implements Initializable
 	// Location Name
 	@FXML
 	public TextField txtName;
+	// Location Id
+	@FXML
+	public TextField txtId;
 
 	// Location location in latitude and longitude
 	@FXML
@@ -92,6 +95,7 @@ public class LocationCreatorController implements Initializable
 
 	private static final Double FEET_TO_METERS = 0.3048;
 
+
 	// This allows for fields to be validated and displays a red X if input is invalid
 	private ValidationSupport basicFieldValidator = new ValidationSupport();
 	private ValidationSupport latLngValidator = new ValidationSupport();
@@ -101,6 +105,7 @@ public class LocationCreatorController implements Initializable
 	private Location locationToEdit;
 	// The fields to bind text fields to for easy access
 	private StringProperty newName = new SimpleStringProperty("");
+	private StringProperty newId = new SimpleStringProperty("");
 	private StringProperty newLatitude = new SimpleStringProperty("");
 	private StringProperty newLongitude = new SimpleStringProperty("");
 	private StringProperty newElevation = new SimpleStringProperty("");
@@ -124,6 +129,7 @@ public class LocationCreatorController implements Initializable
 	{
 		// Bind the text fields to their fields
 		this.txtName.textProperty().bindBidirectional(newName);
+		this.txtId.textProperty().bindBidirectional(newId);
 		this.txtLatitude.textProperty().bindBidirectional(newLatitude);
 		this.txtLongitude.textProperty().bindBidirectional(newLongitude);
 		this.txtElevation.textProperty().bindBidirectional(newElevation);
@@ -155,6 +161,8 @@ public class LocationCreatorController implements Initializable
 
 		// The name must not be empty
 		this.basicFieldValidator.registerValidator(this.txtName, true, Validator.createEmptyValidator("Location Name must not be empty!"));
+		// The id must not be empty
+		this.basicFieldValidator.registerValidator(this.txtId, true, Validator.createEmptyValidator("Location Id must not be empty!"));
 
 		// The latitude must be between 85 and -85
 		this.latLngValidator.registerValidator(this.txtLatitude, true, Validator.<String>createPredicateValidator(this::latitudeValid, "Latitude must be +/-85!"));
@@ -208,6 +216,8 @@ public class LocationCreatorController implements Initializable
 		this.locationToEdit = location;
 		if (this.locationToEdit.nameValid())
 			this.newName.set(location.getName());
+		if (this.locationToEdit.idValid())
+			this.newId.set(location.getId());
 		if (this.locationToEdit.latValid())
 			this.newLatitude.set(locationToEdit.getLat().toString());
 		if (this.locationToEdit.lngValid())
@@ -234,6 +244,7 @@ public class LocationCreatorController implements Initializable
 
 		// Set the location's fields, and close the editor window
 		locationToEdit.setName(newName.getValue());
+		locationToEdit.setId(newId.getValue());
 		locationToEdit.setLat(RoundingUtils.roundLat(Double.parseDouble(newLatitude.getValue())));
 		locationToEdit.setLng(RoundingUtils.roundLng(Double.parseDouble(newLongitude.getValue())));
 		if (this.tbnMeters.isSelected())

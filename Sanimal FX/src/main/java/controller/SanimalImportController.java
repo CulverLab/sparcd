@@ -20,6 +20,7 @@ import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.DirectoryChooser;
@@ -147,6 +148,13 @@ public class SanimalImportController implements Initializable
 	@FXML
 	public ImageView imageSpeciesPreview;
 
+	// Top right label containing location name
+	@FXML
+	public Label lblLocation;
+	// Top right hbox containing location info
+	@FXML
+	public HBox hbxLocation;
+
 	// The list view containing the species
 	@FXML
 	private ListView<Species> speciesListView;
@@ -164,6 +172,8 @@ public class SanimalImportController implements Initializable
 	// Use fade transitions to fade the species list in and out
 	private FadeTransition fadeSpeciesEntryListIn;
 	private FadeTransition fadeSpeciesEntryListOut;
+	private FadeTransition fadeLocationIn;
+	private FadeTransition fadeLocationOut;
 	private FadeTransition fadeAddPanelIn;
 	private FadeTransition fadeAddPanelOut;
 	private FadeTransition fadeLeftIn;
@@ -294,6 +304,10 @@ public class SanimalImportController implements Initializable
 		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).map(imageEntry -> new Image(imageEntry.getFile().toURI().toString())));
 		// Bind the species entry list view items to the selected image species present
 		this.speciesEntryListView.itemsProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getSpeciesPresent));
+		// Bind the species entry location name to the selected image's location
+		this.lblLocation.textProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::getLocationTakenProperty).map(Location::getName));
+		// Hide the location panel when no location is selected
+		this.hbxLocation.visibleProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getLocationTaken).map(location -> true).orElse(false));
 		// Hide the progress bar when no tasks remain
 		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().currentTaskProperty().isNotNull());
 		// Bind the progress bar's text property to tasks remaining
@@ -321,22 +335,6 @@ public class SanimalImportController implements Initializable
 								.isEqualTo(-1))
 						// Make sure to negate because we want to hide the arrow when the above things are true
 						.not());
-		// Bind the species list visibility to if a location has been picked. We use easy bind to avoid using java reflection here.
-		this.speciesListView.disableProperty().bind(
-				// We begin by selecting the object we are listening for changes on
-				EasyBind.select(this.currentlySelectedImage)
-						// We then sub-select the location property to listen to. If the image entry in the currentlySelectedImage is null, this
-						// select object will ensure that we don't get a null pointer exception
-						.selectObject(ImageEntry::getLocationTakenProperty)
-						// If we did get an object with select object, we map it to the isNull function which will return true if the location is null,
-						// disabling the species list view
-						.map(Objects::isNull)
-						// If we did not get an object with select object, we simply disable the list view by returning true.
-						.orElse(true));
-		// If the species list view is not visible, hide the species list view search
-		this.txtSpeciesSearch.disableProperty().bind(this.speciesListView.disabledProperty());
-		// If the species list view is not visible, hide the search reset button
-		this.btnResetSearch.disableProperty().bind(this.speciesListView.disabledProperty());
 		// When we preview an image, bind the image property to the image view
 		this.imageSpeciesPreview.imageProperty().bind(this.speciesPreviewImage);
 		// When we get a new species to preview, we show the preview pane
@@ -388,15 +386,27 @@ public class SanimalImportController implements Initializable
 
 		// First create a fade-in transition for the species entry list view
 		this.fadeSpeciesEntryListIn = new FadeTransition(Duration.millis(100), this.speciesEntryListView);
-		this.fadeSpeciesEntryListIn.setFromValue(0.9);
+		this.fadeSpeciesEntryListIn.setFromValue(1);
 		this.fadeSpeciesEntryListIn.setToValue(0.4);
 		this.fadeSpeciesEntryListIn.setCycleCount(1);
 
 		// First create a fade-out transition for the species entry list view
 		this.fadeSpeciesEntryListOut = new FadeTransition(Duration.millis(100), this.speciesEntryListView);
 		this.fadeSpeciesEntryListOut.setFromValue(0.4);
-		this.fadeSpeciesEntryListOut.setToValue(0.9);
+		this.fadeSpeciesEntryListOut.setToValue(1);
 		this.fadeSpeciesEntryListOut.setCycleCount(1);
+
+		// First create a fade-in transition for the location
+		this.fadeLocationIn = new FadeTransition(Duration.millis(100), this.hbxLocation);
+		this.fadeLocationIn.setFromValue(1);
+		this.fadeLocationIn.setToValue(0.4);
+		this.fadeLocationIn.setCycleCount(1);
+
+		// Then create a fade-out transition for the location
+		this.fadeLocationOut = new FadeTransition(Duration.millis(100), this.hbxLocation);
+		this.fadeLocationOut.setFromValue(0.4);
+		this.fadeLocationOut.setToValue(1);
+		this.fadeLocationOut.setCycleCount(1);
 
 		// First create a fade-in transition for the add a new species hover
 		this.fadeAddPanelIn = new FadeTransition(Duration.millis(100), this.imageAddOverlay);
@@ -429,6 +439,13 @@ public class SanimalImportController implements Initializable
 		this.fadeRightOut.setFromValue(1);
 		this.fadeRightOut.setToValue(0);
 		this.fadeRightOut.setCycleCount(1);
+
+		// Force play all fade ins to start
+		this.fadeLocationIn.play();
+		this.fadeAddPanelIn.play();
+		this.fadeLeftIn.play();
+		this.fadeRightIn.play();
+		this.fadeSpeciesEntryListIn.play();
 	}
 
 	/**
@@ -968,7 +985,7 @@ public class SanimalImportController implements Initializable
 		if (selected != null)
 		{
 			// Can only drag & drop if we have an image selected
-			if (this.currentlySelectedImage.getValue() != null || this.currentlySelectedDirectory != null)
+			if (this.currentlySelectedImage.getValue() != null || this.currentlySelectedDirectory.getValue() != null)
 			{
 				// Create a dragboard and begin the drag and drop
 				Dragboard dragboard = this.locationListView.startDragAndDrop(TransferMode.ANY);
@@ -1134,6 +1151,26 @@ public class SanimalImportController implements Initializable
 	public void onMouseExitedSpeciesEntryList(MouseEvent mouseEvent)
 	{
 		fadeSpeciesEntryListIn.play();
+	}
+
+	/**
+	 * When we move our mouse over the location we play a fade animation
+	 *
+	 * @param mouseEvent ignored
+	 */
+	public void onMouseEnteredLocation(MouseEvent mouseEvent)
+	{
+		fadeLocationOut.play();
+	}
+
+	/**
+	 * When we move our mouse away from the location we play a fade animation
+	 *
+	 * @param mouseEvent ignored
+	 */
+	public void onMouseExitedLocation(MouseEvent mouseEvent)
+	{
+		fadeLocationIn.play();
 	}
 
 	/**

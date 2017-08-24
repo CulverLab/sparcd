@@ -22,6 +22,7 @@
 <?import library.TreeViewAutomatic?>
 <?import org.controlsfx.control.StatusBar?>
 
+<?import javafx.scene.image.Image?>
 <SplitPane fx:id="mainPane" dividerPositions="0.28, 0.75" minHeight="700" minWidth="1300" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalImportController">
     <stylesheets>
         <URL value="@SanimalImport.css" />
@@ -41,7 +42,7 @@
                         <Insets bottom="20" left="5" right="5" top="20" />
                     </padding>
                     <children>
-                        <Button mnemonicParsing="false" fx:id="btnSaveSpecies" onAction="#saveSpecies" styleClass="saveBtn" text="Save" />
+                        <Button fx:id="btnSaveSpecies" mnemonicParsing="false" onAction="#saveSpecies" styleClass="saveBtn" text="Save" />
                         <Button mnemonicParsing="false" onAction="#addNewSpecies" styleClass="addBtn" text="New Species" />
                         <Button mnemonicParsing="false" onAction="#editCurrentSpecies" styleClass="editBtn" text="Edit" />
                         <Button mnemonicParsing="false" onAction="#deleteCurrentSpecies" styleClass="deleteBtn" text="Delete" />
@@ -59,11 +60,17 @@
                             </imageView>
                         </ImageViewPane>
                         <ListView fx:id="speciesEntryListView" maxHeight="0" maxWidth="390" minWidth="390" onMouseEntered="#onMouseEnteredSpeciesEntryList" onMouseExited="#onMouseExitedSpeciesEntryList" pickOnBounds="false" prefWidth="390" styleClass="transparentListView" StackPane.alignment="TOP_LEFT" />
-                        <StatusBar fx:id="sbrTaskProgress" maxHeight="30" minHeight="30" pickOnBounds="false" styleClass="sbrTaskProgress" text="" StackPane.alignment="BOTTOM_RIGHT">
+                        <HBox onMouseEntered="#onMouseEnteredLocation" onMouseExited="#onMouseExitedLocation" pickOnBounds="false" fx:id="hbxLocation" minHeight="80" maxHeight="80" alignment="CENTER_RIGHT" StackPane.alignment="TOP_RIGHT">
                             <StackPane.margin>
-                                <Insets bottom="5" />
+                                <Insets right="5" top="5"/>
                             </StackPane.margin>
-                        </StatusBar>
+                            <children>
+                                <Label fx:id="lblLocation" styleClass="locationLbl" text="Location Name"/>
+                                <ImageView fitWidth="80" fitHeight="80">
+                                    <Image url="@../images/importWindow/locationIcon.png"/>
+                                </ImageView>
+                            </children>
+                        </HBox>
                         <BorderPane pickOnBounds="false">
                             <left>
                                 <Button fx:id="btnLeftArrow" mnemonicParsing="false" onAction="#onLeftArrowClicked" pickOnBounds="false" styleClass="leftBtn" BorderPane.alignment="CENTER" />
@@ -85,6 +92,11 @@
                                 </StackPane.margin>
                             </Button>
                         </StackPane>
+                        <StatusBar fx:id="sbrTaskProgress" maxHeight="30" minHeight="30" pickOnBounds="false" styleClass="sbrTaskProgress" text="" StackPane.alignment="BOTTOM_RIGHT">
+                            <StackPane.margin>
+                                <Insets bottom="5" left="5" right="5" />
+                            </StackPane.margin>
+                        </StatusBar>
                     </children>
                 </StackPane>
                 <SplitPane dividerPositions="0.5" minHeight="200" prefHeight="200" prefWidth="655.0" SplitPane.resizableWithParent="false">
@@ -96,7 +108,7 @@
                                     <Insets bottom="20" left="5" right="5" top="20" />
                                 </padding>
                                 <children>
-                                    <Button mnemonicParsing="false" fx:id="btnSaveLocations" onAction="#saveLocations" styleClass="saveBtn" text="Save" />
+                                    <Button fx:id="btnSaveLocations" mnemonicParsing="false" onAction="#saveLocations" styleClass="saveBtn" text="Save" />
                                     <Button mnemonicParsing="false" onAction="#addNewLocation" styleClass="addBtn" text="New Location" />
                                     <Button mnemonicParsing="false" onAction="#editCurrentLocation" styleClass="editBtn" text="Edit" />
                                     <Button mnemonicParsing="false" onAction="#deleteCurrentLocation" styleClass="deleteBtn" text="Delete" />

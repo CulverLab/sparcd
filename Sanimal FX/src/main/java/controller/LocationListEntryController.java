@@ -29,6 +29,10 @@ public class LocationListEntryController extends ListCell<Location>
     @FXML
     public Label lblName;
 
+    // The ID of the location
+    @FXML
+    public Label lblId;
+
     // The location location (lat/lng)
     @FXML
     public Label lblLocation;
@@ -43,7 +47,8 @@ public class LocationListEntryController extends ListCell<Location>
 
     public ObjectProperty<Location> x = new SimpleObjectProperty<>();
 
-    /**
+
+	/**
      * Update item is called whenever the cell gets updated
      *
      * @param location The new location
@@ -67,8 +72,9 @@ public class LocationListEntryController extends ListCell<Location>
         else
         {
             this.lblName.setText(location.getName());
+            this.lblId.setText(location.getId());
             this.lblLocation.setText(location.getLat() + "\n" + location.getLng());
-            this.lblElevation.setText(location.getElevation() + "m");
+            //this.lblElevation.setText(location.getElevation() + "m");
             this.setGraphic(mainPane);
         }
     }

@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.StackPane?>
 
 <?import org.controlsfx.control.SegmentedButton?>
-<GridPane minHeight="280" minWidth="450" maxHeight="280" maxWidth="450.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+<GridPane minHeight="315" minWidth="450" maxHeight="315" maxWidth="450.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
           fx:controller="controller.LocationCreatorController">
     <stylesheets>
         <URL value="@LocationCreator.css"/>
@@ -30,6 +30,7 @@
     <rowConstraints>
         <RowConstraints maxHeight="35" minHeight="35.0" />
         <RowConstraints maxHeight="35" minHeight="35.0" />
+        <RowConstraints maxHeight="35" minHeight="35.0" />
         <RowConstraints maxHeight="140" minHeight="140.0" vgrow="SOMETIMES"/>
         <RowConstraints maxHeight="35" minHeight="35.0" />
         <RowConstraints maxHeight="35" minHeight="35.0" />
@@ -37,8 +38,10 @@
     <children>
         <Label text="Name: "/>
         <TextField fx:id="txtName" GridPane.columnIndex="1"/>
-        <Label text="Location Type: " GridPane.rowIndex="1"/>
-        <HBox alignment="CENTER_LEFT" spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="1">
+        <Label text="Location Id: " GridPane.rowIndex="1"/>
+        <TextField fx:id="txtId" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        <Label text="Location Type: " GridPane.rowIndex="2"/>
+        <HBox alignment="CENTER_LEFT" spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="2">
             <RadioButton fx:id="rbnLatLng" selected="true" text="Lat/Lng">
                 <toggleGroup>
                     <ToggleGroup fx:id="locTypeBtnGroup"/>
@@ -46,7 +49,7 @@
             </RadioButton>
             <RadioButton fx:id="rbnUTM" text="UTM" toggleGroup="$locTypeBtnGroup"/>
         </HBox>
-        <StackPane GridPane.columnSpan="2" GridPane.rowIndex="2">
+        <StackPane GridPane.columnSpan="2" GridPane.rowIndex="3">
             <GridPane fx:id="pneLatLng">
                 <columnConstraints>
                     <ColumnConstraints hgrow="SOMETIMES" maxWidth="180.0" minWidth="180.0" prefWidth="180.0"/>
@@ -86,8 +89,8 @@
                 </children>
             </GridPane>
         </StackPane>
-        <Label text="Elevation: " GridPane.rowIndex="3"/>
-        <HBox alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="3">
+        <Label text="Elevation: " GridPane.rowIndex="4"/>
+        <HBox alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="4">
             <children>
                 <TextField fx:id="txtElevation" HBox.hgrow="ALWAYS"/>
                 <SegmentedButton fx:id="sbnUnits" HBox.hgrow="NEVER">
@@ -98,7 +101,7 @@
                 </SegmentedButton>
             </children>
         </HBox>
-        <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="4">
+        <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="5">
             <children>
                 <Button fx:id="btnConfirm" mnemonicParsing="false" onAction="#confirmPressed" text="Confirm"/>
                 <Button mnemonicParsing="false" onAction="#cancelPressed" text="Cancel"/>

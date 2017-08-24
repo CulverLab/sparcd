@@ -104,3 +104,11 @@
 .clearPreviewBtn:hover {
     -fx-background-color: radial-gradient(focus-distance 0%, center 50% 50%, radius 55%, darkred, white);
 }
+
+.locationLbl {
+    -fx-font-weight: bold;
+    -fx-font-size: 24;
+    -fx-background-color: rgba(255, 255, 255, 0.4);
+    -fx-background-radius: 15px;
+    -fx-padding: 3px 10px 3px 10px;
+}

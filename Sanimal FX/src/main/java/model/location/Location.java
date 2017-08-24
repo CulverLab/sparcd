@@ -17,6 +17,7 @@ public class Location implements Serializable
 {
 	// Properties of a location are the name, latitude, longitude, and elevation
 	private final StringProperty nameProperty = new SimpleStringProperty();
+	private final StringProperty idProperty = new SimpleStringProperty();
 	private final DoubleProperty latProperty = new SimpleDoubleProperty();
 	private final DoubleProperty lngProperty = new SimpleDoubleProperty();
 	private final DoubleProperty elevationProperty = new SimpleDoubleProperty();
@@ -26,6 +27,8 @@ public class Location implements Serializable
 	 * 
 	 * @param name
 	 *            The name of the location
+	 * @param id
+	 * 			  The id of the location
 	 * @param lat
 	 *            The latitude of the location
 	 * @param lng
@@ -33,9 +36,10 @@ public class Location implements Serializable
 	 * @param elevation
 	 *            The location elevation
 	 */
-	public Location(String name, Double lat, Double lng, Double elevation)
+	public Location(String name, String id, Double lat, Double lng, Double elevation)
 	{
 		this.nameProperty.setValue(name);
+		this.idProperty.setValue(id);
 		this.latProperty.setValue(lat);
 		this.lngProperty.setValue(lng);
 		this.elevationProperty.setValue(elevation);
@@ -47,6 +51,7 @@ public class Location implements Serializable
 	public Location()
 	{
 		this.nameProperty.setValue("");
+		this.idProperty.setValue("");
 		this.latProperty.setValue(-1000);
 		this.lngProperty.setValue(-1000);
 		this.elevationProperty.setValue(-20000);
@@ -56,6 +61,11 @@ public class Location implements Serializable
 	 * @return True if the name is not empty
 	 */
 	public Boolean nameValid() { return !this.nameProperty.getValue().isEmpty(); }
+
+	/**
+	 * @return True if the id is not empty
+	 */
+	public Boolean idValid() { return !this.idProperty.getValue().isEmpty(); }
 
 	/**
 	 * @return True if latitude is between -85 and +85
@@ -75,7 +85,7 @@ public class Location implements Serializable
 	/**
 	 * @return True if the name, latitude, longitude, and elevation are valid
 	 */
-	public Boolean locationValid() { return nameValid() && latValid() && lngValid() && elevationValid(); }
+	public Boolean locationValid() { return nameValid() && idValid() && latValid() && lngValid() && elevationValid(); }
 
 	/**
 	 * Set the name of the location
@@ -105,6 +115,36 @@ public class Location implements Serializable
 	public StringProperty nameProperty()
 	{
 		return nameProperty;
+	}
+
+	/**
+	 * Set the id of the location
+	 *
+	 * @param id the id of the location
+	 */
+	public void setId(String id)
+	{
+		this.idProperty.setValue(id);
+	}
+
+	/**
+	 * Get the id of the location
+	 *
+	 * @return the id of the location
+	 */
+	public String getId()
+	{
+		return idProperty.getValue();
+	}
+
+	/**
+	 * Get the id property
+	 *
+	 * @return The id property
+	 */
+	public StringProperty idProperty()
+	{
+		return idProperty;
 	}
 
 	/**

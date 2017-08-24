@@ -153,12 +153,13 @@ public class DirectoryManager
 					// Ensure that the field does actually exist...
 					if (locationField != null)
 					{
-						// We look for length 2
-						if (locationField.length == 2)
+						// We look for length 3
+						if (locationField.length == 3)
 						{
 							// Grab the location, elevation, and lat/lng
 							String locationName = locationField[0];
 							String locationElevation = locationField[1];
+							String locationId = locationField[2];
 							double locationLatitude = RoundingUtils.roundLat(metadata.getGPS().getLatitudeAsDegreesNorth());
 							double locationLongitude = RoundingUtils.roundLng(metadata.getGPS().getLongitudeAsDegreesEast());
 
@@ -175,7 +176,7 @@ public class DirectoryManager
 												SanimalData.getInstance().getLocationList().stream(),
 												newlyAddedLocations.stream())
 										.filter(location ->
-												StringUtils.equalsIgnoreCase(location.getName(), locationName) &&
+												StringUtils.equalsIgnoreCase(location.getId(), locationId) &&
 												Math.abs(location.getLat() - locationLatitude) < 0.0001 &&
 												Math.abs(location.getLng() - locationLongitude) < 0.0001)// For now, ignore elevation Math.abs(location.getElevation() - Double.parseDouble(locationElevation)) < 25)
 										.findFirst();
@@ -186,7 +187,7 @@ public class DirectoryManager
 								}
 								else
 								{
-									Location newLocation = new Location(locationName, locationLatitude, locationLongitude, Double.parseDouble(locationElevation));
+									Location newLocation = new Location(locationName, locationId, locationLatitude, locationLongitude, Double.parseDouble(locationElevation));
 									newlyAddedLocations.add(newLocation);
 									current.setLocationTaken(newLocation);
 								}
