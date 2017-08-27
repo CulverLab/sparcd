@@ -1,19 +1,22 @@
 package model.location;
 
 import com.google.gson.annotations.Expose;
+import com.sun.istack.internal.NotNull;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import org.apache.commons.collections4.Equator;
 
 import java.io.Serializable;
+import java.util.Comparator;
 
 /**
  * A class representing a location (latitude, longitude, and elevation)
  * 
  * @author David Slovikosky
  */
-public class Location implements Serializable
+public class Location
 {
 	// Properties of a location are the name, latitude, longitude, and elevation
 	private final StringProperty nameProperty = new SimpleStringProperty();
@@ -244,5 +247,20 @@ public class Location implements Serializable
 	public String toString()
 	{
 		return this.getName() + "\nLatitude: " + this.getLat() + "\nLongitude: " + this.getLng() + "\nElevation: " + this.getElevation();
+	}
+
+	@Override
+	public boolean equals(Object other)
+	{
+		if (other instanceof Location)
+		{
+			Location otherLoc = (Location) other;
+			return
+					this.getName().equals(otherLoc.getName()) &&
+					this.getId().equals(otherLoc.getId()) &&
+					Math.abs(this.getLat() - otherLoc.getLat()) < 0.0001 &&
+					Math.abs(this.getLng() - otherLoc.getLng()) < 0.0001;
+		}
+		return false;
 	}
 }

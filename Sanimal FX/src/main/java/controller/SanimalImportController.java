@@ -135,12 +135,6 @@ public class SanimalImportController implements Initializable
 	// The save button to save all current images
 	@FXML
 	public Button btnSaveImages;
-	// The save button to save all current locations
-	@FXML
-	public Button btnSaveLocations;
-	// The save button to save all current species
-	@FXML
-	public Button btnSaveSpecies;
 
 	// The image pane used to do the species preview operation
 	@FXML
@@ -465,30 +459,6 @@ public class SanimalImportController implements Initializable
 	}
 
 	/**
-	 * If the save species button is clicked
-	 *
-	 * @param actionEvent consumed when the button is clicked
-	 */
-	public void saveSpecies(ActionEvent actionEvent)
-	{
-		this.btnSaveSpecies.setDisable(true);
-		FinishableTask<Void> uploadTask = new FinishableTask<Void>()
-		{
-			@Override
-			protected Void call() throws Exception
-			{
-				this.updateMessage("Uploading species to CyVerse...");
-				this.updateProgress(-1, -1);
-				SanimalData.getInstance().getConnectionManager().pushLocalSpecies(SanimalData.getInstance().getSpeciesList());
-				return null;
-			}
-		};
-		uploadTask.setOnFinished(event -> this.btnSaveSpecies.setDisable(false));
-		SanimalData.getInstance().addTask(uploadTask);
-		actionEvent.consume();
-	}
-
-	/**
 	 * If the new species button is clicked...
 	 *
 	 * @param actionEvent consumed when the button is clicked
@@ -616,30 +586,6 @@ public class SanimalImportController implements Initializable
 			alert.setContentText("Please select a species from the species list to remove.");
 			alert.showAndWait();
 		}
-		actionEvent.consume();
-	}
-
-	/**
-	 * If the save location button is clicked
-	 *
-	 * @param actionEvent consumed when the button is clicked
-	 */
-	public void saveLocations(ActionEvent actionEvent)
-	{
-		this.btnSaveLocations.setDisable(true);
-		FinishableTask<Void> uploadTask = new FinishableTask<Void>()
-		{
-			@Override
-			protected Void call() throws Exception
-			{
-				this.updateMessage("Uploading locations to CyVerse...");
-				this.updateProgress(-1, -1);
-				SanimalData.getInstance().getConnectionManager().pushLocalLocations(SanimalData.getInstance().getLocationList());
-				return null;
-			}
-		};
-		uploadTask.setOnFinished(event -> this.btnSaveLocations.setDisable(false));
-		SanimalData.getInstance().addTask(uploadTask);
 		actionEvent.consume();
 	}
 
@@ -964,7 +910,7 @@ public class SanimalImportController implements Initializable
 
 				// Create a clipboard and put the species unique ID into that clipboard
 				ClipboardContent content = new ClipboardContent();
-				content.putString(selected.getScientificName());
+				content.putString(selected.getName() + ", " + selected.getScientificName());
 				// Set the dragboard's context, and then consume the event
 				dragboard.setContent(content);
 
@@ -993,6 +939,7 @@ public class SanimalImportController implements Initializable
 				// Create a clipboard and put the location unique ID into that clipboard
 				ClipboardContent content = new ClipboardContent();
 				content.putString(selected.getName());
+				content.putString(selected.getId());
 				// Set the dragboard's context, and then consume the event
 				dragboard.setContent(content);
 
@@ -1060,9 +1007,11 @@ public class SanimalImportController implements Initializable
 				// If our dragboard has a string, grab it
 				if (dragboard.hasString())
 				{
+					Object clipboard = dragboard.getContent(DataFormat.PLAIN_TEXT);
+					String commonName = "";
 					String scientificName = dragboard.getString();
 					// Grab the species with the given ID
-					Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getScientificName().equals(scientificName)).findFirst();
+					Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getScientificName().equals(scientificName) && species.getName().equals(commonName)).findFirst();
 					// Add the species to the image
 					if (toAdd.isPresent())
 						if (currentlySelectedImage.getValue() != null)
@@ -1084,8 +1033,9 @@ public class SanimalImportController implements Initializable
 				if (dragboard.hasString())
 				{
 					String locationName = dragboard.getString();
+					String locationId = dragboard.getString();
 					// Grab the species with the given ID
-					Optional<Location> toAdd = SanimalData.getInstance().getLocationList().stream().filter(location -> location.getName().equals(locationName)).findFirst();
+					Optional<Location> toAdd = SanimalData.getInstance().getLocationList().stream().filter(location -> location.getName().equals(locationName) && location.getId().equals(locationId)).findFirst();
 					// Add the species to the image
 					if (toAdd.isPresent())
 						// Check if we have a selected image or directory to update!

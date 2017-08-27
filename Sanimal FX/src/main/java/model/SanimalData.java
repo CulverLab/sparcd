@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import javafx.beans.Observable;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -13,12 +14,13 @@ import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
-import org.apache.commons.lang3.StringUtils;
+import model.util.FinishableTask;
 import org.hildan.fxgson.FxGson;
 
 import java.io.*;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
@@ -38,9 +40,13 @@ public class SanimalData
 
 	// A global list of species
 	private final ObservableList<Species> speciesList;
+	private AtomicBoolean needSpeciesSync = new AtomicBoolean(false);
+	private AtomicBoolean speciesSyncInProgress = new AtomicBoolean(false);
 
 	// A global list of locations
 	private final ObservableList<Location> locationList;
+	private AtomicBoolean needLocationSync = new AtomicBoolean(false);
+	private AtomicBoolean locationSyncInProgress = new AtomicBoolean(false);
 
 	// A base directory to which we add all extra directories
 	private final ImageDirectory imageTree;
@@ -63,13 +69,113 @@ public class SanimalData
 	private SanimalData()
 	{
 		// Create the species list, and add some default species
-		this.speciesList = FXCollections.observableArrayList(species -> new Observable[]{species.nameProperty(), species.scientificNameProperty(), species.speciesIconURLProperty()});
+		this.speciesList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList(species -> new Observable[]{species.nameProperty(), species.scientificNameProperty(), species.speciesIconURLProperty()}));
+
+		// When the species list changes we push the changes to the CyVerse servers
+		this.setupAutoSpeciesSync();
 
 		// Create the location list and add some default locations
-		this.locationList = FXCollections.observableArrayList(location -> new Observable[]{location.nameProperty(), location.getLatProperty(), location.getLngProperty(), location.getElevationProperty()});
+		this.locationList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList(location -> new Observable[]{location.nameProperty(), location.idProperty(), location.getLatProperty(), location.getLngProperty(), location.getElevationProperty()}));
+
+		// When the location list changes we push the changes to the CyVerse servers
+		this.setupAutoLocationSync();
 
 		// The tree just starts in the current directory which is a dummy directory
 		this.imageTree = new ImageDirectory(new File("./"));
+	}
+
+	/**
+	 * Ensures that when the species list has any changes, they get pushed to the CyVerse servers
+	 */
+	private void setupAutoSpeciesSync()
+	{
+		// When the species list changes...
+		this.speciesList.addListener((ListChangeListener<Species>) c -> {
+			// If a sync is already in progress, we set a flag telling the current sync to perform another sync right after it finishes
+			if (this.speciesSyncInProgress.get())
+			{
+				this.needSpeciesSync.set(true);
+			}
+			// If a sync is not in progress, go ahead and sync
+			else
+			{
+				// Create a task
+				FinishableTask<Void> syncTask = new FinishableTask<Void>()
+				{
+					@Override
+					protected Void call() throws Exception
+					{
+						// Perform the push of the location data
+						this.updateMessage("Syncing new species list to CyVerse...");
+						SanimalData.getInstance().getConnectionManager().pushLocalSpecies(SanimalData.getInstance().getSpeciesList());
+						return null;
+					}
+				};
+				// When we finish syncing...
+				syncTask.setOnFinished(event -> {
+					// After finishing the sync, check if we need to sync again. If so set the flag to false and sync once again
+					if (this.needSpeciesSync.get())
+					{
+						this.needSpeciesSync.set(false);
+						this.addTask(syncTask);
+					}
+					// If we don't need to sync again set the sync in progress flag to false
+					else
+					{
+						this.speciesSyncInProgress.set(false);
+					}
+				});
+				// Perform the task
+				this.addTask(syncTask);
+			}
+		});
+	}
+
+	/**
+	 * Ensures that when the location list has any changes, they get pushed to the CyVerse servers
+	 */
+	private void setupAutoLocationSync()
+	{
+		// When the location list changes...
+		this.locationList.addListener((ListChangeListener<Location>) c -> {
+			// If a sync is already in progress, we set a flag telling the current sync to perform another sync right after it finishes
+			if (this.locationSyncInProgress.get())
+			{
+				this.needLocationSync.set(true);
+			}
+			// If a sync is not in progress, go ahead and sync
+			else
+			{
+				// Create a task
+				FinishableTask<Void> syncTask = new FinishableTask<Void>()
+				{
+					@Override
+					protected Void call() throws Exception
+					{
+						// Perform the push of the location data
+						this.updateMessage("Syncing new location list to CyVerse...");
+						SanimalData.getInstance().getConnectionManager().pushLocalLocations(SanimalData.getInstance().getLocationList());
+						return null;
+					}
+				};
+				// When we finish syncing...
+				syncTask.setOnFinished(event -> {
+					// After finishing the sync, check if we need to sync again. If so set the flag to false and sync once again
+					if (this.needLocationSync.get())
+					{
+						this.needLocationSync.set(false);
+						this.addTask(syncTask);
+					}
+					// If we don't need to sync again set the sync in progress flag to false
+					else
+					{
+						this.locationSyncInProgress.set(false);
+					}
+				});
+				// Perform the task
+				this.addTask(syncTask);
+			}
+		});
 	}
 
 	/**

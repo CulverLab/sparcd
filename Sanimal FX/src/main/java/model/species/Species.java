@@ -1,6 +1,7 @@
 package model.species;
 
 import com.google.gson.annotations.Expose;
+import com.sun.istack.internal.NotNull;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -9,6 +10,7 @@ import javafx.scene.input.KeyCode;
 import model.image.ImageEntry;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -16,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author David Slovikosky
  */
-public class Species implements Serializable
+public class Species implements Comparable<Species>
 {
     // The name of the species
     private StringProperty name = new SimpleStringProperty();
@@ -216,5 +218,14 @@ public class Species implements Serializable
     public String toString()
     {
         return this.getName();
+    }
+
+    @Override
+    public int compareTo(@NotNull Species o)
+    {
+        return Comparator
+                .comparing(Species::getName)
+                .thenComparing(Species::getScientificName)
+                .compare(this, o);
     }
 }
