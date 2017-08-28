@@ -20,13 +20,7 @@ public class Sanimal
 	{
 		EventQueue.invokeLater(() ->
 		{
-			JFrame frame = new JFrame("Sanimal");
-			frame.setContentPane(new SanimalViewController().mainPanel);
-			frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-			frame.pack();
-			frame.setResizable(false);
-			frame.setVisible(true);
-			//new SanimalController(new SanimalView(), new SanimalData());
+			new SanimalController(new SanimalView(), new SanimalData());
 		});
 	}
 }

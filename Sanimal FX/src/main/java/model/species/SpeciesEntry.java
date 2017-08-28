@@ -15,7 +15,7 @@ import java.io.Serializable;
 public class SpeciesEntry implements Comparable<SpeciesEntry>
 {
 	// The species represented
-	private final ObjectProperty<Species> speciesProperty = new SimpleObjectProperty<Species>();
+	private final ObjectProperty<Species> speciesProperty = new SimpleObjectProperty<>();
 	// The number of that species
 	private final IntegerProperty amountProperty = new SimpleIntegerProperty();
 

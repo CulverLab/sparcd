@@ -3,6 +3,7 @@
     -fx-background-size: 40 40;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center center;
+    -fx-background-radius: 40px;
 }
 
 .mainBackground {

@@ -69,7 +69,7 @@ public class SanimalData
 	private SanimalData()
 	{
 		// Create the species list, and add some default species
-		this.speciesList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList(species -> new Observable[]{species.nameProperty(), species.scientificNameProperty(), species.speciesIconURLProperty()}));
+		this.speciesList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList(species -> new Observable[]{species.nameProperty(), species.scientificNameProperty(), species.speciesIconURLProperty(), species.keyBindingProperty()}));
 
 		// When the species list changes we push the changes to the CyVerse servers
 		this.setupAutoSpeciesSync();

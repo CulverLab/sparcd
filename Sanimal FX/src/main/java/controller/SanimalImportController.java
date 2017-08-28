@@ -157,6 +157,14 @@ public class SanimalImportController implements Initializable
 	/// FXML bound fields end
 	///
 
+	// Data formats are used for drag and drop
+	// Store the location name and id
+	private final DataFormat LOCATION_NAME_FORMAT = new DataFormat("com.dslovikosky.location.locationName");
+	private final DataFormat LOCATION_ID_FORMAT = new DataFormat("com.dslovikosky.location.locationID");
+	// Store the species name and scientific name
+	private final DataFormat SPECIES_NAME_FORMAT = new DataFormat("com.dslovikosky.species.speciesName");
+	private final DataFormat SPECIES_SCIENTIFIC_NAME_FORMAT = new DataFormat("com.dslovikosky.species.speciesScientificName");
+
 	// The color adjust property is used to adjust the image preview's color FX
 	private ObjectProperty<ColorAdjust> colorAdjust = new SimpleObjectProperty<>(new ColorAdjust());
 
@@ -178,9 +186,6 @@ public class SanimalImportController implements Initializable
 	private ObjectProperty<Point2D> mouseDown = new SimpleObjectProperty<>();
 
 	private ObjectProperty<Image> speciesPreviewImage = new SimpleObjectProperty<>(null);
-
-	private final Species TEST_SPECIES = SanimalData.getInstance().getSpeciesList().filtered(species -> species.getName().equals("Test")).stream().findFirst().orElse(null);
-	private final Species GHOST_SPECIES = SanimalData.getInstance().getSpeciesList().filtered(species -> species.getName().equals("Ghost")).stream().findFirst().orElse(null);;
 
 	/**
 	 * Initialize the sanimal import view and data bindings
@@ -301,7 +306,7 @@ public class SanimalImportController implements Initializable
 		// Bind the species entry location name to the selected image's location
 		this.lblLocation.textProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::getLocationTakenProperty).map(Location::getName));
 		// Hide the location panel when no location is selected
-		this.hbxLocation.visibleProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getLocationTaken).map(location -> true).orElse(false));
+		this.hbxLocation.visibleProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::getLocationTakenProperty).map(location -> true).orElse(false));
 		// Hide the progress bar when no tasks remain
 		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().currentTaskProperty().isNotNull());
 		// Bind the progress bar's text property to tasks remaining
@@ -366,11 +371,8 @@ public class SanimalImportController implements Initializable
 				if (!this.txtSpeciesSearch.isFocused())
 				{
 					// Filter the species list by correctly key-bound species, and add them to the current image
-					SanimalData.getInstance().getSpeciesList().filtered(boundSpecies -> boundSpecies.getKeyBinding() == event.getCode()).forEach(boundSpecies -> {
-						this.currentlySelectedImage.getValue().removeSpecies(TEST_SPECIES);
-						this.currentlySelectedImage.getValue().removeSpecies(GHOST_SPECIES);
-						this.currentlySelectedImage.getValue().addSpecies(boundSpecies, 1);
-					});
+					SanimalData.getInstance().getSpeciesList().filtered(boundSpecies -> boundSpecies.getKeyBinding() == event.getCode()).forEach(boundSpecies ->
+							this.currentlySelectedImage.getValue().addSpecies(boundSpecies, 1));
 					event.consume();
 				}
 			}
@@ -910,7 +912,8 @@ public class SanimalImportController implements Initializable
 
 				// Create a clipboard and put the species unique ID into that clipboard
 				ClipboardContent content = new ClipboardContent();
-				content.putString(selected.getName() + ", " + selected.getScientificName());
+				content.put(SPECIES_NAME_FORMAT, selected.getName());
+				content.put(SPECIES_SCIENTIFIC_NAME_FORMAT, selected.getScientificName());
 				// Set the dragboard's context, and then consume the event
 				dragboard.setContent(content);
 
@@ -938,8 +941,8 @@ public class SanimalImportController implements Initializable
 
 				// Create a clipboard and put the location unique ID into that clipboard
 				ClipboardContent content = new ClipboardContent();
-				content.putString(selected.getName());
-				content.putString(selected.getId());
+				content.put(LOCATION_NAME_FORMAT, selected.getName());
+				content.put(LOCATION_ID_FORMAT, selected.getId());
 				// Set the dragboard's context, and then consume the event
 				dragboard.setContent(content);
 
@@ -955,11 +958,10 @@ public class SanimalImportController implements Initializable
 	 */
 	public void imagePaneDragOver(DragEvent dragEvent)
 	{
-		// If we started dragging at the species lit view and the dragboard has a string we accept the transfer and consume the event
-		if ((dragEvent.getGestureSource() == this.speciesListView || dragEvent.getGestureSource() == this.locationListView) && dragEvent.getDragboard().hasString())
-		{
+		Dragboard dragboard = dragEvent.getDragboard();
+		// If we started dragging at the species or location view and the dragboard has a string we play the fade animation and consume the event
+		if ((dragboard.hasContent(LOCATION_NAME_FORMAT) && dragboard.hasContent(LOCATION_ID_FORMAT)) || (dragboard.hasContent(SPECIES_NAME_FORMAT) && dragboard.hasContent(SPECIES_SCIENTIFIC_NAME_FORMAT)))
 			dragEvent.acceptTransferModes(TransferMode.COPY);
-		}
 		dragEvent.consume();
 	}
 
@@ -970,8 +972,9 @@ public class SanimalImportController implements Initializable
 	 */
 	public void imagePaneDragEntered(DragEvent dragEvent)
 	{
-		// If we started dragging at the species lit view and the dragboard has a string we play the fade animation and consume the event
-		if ((dragEvent.getGestureSource() == this.speciesListView || dragEvent.getGestureSource() == this.locationListView) && dragEvent.getDragboard().hasString())
+		Dragboard dragboard = dragEvent.getDragboard();
+		// If we started dragging at the species or location view and the dragboard has a string we play the fade animation and consume the event
+		if ((dragboard.hasContent(LOCATION_NAME_FORMAT) && dragboard.hasContent(LOCATION_ID_FORMAT)) || (dragboard.hasContent(SPECIES_NAME_FORMAT) && dragboard.hasContent(SPECIES_SCIENTIFIC_NAME_FORMAT)))
 			this.fadeAddPanelOut.play();
 		dragEvent.consume();
 	}
@@ -983,8 +986,9 @@ public class SanimalImportController implements Initializable
 	 */
 	public void imagePaneDragExited(DragEvent dragEvent)
 	{
-		// If we started dragging at the species lit view and the dragboard has a string we play the fade animation and consume the event
-		if ((dragEvent.getGestureSource() == this.speciesListView || dragEvent.getGestureSource() == this.locationListView) && dragEvent.getDragboard().hasString())
+		Dragboard dragboard = dragEvent.getDragboard();
+		// If we started dragging at the species or location view and the dragboard has a string we play the fade animation and consume the event
+		if ((dragboard.hasContent(LOCATION_NAME_FORMAT) && dragboard.hasContent(LOCATION_ID_FORMAT)) || (dragboard.hasContent(SPECIES_NAME_FORMAT) && dragboard.hasContent(SPECIES_SCIENTIFIC_NAME_FORMAT)))
 			this.fadeAddPanelIn.play();
 		dragEvent.consume();
 	}
@@ -998,63 +1002,48 @@ public class SanimalImportController implements Initializable
 	{
 		// Create a flag that will be set to true if everything went well
 		Boolean success = false;
-		if (dragEvent.getDragboard().hasString())
+		// Grab the dragboard
+		Dragboard dragboard = dragEvent.getDragboard();
+		// If our dragboard has a string we have data which we need
+		if (dragboard.hasContent(SPECIES_NAME_FORMAT) && dragboard.hasContent(SPECIES_SCIENTIFIC_NAME_FORMAT))
 		{
-			if (dragEvent.getGestureSource() == this.speciesListView)
-			{
-				// Grab the dragboard
-				Dragboard dragboard = dragEvent.getDragboard();
-				// If our dragboard has a string, grab it
-				if (dragboard.hasString())
+			String commonName = (String) dragboard.getContent(SPECIES_NAME_FORMAT);
+			String scientificName = (String) dragboard.getContent(SPECIES_SCIENTIFIC_NAME_FORMAT);
+			// Grab the species with the given ID
+			Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getScientificName().equals(scientificName) && species.getName().equals(commonName)).findFirst();
+			// Add the species to the image
+			if (toAdd.isPresent())
+				if (currentlySelectedImage.getValue() != null)
 				{
-					Object clipboard = dragboard.getContent(DataFormat.PLAIN_TEXT);
-					String commonName = "";
-					String scientificName = dragboard.getString();
-					// Grab the species with the given ID
-					Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getScientificName().equals(scientificName) && species.getName().equals(commonName)).findFirst();
-					// Add the species to the image
-					if (toAdd.isPresent())
-						if (currentlySelectedImage.getValue() != null)
-						{
-							currentlySelectedImage.getValue().removeSpecies(TEST_SPECIES);
-							currentlySelectedImage.getValue().removeSpecies(GHOST_SPECIES);
-							currentlySelectedImage.getValue().addSpecies(toAdd.get(), 1);
-							// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
-							this.imageTree.requestFocus();
-							success = true;
-						}
+					currentlySelectedImage.getValue().addSpecies(toAdd.get(), 1);
+					// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
+					this.imageTree.requestFocus();
+					success = true;
 				}
-			}
-			else if (dragEvent.getGestureSource() == this.locationListView)
-			{
-				// Grab the dragboard
-				Dragboard dragboard = dragEvent.getDragboard();
-				// If our dragboard has a string, grab it
-				if (dragboard.hasString())
+		}
+		else if (dragboard.hasContent(LOCATION_NAME_FORMAT) && dragboard.hasContent(LOCATION_ID_FORMAT))
+		{
+			String locationName = (String) dragboard.getContent(LOCATION_NAME_FORMAT);
+			String locationId = (String) dragboard.getContent(LOCATION_ID_FORMAT);
+			// Grab the species with the given ID
+			Optional<Location> toAdd = SanimalData.getInstance().getLocationList().stream().filter(location -> location.getName().equals(locationName) && location.getId().equals(locationId)).findFirst();
+			// Add the species to the image
+			if (toAdd.isPresent())
+				// Check if we have a selected image or directory to update!
+				if (currentlySelectedImage.getValue() != null)
 				{
-					String locationName = dragboard.getString();
-					String locationId = dragboard.getString();
-					// Grab the species with the given ID
-					Optional<Location> toAdd = SanimalData.getInstance().getLocationList().stream().filter(location -> location.getName().equals(locationName) && location.getId().equals(locationId)).findFirst();
-					// Add the species to the image
-					if (toAdd.isPresent())
-						// Check if we have a selected image or directory to update!
-						if (currentlySelectedImage.getValue() != null)
-						{
-							currentlySelectedImage.getValue().setLocationTaken(toAdd.get());
-							// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
-							this.imageTree.requestFocus();
-							success = true;
-						}
-						else if (currentlySelectedDirectory.getValue() != null)
-						{
-							this.setContainerLocation(currentlySelectedDirectory.getValue(), toAdd.get());
-							// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
-							this.imageTree.requestFocus();
-							success = true;
-						}
+					currentlySelectedImage.getValue().setLocationTaken(toAdd.get());
+					// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
+					this.imageTree.requestFocus();
+					success = true;
 				}
-			}
+				else if (currentlySelectedDirectory.getValue() != null)
+				{
+					this.setContainerLocation(currentlySelectedDirectory.getValue(), toAdd.get());
+					// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
+					this.imageTree.requestFocus();
+					success = true;
+				}
 		}
 		// Set the success equal to the flag, and consume the event
 		dragEvent.setDropCompleted(success);
