@@ -66,7 +66,7 @@ public class ImageEntry extends ImageContainer
 		this.imageFileProperty.setValue(file);
 		try
 		{
-			this.dateTakenProperty.setValue(new Date(Files.readAttributes(file.toPath(), BasicFileAttributes.class).lastModifiedTime().toMillis()));
+			this.dateTakenProperty.setValue(new Date(Files.readAttributes(file.toPath(), BasicFileAttributes.class).creationTime().toMillis()));
 		}
 		catch (IOException ignored)
 		{
