@@ -61,6 +61,7 @@ public class SanimalData
 	// The connection manager used to authenticate the CyVerse user
 	private CyVerseConnectionManager connectionManager = new CyVerseConnectionManager();
 
+	// Preferences used to save the user's username
 	private final Preferences sanimalPreferences = Preferences.userNodeForPackage(SanimalData.class);
 
 	/**

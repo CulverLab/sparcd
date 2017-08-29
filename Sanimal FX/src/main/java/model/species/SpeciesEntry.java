@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Wrapper around the species class which allows for the addition of the amount field that specifies how many animals are in an image
@@ -100,7 +101,7 @@ public class SpeciesEntry implements Comparable<SpeciesEntry>
 	@Override
 	public int compareTo(SpeciesEntry other)
 	{
-		if (other.getAmount() == this.getAmount() && other.getSpecies().equals(this.getSpecies()))
+		if (other.getAmount().equals(this.getAmount()) && other.getSpecies().equals(this.getSpecies()))
 			return 0;
 		else
 			return 1;

@@ -4,6 +4,11 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 
+/**
+ * Class used to wrap a task and allows it to have an on finished event
+ *
+ * @param <V> Decides the task return value
+ */
 public abstract class FinishableTask<V> extends Task<V>
 {
 	/**

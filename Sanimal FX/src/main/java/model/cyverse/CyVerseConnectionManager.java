@@ -8,6 +8,7 @@ import javafx.beans.property.*;
 import model.SanimalData;
 import model.location.Location;
 import model.species.Species;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -250,66 +251,104 @@ public class CyVerseConnectionManager
 		}
 	}
 
+	/**
+	 * Connects to CyVerse and downloads the list of the user's locations
+	 *
+	 * @return A list of locations stored on the CyVerse system
+	 */
 	public List<Location> pullRemoteLocations()
 	{
-		List<Location> remoteLocations = new ArrayList<>();
-
+		// Path to the file on the CyVerse server should be named locations.json
 		String fileName = "./Sanimal/Settings/locations.json";
+		// Read the contents of the file into a string
 		String fileContents = this.readRemoteFile(fileName);
+		// Ensure that we in fact got data back
 		if (fileContents != null)
 		{
+			// Try to parse the JSON string into a list of locations
 			try
 			{
-				List<Location> locations = SanimalData.getInstance().getGson().fromJson(fileContents, LOCATION_LIST_TYPE);
-				remoteLocations.addAll(locations);
+				// Get the GSON object to parse the JSON. Return the list of new locations
+				return SanimalData.getInstance().getGson().fromJson(fileContents, LOCATION_LIST_TYPE);
 			}
 			catch (JsonSyntaxException e)
 			{
+				// If the JSON file is incorrectly formatted, throw an error and return an empty list
 				System.out.println("Error reading the Json file " + fileName + ", Error was:\n");
 				e.printStackTrace();
 			}
 		}
 
-		return remoteLocations;
+		return Collections.emptyList();
 	}
 
+	/**
+	 * Connects to CyVerse and uploads the given list of lcations into the locations.json file
+	 *
+	 * @param newLocations The list of new locations to upload
+	 */
 	public void pushLocalLocations(List<Location> newLocations)
 	{
+		// Convert the location list to JSON format
 		String json = SanimalData.getInstance().getGson().toJson(newLocations);
+		// Write the locations.json file to the server
 		this.writeRemoteFile("./Sanimal/Settings/locations.json", json);
 	}
 
+	/**
+	 * Connects to CyVerse and downloads the list of the user's species list
+	 *
+	 * @return A list of species stored on the CyVerse system
+	 */
 	public List<Species> pullRemoteSpecies()
 	{
-		List<Species> remoteSpecies = new ArrayList<>();
-
+		// Path to the file on the CyVerse server should be named species.json
 		String fileName = "./Sanimal/Settings/species.json";
+		// Read the contents of the file into a string
 		String fileContents = this.readRemoteFile(fileName);
+		// Ensure that we in fact got data back
 		if (fileContents != null)
 		{
+			// Try to parse the JSON string into a list of species
 			try
 			{
-				List<Species> species = SanimalData.getInstance().getGson().fromJson(fileContents, SPECIES_LIST_TYPE);
-				remoteSpecies.addAll(species);
+				// Get the GSON object to parse the JSON. Return the list of new locations
+				return SanimalData.getInstance().getGson().fromJson(fileContents, SPECIES_LIST_TYPE);
 			}
 			catch (JsonSyntaxException e)
 			{
+				// If the JSON file is incorrectly formatted, throw an error and return an empty list
 				System.out.println("Error reading the Json file " + fileName + ", Error was:\n");
 				e.printStackTrace();
 			}
 		}
 
-		return remoteSpecies;
+		return Collections.emptyList();
 	}
 
+	/**
+	 * Connects to CyVerse and uploads the given list of species into the species.json file
+	 *
+	 * @param newSpecies The list of new species to upload
+	 */
 	public void pushLocalSpecies(List<Species> newSpecies)
 	{
+		// Convert the species list to JSON format
 		String json = SanimalData.getInstance().getGson().toJson(newSpecies);
+		// Write the species.json file to the server
 		this.writeRemoteFile("./Sanimal/Settings/species.json", json);
 	}
 
+	/**
+	 * Reads a file from CyVerse assuming a user is already logged in
+	 *
+	 * @param file The path to the file to read
+	 *
+	 * @return The contents of the file on CyVerse's system as a string
+	 */
 	private String readRemoteFile(String file)
 	{
+		// Ensure we're logged in
 		if (this.loggedInProperty.getValue())
 		{
 			try
@@ -361,29 +400,46 @@ public class CyVerseConnectionManager
 		{
 			System.out.println("Must be logged in to read the sanimal remote directory!");
 		}
+
+		// If anything fails return null
 		return null;
 	}
 
+	/**
+	 * Write a value to a file on the CyVerse server
+	 *
+	 * @param file The file to write to
+	 * @param value The string value to write to the file
+	 */
 	private void writeRemoteFile(String file, String value)
 	{
+		// Ensure we're logged in properly
 		if (this.loggedInProperty.getValue())
 		{
 			// Create a temporary file to write each location to before uploading
 			try
 			{
+				// Create a local file to write to
 				Path localPath = Files.createTempFile("sanimalTemp", "." + FilenameUtils.getExtension(file));
+				// Grab the file from the path
 				File localFile = localPath.toFile();
+				// Delete the file once the program exits
 				localFile.deleteOnExit();
+				// Ensure the file we made exists
 				if (localFile.exists())
 				{
+					// Create the irods file to write to
 					IRODSFile remoteLocationFile = this.irodsFileFactory.instanceIRODSFile(file);
+					// If it exists already, delete it
 					if (remoteLocationFile.exists())
 						remoteLocationFile.delete();
 
+					// Create a file writer which writes a string to a file. Write the value to the local file
 					try (PrintWriter fileWriter = new PrintWriter(localFile))
 					{
 						fileWriter.write(value);
 					}
+					// Perform a put operation to write the local file to the CyVerse server
 					this.irodsDataTransfer.putOperation(localFile, remoteLocationFile, null, null);
 				}
 				else

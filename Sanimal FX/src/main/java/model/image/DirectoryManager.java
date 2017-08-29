@@ -156,7 +156,7 @@ public class DirectoryManager
 						// We look for length 3
 						if (locationField.length == 3)
 						{
-							// Grab the location, elevation, and lat/lng
+							// Grab the location, location id, elevation, and lat/lng
 							String locationName = locationField[0];
 							String locationElevation = locationField[1];
 							String locationId = locationField[2];

@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author David Slovikosky
  */
-public class Species implements Comparable<Species>
+public class Species
 {
     // The name of the species
     private StringProperty name = new SimpleStringProperty();
@@ -218,14 +218,5 @@ public class Species implements Comparable<Species>
     public String toString()
     {
         return this.getName();
-    }
-
-    @Override
-    public int compareTo(@NotNull Species o)
-    {
-        return Comparator
-                .comparing(Species::getName)
-                .thenComparing(Species::getScientificName)
-                .compare(this, o);
     }
 }

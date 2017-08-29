@@ -248,19 +248,4 @@ public class Location
 	{
 		return this.getName() + "\nLatitude: " + this.getLat() + "\nLongitude: " + this.getLng() + "\nElevation: " + this.getElevation();
 	}
-
-	@Override
-	public boolean equals(Object other)
-	{
-		if (other instanceof Location)
-		{
-			Location otherLoc = (Location) other;
-			return
-					this.getName().equals(otherLoc.getName()) &&
-					this.getId().equals(otherLoc.getId()) &&
-					Math.abs(this.getLat() - otherLoc.getLat()) < 0.0001 &&
-					Math.abs(this.getLng() - otherLoc.getLng()) < 0.0001;
-		}
-		return false;
-	}
 }
