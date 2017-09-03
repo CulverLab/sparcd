@@ -215,7 +215,7 @@ public class SanimalImportController implements Initializable
 		this.speciesListView.setItems(speciesFilteredList);
 		// Set the cell factory to be our custom species list cell
 		this.speciesListView.setCellFactory(x -> {
-			SpeciesListEntryController controller = FXMLLoaderUtils.loadFXML("SpeciesListEntry.fxml").getController();
+			SpeciesListEntryController controller = FXMLLoaderUtils.loadFXML("importView/SpeciesListEntry.fxml").getController();
 			controller.setCurrentImagePreview(this.speciesPreviewImage);
 			return controller;
 		});
@@ -234,7 +234,7 @@ public class SanimalImportController implements Initializable
 		// Set the items of the location list view to the newly sorted list
 		this.locationListView.setItems(locations);
 		// Set the cell factory to be our custom location list cell
-		this.locationListView.setCellFactory(x -> FXMLLoaderUtils.loadFXML("LocationListEntry.fxml").getController());
+		this.locationListView.setCellFactory(x -> FXMLLoaderUtils.loadFXML("importView/LocationListEntry.fxml").getController());
 		// When we double click the location list view items, we want to edit the location
 		this.locationListView.setOnMouseClicked(event -> {
 			if (event.getClickCount() >= 2 && this.locationListView.getSelectionModel().getSelectedItem() != null)
@@ -244,7 +244,7 @@ public class SanimalImportController implements Initializable
 		// Setup the species entry list view
 
 		// The species entry list view just needs to have a cell factory
-		this.speciesEntryListView.setCellFactory(x -> FXMLLoaderUtils.loadFXML("SpeciesEntryListEntry.fxml").getController());
+		this.speciesEntryListView.setCellFactory(x -> FXMLLoaderUtils.loadFXML("importView/SpeciesEntryListEntry.fxml").getController());
 
 		// Setup the color adjustment property on the image
 
@@ -513,7 +513,7 @@ public class SanimalImportController implements Initializable
 	private void requestEdit(Species species)
 	{
 		// Load the FXML file of the editor window
-		FXMLLoader loader = FXMLLoaderUtils.loadFXML("SpeciesCreator.fxml");
+		FXMLLoader loader = FXMLLoaderUtils.loadFXML("importView/SpeciesCreator.fxml");
 		// Grab the controller and set the species of that controller
 		SpeciesCreatorController controller = loader.getController();
 		controller.setSpecies(species);
@@ -644,7 +644,7 @@ public class SanimalImportController implements Initializable
 	private void requestEdit(Location location)
 	{
 		// Load the FXML file of the editor window
-		FXMLLoader loader = FXMLLoaderUtils.loadFXML("LocationCreator.fxml");
+		FXMLLoader loader = FXMLLoaderUtils.loadFXML("importView/LocationCreator.fxml");
 		// Grab the controller and set the location of that controller
 		LocationCreatorController controller = loader.getController();
 		controller.setLocation(location);

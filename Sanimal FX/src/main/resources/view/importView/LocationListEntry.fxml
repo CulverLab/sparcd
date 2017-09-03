@@ -21,7 +21,7 @@
         <Tooltip fx:id="primaryTooltip" text="${controller.item}" style="-fx-font-size: 16px">
             <graphic>
                 <ImageView>
-                    <Image url="@../images/importWindow/worldIcon.png"/>
+                    <Image url="@../../images/importWindow/worldIcon.png"/>
                 </ImageView>
             </graphic>
         </Tooltip>

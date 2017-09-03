@@ -10,6 +10,7 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import model.cyverse.CyVerseConnectionManager;
+import model.cyverse.ImageCollection;
 import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.location.Location;
@@ -48,6 +49,9 @@ public class SanimalData
 	private AtomicBoolean needLocationSync = new AtomicBoolean(false);
 	private AtomicBoolean locationSyncInProgress = new AtomicBoolean(false);
 
+	// A global list of image collections
+	private final ObservableList<ImageCollection> collectionList;
+
 	// A base directory to which we add all extra directories
 	private final ImageDirectory imageTree;
 
@@ -80,6 +84,9 @@ public class SanimalData
 
 		// When the location list changes we push the changes to the CyVerse servers
 		this.setupAutoLocationSync();
+
+		// Create the image collection list
+		this.collectionList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList(collection -> new Observable[]{collection.nameProperty()}));
 
 		// The tree just starts in the current directory which is a dummy directory
 		this.imageTree = new ImageDirectory(new File("./"));
@@ -193,6 +200,14 @@ public class SanimalData
 	public ObservableList<Location> getLocationList()
 	{
 		return locationList;
+	}
+
+	/**
+	 * @return The global collection list
+	 */
+	public ObservableList<ImageCollection> getCollectionList()
+	{
+		return collectionList;
 	}
 
 	/**

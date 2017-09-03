@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<?import java.net.URL?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<HBox alignment="CENTER_LEFT" fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" spacing="5"
+      xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ImageCollectionListEntry">
+    <stylesheets>
+        <URL value="@ImageCollectionListEntry.css"/>
+    </stylesheets>
+    <padding>
+        <Insets bottom="5" left="5" right="5" top="5"/>
+    </padding>
+    <children>
+        <ImageView fitHeight="90" fitWidth="90">
+            <Image url="@../../images/uploadWindow/imageCollection.png"/>
+        </ImageView>
+        <Label fx:id="lblCollectionName" text="Collection Name" styleClass="collectionNameLbl"/>
+    </children>
+</HBox>

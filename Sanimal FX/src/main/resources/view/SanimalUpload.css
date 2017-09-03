@@ -1,0 +1,7 @@
+.newCollectionBtn {
+    -fx-graphic: url("../images/uploadWindow/save16.png");
+}
+
+.deleteCollectionBtn {
+    -fx-graphic: url("../images/uploadWindow/delete16.png");
+}

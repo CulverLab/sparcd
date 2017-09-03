@@ -1,14 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
 <?import java.net.URL?>
-<AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.SanimalUploadController" prefHeight="400.0" prefWidth="600.0">
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<SplitPane dividerPositions="0.5" minHeight="600" minWidth="600" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalUploadController">
     <stylesheets>
-        <URL value="@SanimalUpload.css"/>
+        <URL value="@SanimalUpload.css" />
     </stylesheets>
-</AnchorPane>
+    <items>
+        <VBox SplitPane.resizableWithParent="false">
+            <ListView fx:id="collectionListView" VBox.vgrow="ALWAYS" />
+            <FlowPane alignment="CENTER" hgap="5" vgap="10">
+                <padding>
+                    <Insets bottom="20" left="5" right="5" top="20" />
+                </padding>
+                <Button onAction="#newCollectionPressed" styleClass="newCollectionBtn" text="New Collection" />
+                <Button onAction="#deleteCollectionPressed" styleClass="deleteCollectionBtn" text="Delete Collection" />
+            </FlowPane>
+        </VBox>
+        <SplitPane dividerPositions=".15, .89" orientation="VERTICAL">
+            <GridPane hgap="5" vgap="5" SplitPane.resizableWithParent="false">
+                <columnConstraints>
+                    <ColumnConstraints maxWidth="100" minWidth="100" />
+                    <ColumnConstraints hgrow="ALWAYS" />
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints />
+                    <RowConstraints />
+                </rowConstraints>
+                <padding>
+                    <Insets bottom="10" left="10" right="10" top="10" />
+                </padding>
+                <children>
+                    <Label text="Name:" />
+                    <TextField fx:id="txtName" GridPane.columnIndex="1" />
+
+                    <Label text="Organization:" GridPane.rowIndex="1" />
+                    <TextField fx:id="txtOrganization" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                </children>
+            </GridPane>
+            <TableView fx:id="tvwPermissions">
+                <columns>
+                    <TableColumn fx:id="clmUser" text="User" />
+                    <TableColumn fx:id="clmView" text="View" />
+                    <TableColumn fx:id="clmWrite" text="Write" />
+                    <TableColumn fx:id="clmDelete" text="Delete" />
+                    <TableColumn fx:id="clmOwner" text="Owner" />
+                </columns>
+            </TableView>
+            <FlowPane alignment="CENTER" hgap="5" vgap="10" SplitPane.resizableWithParent="false">
+                <Button fx:id="btnAddUser" onAction="#addNewUser" text="Add User" />
+                <Button fx:id="btnRemoveUser" onAction="#removeCurrentUser" text="Remove User" />
+            </FlowPane>
+        </SplitPane>
+    </items>
+</SplitPane>

@@ -1,5 +1,5 @@
 .removeBtnBackground {
-    -fx-background-image: url("../images/importWindow/delete.png");
+    -fx-background-image: url("../../images/importWindow/delete.png");
     -fx-background-size: 40 40;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center center;
@@ -7,7 +7,7 @@
 }
 
 .mainBackground {
-    -fx-background-image: url("../images/importWindow/speciesEntryBackground2.png");
+    -fx-background-image: url("../../images/importWindow/speciesEntryBackground2.png");
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
     -fx-font-weight: bolder;

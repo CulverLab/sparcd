@@ -1,5 +1,5 @@
 .locationBackground {
-    -fx-background-image: url("../images/importWindow/locationIcon.png");
+    -fx-background-image: url("../../images/importWindow/locationIcon.png");
     -fx-background-size: 110 110;
     -fx-background-repeat: no-repeat;
     -fx-background-position: 5px center;
