@@ -107,64 +107,22 @@ public class SanimalUploadController implements Initializable
 		this.tvwPermissions.itemsProperty().bind(EasyBind.monadic(selectedCollection).map(ImageCollection::getPermissions));
 
 		this.btnAddUser.disableProperty().bind(selectedCollection.isNull());
-		this.btnRemoveUser.disableProperty().bind(selectedCollection.isNull());
+		//EasyBind.monadic(this.tvwPermissions.getSelectionModel().selectedItemProperty()).selectProperty(Permission::ownerProperty);
+		this.btnRemoveUser.disableProperty().bind(
+				selectedCollection.isNull());
+
+		//.or(EasyBind.monadic(this.tvwPermissions.getSelectionModel().selectedItemProperty()).selectProperty(Permission::ownerProperty))
 
 		this.clmUser.setCellValueFactory(param -> param.getValue().usernameProperty());
 		this.clmUser.setCellFactory(TextFieldTableCell.forTableColumn());
 		this.clmView.setCellValueFactory(param -> param.getValue().viewProperty());
-		this.clmView.setCellFactory(param -> new CheckBoxTableCell<Permission, Boolean>()
-		{
-			@Override
-			public void updateItem(Boolean item, boolean empty)
-			{
-				super.updateItem(item, empty);
-				TableRow<Permission> row = getTableRow();
-				if (row != null)
-				{
-					Permission perm = row.getItem();
-					if (perm != null)
-					{
-						this.editableProperty().bind(perm.ownerProperty().not());
-					}
-				}
-			}
-		});
+		this.clmView.setCellFactory(param -> new CheckBoxTableCell<>());
 		this.clmWrite.setCellValueFactory(param -> param.getValue().writeProperty());
-		this.clmWrite.setCellFactory(param -> new CheckBoxTableCell<Permission, Boolean>() {
-			@Override
-			public void updateItem(Boolean item, boolean empty)
-			{
-				super.updateItem(item, empty);
-				TableRow<Permission> row = getTableRow();
-				if (row != null)
-				{
-					Permission perm = row.getItem();
-					if (perm != null)
-					{
-						this.editableProperty().bind(perm.ownerProperty().not());
-					}
-				}
-			}
-		});
+		this.clmWrite.setCellFactory(param -> new CheckBoxTableCell<>());
 		this.clmDelete.setCellValueFactory(param -> param.getValue().deleteProperty());
-		this.clmDelete.setCellFactory(param -> new CheckBoxTableCell<Permission, Boolean>() {
-			@Override
-			public void updateItem(Boolean item, boolean empty)
-			{
-				super.updateItem(item, empty);
-				TableRow<Permission> row = getTableRow();
-				if (row != null)
-				{
-					Permission perm = row.getItem();
-					if (perm != null)
-					{
-						this.editableProperty().bind(perm.ownerProperty().not());
-					}
-				}
-			}
-		});
+		this.clmDelete.setCellFactory(param -> new CheckBoxTableCell<>());
 		this.clmOwner.setCellValueFactory(param -> param.getValue().ownerProperty());
-		this.clmOwner.setCellFactory(param -> new CheckBoxTableCell<Permission, Boolean>());
+		this.clmOwner.setCellFactory(param -> new CheckBoxTableCell<>());
 
 		this.tvwPermissions.setEditable(true);
 	}

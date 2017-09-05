@@ -20,12 +20,24 @@ public class Permission
 			if (newValue)
 			{
 				// Bound values can't be set!
-				/*
 				this.setView(true);
 				this.setWrite(true);
 				this.setDelete(true);
-				*/
 			}
+		});
+
+		// If the owner property is set and we try to disable any of the other properties, ignore the change
+		this.viewProperty.addListener((observable, oldValue, newValue) -> {
+			if (!newValue && this.ownerProperty.getValue())
+				this.viewProperty.setValue(true);
+		});
+		this.writeProperty.addListener((observable, oldValue, newValue) -> {
+			if (!newValue && this.ownerProperty.getValue())
+				this.writeProperty.setValue(true);
+		});
+		this.deleteProperty.addListener((observable, oldValue, newValue) -> {
+			if (!newValue && this.ownerProperty.getValue())
+				this.deleteProperty.setValue(true);
 		});
 	}
 
