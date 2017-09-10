@@ -86,7 +86,7 @@ public class SanimalData
 		this.setupAutoLocationSync();
 
 		// Create the image collection list
-		this.collectionList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList(collection -> new Observable[]{collection.nameProperty()}));
+		this.collectionList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList(collection -> new Observable[]{collection.nameProperty(), collection.getPermissions(), collection.organizationProperty(), collection.contactInfoProperty()}));
 
 		// The tree just starts in the current directory which is a dummy directory
 		this.imageTree = new ImageDirectory(new File("./"));

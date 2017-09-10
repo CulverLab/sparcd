@@ -23,6 +23,8 @@ public class ImageCollectionListEntry extends ListCell<ImageCollection>
 
 	@FXML
 	public Label lblCollectionName;
+	@FXML
+	public Label lblCollectionContactInfo;
 
 	///
 	/// FXML Bound Fields End
@@ -61,6 +63,8 @@ public class ImageCollectionListEntry extends ListCell<ImageCollection>
 		{
 			// Set the name to the collection name
 			this.lblCollectionName.setText(collection.getName());
+			// Set the contact info to be the collection contact info
+			this.lblCollectionContactInfo.setText(collection.getContactInfo());
 			// Set the graphic to display
 			this.setGraphic(mainPane);
 		}

@@ -22,6 +22,9 @@
         <ImageView fitHeight="90" fitWidth="90">
             <Image url="@../../images/uploadWindow/imageCollection.png"/>
         </ImageView>
-        <Label fx:id="lblCollectionName" text="Collection Name" styleClass="collectionNameLbl"/>
+        <VBox spacing="5" alignment="CENTER_LEFT">
+            <Label fx:id="lblCollectionName" text="Collection Name" styleClass="collectionNameLbl"/>
+            <Label fx:id="lblCollectionContactInfo" text="Contact Info"/>
+        </VBox>
     </children>
 </HBox>

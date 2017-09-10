@@ -2,24 +2,25 @@ package controller;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.*;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import javafx.util.converter.DefaultStringConverter;
+import library.EditCell;
 import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Function;
 
 public class SanimalUploadController implements Initializable
 {
@@ -47,6 +49,8 @@ public class SanimalUploadController implements Initializable
 	public TextField txtName;
 	@FXML
 	public TextField txtOrganization;
+	@FXML
+	public TextField txtContactInfo;
 
 	// The actual tableview
 	@FXML
@@ -66,6 +70,8 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public Button btnRemoveUser;
 	@FXML
+	public Button btnSave;
+	@FXML
 	public Button btnAddUser;
 
 	///
@@ -78,6 +84,8 @@ public class SanimalUploadController implements Initializable
 	// https://stackoverflow.com/questions/14558266/clean-javafx-property-listeners-and-bindings-memory-leaks
 	// https://stackoverflow.com/questions/26312651/bidirectional-javafx-binding-is-destroyed-by-unrelated-code
 	private final List<Property> hardReferences = new ArrayList<>();
+
+
 
 	private ObjectProperty<ImageCollection> selectedCollection = new SimpleObjectProperty<>();
 
@@ -103,18 +111,26 @@ public class SanimalUploadController implements Initializable
 		// Bind the organization property of the current collection to the organization text property
 		// We cache the property so that it does not get garbage collected early
 		this.txtOrganization.textProperty().bindBidirectional(cache(EasyBind.monadic(selectedCollection).selectProperty(ImageCollection::organizationProperty)));
+		// Bind the contact info property of the current collection to the contact info text property
+		// We cache the property so that it does not get garbage collected early
+		this.txtContactInfo.textProperty().bindBidirectional(cache(EasyBind.monadic(selectedCollection).selectProperty(ImageCollection::contactInfoProperty)));
 
 		this.tvwPermissions.itemsProperty().bind(EasyBind.monadic(selectedCollection).map(ImageCollection::getPermissions));
 
-		this.btnAddUser.disableProperty().bind(selectedCollection.isNull());
-		//EasyBind.monadic(this.tvwPermissions.getSelectionModel().selectedItemProperty()).selectProperty(Permission::ownerProperty);
-		this.btnRemoveUser.disableProperty().bind(
-				selectedCollection.isNull());
+		BooleanBinding nothingSelected = selectedCollection.isNull();
 
-		//.or(EasyBind.monadic(this.tvwPermissions.getSelectionModel().selectedItemProperty()).selectProperty(Permission::ownerProperty))
+		this.txtName.disableProperty().bind(nothingSelected);
+		this.txtOrganization.disableProperty().bind(nothingSelected);
+		this.txtContactInfo.disableProperty().bind(nothingSelected);
+		this.txtContactInfo.setPromptText("Email and/or Phone Number preferred");
+
+		this.btnAddUser.disableProperty().bind(nothingSelected);
+		this.btnSave.disableProperty().bind(nothingSelected);
+		// Disable this button when the selected permission is the owner
+		this.btnRemoveUser.disableProperty().bind(EasyBind.monadic(this.tvwPermissions.getSelectionModel().selectedItemProperty()).selectProperty(Permission::ownerProperty).orElse(nothingSelected));
 
 		this.clmUser.setCellValueFactory(param -> param.getValue().usernameProperty());
-		this.clmUser.setCellFactory(TextFieldTableCell.forTableColumn());
+		this.clmUser.setCellFactory(x -> new EditCell<>(new DefaultStringConverter()));
 		this.clmView.setCellValueFactory(param -> param.getValue().viewProperty());
 		this.clmView.setCellFactory(param -> new CheckBoxTableCell<>());
 		this.clmWrite.setCellValueFactory(param -> param.getValue().writeProperty());
@@ -123,6 +139,16 @@ public class SanimalUploadController implements Initializable
 		this.clmDelete.setCellFactory(param -> new CheckBoxTableCell<>());
 		this.clmOwner.setCellValueFactory(param -> param.getValue().ownerProperty());
 		this.clmOwner.setCellFactory(param -> new CheckBoxTableCell<>());
+
+		this.tvwPermissions.setRowFactory(table -> {
+			TableRow<Permission> row = new TableRow<>();
+			row.setOnMouseClicked(event -> {
+				if (event.getClickCount() == 2)
+					if (row.isEmpty())
+						createUser();
+			});
+			return row;
+		});
 
 		this.tvwPermissions.setEditable(true);
 	}
@@ -166,14 +192,19 @@ public class SanimalUploadController implements Initializable
 
 	public void addNewUser(ActionEvent actionEvent)
 	{
+		createUser();
+		actionEvent.consume();
+	}
+
+	private void createUser()
+	{
 		Permission permission = new Permission();
 		permission.setDelete(false);
 		permission.setWrite(false);
 		permission.setView(false);
 		permission.setOwner(false);
-		permission.setUsername("");
+		permission.setUsername("Unnamed");
 		this.selectedCollection.getValue().getPermissions().add(permission);
-		actionEvent.consume();
 	}
 
 	public void removeCurrentUser(ActionEvent actionEvent)
@@ -197,5 +228,10 @@ public class SanimalUploadController implements Initializable
 		}
 		// Consume the event
 		actionEvent.consume();
+	}
+
+	public void savePermissions(ActionEvent actionEvent)
+	{
+		System.out.println("Write perms to cyverse!");
 	}
 }

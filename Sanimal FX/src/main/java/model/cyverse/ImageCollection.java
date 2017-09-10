@@ -12,6 +12,7 @@ public class ImageCollection
 {
 	private StringProperty nameProperty = new SimpleStringProperty("");
 	private StringProperty organizationProperty = new SimpleStringProperty("");
+	private StringProperty contactInfoProperty = new SimpleStringProperty("");
 	private ObservableList<Permission> permissions = FXCollections.observableArrayList(permission -> new Observable[] { permission.usernameProperty(), permission.viewProperty(), permission.writeProperty(), permission.deleteProperty(), permission.ownerProperty()});
 
 	public ImageCollection()
@@ -25,7 +26,18 @@ public class ImageCollection
 			while (change.next())
 				if (change.wasUpdated())
 				{
-
+					for (int i = change.getFrom(); i < change.getTo(); i++)
+					{
+						Permission updated = change.getList().get(i);
+						if (!updated.getOwner())
+						{
+							boolean noOwner = change.getList().filtered(Permission::getOwner).isEmpty();
+							if (noOwner)
+								updated.setOwner(true);
+						}
+						else if (updated.getOwner())
+							change.getList().filtered(perm -> !perm.equals(updated)).forEach(perm -> perm.setOwner(false));
+					}
 				}
 		});
 	}
@@ -58,6 +70,21 @@ public class ImageCollection
 	public StringProperty organizationProperty()
 	{
 		return this.organizationProperty;
+	}
+
+	public void setContactInfo(String contactInfo)
+	{
+		this.contactInfoProperty.setValue(contactInfo);
+	}
+
+	public String getContactInfo()
+	{
+		return this.contactInfoProperty.getValue();
+	}
+
+	public StringProperty contactInfoProperty()
+	{
+		return contactInfoProperty;
 	}
 
 	public ObservableList<Permission> getPermissions()

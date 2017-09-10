@@ -29,7 +29,8 @@
     <children>
         <Label fx:id="lblName" styleClass="largeBold" wrapText="true" text="Name" tooltip="$primaryTooltip"/>
         <Label fx:id="lblId" styleClass="mediumItalic" text="Id" tooltip="$primaryTooltip"/>
-        <Label fx:id="lblLocation" wrapText="true" text="Lat/Lng or UTM" tooltip="$primaryTooltip"/>
+        <Label fx:id="lblLocationLat" text="Lat/Lng" tooltip="$primaryTooltip"/>
+        <Label fx:id="lblLocationLng" text="Lat/Lng" tooltip="$primaryTooltip"/>
         <!-- <Label fx:id="lblElevation" text="Elevation" tooltip="$primaryTooltip"/> -->
     </children>
 </VBox>

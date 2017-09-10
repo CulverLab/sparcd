@@ -30,13 +30,14 @@
                 <Button onAction="#deleteCollectionPressed" styleClass="deleteCollectionBtn" text="Delete Collection" />
             </FlowPane>
         </VBox>
-        <SplitPane dividerPositions=".15, .89" orientation="VERTICAL">
+        <SplitPane dividerPositions=".18, .89" orientation="VERTICAL">
             <GridPane hgap="5" vgap="5" SplitPane.resizableWithParent="false">
                 <columnConstraints>
                     <ColumnConstraints maxWidth="100" minWidth="100" />
                     <ColumnConstraints hgrow="ALWAYS" />
                 </columnConstraints>
                 <rowConstraints>
+                    <RowConstraints />
                     <RowConstraints />
                     <RowConstraints />
                 </rowConstraints>
@@ -46,22 +47,27 @@
                 <children>
                     <Label text="Name:" />
                     <TextField fx:id="txtName" GridPane.columnIndex="1" />
-
                     <Label text="Organization:" GridPane.rowIndex="1" />
                     <TextField fx:id="txtOrganization" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                    <Label text="Contact Info: " GridPane.rowIndex="2"/>
+                    <TextField fx:id="txtContactInfo" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
                 </children>
             </GridPane>
             <TableView fx:id="tvwPermissions">
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
                 <columns>
                     <TableColumn fx:id="clmUser" text="User" />
-                    <TableColumn fx:id="clmView" text="View" />
-                    <TableColumn fx:id="clmWrite" text="Write" />
-                    <TableColumn fx:id="clmDelete" text="Delete" />
-                    <TableColumn fx:id="clmOwner" text="Owner" />
+                    <TableColumn fx:id="clmView" text="View"     minWidth="50" maxWidth="50"/>
+                    <TableColumn fx:id="clmWrite" text="Write"   minWidth="50" maxWidth="50"/>
+                    <TableColumn fx:id="clmDelete" text="Delete" minWidth="50" maxWidth="50"/>
+                    <TableColumn fx:id="clmOwner" text="Owner"   minWidth="50" maxWidth="50"/>
                 </columns>
             </TableView>
             <FlowPane alignment="CENTER" hgap="5" vgap="10" SplitPane.resizableWithParent="false">
                 <Button fx:id="btnAddUser" onAction="#addNewUser" text="Add User" />
+                <Button fx:id="btnSave" onAction="#savePermissions" text="Save Permissions"/>
                 <Button fx:id="btnRemoveUser" onAction="#removeCurrentUser" text="Remove User" />
             </FlowPane>
         </SplitPane>

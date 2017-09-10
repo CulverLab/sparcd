@@ -35,7 +35,9 @@ public class LocationListEntryController extends ListCell<Location>
 
     // The location location (lat/lng)
     @FXML
-    public Label lblLocation;
+    public Label lblLocationLat;
+    @FXML
+    public Label lblLocationLng;
 
     // The elevation of the location
     @FXML
@@ -73,7 +75,8 @@ public class LocationListEntryController extends ListCell<Location>
         {
             this.lblName.setText(location.getName());
             this.lblId.setText(location.getId());
-            this.lblLocation.setText(location.getLat() + "\n" + location.getLng());
+            this.lblLocationLat.setText(location.getLat().toString());
+            this.lblLocationLng.setText(location.getLng().toString());
             //this.lblElevation.setText(location.getElevation() + "m");
             this.setGraphic(mainPane);
         }

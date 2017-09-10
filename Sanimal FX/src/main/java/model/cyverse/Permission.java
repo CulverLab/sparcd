@@ -115,4 +115,10 @@ public class Permission
 	{
 		return this.ownerProperty;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "Permission for " + this.getUsername() + ", Owner: " + this.getOwner() + ", Can delete: " + this.getDelete() + ", Can write: " + this.getWrite() + ", Can view: " + this.getView();
+	}
 }
