@@ -42,7 +42,7 @@
                     <Image url="@../images/mainMenu/poweredByCyverse.png"/>
                 </ImageView>
                 <Button AnchorPane.topAnchor="10" AnchorPane.rightAnchor="10" fx:id="btnLogout" minWidth="130" maxWidth="130" onAction="#logoutPressed" styleClass="loginBtn" text="Logout" textAlignment="CENTER"/>
-                <Label AnchorPane.topAnchor="15" AnchorPane.rightAnchor="150" textAlignment="RIGHT" fx:id="lblUsername" styleClass="usernameLbl" GridPane.hgrow="ALWAYS" />
+                <Label AnchorPane.topAnchor="15" AnchorPane.rightAnchor="170" textAlignment="RIGHT" fx:id="lblUsername" styleClass="usernameLbl" GridPane.hgrow="ALWAYS" />
                 <GridPane layoutX="20.0" layoutY="120.0" vgap="3">
                     <columnConstraints>
                         <ColumnConstraints maxWidth="156" minWidth="156"/>
@@ -56,15 +56,15 @@
                         <RowConstraints/>
                     </rowConstraints>
                     <children>
-                        <Button fx:id="btnImport" minWidth="150" onAction="#importPressed" styleClass="importBtn" text="Import" textAlignment="CENTER"
+                        <Button fx:id="btnImport" minWidth="170" onAction="#importPressed" styleClass="importBtn" text="Import" textAlignment="CENTER"
                                 GridPane.rowIndex="0"/>
-                        <Button fx:id="btnAnalyze" minWidth="150" onAction="#analyzePressed" styleClass="analyzeBtn" text="Analyze" textAlignment="CENTER"
+                        <Button fx:id="btnAnalyze" minWidth="170" onAction="#analyzePressed" styleClass="analyzeBtn" text="Analyze" textAlignment="CENTER"
                                 GridPane.rowIndex="1"/>
-                        <Button fx:id="btnMap" minWidth="150" onAction="#mapPressed" styleClass="mapBtn" text="Map" textAlignment="CENTER"
+                        <Button fx:id="btnMap" minWidth="170" onAction="#mapPressed" styleClass="mapBtn" text="Map" textAlignment="CENTER"
                                 GridPane.rowIndex="2"/>
-                        <Button fx:id="btnUpload" minWidth="150" onAction="#uploadPressed" styleClass="uploadBtn" text="Upload" textAlignment="CENTER"
+                        <Button fx:id="btnUpload" minWidth="170" onAction="#uploadPressed" styleClass="uploadBtn" text="Collections" textAlignment="CENTER"
                                 GridPane.rowIndex="3"/>
-                        <Button fx:id="btnExit" minWidth="150" onAction="#exitPressed" styleClass="exitBtn" text="Exit" textAlignment="CENTER"
+                        <Button fx:id="btnExit" minWidth="170" onAction="#exitPressed" styleClass="exitBtn" text="Exit" textAlignment="CENTER"
                                 GridPane.rowIndex="4"/>
                     </children>
                 </GridPane>
