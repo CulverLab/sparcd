@@ -434,6 +434,10 @@ public class SanimalViewController implements Initializable
                         this.updateProgress(2, 5);
                         connectionManager.initSanimalRemoteDirectory();
 
+                        connectionManager.pullRemoteCollections().forEach(coll -> System.out.println(coll.getPermissions()));
+
+                        // Temporarily comment this to avoid console spam. Temporary
+                        /*
                         // Pull any locations from the remote directory
                         this.updateMessage("Pulling locations from remote directory...");
                         this.updateProgress(3, 5);
@@ -454,6 +458,7 @@ public class SanimalViewController implements Initializable
                             SanimalData.getInstance().getSpeciesList().clear();
                             SanimalData.getInstance().getSpeciesList().addAll(species);
                         });
+                        */
 
                         this.updateProgress(5, 5);
                     }

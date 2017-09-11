@@ -11,6 +11,7 @@ import model.species.Species;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.irods.jargon.core.connection.AuthScheme;
 import org.irods.jargon.core.connection.IRODSAccount;
@@ -234,8 +235,8 @@ public class CyVerseConnectionManager
 					}
 				}
 
-				// Create a subfolder containing all images uploaded with Sanimal
-				IRODSFile sanimalUploads = this.irodsFileFactory.instanceIRODSFile("./Sanimal/Uploads");
+				// Create a subfolder containing all images uploaded with Sanimal. This is temporary
+				IRODSFile sanimalUploads = this.irodsFileFactory.instanceIRODSFile("./Sanimal/Collections");
 				if (!sanimalUploads.exists())
 					sanimalUploads.mkdir();
 			}
@@ -337,6 +338,108 @@ public class CyVerseConnectionManager
 		String json = SanimalData.getInstance().getGson().toJson(newSpecies);
 		// Write the species.json file to the server
 		this.writeRemoteFile("./Sanimal/Settings/species.json", json);
+	}
+
+	/**
+	 * Connects to CyVerse and downloads the list of the user's collections
+	 *
+	 * @return A list of collections stored on the CyVerse system
+	 */
+	public List<ImageCollection> pullRemoteCollections()
+	{
+		String collectionsFolderName = "./Sanimal/Collections";
+		List<ImageCollection> imageCollections = new ArrayList<>();
+		try
+		{
+			IRODSFile collectionsFolder = this.irodsFileFactory.instanceIRODSFile(collectionsFolderName);
+			if (collectionsFolder.exists())
+			{
+				File[] files = collectionsFolder.listFiles();
+				if (files instanceof IRODSFile[])
+				{
+					IRODSFile[] collections = (IRODSFile[]) files;
+					for (IRODSFile collectionDir : collections)
+					{
+						if (collectionDir.canRead() && collectionDir.isDirectory())
+						{
+							String jsonFile = collectionDir.getAbsolutePath() + "/collection.json";
+							String collectionJSON = this.readRemoteFile(jsonFile);
+							if (collectionJSON != null)
+							{
+								// Try to parse the JSON string into collection
+								try
+								{
+									// Get the GSON object to parse the JSON.
+									ImageCollection imageCollection = SanimalData.getInstance().getGson().fromJson(collectionJSON, ImageCollection.class);
+									if (imageCollection != null)
+									{
+										imageCollections.add(imageCollection);
+									}
+								}
+								catch (JsonSyntaxException e)
+								{
+									// If the JSON file is incorrectly formatted, throw an error and return an empty list
+									System.out.println("Error reading the Json file " + jsonFile + ", Error was:\n");
+									e.printStackTrace();
+								}
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				System.out.println("Collections folder not found!");
+			}
+			/*
+			// Read the contents of the file into a string
+			String fileContents = this.readRemoteFile(fileName);
+			// Ensure that we in fact got data back
+			if (fileContents != null)
+			{
+				// Try to parse the JSON string into a list of locations
+				try
+				{
+					// Get the GSON object to parse the JSON. Return the list of new locations
+					return SanimalData.getInstance().getGson().fromJson(fileContents, LOCATION_LIST_TYPE);
+				}
+				catch (JsonSyntaxException e)
+				{
+					// If the JSON file is incorrectly formatted, throw an error and return an empty list
+					System.out.println("Error reading the Json file " + fileName + ", Error was:\n");
+					e.printStackTrace();
+				}
+			}
+			*/
+		}
+		catch (JargonException e)
+		{
+			e.printStackTrace();
+		}
+
+		return imageCollections;
+	}
+
+	/**
+	 * Connects to CyVerse and uploads the given list of collections to CyVerse's data store
+	 *
+	 * @param collections The list of new species to upload
+	 */
+	public void pushLocalCollections(List<ImageCollection> collections)
+	{
+		collections.forEach(collection -> {
+			List<Permission> currentUserPermissions = collection.getPermissions().filtered(permission -> permission.getUsername().equals(this.account.getUserName()));
+			//IRODSFile collectionsDir = "./Sanimal/Collections";
+			if (currentUserPermissions.size() == 1)
+			{
+				Permission currentUser = currentUserPermissions.get(0);
+				if (currentUser.getOwner())
+				{
+					String json = SanimalData.getInstance().getGson().toJson(collection);
+				}
+			}
+		});
+		//this.writeRemoteFile("./Sanimal/Settings/species.json", json);
 	}
 
 	/**
