@@ -42,6 +42,7 @@ import model.util.FinishableTask;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.StatusBar;
 import org.fxmisc.easybind.EasyBind;
+import org.fxmisc.easybind.monadic.MonadicBinding;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
@@ -267,24 +268,11 @@ public class SanimalImportController implements Initializable
 		this.imageTree.setRoot(ROOT);
 		// Set the items of the tree to be the children of the fake invisible root
 		this.imageTree.setItems(SanimalData.getInstance().getImageTree().getChildren());
+
 		// When a new image is selected...
-		this.imageTree.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) ->
-		{
-			if (newValue != null)
-			{
-				// If it's an image, update the currently selected image, otherwise update the currently selected directory
-				ImageContainer newOne = newValue.getValue();
-				if (newOne instanceof ImageEntry)
-				{
-					currentlySelectedImage.setValue((ImageEntry) newOne);
-					currentlySelectedDirectory.setValue(null);
-				} else if (newOne instanceof ImageDirectory)
-				{
-					currentlySelectedImage.setValue(null);
-					currentlySelectedDirectory.setValue((ImageDirectory) newOne);
-				}
-			}
-		}));
+		MonadicBinding<ImageContainer> selectedImage = EasyBind.monadic(this.imageTree.getSelectionModel().selectedItemProperty()).map(TreeItem::getValue);
+		currentlySelectedImage.bind(selectedImage.map(imageContainer -> (imageContainer instanceof ImageEntry) ? (ImageEntry) imageContainer : null));
+		currentlySelectedDirectory.bind(selectedImage.map(imageContainer -> (imageContainer instanceof ImageDirectory) ? (ImageDirectory) imageContainer : null));
 
 		// Create bindings in the GUI
 
@@ -377,6 +365,8 @@ public class SanimalImportController implements Initializable
 				}
 			}
 		});
+
+
 
 		// Initialize the fade transitions
 

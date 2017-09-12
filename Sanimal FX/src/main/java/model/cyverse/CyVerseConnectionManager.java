@@ -427,19 +427,43 @@ public class CyVerseConnectionManager
 	 */
 	public void pushLocalCollections(List<ImageCollection> collections)
 	{
+		String collectionsDir = "./Sanimal/Collections";
 		collections.forEach(collection -> {
 			List<Permission> currentUserPermissions = collection.getPermissions().filtered(permission -> permission.getUsername().equals(this.account.getUserName()));
-			//IRODSFile collectionsDir = "./Sanimal/Collections";
-			if (currentUserPermissions.size() == 1)
+			try
 			{
-				Permission currentUser = currentUserPermissions.get(0);
-				if (currentUser.getOwner())
+				if (currentUserPermissions.size() == 1)
 				{
-					String json = SanimalData.getInstance().getGson().toJson(collection);
+					Permission currentUser = currentUserPermissions.get(0);
+					if (currentUser.getOwner())
+					{
+						String collectionDirName = collectionsDir + "/" + collection.getID().toString();
+
+						IRODSFile collectionDir = this.irodsFileFactory.instanceIRODSFile(collectionDirName);
+						if (collectionDir.canRead())
+						{
+							if (!collectionDir.exists())
+							{
+								collectionDir.mkdir();
+							}
+
+							String jsonFile = collectionDirName + "/collection.json";
+							String json = SanimalData.getInstance().getGson().toJson(collection);
+							this.writeRemoteFile(jsonFile, json);
+
+							IRODSFile collectionDirUploads = this.irodsFileFactory.instanceIRODSFile(collectionsDir + "/Uploads");
+							if (!collectionDirUploads.exists())
+								collectionDirUploads.mkdir();
+						}
+					}
+
 				}
 			}
+			catch (JargonException e)
+			{
+				e.printStackTrace();
+			}
 		});
-		//this.writeRemoteFile("./Sanimal/Settings/species.json", json);
 	}
 
 	/**

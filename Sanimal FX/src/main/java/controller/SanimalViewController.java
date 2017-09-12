@@ -29,6 +29,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import model.SanimalData;
 import model.cyverse.CyVerseConnectionManager;
+import model.cyverse.ImageCollection;
 import model.location.Location;
 import model.species.Species;
 import model.util.FinishableTask;
@@ -424,29 +425,30 @@ public class SanimalViewController implements Initializable
                 {
                     // First login
                     this.updateMessage("Logging in...");
-                    this.updateProgress(1, 5);
+                    this.updateProgress(1, 6);
                     Boolean loginSuccessful = connectionManager.login(username, password);
 
                     if (loginSuccessful)
                     {
                         // Then initialize the remove sanimal directory
                         this.updateMessage("Initializing Sanimal remote directory...");
-                        this.updateProgress(2, 5);
+                        this.updateProgress(2, 6);
                         connectionManager.initSanimalRemoteDirectory();
 
-                        connectionManager.pullRemoteCollections().forEach(coll -> System.out.println(coll.getPermissions()));
-
-                        // Temporarily comment this to avoid console spam. Temporary
-                        /*
                         // Pull any locations from the remote directory
                         this.updateMessage("Pulling locations from remote directory...");
-                        this.updateProgress(3, 5);
+                        this.updateProgress(3, 6);
                         List<Location> locations = connectionManager.pullRemoteLocations();
 
                         // Pull any species from the remote directory
                         this.updateMessage("Pulling species from remote directory...");
-                        this.updateProgress(4, 5);
+                        this.updateProgress(4, 6);
                         List<Species> species = connectionManager.pullRemoteSpecies();
+
+                        // Pull any species from the remote directory
+                        this.updateMessage("Pulling collections from remote directory...");
+                        this.updateProgress(5, 6);
+                        List<ImageCollection> imageCollections = connectionManager.pullRemoteCollections();
 
                         // Set the locations and species on the FXApplication thread
                         Platform.runLater(() ->
@@ -457,10 +459,12 @@ public class SanimalViewController implements Initializable
                             // Set the species list to be these species
                             SanimalData.getInstance().getSpeciesList().clear();
                             SanimalData.getInstance().getSpeciesList().addAll(species);
+                            // Set the image collection list to be these collections
+                            SanimalData.getInstance().getCollectionList().clear();
+                            SanimalData.getInstance().getCollectionList().addAll(imageCollections);
                         });
-                        */
 
-                        this.updateProgress(5, 5);
+                        this.updateProgress(6, 6);
                     }
 
                     return loginSuccessful;

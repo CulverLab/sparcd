@@ -11,6 +11,7 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import model.cyverse.CyVerseConnectionManager;
 import model.cyverse.ImageCollection;
+import model.image.ImageContainer;
 import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.location.Location;
@@ -86,10 +87,14 @@ public class SanimalData
 		this.setupAutoLocationSync();
 
 		// Create the image collection list
-		this.collectionList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList(collection -> new Observable[]{collection.nameProperty(), collection.getPermissions(), collection.organizationProperty(), collection.contactInfoProperty()}));
+		this.collectionList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList(collection -> new Observable[]{collection.nameProperty(), collection.getPermissions(), collection.organizationProperty(), collection.contactInfoProperty(), collection.idProperty() }));
 
 		// The tree just starts in the current directory which is a dummy directory
 		this.imageTree = new ImageDirectory(new File("./"));
+
+		this.imageTree.getChildren().addListener((ListChangeListener<ImageContainer>) c -> {
+			System.out.println("Change detected");
+		});
 	}
 
 	/**

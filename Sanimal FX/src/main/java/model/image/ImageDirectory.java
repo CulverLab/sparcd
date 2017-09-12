@@ -29,8 +29,8 @@ public class ImageDirectory extends ImageContainer
 					image.getDateTakenProperty(),
 					image.getFileProperty(),
 					image.getLocationTakenProperty(),
-					// Do we need a ListProperty?
-					image.getSpeciesPresent()
+					image.getSpeciesPresent(),
+					image.getTreeIconProperty()
 			};
 		}
 		else if (imageContainer instanceof ImageDirectory)

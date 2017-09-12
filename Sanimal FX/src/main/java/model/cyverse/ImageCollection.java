@@ -1,6 +1,8 @@
 package model.cyverse;
 
 import javafx.beans.Observable;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -8,12 +10,16 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import model.SanimalData;
 
+import java.util.UUID;
+
 public class ImageCollection
 {
 	private StringProperty nameProperty = new SimpleStringProperty("");
 	private StringProperty organizationProperty = new SimpleStringProperty("");
 	private StringProperty contactInfoProperty = new SimpleStringProperty("");
 	private ObservableList<Permission> permissions = FXCollections.observableArrayList(permission -> new Observable[] { permission.usernameProperty(), permission.viewProperty(), permission.writeProperty(), permission.deleteProperty(), permission.ownerProperty()});
+	private ObjectProperty<UUID> idProperty = new SimpleObjectProperty<>(UUID.randomUUID());
+
 
 	public ImageCollection()
 	{
@@ -85,6 +91,18 @@ public class ImageCollection
 	public StringProperty contactInfoProperty()
 	{
 		return contactInfoProperty;
+	}
+
+	// NO SETTER for id since it's a one time thing
+
+	public UUID getID()
+	{
+		return this.idProperty.getValue();
+	}
+
+	public ObjectProperty<UUID> idProperty()
+	{
+		return idProperty;
 	}
 
 	public ObservableList<Permission> getPermissions()

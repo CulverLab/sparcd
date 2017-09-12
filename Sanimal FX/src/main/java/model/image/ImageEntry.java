@@ -41,6 +41,7 @@ public class ImageEntry extends ImageContainer
 	private static final Image SPECIES_ONLY_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIconSpecies.png").toString());
 	// The icon to use for all tagged images at the moment
 	private static final Image CHECKED_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIconDone.png").toString());
+
 	// A property to wrap the currently selected image property. Must not be static!
 	private final ObjectProperty<Image> selectedImageProperty = new SimpleObjectProperty<>(DEFAULT_IMAGE_ICON);
 	// The actual file 
