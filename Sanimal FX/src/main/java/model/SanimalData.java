@@ -283,6 +283,27 @@ public class SanimalData
 	}
 
 	/**
+	 * Fully resets the entire SANIMAL model.
+	 */
+	public void fullReset()
+	{
+		this.sanimalExecutor.clearTasks();
+
+		this.speciesList.clear();
+		this.speciesSyncInProgress.set(false);
+		this.needSpeciesSync.set(false);
+
+		this.locationList.clear();
+		this.locationSyncInProgress.set(false);
+		this.needLocationSync.set(false);
+
+		this.imageTree.getChildren().clear();
+
+		this.collectionList.clear();
+		this.metadataSyncInProgress.set(false);
+	}
+
+	/**
 	 * @return The global species list
 	 */
 	public ObservableList<Species> getSpeciesList()

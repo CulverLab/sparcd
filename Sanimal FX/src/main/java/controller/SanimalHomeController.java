@@ -154,9 +154,7 @@ public class SanimalHomeController implements Initializable
 				{
 					Platform.runLater(() -> {
 						// Clear locations, species, and images
-						SanimalData.getInstance().getLocationList().clear();
-						SanimalData.getInstance().getSpeciesList().clear();
-						SanimalData.getInstance().getImageTree().getChildren().clear();
+						SanimalData.getInstance().fullReset();
 					});
 
 					// Logout from CyVerse

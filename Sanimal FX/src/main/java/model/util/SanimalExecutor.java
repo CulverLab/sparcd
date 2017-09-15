@@ -7,6 +7,8 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -18,6 +20,7 @@ public class SanimalExecutor
 	private final ReadOnlyStringWrapper messageProperty = new ReadOnlyStringWrapper();
 	private final ReadOnlyDoubleWrapper progressProperty = new ReadOnlyDoubleWrapper();
 	private final ReadOnlyBooleanWrapper taskRunningProperty = new ReadOnlyBooleanWrapper();
+	private final List<Service> services = new ArrayList<>();
 
 	public SanimalExecutor()
 	{
@@ -26,6 +29,7 @@ public class SanimalExecutor
 
 	public <V> void registerService(Service<V> service)
 	{
+		services.add(service);
 		service.setExecutor(taskPerformer);
 		EventHandler<WorkerStateEvent> onSucceeded = service.getOnSucceeded();
 		service.setOnSucceeded(serviceEvent ->
@@ -89,6 +93,8 @@ public class SanimalExecutor
 		this.unbindCurrentTask();
 		// Create a new task performer and throw away the old one
 		this.taskPerformer = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+		// Go through each service and update its task performer
+		this.services.forEach(service -> service.setExecutor(this.taskPerformer));
 	}
 
 	public String getMessage()
