@@ -1,15 +1,9 @@
 package model.location;
 
-import com.google.gson.annotations.Expose;
-import com.sun.istack.internal.NotNull;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import org.apache.commons.collections4.Equator;
-
-import java.io.Serializable;
-import java.util.Comparator;
 
 /**
  * A class representing a location (latitude, longitude, and elevation)

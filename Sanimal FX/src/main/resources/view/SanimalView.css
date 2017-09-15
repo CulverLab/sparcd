@@ -1,47 +1,13 @@
-.importBtn {
-    -fx-background-image: url("../images/mainMenu/import.png");
-    -fx-background-position: 5%;
-    -fx-background-repeat: no-repeat;
-    -fx-font-size: 18px;
+.tab .tab-label {
+    -fx-skin: "com.sun.javafx.scene.control.skin.LabelSkin";
+    -fx-background-color: transparent;
+    -fx-alignment: CENTER;
+    -fx-text-fill: -fx-text-base-color;
+    -fx-font-size: 16px; /* all the same except this newly added one */
 }
 
-.analyzeBtn {
-    -fx-background-image: url("../images/mainMenu/analyze.png");
-    -fx-background-position: 5%;
-    -fx-background-repeat: no-repeat;
-    -fx-font-size: 18px;
-}
-
-.mapBtn {
-    -fx-background-image: url("../images/mainMenu/map.png");
-    -fx-background-position: 5%;
-    -fx-background-repeat: no-repeat;
-    -fx-font-size: 18px;
-}
-
-.exitBtn {
-    -fx-background-image: url("../images/mainMenu/exit.png");
-    -fx-background-position: 5%;
-    -fx-background-repeat: no-repeat;
-    -fx-font-size: 18px;
-}
-
-.loginBtn {
-    -fx-background-image: url("../images/mainMenu/login.png");
-    -fx-background-position: 5%;
-    -fx-background-repeat: no-repeat;
-    -fx-font-size: 18px;
-}
-
-.uploadBtn {
-    -fx-background-image: url("../images/mainMenu/upload.png");
-    -fx-background-position: 5%;
-    -fx-background-repeat: no-repeat;
-    -fx-font-size: 18px;
-}
-
-.usernameLbl {
-    -fx-text-fill: white;
-    -fx-font-weight: bolder;
-    -fx-font-size: 18px;
+.tab-pane {
+    -fx-tab-max-width: 1000px;
+    -fx-tab-min-height: 40px;
+    -fx-tab-max-height: 40px;
 }

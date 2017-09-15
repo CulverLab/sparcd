@@ -24,7 +24,7 @@ public class Sanimal extends Application
     @Override
     public void start(Stage primaryStage) throws Exception
     {
-        setUserAgentStylesheet(STYLESHEET_MODENA);
+        Application.setUserAgentStylesheet(STYLESHEET_MODENA);
 
         // Load the FXML document
         FXMLLoader root = FXMLLoaderUtils.loadFXML("SanimalView.fxml");
@@ -32,12 +32,11 @@ public class Sanimal extends Application
         Scene scene = new Scene(root.getRoot());
         // Put the scene on the stage
         primaryStage.setScene(scene);
-        primaryStage.setResizable(false);
         Image icon = new Image("images/mainMenu/paw.png");
         primaryStage.getIcons().add(icon);
         primaryStage.setTitle("Scientific Animal Image Analysis (SANIMAL)");
         // When we exit the window exit the program
-        primaryStage.setOnCloseRequest(ignored -> root.<SanimalViewController> getController().exitPressed(null));
+        //primaryStage.setOnCloseRequest(ignored -> root.<SanimalViewController> getController().exitPressed(null));
         // Show it
         primaryStage.show();
     }

@@ -8,12 +8,17 @@ import com.lynden.gmapsfx.shapes.ArcBuilder;
 import com.lynden.gmapsfx.shapes.Polygon;
 import com.lynden.gmapsfx.shapes.PolygonOptions;
 import com.sun.prism.PhongMaterial;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import model.SanimalData;
+import model.location.Location;
 import netscape.javascript.JSObject;
 
 import java.net.URL;
 import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -35,6 +40,8 @@ public class SanimalMapController implements Initializable
 	// The map data which will be bound to the google map view
 	private GoogleMap googleMap;
 
+	private Map<Location, Marker> locationMarkers = new HashMap<>();
+
 	/**
 	 * Initialize sets up the analysis window and bindings
 	 *
@@ -48,7 +55,7 @@ public class SanimalMapController implements Initializable
 		this.googleMapView.addMapInializedListener(() ->
 		{
 			// Create a map options class. Center it on tucson
-			LatLong tucson = new LatLong(32.2217, 110.9265);
+			LatLong tucson = new LatLong(32.2217, -110.9265);
 			MapOptions mapOptions = new MapOptions();
 			// Set use satellite map view, allow map control, scale control, rotate control, but NO street view
 			mapOptions
@@ -66,29 +73,66 @@ public class SanimalMapController implements Initializable
 			// Initialize the google map
 			this.googleMap = this.googleMapView.createMap(mapOptions);
 
+			SanimalData.getInstance().getLocationList().addListener((ListChangeListener<Location>) c -> {
+				while (c.next())
+				{
+					if (c.wasUpdated())
+					{
+						for (int i = c.getFrom(); i < c.getTo(); ++i)
+						{
+							Location changed = c.getList().get(i);
+							if (locationMarkers.containsKey(changed))
+							{
+								Marker marker = locationMarkers.get(changed);
+								marker.setOptions(new MarkerOptions()
+									.title(changed.getName())
+									.position(new LatLong(changed.getLat(), changed.getLng())));
+								InfoWindowOptions infoWindowOptions = new InfoWindowOptions()
+										.content(changed.getName())
+										.position(new LatLong(changed.getLat(), changed.getLng()));
+								InfoWindow infoWindow = new InfoWindow(infoWindowOptions);
+								this.googleMap.addUIEventHandler(marker, UIEventType.click, (JSObject obj) -> {
+									infoWindow.open(googleMap, marker);
+								});
+							}
+						}
+					}
+					else if (c.wasRemoved())
+					{
+						c.getRemoved().forEach(removedLoc -> {
+							if (locationMarkers.containsKey(removedLoc))
+								this.googleMap.removeMarker(locationMarkers.remove(removedLoc));
+						});
+					}
+					else if (c.wasAdded())
+					{
+						c.getAddedSubList().forEach(addedLoc -> {
+							if (locationMarkers.containsKey(addedLoc))
+								this.googleMap.removeMarker(locationMarkers.remove(addedLoc));
+							MarkerOptions options = new MarkerOptions()
+									.title(addedLoc.getName())
+									.position(new LatLong(addedLoc.getLat(), addedLoc.getLng()));
+							Marker marker = new Marker(options);
+							this.googleMap.addMarker(marker);
+							InfoWindowOptions infoWindowOptions = new InfoWindowOptions()
+									.content(addedLoc.getName())
+									.position(new LatLong(addedLoc.getLat(), addedLoc.getLng()));
+							InfoWindow infoWindow = new InfoWindow(infoWindowOptions);
+							this.googleMap.addUIEventHandler(marker, UIEventType.click, (JSObject obj) -> {
+								infoWindow.open(googleMap, marker);
+							});
+							locationMarkers.put(addedLoc, marker);
+						});
+					}
+				}
+			});
+
 			///
 			/// Everything after this is temporary for exploring map capabilities
 			///
 
-			// Create a temporary marker to test with
-			MarkerOptions markerOptions = new MarkerOptions();
+			/*
 
-			// Set the position to tucson
-			markerOptions
-					.position(tucson)
-					.visible(true)
-					.title("Test option!");
-
-			// Create the marker and add it to the map
-			Marker marker = new Marker(markerOptions);
-
-			this.googleMap.addMarker(marker);
-
-			// Create a test window
-			InfoWindowOptions infoWindowOptions = new InfoWindowOptions();
-			infoWindowOptions.content("Test Point").position(tucson);
-			InfoWindow testWindow = new InfoWindow(infoWindowOptions);
-			testWindow.open(googleMap, marker);
 
 			// Create a test polygon
 			double startBearing = 0;
@@ -111,6 +155,8 @@ public class SanimalMapController implements Initializable
 			this.googleMap.addUIEventHandler(arc, UIEventType.click, (JSObject obj) -> {
 				arc.setEditable(!arc.getEditable());
 			});
+
+			*/
 		});
 	}
 }

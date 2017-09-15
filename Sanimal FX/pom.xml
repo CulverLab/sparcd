@@ -105,7 +105,6 @@
             <artifactId>fx-gson</artifactId>
             <version>RELEASE</version>
         </dependency>
-
     </dependencies>
 
     <repositories>

@@ -1,7 +1,6 @@
 package model.species;
 
 import com.google.gson.annotations.Expose;
-import com.sun.istack.internal.NotNull;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -9,9 +8,6 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.input.KeyCode;
 import model.image.ImageEntry;
 
-import java.io.Serializable;
-import java.util.Comparator;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A class representing a species
