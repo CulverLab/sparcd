@@ -6,13 +6,17 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javafx.beans.Observable;
 import javafx.beans.binding.Binding;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
 import model.location.Location;
@@ -31,8 +35,6 @@ import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
  */
 public class ImageEntry extends ImageContainer
 {
-	// The format with which to print the date out in
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("YYYY MM dd hh mm ss");
 	// The icon to use for all images at the moment
 	private static final Image DEFAULT_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIcon.png").toString());
 	// The icon to use for all location only tagged images at the moment
@@ -55,6 +57,8 @@ public class ImageEntry extends ImageContainer
 			image.getAmountProperty(),
 			image.getSpeciesProperty()
 	});
+	// If this image is dirty, we set a flag to write it to disk at some later point
+	private final AtomicBoolean isDirty = new AtomicBoolean(false);
 
 	/**
 	 * Create a new image entry with an image file
@@ -85,6 +89,9 @@ public class ImageEntry extends ImageContainer
 			return DEFAULT_IMAGE_ICON;
 		}, this.locationTakenProperty, this.speciesPresent);
 		selectedImageProperty.bind(imageBinding);
+
+		this.locationTakenProperty.addListener((observable, oldValue, newValue) -> this.markDirty(true));
+		this.speciesPresent.addListener((ListChangeListener<SpeciesEntry>) c -> this.markDirty(true));
 	}
 
 	/**
@@ -106,17 +113,6 @@ public class ImageEntry extends ImageContainer
 	public File getFile()
 	{
 		return this.imageFileProperty.getValue();
-	}
-
-	/**
-	 * Set the image file that this image represents
-	 * 
-	 * @param file
-	 *            The file that this class represents
-	 */
-	public void setFile(File file)
-	{
-		this.imageFileProperty.setValue(file);
 	}
 
 	/**
@@ -226,10 +222,20 @@ public class ImageEntry extends ImageContainer
 		return speciesPresent;
 	}
 
+	public void markDirty(Boolean dirty)
+	{
+		this.isDirty.set(dirty);
+	}
+
+	public Boolean isDirty()
+	{
+		return this.isDirty.get();
+	}
+
 	/**
 	 * Writes the species and location tagged in this image to the disk
 	 */
-	public void writeToDisk()
+	public synchronized void writeToDisk()
 	{
 		try
 		{
@@ -259,6 +265,8 @@ public class ImageEntry extends ImageContainer
 
 			// Write the metadata
 			MetadataUtils.writeOutputSet(outputSet, this);
+
+			this.isDirty.set(false);
 		}
 		catch (ImageReadException | IOException | ImageWriteException e)
 		{

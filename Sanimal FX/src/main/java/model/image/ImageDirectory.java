@@ -156,17 +156,6 @@ public class ImageDirectory extends ImageContainer
 	}
 
 	/**
-	 * Set the file that this directoryProperty represents
-	 * 
-	 * @param file
-	 *            The file that this directoryProperty represents
-	 */
-	public void setFile(File file)
-	{
-		this.directoryProperty.setValue(file);
-	}
-
-	/**
 	 * Grab the file property
 	 * @return The source file property
 	 */

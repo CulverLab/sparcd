@@ -488,7 +488,7 @@ public class SanimalViewController implements Initializable
                 this.btnLogin.setGraphic(null);
             });
             // Perform the task
-            SanimalData.getInstance().addTask(loginAttempt);
+            SanimalData.getInstance().getSanimalExecutor().addTask(loginAttempt);
         }
     }
 
@@ -546,9 +546,9 @@ public class SanimalViewController implements Initializable
                 this.txtPassword.clear();
             });
             // Clear all currently running tasks, then perform the rest of the logout
-            SanimalData.getInstance().clearTasks();
+            SanimalData.getInstance().getSanimalExecutor().clearTasks();
             // Perform the task
-            SanimalData.getInstance().addTask(logoutAttempt);
+            SanimalData.getInstance().getSanimalExecutor().addTask(logoutAttempt);
         }
         actionEvent.consume();
     }

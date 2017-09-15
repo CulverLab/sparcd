@@ -121,6 +121,10 @@ public class DirectoryManager
 				e.printStackTrace();
 			}
 		}
+
+		// These images are not dirty, since we loaded them off disk
+		newImages.forEach(imageEntry -> imageEntry.markDirty(false));
+
 		return newlyAddedSpecies;
 	}
 
@@ -207,6 +211,10 @@ public class DirectoryManager
 				e.printStackTrace();
 			}
 		}
+
+		// These images are not dirty, since we loaded them off disk
+		newImages.forEach(imageEntry -> imageEntry.markDirty(false));
+
 		return newlyAddedLocations;
 	}
 

@@ -18,10 +18,6 @@
     -fx-graphic: url("../images/importWindow/reset16.png");
 }
 
-.saveBtn {
-    -fx-graphic: url("../images/importWindow/save16.png");
-}
-
 .leftBtn {
     -fx-graphic: url("../images/importWindow/leftArrow.png");
     -fx-scale-x: 40%;

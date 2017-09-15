@@ -133,10 +133,6 @@ public class SanimalImportController implements Initializable
 	@FXML
 	public SplitPane mainPane;
 
-	// The save button to save all current images
-	@FXML
-	public Button btnSaveImages;
-
 	// The image pane used to do the species preview operation
 	@FXML
 	public StackPane speciesPreviewPane;
@@ -296,11 +292,11 @@ public class SanimalImportController implements Initializable
 		// Hide the location panel when no location is selected
 		this.hbxLocation.visibleProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::getLocationTakenProperty).map(location -> true).orElse(false));
 		// Hide the progress bar when no tasks remain
-		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().currentTaskProperty().isNotNull());
+		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().getSanimalExecutor().taskRunningProperty());
 		// Bind the progress bar's text property to tasks remaining
-		this.sbrTaskProgress.textProperty().bind(EasyBind.select(SanimalData.getInstance().currentTaskProperty()).selectObject(Task::messageProperty).orElse(""));
+		this.sbrTaskProgress.textProperty().bind(SanimalData.getInstance().getSanimalExecutor().messageProperty());
 		// Bind the progress bar's progress property to the current task's progress
-		this.sbrTaskProgress.progressProperty().bind(EasyBind.select(SanimalData.getInstance().currentTaskProperty()).selectObject(Task::progressProperty).orElse(-1));
+		this.sbrTaskProgress.progressProperty().bind(SanimalData.getInstance().getSanimalExecutor().progressProperty());
 		// Bind the left arrow's visibility property to if there is a previous item available
 		this.btnLeftArrow.visibleProperty().bind(
 				this.imageTree.getSelectionModel().selectedIndexProperty()
@@ -802,7 +798,7 @@ public class SanimalImportController implements Initializable
 				}
 			};
 			importTask.setOnFinished(event -> this.btnImportImages.setDisable(false));
-			SanimalData.getInstance().addTask(importTask);
+			SanimalData.getInstance().getSanimalExecutor().addTask(importTask);
 		}
 		// Consume the event
 		actionEvent.consume();
@@ -822,40 +818,6 @@ public class SanimalImportController implements Initializable
 		// Make sure to clear the selection in the tree. This ensures that our left & right arrows will properly hide themselves if no more directories are present
 		this.imageTree.getSelectionModel().clearSelection();
 		// Consume the event
-		actionEvent.consume();
-	}
-
-	/**
-	 * If the save images button is pressed
-	 *
-	 * @param actionEvent Button click is consumed
-	 */
-	public void saveImages(ActionEvent actionEvent)
-	{
-		// Hide the save button while saving is taking place
-		this.btnSaveImages.setDisable(true);
-		FinishableTask<Void> writeImages = new FinishableTask<Void>()
-		{
-			@Override
-			protected Void call() throws Exception
-			{
-				// Write each image to disk
-				this.updateMessage("Writing images to disk...");
-				List<ImageEntry> allImages = SanimalData.getInstance().getAllImages();
-				// Go through each image and write it, then update the progress every 10th image (save performance)
-				for (int i = 0; i < allImages.size(); i++)
-				{
-					allImages.get(i).writeToDisk();
-					if (i % 10 == 0)
-						this.updateProgress(i, allImages.size());
-				}
-
-				return null;
-			}
-		};
-		// When the task completes in any manner, make the save button clickable again
-		writeImages.setOnFinished(event -> SanimalImportController.this.btnSaveImages.setDisable(false));
-		SanimalData.getInstance().addTask(writeImages);
 		actionEvent.consume();
 	}
 
