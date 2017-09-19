@@ -26,6 +26,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import javafx.util.Duration;
 import model.util.FXMLLoaderUtils;
 import library.ImageViewPane;
@@ -264,6 +265,8 @@ public class SanimalImportController implements Initializable
 		this.imageTree.setRoot(ROOT);
 		// Set the items of the tree to be the children of the fake invisible root
 		this.imageTree.setItems(SanimalData.getInstance().getImageTree().getChildren());
+		// Setup the image tree cells so that when they get drag & dropped the species & locations can be tagged
+		// TODO
 
 		// When a new image is selected...
 		MonadicBinding<ImageContainer> selectedImage = EasyBind.monadic(this.imageTree.getSelectionModel().selectedItemProperty()).map(TreeItem::getValue);

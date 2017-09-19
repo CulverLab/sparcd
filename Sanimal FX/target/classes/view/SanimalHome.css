@@ -45,3 +45,11 @@
     -fx-font-weight: bolder;
     -fx-font-size: 18px;
 }
+
+.buttonPane {
+    -fx-background-color: rgba(200, 200, 200, 0.6);
+    -fx-padding: 10px;
+    -fx-background-radius: 10px 10px;
+    -fx-border-color: black;
+    -fx-border-radius: 10px 10px;
+}

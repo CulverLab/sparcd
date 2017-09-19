@@ -59,10 +59,10 @@
                 </columnResizePolicy>
                 <columns>
                     <TableColumn fx:id="clmUser" text="User" />
-                    <TableColumn fx:id="clmView" text="View"     minWidth="50" maxWidth="50"/>
-                    <TableColumn fx:id="clmWrite" text="Write"   minWidth="50" maxWidth="50"/>
-                    <TableColumn fx:id="clmDelete" text="Delete" minWidth="50" maxWidth="50"/>
-                    <TableColumn fx:id="clmOwner" text="Administrator"   minWidth="100" maxWidth="100"/>
+                    <TableColumn fx:id="clmView" text="View"     minWidth="70" maxWidth="70"/>
+                    <TableColumn fx:id="clmWrite" text="Write"   minWidth="70" maxWidth="70"/>
+                    <TableColumn fx:id="clmDelete" text="Delete" minWidth="70" maxWidth="70"/>
+                    <TableColumn fx:id="clmOwner" text="Administrator"   minWidth="130" maxWidth="130"/>
                 </columns>
             </TableView>
             <FlowPane alignment="CENTER" hgap="5" vgap="10" SplitPane.resizableWithParent="false">

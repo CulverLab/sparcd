@@ -78,12 +78,12 @@
                     <RowConstraints maxHeight="35" minHeight="35.0"/>
                 </rowConstraints>
                 <children>
-                    <Label text="Letter (C-X excluding I and O): " GridPane.rowIndex="0"/>
-                    <Label text="Zone (1-60): " GridPane.rowIndex="1"/>
+                    <Label text="Zone (1-60): " GridPane.rowIndex="0"/>
+                    <Label text="Letter (C-X excluding I and O): " GridPane.rowIndex="1"/>
                     <Label text="Easting (0m-1000000m): " GridPane.rowIndex="2"/>
                     <Label text="Northing (0m to 10000000m): " GridPane.rowIndex="3"/>
-                    <TextField fx:id="txtLetter" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                    <TextField fx:id="txtZone" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    <TextField fx:id="txtZone" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtLetter" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                     <TextField fx:id="txtEasting" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
                     <TextField fx:id="txtNorthing" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
                 </children>

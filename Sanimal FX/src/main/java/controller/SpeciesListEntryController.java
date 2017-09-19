@@ -14,6 +14,7 @@ import javafx.scene.layout.HBox;
 import model.image.ImageEntry;
 import model.species.Species;
 
+import java.awt.event.FocusEvent;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,6 +80,13 @@ public class SpeciesListEntryController extends ListCell<Species>
                 this.btnKeybind.setText(this.getItem().getKeyBinding() != null ? this.getItem().getKeyBinding().getName() : "Keybind");
                 // Consume the event
                 event.consume();
+            }
+        });
+        this.btnKeybind.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue && this.awaitingKeybind.getValue())
+            {
+                this.awaitingKeybind.setValue(false);
+                this.btnKeybind.setText("Keybind");
             }
         });
 

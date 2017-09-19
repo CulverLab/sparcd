@@ -29,7 +29,7 @@
                             <Image url="@../images/mainMenu/paw.png"/>
                         </ImageView>
                     </graphic>
-                    <fx:include source="SanimalHome.fxml"/>
+                    <fx:include fx:id="homePane" source="SanimalHome.fxml"/>
                 </Tab>
                 <Tab text="Import" closable="false">
                     <graphic>

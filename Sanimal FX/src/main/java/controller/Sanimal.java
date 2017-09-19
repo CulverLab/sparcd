@@ -32,11 +32,11 @@ public class Sanimal extends Application
         Scene scene = new Scene(root.getRoot());
         // Put the scene on the stage
         primaryStage.setScene(scene);
-        Image icon = new Image("images/mainMenu/paw.png");
-        primaryStage.getIcons().add(icon);
+        primaryStage.getIcons().add(new Image("images/mainMenu/paw.png"));
         primaryStage.setTitle("Scientific Animal Image Analysis (SANIMAL)");
+        primaryStage.setOnCloseRequest(x -> System.exit(0));
+        primaryStage.setMaximized(true);
         // When we exit the window exit the program
-        //primaryStage.setOnCloseRequest(ignored -> root.<SanimalViewController> getController().exitPressed(null));
         // Show it
         primaryStage.show();
     }

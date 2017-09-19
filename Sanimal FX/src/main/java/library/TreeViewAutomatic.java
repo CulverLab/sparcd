@@ -68,27 +68,17 @@ public class TreeViewAutomatic<T extends HierarchyData<T>> extends TreeView<T>
 	 */
 	private void init()
 	{
-		rootProperty().addListener(new ChangeListener<TreeItem<T>>()
-		{
-			@Override
-			public void changed(ObservableValue<? extends TreeItem<T>> observableValue, TreeItem<T> oldRoot, TreeItem<T> newRoot)
-			{
-				clear(oldRoot);
-				updateItems();
-			}
+		rootProperty().addListener((observableValue, oldRoot, newRoot) -> {
+			clear(oldRoot);
+			updateItems();
 		});
 
 		setItems(FXCollections.<T>observableArrayList());
 
 		// Do not use ChangeListener, because it won't trigger if old list equals new list (but in fact different references).
-		items.addListener(new InvalidationListener()
-		{
-			@Override
-			public void invalidated(Observable observable)
-			{
-				clear(getRoot());
-				updateItems();
-			}
+		items.addListener(observable -> {
+			clear(getRoot());
+			updateItems();
 		});
 	}
 
