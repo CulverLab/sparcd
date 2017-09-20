@@ -3,7 +3,6 @@ package model.image;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -11,20 +10,15 @@ import java.util.stream.Stream;
 
 import model.SanimalData;
 import model.analysis.SanimalAnalysisUtils;
+import model.constant.SanimalMetadataFields;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
+import model.util.MetadataUtils;
 import model.util.RoundingUtils;
 import org.apache.commons.imaging.ImageReadException;
-import org.apache.commons.imaging.ImageWriteException;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
-import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
-import org.apache.commons.imaging.formats.tiff.write.TiffOutputField;
-import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-
-import static model.image.MetadataUtils.readImageMetadata;
 
 /**
  * A class that imports images into a more easily readable structure

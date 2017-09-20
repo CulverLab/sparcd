@@ -1,4 +1,4 @@
-package model.image;
+package model.constant;
 
 import org.apache.commons.imaging.formats.tiff.constants.TiffDirectoryType;
 import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoAscii;

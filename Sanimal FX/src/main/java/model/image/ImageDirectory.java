@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
+import model.location.Location;
 
 import java.io.File;
 import java.util.stream.Stream;
@@ -162,6 +163,15 @@ public class ImageDirectory extends ImageContainer
 	public ObjectProperty<File> getFileProperty()
 	{
 		return this.directoryProperty;
+	}
+
+	/**
+	 * Setting the location taken on a directory sets the location on all children recursively
+	 * @param location The location to set to
+	 */
+	public void setLocationTaken(Location location)
+	{
+		this.getChildren().forEach(child -> child.setLocationTaken(location));
 	}
 
 	/**

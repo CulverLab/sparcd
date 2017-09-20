@@ -28,6 +28,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.Duration;
+import model.constant.SanimalDataFormats;
 import model.util.FXMLLoaderUtils;
 import library.ImageViewPane;
 import library.TreeViewAutomatic;
@@ -155,14 +156,6 @@ public class SanimalImportController implements Initializable
 	/// FXML bound fields end
 	///
 
-	// Data formats are used for drag and drop
-	// Store the location name and id
-	private final DataFormat LOCATION_NAME_FORMAT = new DataFormat("com.dslovikosky.location.locationName");
-	private final DataFormat LOCATION_ID_FORMAT = new DataFormat("com.dslovikosky.location.locationID");
-	// Store the species name and scientific name
-	private final DataFormat SPECIES_NAME_FORMAT = new DataFormat("com.dslovikosky.species.speciesName");
-	private final DataFormat SPECIES_SCIENTIFIC_NAME_FORMAT = new DataFormat("com.dslovikosky.species.speciesScientificName");
-
 	// The color adjust property is used to adjust the image preview's color FX
 	private ObjectProperty<ColorAdjust> colorAdjust = new SimpleObjectProperty<>(new ColorAdjust());
 
@@ -266,7 +259,7 @@ public class SanimalImportController implements Initializable
 		// Set the items of the tree to be the children of the fake invisible root
 		this.imageTree.setItems(SanimalData.getInstance().getImageTree().getChildren());
 		// Setup the image tree cells so that when they get drag & dropped the species & locations can be tagged
-		// TODO
+		this.imageTree.setCellFactory(x -> FXMLLoaderUtils.loadFXML("importView/ImageTreeCell.fxml").getController());
 
 		// When a new image is selected...
 		MonadicBinding<ImageContainer> selectedImage = EasyBind.monadic(this.imageTree.getSelectionModel().selectedItemProperty()).map(TreeItem::getValue);
@@ -431,22 +424,6 @@ public class SanimalImportController implements Initializable
 		this.fadeLeftIn.play();
 		this.fadeRightIn.play();
 		this.fadeSpeciesEntryListIn.play();
-	}
-
-	/**
-	 * Recursively set the location of all images in the given container
-	 *
-	 * @param container The container to set the location of, if it's a directory recursively set the location on all its children
-	 * @param location  The location to recursively set
-	 */
-	private void setContainerLocation(ImageContainer container, Location location)
-	{
-		// If it's an image, set the location taken of the image and return
-		if (container instanceof ImageEntry)
-			((ImageEntry) container).setLocationTaken(location);
-			// If it's a directory, recursively call this function on all children
-		else
-			container.getChildren().forEach(child -> setContainerLocation(child, location));
 	}
 
 	/**
@@ -859,21 +836,17 @@ public class SanimalImportController implements Initializable
 		Species selected = this.speciesListView.getSelectionModel().getSelectedItem();
 		if (selected != null)
 		{
-			// Can only drag & drop if we have an image selected
-			if (this.currentlySelectedImage.getValue() != null && !this.speciesPreviewPane.isVisible())
-			{
-				// Create a dragboard and begin the drag and drop
-				Dragboard dragboard = this.speciesListView.startDragAndDrop(TransferMode.ANY);
+			// Create a dragboard and begin the drag and drop
+			Dragboard dragboard = this.speciesListView.startDragAndDrop(TransferMode.ANY);
 
-				// Create a clipboard and put the species unique ID into that clipboard
-				ClipboardContent content = new ClipboardContent();
-				content.put(SPECIES_NAME_FORMAT, selected.getName());
-				content.put(SPECIES_SCIENTIFIC_NAME_FORMAT, selected.getScientificName());
-				// Set the dragboard's context, and then consume the event
-				dragboard.setContent(content);
+			// Create a clipboard and put the species unique ID into that clipboard
+			ClipboardContent content = new ClipboardContent();
+			content.put(SanimalDataFormats.SPECIES_NAME_FORMAT, selected.getName());
+			content.put(SanimalDataFormats.SPECIES_SCIENTIFIC_NAME_FORMAT, selected.getScientificName());
+			// Set the dragboard's context, and then consume the event
+			dragboard.setContent(content);
 
-				mouseEvent.consume();
-			}
+			mouseEvent.consume();
 		}
 	}
 
@@ -896,8 +869,8 @@ public class SanimalImportController implements Initializable
 
 				// Create a clipboard and put the location unique ID into that clipboard
 				ClipboardContent content = new ClipboardContent();
-				content.put(LOCATION_NAME_FORMAT, selected.getName());
-				content.put(LOCATION_ID_FORMAT, selected.getId());
+				content.put(SanimalDataFormats.LOCATION_NAME_FORMAT, selected.getName());
+				content.put(SanimalDataFormats.LOCATION_ID_FORMAT, selected.getId());
 				// Set the dragboard's context, and then consume the event
 				dragboard.setContent(content);
 
@@ -915,7 +888,7 @@ public class SanimalImportController implements Initializable
 	{
 		Dragboard dragboard = dragEvent.getDragboard();
 		// If we started dragging at the species or location view and the dragboard has a string we play the fade animation and consume the event
-		if ((dragboard.hasContent(LOCATION_NAME_FORMAT) && dragboard.hasContent(LOCATION_ID_FORMAT)) || (dragboard.hasContent(SPECIES_NAME_FORMAT) && dragboard.hasContent(SPECIES_SCIENTIFIC_NAME_FORMAT)))
+		if ((dragboard.hasContent(SanimalDataFormats.LOCATION_NAME_FORMAT) && dragboard.hasContent(SanimalDataFormats.LOCATION_ID_FORMAT)) || (dragboard.hasContent(SanimalDataFormats.SPECIES_NAME_FORMAT) && dragboard.hasContent(SanimalDataFormats.SPECIES_SCIENTIFIC_NAME_FORMAT) && this.currentlySelectedImage.getValue() != null))
 			dragEvent.acceptTransferModes(TransferMode.COPY);
 		dragEvent.consume();
 	}
@@ -929,7 +902,7 @@ public class SanimalImportController implements Initializable
 	{
 		Dragboard dragboard = dragEvent.getDragboard();
 		// If we started dragging at the species or location view and the dragboard has a string we play the fade animation and consume the event
-		if ((dragboard.hasContent(LOCATION_NAME_FORMAT) && dragboard.hasContent(LOCATION_ID_FORMAT)) || (dragboard.hasContent(SPECIES_NAME_FORMAT) && dragboard.hasContent(SPECIES_SCIENTIFIC_NAME_FORMAT)))
+		if ((dragboard.hasContent(SanimalDataFormats.LOCATION_NAME_FORMAT) && dragboard.hasContent(SanimalDataFormats.LOCATION_ID_FORMAT)) || (dragboard.hasContent(SanimalDataFormats.SPECIES_NAME_FORMAT) && dragboard.hasContent(SanimalDataFormats.SPECIES_SCIENTIFIC_NAME_FORMAT) && this.currentlySelectedImage.getValue() != null))
 			this.fadeAddPanelOut.play();
 		dragEvent.consume();
 	}
@@ -943,7 +916,7 @@ public class SanimalImportController implements Initializable
 	{
 		Dragboard dragboard = dragEvent.getDragboard();
 		// If we started dragging at the species or location view and the dragboard has a string we play the fade animation and consume the event
-		if ((dragboard.hasContent(LOCATION_NAME_FORMAT) && dragboard.hasContent(LOCATION_ID_FORMAT)) || (dragboard.hasContent(SPECIES_NAME_FORMAT) && dragboard.hasContent(SPECIES_SCIENTIFIC_NAME_FORMAT)))
+		if ((dragboard.hasContent(SanimalDataFormats.LOCATION_NAME_FORMAT) && dragboard.hasContent(SanimalDataFormats.LOCATION_ID_FORMAT)) || (dragboard.hasContent(SanimalDataFormats.SPECIES_NAME_FORMAT) && dragboard.hasContent(SanimalDataFormats.SPECIES_SCIENTIFIC_NAME_FORMAT) && this.currentlySelectedImage.getValue() != null))
 			this.fadeAddPanelIn.play();
 		dragEvent.consume();
 	}
@@ -960,10 +933,10 @@ public class SanimalImportController implements Initializable
 		// Grab the dragboard
 		Dragboard dragboard = dragEvent.getDragboard();
 		// If our dragboard has a string we have data which we need
-		if (dragboard.hasContent(SPECIES_NAME_FORMAT) && dragboard.hasContent(SPECIES_SCIENTIFIC_NAME_FORMAT))
+		if (dragboard.hasContent(SanimalDataFormats.SPECIES_NAME_FORMAT) && dragboard.hasContent(SanimalDataFormats.SPECIES_SCIENTIFIC_NAME_FORMAT) && this.currentlySelectedImage.getValue() != null)
 		{
-			String commonName = (String) dragboard.getContent(SPECIES_NAME_FORMAT);
-			String scientificName = (String) dragboard.getContent(SPECIES_SCIENTIFIC_NAME_FORMAT);
+			String commonName = (String) dragboard.getContent(SanimalDataFormats.SPECIES_NAME_FORMAT);
+			String scientificName = (String) dragboard.getContent(SanimalDataFormats.SPECIES_SCIENTIFIC_NAME_FORMAT);
 			// Grab the species with the given ID
 			Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getScientificName().equals(scientificName) && species.getName().equals(commonName)).findFirst();
 			// Add the species to the image
@@ -976,10 +949,10 @@ public class SanimalImportController implements Initializable
 					success = true;
 				}
 		}
-		else if (dragboard.hasContent(LOCATION_NAME_FORMAT) && dragboard.hasContent(LOCATION_ID_FORMAT))
+		else if (dragboard.hasContent(SanimalDataFormats.LOCATION_NAME_FORMAT) && dragboard.hasContent(SanimalDataFormats.LOCATION_ID_FORMAT))
 		{
-			String locationName = (String) dragboard.getContent(LOCATION_NAME_FORMAT);
-			String locationId = (String) dragboard.getContent(LOCATION_ID_FORMAT);
+			String locationName = (String) dragboard.getContent(SanimalDataFormats.LOCATION_NAME_FORMAT);
+			String locationId = (String) dragboard.getContent(SanimalDataFormats.LOCATION_ID_FORMAT);
 			// Grab the species with the given ID
 			Optional<Location> toAdd = SanimalData.getInstance().getLocationList().stream().filter(location -> location.getName().equals(locationName) && location.getId().equals(locationId)).findFirst();
 			// Add the species to the image
@@ -994,7 +967,7 @@ public class SanimalImportController implements Initializable
 				}
 				else if (currentlySelectedDirectory.getValue() != null)
 				{
-					this.setContainerLocation(currentlySelectedDirectory.getValue(), toAdd.get());
+					currentlySelectedDirectory.getValue().setLocationTaken(toAdd.get());
 					// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
 					this.imageTree.requestFocus();
 					success = true;

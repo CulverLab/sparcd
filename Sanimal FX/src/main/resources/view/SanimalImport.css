@@ -79,7 +79,7 @@
     -fx-background-image: url("../images/importWindow/addImage.png");
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
-    -fx-background-size: contain;
+    -fx-background-size: 200px 200px;
     -fx-border-radius: 10px;
     -fx-border-width: 5px;
     -fx-border-style: solid;

@@ -1,5 +1,7 @@
-package model.image;
+package model.util;
 
+import model.image.ImageEntry;
+import model.constant.SanimalMetadataFields;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.ImageWriteException;
 import org.apache.commons.imaging.Imaging;
