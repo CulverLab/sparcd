@@ -10,7 +10,7 @@
 <?import java.net.URL?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
-<HBox alignment="CENTER_LEFT" fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" spacing="5"
+<HBox alignment="CENTER_LEFT" fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minWidth="-Infinity" minHeight="100.0" spacing="5"
       xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ImageCollectionListEntry">
     <stylesheets>
         <URL value="@ImageCollectionListEntry.css"/>
@@ -25,6 +25,7 @@
         <VBox spacing="5" alignment="CENTER_LEFT">
             <Label fx:id="lblCollectionName" text="Collection Name" styleClass="collectionNameLbl"/>
             <Label fx:id="lblCollectionContactInfo" text="Contact Info"/>
+            <Label fx:id="lblCollectionDescription" wrapText="true" text="Description"/>
         </VBox>
     </children>
 </HBox>

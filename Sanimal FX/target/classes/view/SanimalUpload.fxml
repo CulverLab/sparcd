@@ -15,6 +15,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.control.TextArea?>
 <SplitPane dividerPositions="0.5" minHeight="600" minWidth="600" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalUploadController">
     <stylesheets>
         <URL value="@SanimalUpload.css" />
@@ -37,9 +38,10 @@
                     <ColumnConstraints hgrow="ALWAYS" />
                 </columnConstraints>
                 <rowConstraints>
-                    <RowConstraints />
-                    <RowConstraints />
-                    <RowConstraints />
+                    <RowConstraints vgrow="NEVER" />
+                    <RowConstraints vgrow="NEVER" />
+                    <RowConstraints vgrow="NEVER" />
+                    <RowConstraints vgrow="ALWAYS" />
                 </rowConstraints>
                 <padding>
                     <Insets bottom="10" left="10" right="10" top="10" />
@@ -51,6 +53,8 @@
                     <TextField fx:id="txtOrganization" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                     <Label text="Contact Info: " GridPane.rowIndex="2"/>
                     <TextField fx:id="txtContactInfo" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    <Label text="Desciption: " GridPane.rowIndex="3"/>
+                    <TextArea fx:id="tbxDescription" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
                 </children>
             </GridPane>
             <TableView fx:id="tvwPermissions">

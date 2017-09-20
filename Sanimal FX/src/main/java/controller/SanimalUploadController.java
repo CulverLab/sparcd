@@ -51,6 +51,8 @@ public class SanimalUploadController implements Initializable
 	public TextField txtOrganization;
 	@FXML
 	public TextField txtContactInfo;
+	@FXML
+	public TextArea tbxDescription;
 
 	// The actual tableview
 	@FXML
@@ -114,6 +116,9 @@ public class SanimalUploadController implements Initializable
 		// Bind the contact info property of the current collection to the contact info text property
 		// We cache the property so that it does not get garbage collected early
 		this.txtContactInfo.textProperty().bindBidirectional(cache(EasyBind.monadic(selectedCollection).selectProperty(ImageCollection::contactInfoProperty)));
+		// Bind the description property of the current collection to the description text property
+		// We cache the property so that it does not get garbage collected early
+		this.tbxDescription.textProperty().bindBidirectional(cache(EasyBind.monadic(selectedCollection).selectProperty(ImageCollection::descriptionProperty)));
 
 		this.tvwPermissions.itemsProperty().bind(EasyBind.monadic(selectedCollection).map(ImageCollection::getPermissions));
 
@@ -122,7 +127,9 @@ public class SanimalUploadController implements Initializable
 		this.txtName.disableProperty().bind(nothingSelected);
 		this.txtOrganization.disableProperty().bind(nothingSelected);
 		this.txtContactInfo.disableProperty().bind(nothingSelected);
+		this.tbxDescription.disableProperty().bind(nothingSelected);
 		this.txtContactInfo.setPromptText("Email and/or Phone Number preferred");
+		this.tbxDescription.setPromptText("Describe the project");
 
 		this.btnAddUser.disableProperty().bind(nothingSelected);
 		this.btnSave.disableProperty().bind(nothingSelected);

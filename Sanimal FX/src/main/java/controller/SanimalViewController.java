@@ -260,13 +260,10 @@ public class SanimalViewController implements Initializable
 						Platform.runLater(() ->
 						{
 							// Set the location list to be these locations
-							SanimalData.getInstance().getLocationList().clear();
 							SanimalData.getInstance().getLocationList().addAll(locations);
 							// Set the species list to be these species
-							SanimalData.getInstance().getSpeciesList().clear();
 							SanimalData.getInstance().getSpeciesList().addAll(species);
 							// Set the image collection list to be these collections
-							SanimalData.getInstance().getCollectionList().clear();
 							SanimalData.getInstance().getCollectionList().addAll(imageCollections);
 						});
 

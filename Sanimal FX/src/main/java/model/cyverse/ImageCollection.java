@@ -17,6 +17,7 @@ public class ImageCollection
 	private StringProperty nameProperty = new SimpleStringProperty("");
 	private StringProperty organizationProperty = new SimpleStringProperty("");
 	private StringProperty contactInfoProperty = new SimpleStringProperty("");
+	private StringProperty descriptionProperty = new SimpleStringProperty("");
 	private ObservableList<Permission> permissions = FXCollections.observableArrayList(permission -> new Observable[] { permission.usernameProperty(), permission.viewProperty(), permission.writeProperty(), permission.deleteProperty(), permission.ownerProperty()});
 	private ObjectProperty<UUID> idProperty = new SimpleObjectProperty<>(UUID.randomUUID());
 
@@ -91,6 +92,21 @@ public class ImageCollection
 	public StringProperty contactInfoProperty()
 	{
 		return contactInfoProperty;
+	}
+
+	public void setDescription(String description)
+	{
+		this.descriptionProperty.setValue(description);
+	}
+
+	public String getDescription()
+	{
+		return this.descriptionProperty.getValue();
+	}
+
+	public StringProperty descriptionProperty()
+	{
+		 return this.descriptionProperty;
 	}
 
 	// NO SETTER for id since it's a one time thing
