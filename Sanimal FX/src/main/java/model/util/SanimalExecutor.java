@@ -1,7 +1,6 @@
 package model.util;
 
 import javafx.beans.property.*;
-import javafx.collections.FXCollections;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -9,8 +8,8 @@ import javafx.event.EventHandler;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class SanimalExecutor
@@ -53,8 +52,9 @@ public class SanimalExecutor
 	 * Add a task to the queue to be done in the background
 	 *
 	 * @param task The task to be performed
+	 * @return A future task that will be completed some time
 	 */
-	public <T> void addTask(Task<T> task)
+	public <T> Future<?> addTask(Task<T> task)
 	{
 		EventHandler<WorkerStateEvent> onSucceeded = task.getOnSucceeded();
 		task.setOnSucceeded(taskEvent ->
@@ -72,7 +72,7 @@ public class SanimalExecutor
 			this.progressProperty.bind(task.progressProperty());
 			this.taskRunningProperty.setValue(true);
 		});
-		this.taskPerformer.submit(task);
+		return this.taskPerformer.submit(task);
 	}
 
 	private void unbindCurrentTask()
@@ -80,21 +80,6 @@ public class SanimalExecutor
 		this.messageProperty.unbind();
 		this.progressProperty.unbind();
 		this.taskRunningProperty.setValue(false);
-	}
-
-	/**
-	 * Clears the task queue. Can be dangerous if some important task is queued
-	 */
-	public void clearTasks()
-	{
-		// Shutdown the task performer and throw away current tasks
-		this.taskPerformer.shutdownNow();
-		// Set the current task to null, and number of pending tasks to 0
-		this.unbindCurrentTask();
-		// Create a new task performer and throw away the old one
-		this.taskPerformer = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
-		// Go through each service and update its task performer
-		this.services.forEach(service -> service.setExecutor(this.taskPerformer));
 	}
 
 	public String getMessage()

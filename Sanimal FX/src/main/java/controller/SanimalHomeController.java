@@ -69,18 +69,6 @@ public class SanimalHomeController implements Initializable
 	/// FXML bound fields start
 	///
 
-	// The import button to open the import window
-	@FXML
-	public Button btnImport;
-	// The analyze button to open the analyze window
-	@FXML
-	public Button btnAnalyze;
-	// The map button to open the map window
-	@FXML
-	public Button btnMap;
-	// The button to open the upload manager
-	@FXML
-	public Button btnUpload;
 	// The logout button to disconnect from CyVerse
 	@FXML
 	public Button btnLogout;
@@ -121,6 +109,7 @@ public class SanimalHomeController implements Initializable
 		// Hide the logout button and text when not logged in
 		this.btnLogout.visibleProperty().bind(loggedIn);
 		this.lblUsername.visibleProperty().bind(loggedIn);
+		this.btnExit.visibleProperty().bind(loggedIn);
 	}
 
 	/**
@@ -131,8 +120,6 @@ public class SanimalHomeController implements Initializable
 	@FXML
 	public void exitPressed(ActionEvent actionEvent)
 	{
-		// Ensure to log out before exiting
-		SanimalData.getInstance().getConnectionManager().logout();
 		System.exit(0);
 	}
 
@@ -143,30 +130,6 @@ public class SanimalHomeController implements Initializable
 	 */
 	public void logoutPressed(ActionEvent actionEvent)
 	{
-		// Ensure we're logged in first
-		if (SanimalData.getInstance().getConnectionManager().loggedInProperty().getValue())
-		{
-			// Thread off logging out
-			FinishableTask<Void> logoutAttempt = new FinishableTask<Void>()
-			{
-				@Override
-				protected Void call() throws Exception
-				{
-					Platform.runLater(() -> {
-						// Clear locations, species, and images
-						SanimalData.getInstance().fullReset();
-					});
-
-					// Logout from CyVerse
-					SanimalData.getInstance().getConnectionManager().logout();
-					return null;
-				}
-			};
-			// Clear all currently running tasks, then perform the rest of the logout
-			SanimalData.getInstance().getSanimalExecutor().clearTasks();
-			// Perform the task
-			SanimalData.getInstance().getSanimalExecutor().addTask(logoutAttempt);
-		}
-		actionEvent.consume();
+		System.exit(0);
 	}
 }

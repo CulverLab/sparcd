@@ -3,6 +3,9 @@ package model.image;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -23,7 +26,10 @@ import model.species.SpeciesEntry;
 import model.util.MetadataUtils;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.ImageWriteException;
+import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
+import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputField;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 
 
@@ -34,6 +40,8 @@ import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
  */
 public class ImageEntry extends ImageContainer
 {
+	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
+
 	// The icon to use for all images at the moment
 	private static final Image DEFAULT_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIcon.png").toString());
 	// The icon to use for all location only tagged images at the moment
@@ -70,10 +78,18 @@ public class ImageEntry extends ImageContainer
 		this.imageFileProperty.setValue(file);
 		try
 		{
-			this.dateTakenProperty.setValue(new Date(Files.readAttributes(file.toPath(), BasicFileAttributes.class).creationTime().toMillis()));
+			TiffImageMetadata tiffImageMetadata = MetadataUtils.readImageMetadata(this);
+			if (tiffImageMetadata != null)
+			{
+				String[] dateTaken = tiffImageMetadata.getFieldValue(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
+				if (dateTaken.length == 1)
+					this.dateTakenProperty.setValue(DATE_FORMAT.parse(dateTaken[0]));
+			}
 		}
-		catch (IOException ignored)
+		catch (ImageReadException | ParseException | IOException e)
 		{
+			System.err.println("Could not read image metadata!!!");
+			e.printStackTrace();
 		}
 		// Bind the image property to a conditional expression.
 		// The image is checked if the location is valid and the species present list is not empty
@@ -124,15 +140,9 @@ public class ImageEntry extends ImageContainer
 		return this.imageFileProperty;
 	}
 
-	/**
-	 * Returns the date taken as a formatted string
-	 * 
-	 * @return The formatted date
-	 */
-	public String getDateTakenFormatted()
+	public void setDateTaken(Date date)
 	{
-		//this.validateDate();
-		return this.getDateTaken().toString();
+		this.dateTakenProperty.setValue(date);
 	}
 
 	/**
@@ -151,7 +161,7 @@ public class ImageEntry extends ImageContainer
 	 *
 	 * @return The date the image was taken property
 	 */
-	public ObjectProperty<Date> getDateTakenProperty()
+	public ObjectProperty<Date> dateTakenProperty()
 	{
 		return dateTakenProperty;
 	}
@@ -177,7 +187,7 @@ public class ImageEntry extends ImageContainer
 		return locationTakenProperty.getValue();
 	}
 
-	public ObjectProperty<Location> getLocationTakenProperty()
+	public ObjectProperty<Location> locationTakenProperty()
 	{
 		return locationTakenProperty;
 	}
@@ -240,6 +250,11 @@ public class ImageEntry extends ImageContainer
 		{
 			// Read the output set from the image entry
 			TiffOutputSet outputSet = MetadataUtils.readOutputSet(this);
+
+			// Grab the EXIF directory from the output set
+			TiffOutputDirectory exif = outputSet.getOrCreateExifDirectory();
+			exif.removeField(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
+			exif.add(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL, DATE_FORMAT.format(this.getDateTaken()));
 
 			// Grab the sanimal directory from the output set
 			TiffOutputDirectory directory = MetadataUtils.getOrCreateSanimalDirectory(outputSet);

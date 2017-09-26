@@ -27,9 +27,9 @@ public class ImageDirectory extends ImageContainer
 		{
 			ImageEntry image = (ImageEntry) imageContainer;
 			return new Observable[] {
-					image.getDateTakenProperty(),
+					image.dateTakenProperty(),
 					image.getFileProperty(),
-					image.getLocationTakenProperty(),
+					image.locationTakenProperty(),
 					image.getSpeciesPresent(),
 					image.getTreeIconProperty()
 			};

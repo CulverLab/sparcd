@@ -4,7 +4,9 @@ import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -90,6 +92,8 @@ public class SanimalViewController implements Initializable
 	// The validator used to validate the username and password (aka ensure they're not empty!)
 	private final ValidationSupport USER_PASS_VALIDATOR = new ValidationSupport();
 
+	private BooleanProperty loggingIn = new SimpleBooleanProperty(false);
+
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
@@ -105,8 +109,6 @@ public class SanimalViewController implements Initializable
 			}
 		});
 
-
-
 		// Disable the main pane when not logged in
 		this.tabPane.disableProperty().bind(loggedIn.not());
 
@@ -118,7 +120,7 @@ public class SanimalViewController implements Initializable
 		this.rctLoginBackground.heightProperty().bind(this.loginPane.heightProperty());
 
 		// Disable the login property if the username and password are empty
-		this.btnLogin.disableProperty().bind(this.USER_PASS_VALIDATOR.invalidProperty());
+		this.btnLogin.disableProperty().bind(this.USER_PASS_VALIDATOR.invalidProperty().or(loggingIn));
 
 		// Hide the login pane when logged in
 		this.loginPane.visibleProperty().bind(loggedIn.not());
@@ -216,6 +218,8 @@ public class SanimalViewController implements Initializable
 		// Only login if we're not logged in
 		if (!SanimalData.getInstance().getConnectionManager().loggedInProperty().getValue())
 		{
+			this.loggingIn.setValue(true);
+
 			// Show the loading icon graphic
 			this.btnLogin.setGraphic(new ImageView(new Image("/images/mainMenu/loading.gif", 26, 26, true, true)));
 			// Grab our connection manager
@@ -287,6 +291,7 @@ public class SanimalViewController implements Initializable
 					invalidAlert.initOwner(this.tabPane.getScene().getWindow());
 					invalidAlert.showAndWait();
 				}
+				this.loggingIn.setValue(false);
 				// Hide the loading graphic
 				this.btnLogin.setGraphic(null);
 			});

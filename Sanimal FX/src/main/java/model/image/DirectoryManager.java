@@ -18,6 +18,7 @@ import model.util.MetadataUtils;
 import model.util.RoundingUtils;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
+import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -51,6 +52,9 @@ public class DirectoryManager
 				// Make sure it actually has metadata to read...
 				if (metadata != null)
 				{
+					String[] fieldValue = metadata.getFieldValue(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
+					// 2015:07:21 02:02:44
+
 					// Grab the species field from the metadata
 					String[] speciesField = metadata.getFieldValue(SanimalMetadataFields.SPECIES_ENTRY);
 					// Ensure that the field does actually exist...

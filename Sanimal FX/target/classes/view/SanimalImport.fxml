@@ -136,7 +136,7 @@
                             <Label text="Contrast" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                             <Label text="Hue: " GridPane.columnIndex="0" GridPane.rowIndex="3" />
                             <Label text="Saturation: " GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                            <TextField fx:id="txtDateTaken" editable="false" GridPane.columnIndex="1" />
+                            <TextField fx:id="txtDateTaken" editable="false" GridPane.columnIndex="1"  />
                             <Slider fx:id="sldBrightness" blockIncrement="0.1" majorTickUnit="1" max="1" min="-1" minorTickCount="5" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                             <Slider fx:id="sldContrast" blockIncrement="0.1" majorTickUnit="1" max="1" min="-1" minorTickCount="5" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                             <Slider fx:id="sldHue" blockIncrement="0.1" majorTickUnit="1" max="1" min="-1" minorTickCount="5" GridPane.columnIndex="1" GridPane.rowIndex="3" />

@@ -14,6 +14,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import library.ImageViewPane?>
 
+<?import javafx.geometry.Insets?>
 <AnchorPane fx:id="mainPane" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalHomeController">
     <stylesheets>
         <URL value="@SanimalHome.css" />
@@ -31,8 +32,6 @@
         <ImageView fitWidth="300" preserveRatio="true" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
             <Image url="@../images/mainMenu/poweredByCyverse.png" />
         </ImageView>
-        <Button fx:id="btnLogout" maxWidth="130" minWidth="130" onAction="#logoutPressed" styleClass="loginBtn" text="Logout" textAlignment="CENTER" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="10" />
-        <Label fx:id="lblUsername" styleClass="usernameLbl" textAlignment="RIGHT" AnchorPane.leftAnchor="170" AnchorPane.bottomAnchor="15" GridPane.hgrow="ALWAYS" />
         <StackPane AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
             <children>
                 <ImageView fitHeight="200.0" StackPane.alignment="TOP_CENTER" pickOnBounds="true" preserveRatio="true">
@@ -40,29 +39,21 @@
                         <Image url="@../images/mainMenu/sanimalTitle.png" />
                     </image>
                 </ImageView>
-                <Group StackPane.alignment="CENTER">
-                    <children>
-                        <GridPane styleClass="buttonPane" StackPane.alignment="CENTER" alignment="CENTER" vgap="3">
-                            <columnConstraints>
-                                <ColumnConstraints />
-                            </columnConstraints>
-                            <rowConstraints>
-                                <RowConstraints />
-                                <RowConstraints />
-                                <RowConstraints />
-                                <RowConstraints />
-                                <RowConstraints />
-                            </rowConstraints>
-                            <children>
-                                <Button fx:id="btnImport" minWidth="170" styleClass="importBtn" text="Import" textAlignment="CENTER" GridPane.rowIndex="0" />
-                                <Button fx:id="btnAnalyze" minWidth="170" styleClass="analyzeBtn" text="Analyze" textAlignment="CENTER" GridPane.rowIndex="1" />
-                                <Button fx:id="btnMap" minWidth="170" styleClass="mapBtn" text="Map" textAlignment="CENTER" GridPane.rowIndex="2" />
-                                <Button fx:id="btnUpload" minWidth="170" styleClass="uploadBtn" text="Collections" textAlignment="CENTER" GridPane.rowIndex="3" />
-                                <Button fx:id="btnExit" minWidth="170" onAction="#exitPressed" styleClass="exitBtn" text="Exit" textAlignment="CENTER" GridPane.rowIndex="4" />
-                            </children>
-                        </GridPane>
-                    </children>
-                </Group>
+                <Button fx:id="btnExit" minWidth="130" StackPane.alignment="TOP_CENTER" onAction="#exitPressed" styleClass="exitBtn" text="Exit" alignment="CENTER_RIGHT">
+                    <StackPane.margin>
+                        <Insets right="550" top="200"/>
+                    </StackPane.margin>
+                </Button>
+                <Button fx:id="btnLogout" minWidth="130" StackPane.alignment="TOP_CENTER" onAction="#logoutPressed" styleClass="logoutBtn" text="Logout" alignment="CENTER_LEFT">
+                    <StackPane.margin>
+                        <Insets left="550" top="200"/>
+                    </StackPane.margin>
+                </Button>
+                <Label fx:id="lblUsername" StackPane.alignment="TOP_CENTER" styleClass="usernameLbl" textAlignment="RIGHT" GridPane.hgrow="ALWAYS">
+                    <StackPane.margin>
+                        <Insets top="200"/>
+                    </StackPane.margin>
+                </Label>
             </children>
         </StackPane>
     </children>

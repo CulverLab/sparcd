@@ -3,8 +3,10 @@ package model.cyverse;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import controller.Sanimal;
 import javafx.application.Platform;
 import javafx.beans.property.*;
+import javafx.concurrent.Task;
 import model.SanimalData;
 import model.location.Location;
 import model.species.Species;
@@ -22,9 +24,11 @@ import org.irods.jargon.core.exception.AuthenticationException;
 import org.irods.jargon.core.exception.InvalidUserException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.packinstr.DataObjInp;
+import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.pub.*;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.User;
+import org.irods.jargon.core.pub.domain.UserGroup;
 import org.irods.jargon.core.pub.io.*;
 import org.irods.jargon.core.transfer.TransferStatus;
 import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
@@ -39,6 +43,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -53,23 +60,16 @@ public class CyVerseConnectionManager
 	// Each user is part of the iPlant zone
 	private static final String ZONE = "iplant";
 	// The type used to serialize a list of locations through Gson
-	private static final Type LOCATION_LIST_TYPE = new TypeToken<ArrayList<Location>>(){}.getType();
+	private static final Type LOCATION_LIST_TYPE = new TypeToken<ArrayList<Location>>()
+	{
+	}.getType();
 	// The type used to serialize a list of species through Gson
-	private static final Type SPECIES_LIST_TYPE = new TypeToken<ArrayList<Species>>(){}.getType();
-
-	// The currently logged in account
-	private IRODSAccount account;
-	// The current user session
-	private IRODSSession session;
-	// The irodsAO used to authenticate the CyVerse account
-	private IRODSAccessObjectFactory irodsAO;
+	private static final Type SPECIES_LIST_TYPE = new TypeToken<ArrayList<Species>>()
+	{
+	}.getType();
 
 	// Start all the Access Objects we use to accesss the user's account
-	private IRODSFileSystemAO irodsFileSystemAO;
-	private IRODSFileFactory irodsFileFactory;
-	private UserAO irodsUserAO;
-	private DataTransferOperations irodsDataTransfer;
-	// End all the Access Objects we use to accesss the user's account
+	private CyVerseAOs accessObjects;
 
 	// A username property which we can bind to in the rest of the program
 	private ReadOnlyStringWrapper usernameProperty = new ReadOnlyStringWrapper("");
@@ -81,7 +81,6 @@ public class CyVerseConnectionManager
 	 *
 	 * @param username The username of the CyVerse account
 	 * @param password The password of the CyVerse account
-	 *
 	 * @return True if the login was successful, false otherwise
 	 */
 	public Boolean login(String username, String password)
@@ -92,13 +91,13 @@ public class CyVerseConnectionManager
 			try
 			{
 				// Create a new CyVerse account given the host address, port, username, password, homedirectory, and one field I have no idea what it does..., however leaving it as empty string makes file creation work!
-				this.account = IRODSAccount.instance(CYVERSE_HOST, 1247, username, password,HOME_DIRECTORY + username, ZONE, "", AuthScheme.STANDARD);
+				IRODSAccount account = IRODSAccount.instance(CYVERSE_HOST, 1247, username, password, HOME_DIRECTORY + username, ZONE, "", AuthScheme.STANDARD);
 				// Create a new session
-				this.session = IRODSSession.instance(IRODSSimpleProtocolManager.instance());
+				IRODSSession session = IRODSSession.instance(IRODSSimpleProtocolManager.instance());
 				// Create an irodsAO
-				this.irodsAO = IRODSAccessObjectFactoryImpl.instance(this.session);
+				IRODSAccessObjectFactory irodsAO = IRODSAccessObjectFactoryImpl.instance(session);
 				// Perform the authentication and get a response
-				AuthResponse authResponse = this.irodsAO.authenticateIRODSAccount(this.account);
+				AuthResponse authResponse = irodsAO.authenticateIRODSAccount(account);
 				// If the authentication worked, return true and set the username and logged in fields
 				if (authResponse.isSuccessful())
 				{
@@ -109,14 +108,14 @@ public class CyVerseConnectionManager
 						// Set the logged in value to true
 						this.loggedInProperty.setValue(true);
 					});
+
 					// Cache the authenticated IRODS account
-					this.account = authResponse.getAuthenticatedIRODSAccount();
+					account = authResponse.getAuthenticatedIRODSAccount();
 
 					// Setup all access objects to the account (Represented by the AO at the end of the class name)
-					this.irodsFileSystemAO = this.irodsAO.getIRODSFileSystemAO(this.account);
-					this.irodsFileFactory = this.irodsAO.getIRODSFileFactory(this.account);
-					this.irodsUserAO = this.irodsAO.getUserAO(this.account);
-					this.irodsDataTransfer = this.irodsAO.getDataTransferOperations(this.account);
+					this.accessObjects = new CyVerseAOs(irodsAO, account);
+
+					//accessObjects.getDataObjectAO().removeAccessPermissionsForUser(ZONE, "/iplant/home/dslovikosky/Sanimal/Collections", "dslovikosky");
 
 					// We're good, return true
 					return true;
@@ -125,16 +124,12 @@ public class CyVerseConnectionManager
 				{
 					// If the authentication failed, print a message, and logout in case the login partially completed
 					System.out.println("Authentication failed. Response was: " + authResponse.getAuthMessage());
-					this.logout();
-					return false;
 				}
 			}
 			// If the authentication failed, print a message, and logout in case the login partially completed
 			catch (InvalidUserException | AuthenticationException e)
 			{
 				System.out.println("Authentication failed!");
-				this.logout();
-				return false;
 			}
 			// If the authentication failed due to a jargon exception, print a message, and logout in case the login partially completed
 			// Not really sure how this happens, probably if the server incorrectly responds or is down
@@ -142,8 +137,6 @@ public class CyVerseConnectionManager
 			{
 				System.err.println("Unknown Jargon Exception. Error was:\n");
 				e.printStackTrace();
-				this.logout();
-				return false;
 			}
 		}
 		// Default, just return false
@@ -151,104 +144,73 @@ public class CyVerseConnectionManager
 	}
 
 	/**
-	 * Logs the user out of their account
-	 */
-	public void logout()
-	{
-		// Ensure that we have a currently logged in account
-		if (this.loggedInProperty.getValue())
-		{
-			// Also closes the session and account
-			this.irodsAO.closeSessionAndEatExceptions(this.account);
-			// Set logged in to false, and the username to the empty string
-			Platform.runLater(() -> {
-				this.loggedInProperty.setValue(false);
-				this.usernameProperty.setValue("");
-			});
-			// Reset the irodsAO, account, an session to null
-			this.irodsAO = null;
-			this.account = null;
-			this.session = null;
-			this.irodsFileFactory = null;
-			this.irodsFileSystemAO = null;
-			this.irodsUserAO = null;
-			this.irodsDataTransfer = null;
-		}
-	}
-
-	/**
 	 * This method initializes the remove sanimal directory stored on the users account.
 	 */
 	public void initSanimalRemoteDirectory()
 	{
-		if (this.loggedInProperty.getValue())
+		try
 		{
-			try
+			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
+
+			// If the main Sanimal directory does not exist yet, create it
+			IRODSFile sanimalDirectory = fileFactory.instanceIRODSFile("./Sanimal");
+			if (!sanimalDirectory.exists())
+				sanimalDirectory.mkdir();
+
+			// Create a subfolder containing all settings that the sanimal program stores
+			IRODSFile sanimalSettings = fileFactory.instanceIRODSFile("./Sanimal/Settings");
+			if (!sanimalSettings.exists())
+				sanimalSettings.mkdir();
+
+			// If we don't have a default species.json file, put a default one onto the storage location
+			IRODSFile sanimalSpeciesFile = fileFactory.instanceIRODSFile("./Sanimal/Settings/species.json");
+			if (!sanimalSpeciesFile.exists())
 			{
-				// If the main Sanimal directory does not exist yet, create it
-				IRODSFile sanimalDirectory = this.irodsFileFactory.instanceIRODSFile("./Sanimal");
-				if (!sanimalDirectory.exists())
-					sanimalDirectory.mkdir();
-
-				// Create a subfolder containing all settings that the sanimal program stores
-				IRODSFile sanimalSettings = this.irodsFileFactory.instanceIRODSFile("./Sanimal/Settings");
-				if (!sanimalSettings.exists())
-					sanimalSettings.mkdir();
-
-				// If we don't have a default species.json file, put a default one onto the storage location
-				IRODSFile sanimalSpeciesFile = this.irodsFileFactory.instanceIRODSFile("./Sanimal/Settings/species.json");
-				if (!sanimalSpeciesFile.exists())
+				// Pull the default species.json file
+				try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/species.json"));
+					 BufferedReader fileReader = new BufferedReader(inputStreamReader))
 				{
-					// Pull the default species.json file
-					try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/species.json"));
-						 BufferedReader fileReader = new BufferedReader(inputStreamReader))
-					{
-						// Read the Json file
-						String json = fileReader.lines().collect(Collectors.joining("\n"));
-						// Write it to the directory
-						this.writeRemoteFile("./Sanimal/Settings/species.json", json);
-					}
-					catch (IOException e)
-					{
-						System.err.println("Could not read species.json. The file might be incorrectly formatted...");
-						e.printStackTrace();
-					}
+					// Read the Json file
+					String json = fileReader.lines().collect(Collectors.joining("\n"));
+					// Write it to the directory
+					this.writeRemoteFile("./Sanimal/Settings/species.json", json);
 				}
-
-				// If we don't have a default locations.json file, put a default one onto the storage location
-				IRODSFile sanimalLocationsFile = this.irodsFileFactory.instanceIRODSFile("./Sanimal/Settings/locations.json");
-				if (!sanimalLocationsFile.exists())
+				catch (IOException e)
 				{
-					// Pull the default locations.json file
-					try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/locations.json"));
-						 BufferedReader fileReader = new BufferedReader(inputStreamReader))
-					{
-						// Read the Json file
-						String json = fileReader.lines().collect(Collectors.joining("\n"));
-						// Write it to the directory
-						this.writeRemoteFile("./Sanimal/Settings/locations.json", json);
-					}
-					catch (IOException e)
-					{
-						System.err.println("Could not read locations.json. The file might be incorrectly formatted...");
-						e.printStackTrace();
-					}
+					System.err.println("Could not read species.json. The file might be incorrectly formatted...");
+					e.printStackTrace();
 				}
-
-				// Create a subfolder containing all images uploaded with Sanimal. This is temporary
-				IRODSFile sanimalUploads = this.irodsFileFactory.instanceIRODSFile("./Sanimal/Collections");
-				if (!sanimalUploads.exists())
-					sanimalUploads.mkdir();
 			}
-			catch (JargonException e)
+
+			// If we don't have a default locations.json file, put a default one onto the storage location
+			IRODSFile sanimalLocationsFile = fileFactory.instanceIRODSFile("./Sanimal/Settings/locations.json");
+			if (!sanimalLocationsFile.exists())
 			{
-				System.err.println("Error initializing Sanimal directory. Error was:\n");
-				e.printStackTrace();
+				// Pull the default locations.json file
+				try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/locations.json"));
+					 BufferedReader fileReader = new BufferedReader(inputStreamReader))
+				{
+					// Read the Json file
+					String json = fileReader.lines().collect(Collectors.joining("\n"));
+					// Write it to the directory
+					this.writeRemoteFile("./Sanimal/Settings/locations.json", json);
+				}
+				catch (IOException e)
+				{
+					System.err.println("Could not read locations.json. The file might be incorrectly formatted...");
+					e.printStackTrace();
+				}
 			}
+
+			// Create a subfolder containing all images uploaded with Sanimal. This is temporary
+			IRODSFile sanimalUploads = fileFactory.instanceIRODSFile("./Sanimal/Collections");
+			if (!sanimalUploads.exists())
+				sanimalUploads.mkdir();
 		}
-		else
+		catch (JargonException e)
 		{
-			System.out.println("Must be logged in to initialize the sanimal remote directory!");
+			System.err.println("Error initializing Sanimal directory. Error was:\n");
+			e.printStackTrace();
 		}
 	}
 
@@ -351,7 +313,8 @@ public class CyVerseConnectionManager
 		List<ImageCollection> imageCollections = new ArrayList<>();
 		try
 		{
-			IRODSFile collectionsFolder = this.irodsFileFactory.instanceIRODSFile(collectionsFolderName);
+			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
+			IRODSFile collectionsFolder = fileFactory.instanceIRODSFile(collectionsFolderName);
 			if (collectionsFolder.exists())
 			{
 				File[] files = collectionsFolder.listFiles();
@@ -386,31 +349,10 @@ public class CyVerseConnectionManager
 						}
 					}
 				}
-			}
-			else
+			} else
 			{
 				System.out.println("Collections folder not found!");
 			}
-			/*
-			// Read the contents of the file into a string
-			String fileContents = this.readRemoteFile(fileName);
-			// Ensure that we in fact got data back
-			if (fileContents != null)
-			{
-				// Try to parse the JSON string into a list of locations
-				try
-				{
-					// Get the GSON object to parse the JSON. Return the list of new locations
-					return SanimalData.getInstance().getGson().fromJson(fileContents, LOCATION_LIST_TYPE);
-				}
-				catch (JsonSyntaxException e)
-				{
-					// If the JSON file is incorrectly formatted, throw an error and return an empty list
-					System.out.println("Error reading the Json file " + fileName + ", Error was:\n");
-					e.printStackTrace();
-				}
-			}
-			*/
 		}
 		catch (JargonException e)
 		{
@@ -428,8 +370,9 @@ public class CyVerseConnectionManager
 	public void pushLocalCollections(List<ImageCollection> collections)
 	{
 		String collectionsDir = "./Sanimal/Collections";
+		IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 		collections.forEach(collection -> {
-			List<Permission> currentUserPermissions = collection.getPermissions().filtered(permission -> permission.getUsername().equals(this.account.getUserName()));
+			List<Permission> currentUserPermissions = collection.getPermissions().filtered(permission -> permission.getUsername().equals(this.accessObjects.getAccount().getUserName()));
 			try
 			{
 				if (currentUserPermissions.size() == 1)
@@ -439,7 +382,7 @@ public class CyVerseConnectionManager
 					{
 						String collectionDirName = collectionsDir + "/" + collection.getID().toString();
 
-						IRODSFile collectionDir = this.irodsFileFactory.instanceIRODSFile(collectionDirName);
+						IRODSFile collectionDir = fileFactory.instanceIRODSFile(collectionDirName);
 						if (collectionDir.canRead())
 						{
 							if (!collectionDir.exists())
@@ -451,7 +394,7 @@ public class CyVerseConnectionManager
 							String json = SanimalData.getInstance().getGson().toJson(collection);
 							this.writeRemoteFile(jsonFile, json);
 
-							IRODSFile collectionDirUploads = this.irodsFileFactory.instanceIRODSFile(collectionsDir + "/Uploads");
+							IRODSFile collectionDirUploads = fileFactory.instanceIRODSFile(collectionsDir + "/Uploads");
 							if (!collectionDirUploads.exists())
 								collectionDirUploads.mkdir();
 						}
@@ -470,62 +413,52 @@ public class CyVerseConnectionManager
 	 * Reads a file from CyVerse assuming a user is already logged in
 	 *
 	 * @param file The path to the file to read
-	 *
 	 * @return The contents of the file on CyVerse's system as a string
 	 */
 	private String readRemoteFile(String file)
 	{
-		// Ensure we're logged in
-		if (this.loggedInProperty.getValue())
+		try
 		{
-			try
+			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
+			// Create a temporary file to write to
+			Path localPath = Files.createTempFile("sanimalTemp", "." + FilenameUtils.getExtension(file));
+			File localFile = localPath.toFile();
+			// Delete the temporary file before copying so that we don't need to specify overwriting
+			localFile.delete();
+			// Create the remote file instance
+			IRODSFile remoteFile = fileFactory.instanceIRODSFile(file);
+			// Ensure it exists
+			if (remoteFile.exists())
 			{
-				// Create a temporary file to write to
-				Path localPath = Files.createTempFile("sanimalTemp", "." + FilenameUtils.getExtension(file));
-				File localFile = localPath.toFile();
-				// Delete the temporary file before copying so that we don't need to specify overwriting
-				localFile.delete();
-				// Create the remote file instance
-				IRODSFile remoteFile = this.irodsFileFactory.instanceIRODSFile(file);
-				// Ensure it exists
-				if (remoteFile.exists())
+				// Ensure it can be read
+				if (remoteFile.canRead())
 				{
-					// Ensure it can be read
-					if (remoteFile.canRead())
+					this.accessObjects.getDataTransferOperations().getOperation(remoteFile, localFile, null, null);
+					// Delete the local file after exiting
+					localFile.deleteOnExit();
+					// Ensure that the file exists and transfered
+					if (localFile.exists())
 					{
-						this.irodsDataTransfer.getOperation(remoteFile, localFile, null, null);
-						// Delete the local file after exiting
-						localFile.deleteOnExit();
-						// Ensure that the file exists and transfered
-						if (localFile.exists())
-						{
-							// Read the contents of the file and return them
-							return new String(Files.readAllBytes(localFile.toPath()));
-						}
+						// Read the contents of the file and return them
+						return new String(Files.readAllBytes(localFile.toPath()));
 					}
-					else
-					{
-						System.err.println("Remote file cannot be read.\n");
-					}
-				}
-				else
+				} else
 				{
-					System.err.println("Remote file does not exist.\n");
+					System.err.println("Remote file cannot be read.\n");
 				}
-			}
-			catch (IOException e)
+			} else
 			{
-				e.printStackTrace();
-			}
-			catch (JargonException e)
-			{
-				System.err.println("Error pulling remote file (" + file + "). Error was:\n");
-				e.printStackTrace();
+				System.err.println("Remote file does not exist.\n");
 			}
 		}
-		else
+		catch (IOException e)
 		{
-			System.out.println("Must be logged in to read the sanimal remote directory!");
+			e.printStackTrace();
+		}
+		catch (JargonException e)
+		{
+			System.err.println("Error pulling remote file (" + file + "). Error was:\n");
+			e.printStackTrace();
 		}
 
 		// If anything fails return null
@@ -535,58 +468,50 @@ public class CyVerseConnectionManager
 	/**
 	 * Write a value to a file on the CyVerse server
 	 *
-	 * @param file The file to write to
+	 * @param file  The file to write to
 	 * @param value The string value to write to the file
 	 */
 	private void writeRemoteFile(String file, String value)
 	{
-		// Ensure we're logged in properly
-		if (this.loggedInProperty.getValue())
+		// Create a temporary file to write each location to before uploading
+		try
 		{
-			// Create a temporary file to write each location to before uploading
-			try
+			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
+			// Create a local file to write to
+			Path localPath = Files.createTempFile("sanimalTemp", "." + FilenameUtils.getExtension(file));
+			// Grab the file from the path
+			File localFile = localPath.toFile();
+			// Delete the file once the program exits
+			localFile.deleteOnExit();
+			// Ensure the file we made exists
+			if (localFile.exists())
 			{
-				// Create a local file to write to
-				Path localPath = Files.createTempFile("sanimalTemp", "." + FilenameUtils.getExtension(file));
-				// Grab the file from the path
-				File localFile = localPath.toFile();
-				// Delete the file once the program exits
-				localFile.deleteOnExit();
-				// Ensure the file we made exists
-				if (localFile.exists())
-				{
-					// Create the irods file to write to
-					IRODSFile remoteLocationFile = this.irodsFileFactory.instanceIRODSFile(file);
-					// If it exists already, delete it
-					if (remoteLocationFile.exists())
-						remoteLocationFile.delete();
+				// Create the irods file to write to
+				IRODSFile remoteLocationFile = fileFactory.instanceIRODSFile(file);
+				// If it exists already, delete it
+				if (remoteLocationFile.exists())
+					remoteLocationFile.delete();
 
-					// Create a file writer which writes a string to a file. Write the value to the local file
-					try (PrintWriter fileWriter = new PrintWriter(localFile))
-					{
-						fileWriter.write(value);
-					}
-					// Perform a put operation to write the local file to the CyVerse server
-					this.irodsDataTransfer.putOperation(localFile, remoteLocationFile, null, null);
-				}
-				else
+				// Create a file writer which writes a string to a file. Write the value to the local file
+				try (PrintWriter fileWriter = new PrintWriter(localFile))
 				{
-					System.err.println("Error creating a temporary file to write to.");
+					fileWriter.write(value);
 				}
-			}
-			catch (IOException e)
+				// Perform a put operation to write the local file to the CyVerse server
+				this.accessObjects.getDataTransferOperations().putOperation(localFile, remoteLocationFile, null, null);
+			} else
 			{
-				e.printStackTrace();
-			}
-			catch (JargonException e)
-			{
-				System.err.println("Error pushing remote file (" + file + "). Error was:\n");
-				e.printStackTrace();
+				System.err.println("Error creating a temporary file to write to.");
 			}
 		}
-		else
+		catch (IOException e)
 		{
-			System.out.println("Must be logged in to push a file to the Sanimal directory!");
+			e.printStackTrace();
+		}
+		catch (JargonException e)
+		{
+			System.err.println("Error pushing remote file (" + file + "). Error was:\n");
+			e.printStackTrace();
 		}
 	}
 
@@ -605,4 +530,5 @@ public class CyVerseConnectionManager
 	{
 		return loggedInProperty.getReadOnlyProperty();
 	}
+
 }
