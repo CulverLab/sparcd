@@ -29,8 +29,14 @@
                 </ImageView>
             </imageView>
         </ImageViewPane>
-        <ImageView fitWidth="300" preserveRatio="true" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
+        <ImageView fitHeight="100" preserveRatio="true" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
             <Image url="@../images/mainMenu/poweredByCyverse.png" />
+        </ImageView>
+        <ImageView fitHeight="100" preserveRatio="true" AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10">
+            <Image url="@../images/mainMenu/snre.PNG" />
+        </ImageView>
+        <ImageView fitHeight="100" preserveRatio="true" AnchorPane.bottomAnchor="110" AnchorPane.leftAnchor="10">
+            <Image url="@../images/mainMenu/cs.png" />
         </ImageView>
         <StackPane AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
             <children>

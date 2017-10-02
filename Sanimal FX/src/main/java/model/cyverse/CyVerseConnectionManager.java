@@ -1,20 +1,12 @@
 package model.cyverse;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-import controller.Sanimal;
-import javafx.application.Platform;
-import javafx.beans.property.*;
-import javafx.concurrent.Task;
+import javafx.collections.transformation.SortedList;
 import model.SanimalData;
 import model.location.Location;
 import model.species.Species;
-import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.irods.jargon.core.connection.AuthScheme;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.connection.IRODSSession;
@@ -23,29 +15,20 @@ import org.irods.jargon.core.connection.auth.AuthResponse;
 import org.irods.jargon.core.exception.AuthenticationException;
 import org.irods.jargon.core.exception.InvalidUserException;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.packinstr.DataObjInp;
+import org.irods.jargon.core.packinstr.ModAccessControlInp;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.pub.*;
-import org.irods.jargon.core.pub.domain.AvuData;
-import org.irods.jargon.core.pub.domain.User;
-import org.irods.jargon.core.pub.domain.UserGroup;
 import org.irods.jargon.core.pub.io.*;
-import org.irods.jargon.core.transfer.TransferStatus;
-import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
+import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 
 import java.io.*;
 import java.lang.reflect.Type;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -71,11 +54,6 @@ public class CyVerseConnectionManager
 	// Start all the Access Objects we use to accesss the user's account
 	private CyVerseAOs accessObjects;
 
-	// A username property which we can bind to in the rest of the program
-	private ReadOnlyStringWrapper usernameProperty = new ReadOnlyStringWrapper("");
-	// A logged in property which we can bind to in the rest of the program, is set to true when a user is logged in
-	private ReadOnlyBooleanWrapper loggedInProperty = new ReadOnlyBooleanWrapper(false);
-
 	/**
 	 * Given a username and password, this method logs a cyverse user in
 	 *
@@ -85,59 +63,51 @@ public class CyVerseConnectionManager
 	 */
 	public Boolean login(String username, String password)
 	{
-		// Ensure we're not logged in yet
-		if (!this.loggedInProperty.getValue())
+		try
 		{
-			try
+			// Create a new CyVerse account given the host address, port, username, password, homedirectory, and one field I have no idea what it does..., however leaving it as empty string makes file creation work!
+			IRODSAccount account = IRODSAccount.instance(CYVERSE_HOST, 1247, username, password, HOME_DIRECTORY + username, ZONE, "", AuthScheme.STANDARD);
+			// Create a new session
+			IRODSSession session = IRODSSession.instance(IRODSSimpleProtocolManager.instance());
+			// Create an irodsAO
+			IRODSAccessObjectFactory irodsAO = IRODSAccessObjectFactoryImpl.instance(session);
+			// Perform the authentication and get a response
+			AuthResponse authResponse = irodsAO.authenticateIRODSAccount(account);
+			// If the authentication worked, return true and set the username and logged in fields
+			if (authResponse.isSuccessful())
 			{
-				// Create a new CyVerse account given the host address, port, username, password, homedirectory, and one field I have no idea what it does..., however leaving it as empty string makes file creation work!
-				IRODSAccount account = IRODSAccount.instance(CYVERSE_HOST, 1247, username, password, HOME_DIRECTORY + username, ZONE, "", AuthScheme.STANDARD);
-				// Create a new session
-				IRODSSession session = IRODSSession.instance(IRODSSimpleProtocolManager.instance());
-				// Create an irodsAO
-				IRODSAccessObjectFactory irodsAO = IRODSAccessObjectFactoryImpl.instance(session);
-				// Perform the authentication and get a response
-				AuthResponse authResponse = irodsAO.authenticateIRODSAccount(account);
-				// If the authentication worked, return true and set the username and logged in fields
-				if (authResponse.isSuccessful())
-				{
-					// Do this on the FX thread
-					Platform.runLater(() -> {
-						// Set the username property to the new user
-						this.usernameProperty.setValue(username);
-						// Set the logged in value to true
-						this.loggedInProperty.setValue(true);
-					});
+				// Cache the authenticated IRODS account
+				account = authResponse.getAuthenticatedIRODSAccount();
 
-					// Cache the authenticated IRODS account
-					account = authResponse.getAuthenticatedIRODSAccount();
+				// Setup all access objects to the account (Represented by the AO at the end of the class name)
+				this.accessObjects = new CyVerseAOs(irodsAO, account);
 
-					// Setup all access objects to the account (Represented by the AO at the end of the class name)
-					this.accessObjects = new CyVerseAOs(irodsAO, account);
+				/*
+				accessObjects.getDataObjectAO().setAccessPermission(ZONE, "/iplant/home/dslovikosky/Sanimal/Collection", "smalusa", FilePermissionEnum.READ);
 
-					//accessObjects.getDataObjectAO().removeAccessPermissionsForUser(ZONE, "/iplant/home/dslovikosky/Sanimal/Collections", "dslovikosky");
+				System.exit(0);
+				*/
 
-					// We're good, return true
-					return true;
-				}
-				else
-				{
-					// If the authentication failed, print a message, and logout in case the login partially completed
-					System.out.println("Authentication failed. Response was: " + authResponse.getAuthMessage());
-				}
+				// We're good, return true
+				return true;
 			}
-			// If the authentication failed, print a message, and logout in case the login partially completed
-			catch (InvalidUserException | AuthenticationException e)
+			else
 			{
-				System.out.println("Authentication failed!");
+				// If the authentication failed, print a message, and logout in case the login partially completed
+				System.out.println("Authentication failed. Response was: " + authResponse.getAuthMessage());
 			}
-			// If the authentication failed due to a jargon exception, print a message, and logout in case the login partially completed
-			// Not really sure how this happens, probably if the server incorrectly responds or is down
-			catch (JargonException e)
-			{
-				System.err.println("Unknown Jargon Exception. Error was:\n");
-				e.printStackTrace();
-			}
+		}
+		// If the authentication failed, print a message, and logout in case the login partially completed
+		catch (InvalidUserException | AuthenticationException e)
+		{
+			System.out.println("Authentication failed!");
+		}
+		// If the authentication failed due to a jargon exception, print a message, and logout in case the login partially completed
+		// Not really sure how this happens, probably if the server incorrectly responds or is down
+		catch (JargonException e)
+		{
+			System.err.println("Unknown Jargon Exception. Error was:\n");
+			e.printStackTrace();
 		}
 		// Default, just return false
 		return false;
@@ -309,7 +279,7 @@ public class CyVerseConnectionManager
 	 */
 	public List<ImageCollection> pullRemoteCollections()
 	{
-		String collectionsFolderName = "./Sanimal/Collections";
+		String collectionsFolderName = "/iplant/home/dslovikosky/Sanimal/Collection";
 		List<ImageCollection> imageCollections = new ArrayList<>();
 		try
 		{
@@ -346,6 +316,19 @@ public class CyVerseConnectionManager
 									e.printStackTrace();
 								}
 							}
+
+							//List<UserFilePermission> userFilePermissions = this.accessObjects.getDataObjectAO().listPermissionsForDataObject(collectionDir.getAbsolutePath());
+							//userFilePermissions.forEach(System.out::println);
+
+							//this.accessObjects.getCollectionAO().findByAbsolutePath(collectionDir.getAbsolutePath());
+							//List<CollectionAndDataObjectListingEntry> collectionAndDataObjectListingEntries = this.accessObjects.getCollectionAndDataObjectListAndSearchAO().listDataObjectsAndCollectionsUnderPathWithPermissions(collectionDir.getParent());
+
+							//collectionAndDataObjectListingEntries.get(0)
+
+							//DataObject byAbsolutePath = this.accessObjects.getDataObjectAO().findByCollectionNameAndDataName(collectionDir.getParent(), collectionDir.getName());
+
+							//this.accessObjects.getDataObjectAO().setAccessPermissionRead(ZONE, collectionDir.getAbsolutePath(), "smalusa");
+
 						}
 					}
 				}
@@ -369,43 +352,74 @@ public class CyVerseConnectionManager
 	 */
 	public void pushLocalCollections(List<ImageCollection> collections)
 	{
-		String collectionsDir = "./Sanimal/Collections";
+		String collectionsDir = "./Sanimal/Collection";
 		IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 		collections.forEach(collection -> {
-			List<Permission> currentUserPermissions = collection.getPermissions().filtered(permission -> permission.getUsername().equals(this.accessObjects.getAccount().getUserName()));
-			try
+			Optional<Permission> currentUserPerm = collection.getPermissions().stream().filter(permission -> permission.getUsername().equals(this.accessObjects.getAccount().getUserName())).findFirst();
+			currentUserPerm.ifPresent(currentUser ->
 			{
-				if (currentUserPermissions.size() == 1)
+				try
 				{
-					Permission currentUser = currentUserPermissions.get(0);
-					if (currentUser.getOwner())
+					if (currentUser.isOwner())
 					{
 						String collectionDirName = collectionsDir + "/" + collection.getID().toString();
 
 						IRODSFile collectionDir = fileFactory.instanceIRODSFile(collectionDirName);
+						if (!collectionDir.exists())
+							collectionDir.mkdir();
+
 						if (collectionDir.canRead())
 						{
-							if (!collectionDir.exists())
-							{
-								collectionDir.mkdir();
-							}
-
 							String jsonFile = collectionDirName + "/collection.json";
 							String json = SanimalData.getInstance().getGson().toJson(collection);
 							this.writeRemoteFile(jsonFile, json);
 
-							IRODSFile collectionDirUploads = fileFactory.instanceIRODSFile(collectionsDir + "/Uploads");
+							IRODSFile collectionDirUploads = fileFactory.instanceIRODSFile(collectionDirName + "/Uploads");
 							if (!collectionDirUploads.exists())
 								collectionDirUploads.mkdir();
+
+							SortedList<Permission> sorted = collection.getPermissions().sorted((permission1, permission2) -> Boolean.compare(permission1.isOwner(), permission2.isOwner()));
+							CollectionAndDataObjectListingEntry collectionPermissions = this.accessObjects.getCollectionAndDataObjectListAndSearchAO().getCollectionAndDataObjectListingEntryAtGivenAbsolutePath(collectionDir.getAbsolutePath());
+							CollectionAO collectionAO = this.accessObjects.getCollectionAO();
+							collectionPermissions.getUserFilePermission().forEach(userFilePermission -> {
+								if (userFilePermission.getFilePermissionEnum() != FilePermissionEnum.OWN)
+									try
+									{
+										collectionAO.removeAccessPermissionForUser(ZONE, collectionDir.getAbsolutePath(), userFilePermission.getUserName(), true);
+									}
+									catch (JargonException e)
+									{
+										System.err.println("Error removing permissions from user.");
+										e.printStackTrace();
+									}
+							});
+							sorted.forEach(permission -> {
+								try
+								{
+									// Ensure valid users only
+									if (this.accessObjects.getUserAO().findByName(permission.getUsername()) != null)
+									{
+										collectionAO.setAccessPermissionRead(ZONE, collectionDir.getAbsolutePath(), permission.getUsername(), true);
+										if (permission.canUpload())
+											collectionAO.setAccessPermissionWrite(ZONE, collectionDir.getAbsolutePath(), permission.getUsername(), true);
+										if (permission.isOwner())
+											collectionAO.setAccessPermissionOwn(ZONE, collectionDir.getAbsolutePath(), permission.getUsername(), true);
+									}
+								}
+								catch (JargonException e)
+								{
+									System.err.println("Can't set user permissions???");
+									e.printStackTrace();
+								}
+							});
 						}
 					}
-
 				}
-			}
-			catch (JargonException e)
-			{
-				e.printStackTrace();
-			}
+				catch (JargonException e)
+				{
+					e.printStackTrace();
+				}
+			});
 		});
 	}
 
@@ -513,22 +527,6 @@ public class CyVerseConnectionManager
 			System.err.println("Error pushing remote file (" + file + "). Error was:\n");
 			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * @return Gets the username of the logged in user, read only though
-	 */
-	public ReadOnlyStringProperty usernameProperty()
-	{
-		return usernameProperty.getReadOnlyProperty();
-	}
-
-	/**
-	 * @return True if a user is logged in, false otherwise, read only though
-	 */
-	public ReadOnlyBooleanProperty loggedInProperty()
-	{
-		return loggedInProperty.getReadOnlyProperty();
 	}
 
 }

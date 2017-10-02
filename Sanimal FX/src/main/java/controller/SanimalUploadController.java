@@ -1,40 +1,26 @@
 package controller;
 
-import javafx.beans.InvalidationListener;
-import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.input.MouseEvent;
-import javafx.util.Callback;
 import javafx.util.converter.DefaultStringConverter;
 import library.EditCell;
 import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
-import model.species.Species;
 import model.util.FXMLLoaderUtils;
 import org.fxmisc.easybind.EasyBind;
-import org.fxmisc.easybind.monadic.PropertyBinding;
 
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.function.Function;
 
 public class SanimalUploadController implements Initializable
 {
@@ -61,11 +47,7 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public TableColumn<Permission, String> clmUser;
 	@FXML
-	public TableColumn<Permission, Boolean> clmView;
-	@FXML
-	public TableColumn<Permission, Boolean> clmWrite;
-	@FXML
-	public TableColumn<Permission, Boolean> clmDelete;
+	public TableColumn<Permission, Boolean> clmUpload;
 	@FXML
 	public TableColumn<Permission, Boolean> clmOwner;
 
@@ -138,12 +120,8 @@ public class SanimalUploadController implements Initializable
 
 		this.clmUser.setCellValueFactory(param -> param.getValue().usernameProperty());
 		this.clmUser.setCellFactory(x -> new EditCell<>(new DefaultStringConverter()));
-		this.clmView.setCellValueFactory(param -> param.getValue().viewProperty());
-		this.clmView.setCellFactory(param -> new CheckBoxTableCell<>());
-		this.clmWrite.setCellValueFactory(param -> param.getValue().writeProperty());
-		this.clmWrite.setCellFactory(param -> new CheckBoxTableCell<>());
-		this.clmDelete.setCellValueFactory(param -> param.getValue().deleteProperty());
-		this.clmDelete.setCellFactory(param -> new CheckBoxTableCell<>());
+		this.clmUpload.setCellValueFactory(param -> param.getValue().uploadProperty());
+		this.clmUpload.setCellFactory(param -> new CheckBoxTableCell<>());
 		this.clmOwner.setCellValueFactory(param -> param.getValue().ownerProperty());
 		this.clmOwner.setCellFactory(param -> new CheckBoxTableCell<>());
 
@@ -170,10 +148,8 @@ public class SanimalUploadController implements Initializable
 	{
 		ImageCollection collection = new ImageCollection();
 		Permission owner = new Permission();
-		owner.setUsername(SanimalData.getInstance().getConnectionManager().usernameProperty().getValue());
-		owner.setView(true);
-		owner.setWrite(true);
-		owner.setDelete(true);
+		owner.setUsername(SanimalData.getInstance().usernameProperty().getValue());
+		owner.setUpload(true);
 		owner.setOwner(true);
 		collection.getPermissions().add(owner);
 		SanimalData.getInstance().getCollectionList().add(collection);
@@ -206,9 +182,7 @@ public class SanimalUploadController implements Initializable
 	private void createUser()
 	{
 		Permission permission = new Permission();
-		permission.setDelete(false);
-		permission.setWrite(false);
-		permission.setView(false);
+		permission.setUpload(false);
 		permission.setOwner(false);
 		permission.setUsername("Unnamed");
 		this.selectedCollection.getValue().getPermissions().add(permission);
@@ -239,6 +213,6 @@ public class SanimalUploadController implements Initializable
 
 	public void savePermissions(ActionEvent actionEvent)
 	{
-		System.out.println("Write perms to cyverse!");
+		SanimalData.getInstance().getConnectionManager().pushLocalCollections(SanimalData.getInstance().getCollectionList());
 	}
 }

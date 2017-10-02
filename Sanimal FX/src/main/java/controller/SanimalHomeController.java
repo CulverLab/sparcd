@@ -101,10 +101,10 @@ public class SanimalHomeController implements Initializable
 	public void initialize(URL location, ResourceBundle resources)
 	{
 		// If we're logged in show the logged in person's username
-		this.lblUsername.textProperty().bind(EasyBind.monadic(SanimalData.getInstance().getConnectionManager().usernameProperty()).map(username -> "Welcome " + username + "!").orElse(""));
+		this.lblUsername.textProperty().bind(EasyBind.monadic(SanimalData.getInstance().usernameProperty()).map(username -> "Welcome " + username + "!").orElse(""));
 
 		// Grab the logged in property
-		ReadOnlyBooleanProperty loggedIn = SanimalData.getInstance().getConnectionManager().loggedInProperty();
+		ReadOnlyBooleanProperty loggedIn = SanimalData.getInstance().loggedInProperty();
 
 		// Hide the logout button and text when not logged in
 		this.btnLogout.visibleProperty().bind(loggedIn);

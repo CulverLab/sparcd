@@ -63,6 +63,11 @@ public class SanimalData
 	private static final Integer NUM_IMAGES_AT_A_TIME = 100;
 	private AtomicBoolean metadataSyncInProgress = new AtomicBoolean(false);
 
+	// A username property which we can bind to in the rest of the program
+	private StringProperty usernameProperty = new SimpleStringProperty("");
+	// A logged in property which we can bind to in the rest of the program, is set to true when a user is logged in
+	private BooleanProperty loggedInProperty = new SimpleBooleanProperty(false);
+
 	// Executor used to thread off long tasks
 	private SanimalExecutor sanimalExecutor = new SanimalExecutor();
 
@@ -356,5 +361,35 @@ public class SanimalData
 	public Preferences getSanimalPreferences()
 	{
 		return sanimalPreferences;
+	}
+
+	public void setUsername(String username)
+	{
+		this.usernameProperty.setValue(username);
+	}
+
+	public String getUsername()
+	{
+		return this.usernameProperty.getValue();
+	}
+
+	public StringProperty usernameProperty()
+	{
+		return usernameProperty;
+	}
+
+	public void setLoggedIn(Boolean loggedIn)
+	{
+		this.loggedInProperty.setValue(loggedIn);
+	}
+
+	public Boolean isLoggedIn()
+	{
+		return this.loggedInProperty.getValue();
+	}
+
+	public BooleanProperty loggedInProperty()
+	{
+		return loggedInProperty;
 	}
 }

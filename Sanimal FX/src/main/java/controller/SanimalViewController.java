@@ -98,7 +98,7 @@ public class SanimalViewController implements Initializable
 	public void initialize(URL location, ResourceBundle resources)
 	{
 		// Grab the logged in property
-		ReadOnlyBooleanProperty loggedIn = SanimalData.getInstance().getConnectionManager().loggedInProperty();
+		ReadOnlyBooleanProperty loggedIn = SanimalData.getInstance().loggedInProperty();
 
 		// When we log off, clear the username and password
 		loggedIn.addListener((observable, oldValue, newValue) -> {
@@ -216,7 +216,7 @@ public class SanimalViewController implements Initializable
 			SanimalData.getInstance().getSanimalPreferences().put(USERNAME_PREF, this.txtUsername.getText());
 
 		// Only login if we're not logged in
-		if (!SanimalData.getInstance().getConnectionManager().loggedInProperty().getValue())
+		if (!SanimalData.getInstance().loggedInProperty().getValue())
 		{
 			this.loggingIn.setValue(true);
 
@@ -290,6 +290,11 @@ public class SanimalViewController implements Initializable
 					invalidAlert.setContentText("Invalid Username or Password");
 					invalidAlert.initOwner(this.tabPane.getScene().getWindow());
 					invalidAlert.showAndWait();
+				}
+				else
+				{
+					SanimalData.getInstance().setLoggedIn(true);
+					SanimalData.getInstance().setUsername(username);
 				}
 				this.loggingIn.setValue(false);
 				// Hide the loading graphic

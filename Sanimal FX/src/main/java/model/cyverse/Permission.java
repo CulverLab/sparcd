@@ -8,9 +8,7 @@ import javafx.beans.property.StringProperty;
 public class Permission
 {
 	private StringProperty usernameProperty = new SimpleStringProperty("");
-	private BooleanProperty viewProperty = new SimpleBooleanProperty(false);
-	private BooleanProperty writeProperty = new SimpleBooleanProperty(false);
-	private BooleanProperty deleteProperty = new SimpleBooleanProperty(false);
+	private BooleanProperty uploadProperty = new SimpleBooleanProperty(false);
 	private BooleanProperty ownerProperty = new SimpleBooleanProperty(false);
 
 	public Permission()
@@ -20,24 +18,14 @@ public class Permission
 			if (newValue)
 			{
 				// Bound values can't be set!
-				this.setView(true);
-				this.setWrite(true);
-				this.setDelete(true);
+				this.setUpload(true);
 			}
 		});
 
 		// If the owner property is set and we try to disable any of the other properties, ignore the change
-		this.viewProperty.addListener((observable, oldValue, newValue) -> {
+		this.uploadProperty.addListener((observable, oldValue, newValue) -> {
 			if (!newValue && this.ownerProperty.getValue())
-				this.viewProperty.setValue(true);
-		});
-		this.writeProperty.addListener((observable, oldValue, newValue) -> {
-			if (!newValue && this.ownerProperty.getValue())
-				this.writeProperty.setValue(true);
-		});
-		this.deleteProperty.addListener((observable, oldValue, newValue) -> {
-			if (!newValue && this.ownerProperty.getValue())
-				this.deleteProperty.setValue(true);
+				this.uploadProperty.setValue(true);
 		});
 	}
 
@@ -56,49 +44,19 @@ public class Permission
 		return usernameProperty;
 	}
 
-	public void setView(boolean view)
+	public void setUpload(boolean upload)
 	{
-		this.viewProperty.setValue(view);
+		this.uploadProperty.setValue(upload);
 	}
 
-	public boolean getView()
+	public boolean canUpload()
 	{
-		return this.viewProperty.getValue();
+		return this.uploadProperty.getValue();
 	}
 
-	public BooleanProperty viewProperty()
+	public BooleanProperty uploadProperty()
 	{
-		return this.viewProperty;
-	}
-
-	public void setWrite(boolean write)
-	{
-		this.writeProperty.setValue(write);
-	}
-
-	public boolean getWrite()
-	{
-		return this.writeProperty.getValue();
-	}
-
-	public BooleanProperty writeProperty()
-	{
-		return this.writeProperty;
-	}
-
-	public void setDelete(boolean delete)
-	{
-		this.deleteProperty.setValue(delete);
-	}
-
-	public boolean getDelete()
-	{
-		return this.deleteProperty.getValue();
-	}
-
-	public BooleanProperty deleteProperty()
-	{
-		return this.deleteProperty;
+		return this.uploadProperty;
 	}
 
 	public void setOwner(boolean owner)
@@ -106,7 +64,7 @@ public class Permission
 		this.ownerProperty.setValue(owner);
 	}
 
-	public boolean getOwner()
+	public boolean isOwner()
 	{
 		return this.ownerProperty.getValue();
 	}
@@ -119,6 +77,6 @@ public class Permission
 	@Override
 	public String toString()
 	{
-		return "Permission for " + this.getUsername() + ", Owner: " + this.getOwner() + ", Can delete: " + this.getDelete() + ", Can write: " + this.getWrite() + ", Can view: " + this.getView();
+		return "Permission for " + this.getUsername() + ", Owner: " + this.isOwner() + ", Can upload: " + this.canUpload();
 	}
 }

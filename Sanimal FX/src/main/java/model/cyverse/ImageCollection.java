@@ -8,7 +8,6 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import model.SanimalData;
 
 import java.util.UUID;
 
@@ -18,7 +17,7 @@ public class ImageCollection
 	private StringProperty organizationProperty = new SimpleStringProperty("");
 	private StringProperty contactInfoProperty = new SimpleStringProperty("");
 	private StringProperty descriptionProperty = new SimpleStringProperty("");
-	private ObservableList<Permission> permissions = FXCollections.observableArrayList(permission -> new Observable[] { permission.usernameProperty(), permission.viewProperty(), permission.writeProperty(), permission.deleteProperty(), permission.ownerProperty()});
+	private ObservableList<Permission> permissions = FXCollections.observableArrayList(permission -> new Observable[] { permission.usernameProperty(), permission.uploadProperty(), permission.ownerProperty()});
 	private ObjectProperty<UUID> idProperty = new SimpleObjectProperty<>(UUID.randomUUID());
 
 
@@ -31,21 +30,22 @@ public class ImageCollection
 		// When the collection changes
 		this.permissions.addListener((ListChangeListener<Permission>) change -> {
 			while (change.next())
+			{
 				if (change.wasUpdated())
 				{
 					for (int i = change.getFrom(); i < change.getTo(); i++)
 					{
 						Permission updated = change.getList().get(i);
-						if (!updated.getOwner())
+						if (!updated.isOwner())
 						{
-							boolean noOwner = change.getList().filtered(Permission::getOwner).isEmpty();
+							boolean noOwner = change.getList().filtered(Permission::isOwner).isEmpty();
 							if (noOwner)
 								updated.setOwner(true);
-						}
-						else if (updated.getOwner())
+						} else if (updated.isOwner())
 							change.getList().filtered(perm -> !perm.equals(updated)).forEach(perm -> perm.setOwner(false));
 					}
 				}
+			}
 		});
 	}
 
