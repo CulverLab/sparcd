@@ -87,12 +87,6 @@
             <artifactId>commons-collections4</artifactId>
             <version>RELEASE</version>
         </dependency>
-        <!-- https://github.com/DICE-UNC/jargon -->
-        <dependency>
-            <groupId>org.irods.jargon</groupId>
-            <artifactId>jargon-core</artifactId>
-            <version>4.2.0.0-RELEASE</version>
-        </dependency>
         <!-- https://github.com/google/gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -104,6 +98,12 @@
             <groupId>org.hildan.fxgson</groupId>
             <artifactId>fx-gson</artifactId>
             <version>RELEASE</version>
+        </dependency>
+        <!-- https://github.com/DICE-UNC/jargon -->
+        <dependency>
+            <groupId>org.irods.jargon</groupId>
+            <artifactId>jargon-core</artifactId>
+            <version>4.2.0.0-RELEASE</version>
         </dependency>
     </dependencies>
 
@@ -117,19 +117,6 @@
             </releases>
             <snapshots>
                 <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>dice.repository snaps</id>
-            <name>dice.repository.snapshots</name>
-            <url>https://raw.github.com/DICE-UNC/DICE-Maven/master/snapshots</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-                <checksumPolicy>warn</checksumPolicy>
             </snapshots>
         </repository>
         <repository>

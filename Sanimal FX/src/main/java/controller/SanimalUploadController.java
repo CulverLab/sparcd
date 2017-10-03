@@ -2,10 +2,12 @@ package controller;
 
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
+import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.util.converter.DefaultStringConverter;
@@ -17,10 +19,7 @@ import model.util.FXMLLoaderUtils;
 import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class SanimalUploadController implements Initializable
 {
@@ -58,6 +57,9 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public Button btnAddUser;
 
+	@FXML
+	public SplitPane mainSplitPane;
+
 	///
 	/// FXML Bound Fields End
 	///
@@ -69,13 +71,16 @@ public class SanimalUploadController implements Initializable
 	// https://stackoverflow.com/questions/26312651/bidirectional-javafx-binding-is-destroyed-by-unrelated-code
 	private final List<Property> hardReferences = new ArrayList<>();
 
-
+	private Node adminPane;
+	private double[] splitPaneDividers;
 
 	private ObjectProperty<ImageCollection> selectedCollection = new SimpleObjectProperty<>();
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
+		adminPane = this.mainSplitPane.getItems().get(1);
+
 		// First setup the collection list
 
 		// Grab the global collection list
@@ -103,6 +108,30 @@ public class SanimalUploadController implements Initializable
 		this.tbxDescription.textProperty().bindBidirectional(cache(EasyBind.monadic(selectedCollection).selectProperty(ImageCollection::descriptionProperty)));
 
 		this.tvwPermissions.itemsProperty().bind(EasyBind.monadic(selectedCollection).map(ImageCollection::getPermissions));
+
+		this.selectedCollection.addListener((observable, oldValue, newValue) ->
+		{
+			if (newValue != null)
+			{
+				Optional<Permission> myPerms = newValue.getPermissions().stream().filter(permission -> permission.getUsername().equals(SanimalData.getInstance().getUsername())).findFirst();
+				myPerms.ifPresent(permission ->
+				{
+					if (!permission.isOwner())
+					{
+						splitPaneDividers = this.mainSplitPane.getDividerPositions();
+						this.mainSplitPane.getItems().remove(adminPane);
+					}
+					else
+					{
+						if (!this.mainSplitPane.getItems().contains(adminPane))
+						{
+							this.mainSplitPane.getItems().add(adminPane);
+							this.mainSplitPane.setDividerPositions(splitPaneDividers);
+						}
+					}
+				});
+			}
+		});
 
 		BooleanBinding nothingSelected = selectedCollection.isNull();
 

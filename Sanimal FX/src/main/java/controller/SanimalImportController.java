@@ -71,6 +71,10 @@ public class SanimalImportController implements Initializable
 	@FXML
 	public StackPane imagePane;
 
+	// Button used to shift the time
+	@FXML
+	public Button btnTimeShift;
+
 	// The slider for image brightness
 	@FXML
 	public Slider sldBrightness;
@@ -316,6 +320,8 @@ public class SanimalImportController implements Initializable
 		this.imageSpeciesPreview.imageProperty().bind(this.speciesPreviewImage);
 		// When we get a new species to preview, we show the preview pane
 		this.speciesPreviewPane.visibleProperty().bind(this.speciesPreviewImage.isNotNull());
+		// If we have a folder or image selected, allow time shifting
+		this.btnTimeShift.disableProperty().bind(this.currentlySelectedImage.isNull().and(this.currentlySelectedDirectory.isNull()));
 
 		// The listener we will apply to each species entry list
 		// Here we use a magic number of 75. This is the height of a list cell. Unfortunately I have no other way of getting the cell height.
@@ -821,6 +827,33 @@ public class SanimalImportController implements Initializable
 		// Consume the event if possible
 		if (actionEvent != null)
 			actionEvent.consume();
+	}
+
+	/**
+	 * Shifts the time stamp of the currently selected images
+	 * @param mouseEvent consumed
+	 */
+	public void timeShift(MouseEvent mouseEvent)
+	{
+		// Load the FXML file of the editor window
+		FXMLLoader loader = FXMLLoaderUtils.loadFXML("importView/TimeShift.fxml");
+		// Grab the controller and set the location of that controller
+		TimeShiftController controller = loader.getController();
+		controller.setDate(this.currentlySelectedImage.getValue().getDateTaken());
+
+		// Create the stage that will have the date editor
+		Stage dialogStage = new Stage();
+		// Set the title
+		dialogStage.setTitle("Date Editor");
+		// Set the modality and initialize the owner to be this current window
+		dialogStage.initModality(Modality.WINDOW_MODAL);
+		dialogStage.initOwner(this.imagePreview.getScene().getWindow());
+		// Set the scene to the root of the FXML file
+		Scene scene = new Scene(loader.getRoot());
+		// Set the scene of the stage, and show it!
+		dialogStage.setScene(scene);
+		dialogStage.showAndWait();
+		mouseEvent.consume();
 	}
 
 	/**

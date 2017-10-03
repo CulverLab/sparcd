@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<?import java.net.URL?>
+<GridPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.TimeShiftController" prefHeight="150.0" prefWidth="800.0">
+    <stylesheets>
+        <URL value="@TimeShift.css"/>
+    </stylesheets>
+    <columnConstraints>
+        <ColumnConstraints hgrow="ALWAYS"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints minHeight="50" maxHeight="50"/>
+        <RowConstraints minHeight="50" maxHeight="50"/>
+        <RowConstraints minHeight="50" maxHeight="50"/>
+    </rowConstraints>
+    <children>
+        <Label styleClass="font16" fx:id="lblOriginalDate" GridPane.halignment="CENTER" GridPane.valignment="CENTER" text="Original Date: "/>
+        <FlowPane GridPane.halignment="CENTER" GridPane.valignment="CENTER" GridPane.rowIndex="1" alignment="CENTER" vgap="10">
+            <fx:define>
+                <Insets fx:id="inset20Right" right="20"/>
+            </fx:define>
+            <Label styleClass="font16" text="Year: "/>
+            <Spinner fx:id="spnYear" prefWidth="60" FlowPane.margin="$inset20Right"/>
+            <Label styleClass="font16" text="Month: "/>
+            <Spinner fx:id="spnMonth" prefWidth="60" FlowPane.margin="$inset20Right"/>
+            <Label styleClass="font16" text="Day: "/>
+            <Spinner fx:id="spnDay" prefWidth="60" FlowPane.margin="$inset20Right"/>
+            <Label styleClass="font16" text="Hour: "/>
+            <Spinner fx:id="spnHour" prefWidth="60" FlowPane.margin="$inset20Right"/>
+            <Label styleClass="font16" text="Minute: "/>
+            <Spinner fx:id="spnMinute" prefWidth="60" FlowPane.margin="$inset20Right"/>
+            <Label styleClass="font16" text="Second: "/>
+            <Spinner fx:id="spnSecond" prefWidth="60"/>
+        </FlowPane>
+        <Label styleClass="font16" fx:id="lblNewDate" GridPane.halignment="CENTER" GridPane.valignment="CENTER" text="New Date: " GridPane.rowIndex="2"/>
+    </children>
+</GridPane>

@@ -131,7 +131,7 @@ public class SanimalViewController implements Initializable
 
 		String storedUsername = SanimalData.getInstance().getSanimalPreferences().get(USERNAME_PREF, "");
 
-		tabPane.tabMinWidthProperty().bind(tabPane.widthProperty().divide(tabPane.getTabs().size()).subtract(18));
+		tabPane.tabMinWidthProperty().bind(tabPane.widthProperty().divide(tabPane.getTabs().size()).subtract(25));
 
 		// Load default username if it was stored
 		if (!storedUsername.isEmpty())
