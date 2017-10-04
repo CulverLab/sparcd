@@ -47,6 +47,7 @@ import org.fxmisc.easybind.monadic.MonadicBinding;
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.net.URL;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -835,24 +836,54 @@ public class SanimalImportController implements Initializable
 	 */
 	public void timeShift(MouseEvent mouseEvent)
 	{
-		// Load the FXML file of the editor window
-		FXMLLoader loader = FXMLLoaderUtils.loadFXML("importView/TimeShift.fxml");
-		// Grab the controller and set the location of that controller
-		TimeShiftController controller = loader.getController();
-		controller.setDate(this.currentlySelectedImage.getValue().getDateTaken());
+		Date first = null;
+		if (this.currentlySelectedImage.getValue() != null)
+			first = this.currentlySelectedImage.getValue().getDateTaken();
+		else if (this.currentlySelectedDirectory.getValue() != null)
+		{
+			Optional<ImageEntry> firstImage = this.currentlySelectedDirectory.getValue().flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).findFirst();
+			if (firstImage.isPresent())
+				first = firstImage.get().getDateTaken();
+		}
 
-		// Create the stage that will have the date editor
-		Stage dialogStage = new Stage();
-		// Set the title
-		dialogStage.setTitle("Date Editor");
-		// Set the modality and initialize the owner to be this current window
-		dialogStage.initModality(Modality.WINDOW_MODAL);
-		dialogStage.initOwner(this.imagePreview.getScene().getWindow());
-		// Set the scene to the root of the FXML file
-		Scene scene = new Scene(loader.getRoot());
-		// Set the scene of the stage, and show it!
-		dialogStage.setScene(scene);
-		dialogStage.showAndWait();
+		if (first != null)
+		{
+			// Load the FXML file of the editor window
+			FXMLLoader loader = FXMLLoaderUtils.loadFXML("importView/TimeShift.fxml");
+			// Grab the controller and set the location of that controller
+			TimeShiftController controller = loader.getController();
+
+			controller.setDate(first);
+
+			// Create the stage that will have the date editor
+			Stage dialogStage = new Stage();
+			// Set the title
+			dialogStage.setTitle("Date Editor");
+			// Set the modality and initialize the owner to be this current window
+			dialogStage.initModality(Modality.WINDOW_MODAL);
+			dialogStage.initOwner(this.imagePreview.getScene().getWindow());
+			// Set the scene to the root of the FXML file
+			Scene scene = new Scene(loader.getRoot());
+			// Set the scene of the stage, and show it!
+			dialogStage.setScene(scene);
+			dialogStage.showAndWait();
+
+			Date newDate = controller.getDate();
+			if (newDate != null)
+			{
+				if (this.currentlySelectedImage.getValue() != null)
+					this.currentlySelectedImage.getValue().setDateTaken(newDate);
+				else if (this.currentlySelectedDirectory.getValue() != null)
+				{
+					long timeBetween = ChronoUnit.MILLIS.between(first.toInstant(), newDate.toInstant());
+					if (timeBetween != 0)
+						this.currentlySelectedDirectory.getValue().flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).forEach(imageEntry -> {
+							imageEntry.setDateTaken(Date.from(imageEntry.getDateTaken().toInstant().plus(timeBetween, ChronoUnit.MILLIS)));
+						});
+				}
+			}
+		}
+
 		mouseEvent.consume();
 	}
 

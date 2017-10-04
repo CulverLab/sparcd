@@ -107,6 +107,7 @@ public class ImageEntry extends ImageContainer
 
 		this.locationTakenProperty.addListener((observable, oldValue, newValue) -> this.markDirty(true));
 		this.speciesPresent.addListener((ListChangeListener<SpeciesEntry>) c -> this.markDirty(true));
+		this.dateTakenProperty.addListener((observable, oldValue, newValue) -> this.markDirty(true));
 	}
 
 	/**

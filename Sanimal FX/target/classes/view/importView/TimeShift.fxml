@@ -8,7 +8,8 @@
 
 <?import javafx.geometry.Insets?>
 <?import java.net.URL?>
-<GridPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.TimeShiftController" prefHeight="150.0" prefWidth="800.0">
+<?import org.controlsfx.control.SegmentedButton?>
+<GridPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.TimeShiftController">
     <stylesheets>
         <URL value="@TimeShift.css"/>
     </stylesheets>
@@ -17,28 +18,50 @@
     </columnConstraints>
     <rowConstraints>
         <RowConstraints minHeight="50" maxHeight="50"/>
+        <RowConstraints vgrow="ALWAYS"/>
         <RowConstraints minHeight="50" maxHeight="50"/>
         <RowConstraints minHeight="50" maxHeight="50"/>
     </rowConstraints>
     <children>
-        <Label styleClass="font16" fx:id="lblOriginalDate" GridPane.halignment="CENTER" GridPane.valignment="CENTER" text="Original Date: "/>
-        <FlowPane GridPane.halignment="CENTER" GridPane.valignment="CENTER" GridPane.rowIndex="1" alignment="CENTER" vgap="10">
+        <Label styleClass="font16" fx:id="lblDate" GridPane.halignment="CENTER" GridPane.valignment="CENTER" text="Original Date: "/>
+        <HBox GridPane.halignment="CENTER" GridPane.valignment="CENTER" GridPane.rowIndex="1" alignment="CENTER" >
             <fx:define>
                 <Insets fx:id="inset20Right" right="20"/>
             </fx:define>
             <Label styleClass="font16" text="Year: "/>
-            <Spinner fx:id="spnYear" prefWidth="60" FlowPane.margin="$inset20Right"/>
+            <Spinner fx:id="spnYear" prefWidth="80" HBox.margin="$inset20Right"/>
             <Label styleClass="font16" text="Month: "/>
-            <Spinner fx:id="spnMonth" prefWidth="60" FlowPane.margin="$inset20Right"/>
+            <Spinner fx:id="spnMonth" prefWidth="80" HBox.margin="$inset20Right"/>
             <Label styleClass="font16" text="Day: "/>
-            <Spinner fx:id="spnDay" prefWidth="60" FlowPane.margin="$inset20Right"/>
+            <Spinner fx:id="spnDay" prefWidth="80" HBox.margin="$inset20Right"/>
             <Label styleClass="font16" text="Hour: "/>
-            <Spinner fx:id="spnHour" prefWidth="60" FlowPane.margin="$inset20Right"/>
+            <Spinner fx:id="spnHour" prefWidth="80" HBox.margin="$inset20Right"/>
             <Label styleClass="font16" text="Minute: "/>
-            <Spinner fx:id="spnMinute" prefWidth="60" FlowPane.margin="$inset20Right"/>
+            <Spinner fx:id="spnMinute" prefWidth="80" HBox.margin="$inset20Right"/>
             <Label styleClass="font16" text="Second: "/>
-            <Spinner fx:id="spnSecond" prefWidth="60"/>
-        </FlowPane>
-        <Label styleClass="font16" fx:id="lblNewDate" GridPane.halignment="CENTER" GridPane.valignment="CENTER" text="New Date: " GridPane.rowIndex="2"/>
+            <Spinner fx:id="spnSecond" prefWidth="80"/>
+        </HBox>
+        <HBox GridPane.rowIndex="2" spacing="10" alignment="CENTER">
+            <children>
+                <SegmentedButton HBox.hgrow="NEVER">
+                    <buttons>
+                        <ToggleButton fx:id="tbnDayMonthYear" selected="true" mnemonicParsing="false" text="Day Month Year"/>
+                        <ToggleButton fx:id="tbnMonthDayYear" mnemonicParsing="false" text="Month Day Year"/>
+                    </buttons>
+                </SegmentedButton>
+                <SegmentedButton HBox.hgrow="NEVER">
+                    <buttons>
+                        <ToggleButton fx:id="tbn24Hr" selected="true" mnemonicParsing="false" text="24-Hour"/>
+                        <ToggleButton fx:id="tbn12Hr" mnemonicParsing="false" text="12-Hour AM/PM"/>
+                    </buttons>
+                </SegmentedButton>
+            </children>
+        </HBox>
+        <HBox spacing="5" GridPane.rowIndex="3" alignment="CENTER">
+            <children>
+                <Button text="Confirm" onMouseClicked="#confirmPressed"/>
+                <Button text="Cancel" onMouseClicked="#cancelPressed"/>
+            </children>
+        </HBox>
     </children>
 </GridPane>

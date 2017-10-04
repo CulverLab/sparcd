@@ -1,5 +1,6 @@
 package controller;
 
+import impl.org.controlsfx.tools.MathTools;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -14,6 +15,7 @@ import javafx.stage.Stage;
 import javafx.util.converter.CharacterStringConverter;
 import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.IntegerStringConverter;
+import library.ToggleButtonSelector;
 import model.analysis.SanimalAnalysisUtils;
 import model.location.Location;
 import model.location.UTMCoord;
@@ -94,6 +96,7 @@ public class LocationCreatorController implements Initializable
 	///
 
 	private static final Double FEET_TO_METERS = 0.3048;
+	private static final Double METERS_TO_FEET = 1 / 0.3048;
 
 
 	// This allows for fields to be validated and displays a red X if input is invalid
@@ -138,21 +141,10 @@ public class LocationCreatorController implements Initializable
 		this.txtEasting.textProperty().bindBidirectional(newEasting);
 		this.txtNorthing.textProperty().bindBidirectional(newNorthing);
 
-		// Used below, simply consumes the event if the toggle button is selected so it does not get deselected
-		EventHandler<MouseEvent> consumeMouseEventfilter = (MouseEvent mouseEvent) -> {
-			if (((Toggle) mouseEvent.getSource()).isSelected()) {
-				mouseEvent.consume();
-			}
-		};
-
 		// Ensure that clicking a selected button does not deselect the button otherwise. We do this by registering a click, press, and release event filter
 		// for each of the toggle buttons.
-		this.tbnFeet.addEventFilter(MouseEvent.MOUSE_PRESSED, consumeMouseEventfilter);
-		this.tbnFeet.addEventFilter(MouseEvent.MOUSE_CLICKED, consumeMouseEventfilter);
-		this.tbnFeet.addEventFilter(MouseEvent.MOUSE_RELEASED, consumeMouseEventfilter);
-		this.tbnMeters.addEventFilter(MouseEvent.MOUSE_PRESSED, consumeMouseEventfilter);
-		this.tbnMeters.addEventFilter(MouseEvent.MOUSE_CLICKED, consumeMouseEventfilter);
-		this.tbnMeters.addEventFilter(MouseEvent.MOUSE_RELEASED, consumeMouseEventfilter);
+		ToggleButtonSelector.makeUnselectable(this.tbnFeet);
+		ToggleButtonSelector.makeUnselectable(this.tbnMeters);
 
 		// We enable decoration so that errors are represented by a red outline of the text box
 		this.latLngValidator.setErrorDecorationEnabled(true);
@@ -203,6 +195,18 @@ public class LocationCreatorController implements Initializable
 						.or(Bindings.when(this.rbnLatLng.selectedProperty())
 										.then(this.latLngValidator.invalidProperty())
 										.otherwise(this.UTMValidator.invalidProperty())));
+
+		this.tbnMeters.selectedProperty().addListener((observable, oldValue, newValue) -> {
+			if (!oldValue && newValue)
+				if (this.isValidDouble(this.txtElevation.getText()))
+					this.txtElevation.setText(RoundingUtils.round(Double.parseDouble(this.txtElevation.getText()) * FEET_TO_METERS, 1) + "");
+		});
+
+		this.tbnFeet.selectedProperty().addListener((observable, oldValue, newValue) -> {
+			if (!oldValue && newValue)
+				if (this.isValidDouble(this.txtElevation.getText()))
+					this.txtElevation.setText(RoundingUtils.round(Double.parseDouble(this.txtElevation.getText()) * METERS_TO_FEET, 1) + "");
+		});
 	}
 
 	/**
@@ -250,7 +254,7 @@ public class LocationCreatorController implements Initializable
 		if (this.tbnMeters.isSelected())
 			locationToEdit.setElevation((double) Math.round(Double.parseDouble(newElevation.getValue())));
 		else if (this.tbnFeet.isSelected())
-			locationToEdit.setElevation((double) Math.round(Double.parseDouble(newElevation.getValue()) * FEET_TO_METERS));
+			locationToEdit.setElevation((double) Math.round(Double.parseDouble(newElevation.getValue()) * METERS_TO_FEET));
 		((Stage) this.txtName.getScene().getWindow()).close();
 	}
 

@@ -15,56 +15,59 @@
 <?import javafx.scene.control.CheckBox?>
 <?import org.controlsfx.control.HyperlinkLabel?>
 <?import javafx.scene.control.Button?>
-<StackPane prefHeight="750" prefWidth="1350" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+
+<?import com.panemu.tiwulfx.control.DetachableTabPane?>
+<?import com.panemu.tiwulfx.control.DetachableTab?>
+<StackPane fx:id="primaryPane" prefHeight="750" prefWidth="1350" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="controller.SanimalViewController">
+    <stylesheets>
+        <URL value="@SanimalView.css"/>
+    </stylesheets>
     <children>
-        <TabPane fx:id="tabPane">
-            <stylesheets>
-                <URL value="@SanimalView.css"/>
-            </stylesheets>
+        <DetachableTabPane fx:id="tabPane">
             <tabs>
-                <Tab text="Home" closable="false">
+                <DetachableTab detachable="true" text="Home" closable="false">
                     <graphic>
                         <ImageView fitWidth="25" fitHeight="25">
                             <Image url="@../images/mainMenu/paw.png"/>
                         </ImageView>
                     </graphic>
                     <fx:include fx:id="homePane" source="SanimalHome.fxml"/>
-                </Tab>
-                <Tab text="Import" closable="false">
+                </DetachableTab>
+                <DetachableTab detachable="true" text="Import" closable="false">
                     <graphic>
                         <ImageView fitWidth="25" fitHeight="25">
                             <Image url="@../images/mainMenu/import.png"/>
                         </ImageView>
                     </graphic>
                     <fx:include source="SanimalImport.fxml"/>
-                </Tab>
-                <Tab text="Analyze" closable="false">
+                </DetachableTab>
+                <DetachableTab detachable="true" text="Analyze" closable="false">
                     <graphic>
                         <ImageView fitWidth="25" fitHeight="25">
                             <Image url="@../images/mainMenu/analyze.png"/>
                         </ImageView>
                     </graphic>
                     <fx:include source="SanimalAnalysis.fxml"/>
-                </Tab>
-                <Tab text="Map" closable="false">
+                </DetachableTab>
+                <DetachableTab detachable="true" text="Map" closable="false">
                     <graphic>
                         <ImageView fitWidth="25" fitHeight="25">
                             <Image url="@../images/mainMenu/map.png"/>
                         </ImageView>
                     </graphic>
                     <fx:include source="SanimalMap.fxml"/>
-                </Tab>
-                <Tab text="Collections" closable="false">
+                </DetachableTab>
+                <DetachableTab detachable="true" text="Collections" closable="false">
                     <graphic>
                         <ImageView fitWidth="25" fitHeight="25">
                             <Image url="@../images/mainMenu/upload.png"/>
                         </ImageView>
                     </graphic>
                     <fx:include source="SanimalUpload.fxml"/>
-                </Tab>
+                </DetachableTab>
             </tabs>
-        </TabPane>
+        </DetachableTabPane>
         <StackPane minWidth="300" maxWidth="300" minHeight="320" maxHeight="320" fx:id="loginPane">
             <Rectangle fx:id="rctLoginBackground" arcHeight="15" arcWidth="15" fill="beige" stroke="black"
                        StackPane.alignment="CENTER"/>

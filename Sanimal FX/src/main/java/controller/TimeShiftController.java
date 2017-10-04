@@ -5,6 +5,11 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
+import library.ToggleButtonSelector;
+import org.controlsfx.control.SegmentedButton;
 import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
@@ -34,9 +39,17 @@ public class TimeShiftController implements Initializable
 	public Spinner<Integer> spnSecond;
 
 	@FXML
-	public Label lblOriginalDate;
+	public Label lblDate;
+
 	@FXML
-	public Label lblNewDate;
+	public ToggleButton tbn12Hr;
+	@FXML
+	public ToggleButton tbn24Hr;
+
+	@FXML
+	public ToggleButton tbnDayMonthYear;
+	@FXML
+	public ToggleButton tbnMonthDayYear;
 
 	///
 	/// FXML Bound fields end
@@ -44,7 +57,7 @@ public class TimeShiftController implements Initializable
 
 	private Calendar original = Calendar.getInstance();
 	private Calendar dateToEdit = Calendar.getInstance();
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd MMMMM yyyy HH:mm:ss");
+	private DateFormat dateFormat = new SimpleDateFormat("dd MMMMM yyyy HH:mm:ss");
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
@@ -62,6 +75,18 @@ public class TimeShiftController implements Initializable
 		EasyBind.subscribe(this.spnHour.valueProperty(), this::updateDate);
 		EasyBind.subscribe(this.spnMinute.valueProperty(), this::updateDate);
 		EasyBind.subscribe(this.spnSecond.valueProperty(), this::updateDate);
+
+		this.tbn12Hr.selectedProperty().addListener((observable, oldValue, newValue) -> this.refreshDateFormat());
+		this.tbn24Hr.selectedProperty().addListener((observable, oldValue, newValue) -> this.refreshDateFormat());
+		this.tbnDayMonthYear.selectedProperty().addListener((observable, oldValue, newValue) -> this.refreshDateFormat());
+		this.tbnMonthDayYear.selectedProperty().addListener((observable, oldValue, newValue) -> this.refreshDateFormat());
+
+		// Ensure that clicking a selected button does not deselect the button otherwise. We do this by registering a click, press, and release event filter
+		// for each of the toggle buttons.
+		ToggleButtonSelector.makeUnselectable(this.tbn12Hr);
+		ToggleButtonSelector.makeUnselectable(this.tbn24Hr);
+		ToggleButtonSelector.makeUnselectable(this.tbnDayMonthYear);
+		ToggleButtonSelector.makeUnselectable(this.tbnMonthDayYear);
 	}
 
 	private void updateDate(Integer ignored)
@@ -74,18 +99,40 @@ public class TimeShiftController implements Initializable
 		this.dateToEdit.add(Calendar.MINUTE, this.spnMinute.getValue());
 		this.dateToEdit.add(Calendar.SECOND, this.spnSecond.getValue());
 
-		this.lblNewDate.setText("New Date: " + DATE_FORMAT.format(this.dateToEdit.getTime()));
+		this.refreshLabel();
+	}
+
+	private void refreshDateFormat()
+	{
+		this.dateFormat = new SimpleDateFormat(String.format("%s yyyy %s", this.tbnDayMonthYear.isSelected() ? "dd MMMMM" : "MMMMM dd", this.tbn12Hr.isSelected() ? "hh:mm:ss aa" : "HH:mm:ss"));
+		this.refreshLabel();
+	}
+
+	private void refreshLabel()
+	{
+		this.lblDate.setText(dateFormat.format(this.original.getTime()) + " -> " + dateFormat.format(this.dateToEdit.getTime()));
 	}
 
 	public void setDate(Date date)
 	{
 		this.original.setTime((Date) date.clone());
 		this.dateToEdit.setTime(this.original.getTime());
-		this.lblOriginalDate.setText("Original Date: " + DATE_FORMAT.format(this.original.getTime()));
+		this.refreshLabel();
 	}
 
 	public Date getDate()
 	{
 		return this.dateToEdit.getTime();
+	}
+
+	public void confirmPressed(MouseEvent mouseEvent)
+	{
+		((Stage) this.tbn12Hr.getScene().getWindow()).close();
+	}
+
+	public void cancelPressed(MouseEvent mouseEvent)
+	{
+		this.dateToEdit = original;
+		confirmPressed(mouseEvent);
 	}
 }

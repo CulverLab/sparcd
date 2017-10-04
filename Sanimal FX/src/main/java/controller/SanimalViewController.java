@@ -1,5 +1,6 @@
 package controller;
 
+import com.panemu.tiwulfx.control.DetachableTabPane;
 import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.application.Platform;
@@ -76,10 +77,13 @@ public class SanimalViewController implements Initializable
 	public Button btnLogin;
 
 	@FXML
-	public TabPane tabPane;
+	public DetachableTabPane tabPane;
 
 	@FXML
 	public AnchorPane homePane;
+
+	@FXML
+	public StackPane primaryPane;
 
 	///
 	/// FXML Bound fields end
@@ -91,6 +95,7 @@ public class SanimalViewController implements Initializable
 	private final GaussianBlur backgroundBlur = new GaussianBlur();
 	// The validator used to validate the username and password (aka ensure they're not empty!)
 	private final ValidationSupport USER_PASS_VALIDATOR = new ValidationSupport();
+
 
 	private BooleanProperty loggingIn = new SimpleBooleanProperty(false);
 
@@ -144,37 +149,6 @@ public class SanimalViewController implements Initializable
 			if (!newValue)
 				SanimalData.getInstance().getSanimalPreferences().put(USERNAME_PREF, "");
 		});
-
-		// Code here taken from stackoverflow:
-		// https://stackoverflow.com/questions/24299724/switch-between-tabs-in-tabpane
-		this.tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
-			Node oldContent = oldTab.getContent();
-			Node newContent = newTab.getContent();
-
-			newTab.setContent(oldContent);
-			ScaleTransition fadeOut = new ScaleTransition(
-					Duration.seconds(0.25), oldContent);
-			fadeOut.setFromX(1);
-			fadeOut.setFromY(1);
-			fadeOut.setToX(0);
-			fadeOut.setToY(0);
-
-			ScaleTransition fadeIn = new ScaleTransition(
-					Duration.seconds(0.25), newContent);
-			fadeIn.setFromX(0);
-			fadeIn.setFromY(0);
-			fadeIn.setToX(1);
-			fadeIn.setToY(1);
-
-			fadeOut.setOnFinished(event -> {
-				newTab.setContent(newContent);
-			});
-
-			SequentialTransition crossFade = new SequentialTransition(
-					fadeOut, fadeIn);
-			crossFade.play();
-		});
-
 	}
 
 	/**
