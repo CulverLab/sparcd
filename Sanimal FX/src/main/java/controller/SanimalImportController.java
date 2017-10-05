@@ -264,7 +264,7 @@ public class SanimalImportController implements Initializable
 		// Setup the image tree cells so that when they get drag & dropped the species & locations can be tagged
 		this.imageTree.setCellFactory(x -> FXMLLoaderUtils.loadFXML("importView/ImageTreeCell.fxml").getController());
 
-		// When a new image is selected...
+		// When a new image is selected... we perform a bunch of actions below
 		MonadicBinding<ImageContainer> selectedImage = EasyBind.monadic(this.imageTree.getSelectionModel().selectedItemProperty()).map(TreeItem::getValue);
 		currentlySelectedImage.bind(selectedImage.map(imageContainer -> (imageContainer instanceof ImageEntry) ? (ImageEntry) imageContainer : null));
 		currentlySelectedDirectory.bind(selectedImage.map(imageContainer -> (imageContainer instanceof ImageDirectory) ? (ImageDirectory) imageContainer : null));
@@ -362,8 +362,6 @@ public class SanimalImportController implements Initializable
 				}
 			}
 		});
-
-
 
 		// Initialize the fade transitions
 
@@ -836,16 +834,21 @@ public class SanimalImportController implements Initializable
 	 */
 	public void timeShift(MouseEvent mouseEvent)
 	{
+		// Grab the first date in the image or image list
 		Date first = null;
+		// If we have an image selected, grab the date of that one image
 		if (this.currentlySelectedImage.getValue() != null)
 			first = this.currentlySelectedImage.getValue().getDateTaken();
+		// If we have a directory selected, grab the date taken of the first image
 		else if (this.currentlySelectedDirectory.getValue() != null)
 		{
+			// Grab the first image's date
 			Optional<ImageEntry> firstImage = this.currentlySelectedDirectory.getValue().flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).findFirst();
 			if (firstImage.isPresent())
 				first = firstImage.get().getDateTaken();
 		}
 
+		// If either a date from the directory or image was detected, process it
 		if (first != null)
 		{
 			// Load the FXML file of the editor window
@@ -868,14 +871,20 @@ public class SanimalImportController implements Initializable
 			dialogStage.setScene(scene);
 			dialogStage.showAndWait();
 
+			// Grab the new date from the dialog stage
 			Date newDate = controller.getDate();
+			// If a new date was created...
 			if (newDate != null)
 			{
+				// If just an image was selected, set the date taken of that specific image
 				if (this.currentlySelectedImage.getValue() != null)
 					this.currentlySelectedImage.getValue().setDateTaken(newDate);
+				// If a directory was selected...
 				else if (this.currentlySelectedDirectory.getValue() != null)
 				{
+					// Calculate the time between the first date and the newly created date
 					long timeBetween = ChronoUnit.MILLIS.between(first.toInstant(), newDate.toInstant());
+					// If the offset is non 0, offset the date of every image in the directory by the offset
 					if (timeBetween != 0)
 						this.currentlySelectedDirectory.getValue().flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).forEach(imageEntry -> {
 							imageEntry.setDateTaken(Date.from(imageEntry.getDateTaken().toInstant().plus(timeBetween, ChronoUnit.MILLIS)));

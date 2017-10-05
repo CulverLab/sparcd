@@ -44,6 +44,9 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * Controller class for the program main view
+ */
 public class SanimalViewController implements Initializable
 {
 	///
@@ -79,9 +82,11 @@ public class SanimalViewController implements Initializable
 	@FXML
 	public DetachableTabPane tabPane;
 
+	// A reference to the home screen
 	@FXML
 	public AnchorPane homePane;
 
+	// The primary background pane
 	@FXML
 	public StackPane primaryPane;
 
@@ -89,6 +94,7 @@ public class SanimalViewController implements Initializable
 	/// FXML Bound fields end
 	///
 
+	// The preference key which will just be "Username"
 	private static final String USERNAME_PREF = "username";
 
 	// Guassian blur is used to hide the other buttons before logging in
@@ -96,7 +102,7 @@ public class SanimalViewController implements Initializable
 	// The validator used to validate the username and password (aka ensure they're not empty!)
 	private final ValidationSupport USER_PASS_VALIDATOR = new ValidationSupport();
 
-
+	// Property used to detect if we are logging in or not
 	private BooleanProperty loggingIn = new SimpleBooleanProperty(false);
 
 	@Override
@@ -104,15 +110,6 @@ public class SanimalViewController implements Initializable
 	{
 		// Grab the logged in property
 		ReadOnlyBooleanProperty loggedIn = SanimalData.getInstance().loggedInProperty();
-
-		// When we log off, clear the username and password
-		loggedIn.addListener((observable, oldValue, newValue) -> {
-			if (oldValue && !newValue)
-			{
-				this.txtUsername.clear();
-				this.txtPassword.clear();
-			}
-		});
 
 		// Disable the main pane when not logged in
 		this.tabPane.disableProperty().bind(loggedIn.not());
@@ -134,9 +131,11 @@ public class SanimalViewController implements Initializable
 		this.USER_PASS_VALIDATOR.registerValidator(this.txtUsername, Validator.createEmptyValidator("Username cannot be empty!"));
 		this.USER_PASS_VALIDATOR.registerValidator(this.txtPassword, Validator.createEmptyValidator("Password cannot be empty!"));
 
-		String storedUsername = SanimalData.getInstance().getSanimalPreferences().get(USERNAME_PREF, "");
-
+		// Ensure that the tabs always cover the top of the screen
 		tabPane.tabMinWidthProperty().bind(tabPane.widthProperty().divide(tabPane.getTabs().size()).subtract(25));
+
+		// Grab the stored username if the user had 'remember username' selected
+		String storedUsername = SanimalData.getInstance().getSanimalPreferences().get(USERNAME_PREF, "");
 
 		// Load default username if it was stored
 		if (!storedUsername.isEmpty())
@@ -145,6 +144,7 @@ public class SanimalViewController implements Initializable
 			this.cbxRememberUsername.setSelected(true);
 		}
 
+		// If the user deselects the remember username box, remove the stored username
 		this.cbxRememberUsername.selectedProperty().addListener((observable, oldValue, newValue) -> {
 			if (!newValue)
 				SanimalData.getInstance().getSanimalPreferences().put(USERNAME_PREF, "");

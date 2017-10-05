@@ -21,6 +21,9 @@ import org.fxmisc.easybind.EasyBind;
 import java.net.URL;
 import java.util.*;
 
+/**
+ * Controller class for the upload page
+ */
 public class SanimalUploadController implements Initializable
 {
 	///
@@ -42,7 +45,7 @@ public class SanimalUploadController implements Initializable
 	// The actual tableview
 	@FXML
 	public TableView<Permission> tvwPermissions;
-	// All 5 columns
+	// All 3 columns
 	@FXML
 	public TableColumn<Permission, String> clmUser;
 	@FXML
@@ -50,6 +53,7 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public TableColumn<Permission, Boolean> clmOwner;
 
+	// Buttons to remove a user, save permissions, and add a new user
 	@FXML
 	public Button btnRemoveUser;
 	@FXML
@@ -57,6 +61,7 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public Button btnAddUser;
 
+	// The primary split pane
 	@FXML
 	public SplitPane mainSplitPane;
 
@@ -71,14 +76,17 @@ public class SanimalUploadController implements Initializable
 	// https://stackoverflow.com/questions/26312651/bidirectional-javafx-binding-is-destroyed-by-unrelated-code
 	private final List<Property> hardReferences = new ArrayList<>();
 
+	// Store an admin pane reference and the divider positions. This is used in removing and showing the admin pane
 	private Node adminPane;
 	private double[] splitPaneDividers;
 
+	// The currently selected image collection
 	private ObjectProperty<ImageCollection> selectedCollection = new SimpleObjectProperty<>();
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
+		// Store the admin pane reference
 		adminPane = this.mainSplitPane.getItems().get(1);
 
 		// First setup the collection list
@@ -107,22 +115,31 @@ public class SanimalUploadController implements Initializable
 		// We cache the property so that it does not get garbage collected early
 		this.tbxDescription.textProperty().bindBidirectional(cache(EasyBind.monadic(selectedCollection).selectProperty(ImageCollection::descriptionProperty)));
 
+		// Bind the permissions to the image collection's permissions
 		this.tvwPermissions.itemsProperty().bind(EasyBind.monadic(selectedCollection).map(ImageCollection::getPermissions));
 
+		// When we select a new collection...
 		this.selectedCollection.addListener((observable, oldValue, newValue) ->
 		{
+			// If it's not null...
 			if (newValue != null)
 			{
+				// Grab the permission for the currently logged in user
 				Optional<Permission> myPerms = newValue.getPermissions().stream().filter(permission -> permission.getUsername().equals(SanimalData.getInstance().getUsername())).findFirst();
 				myPerms.ifPresent(permission ->
 				{
+					// If the user is not the owner, hide admin functionality
 					if (!permission.isOwner())
 					{
+						// Store the divider positions
 						splitPaneDividers = this.mainSplitPane.getDividerPositions();
+						// Remove the admin pane
 						this.mainSplitPane.getItems().remove(adminPane);
 					}
+					// If the user is the owner, show the admin functionality if not already showing
 					else
 					{
+						// If the split pane does not have the admin pane yet, add it and update the divider positions
 						if (!this.mainSplitPane.getItems().contains(adminPane))
 						{
 							this.mainSplitPane.getItems().add(adminPane);
@@ -133,17 +150,20 @@ public class SanimalUploadController implements Initializable
 			}
 		});
 
+		// If no collection is selected, disable the text fields and buttons
 		BooleanBinding nothingSelected = selectedCollection.isNull();
 
 		this.txtName.disableProperty().bind(nothingSelected);
 		this.txtOrganization.disableProperty().bind(nothingSelected);
 		this.txtContactInfo.disableProperty().bind(nothingSelected);
 		this.tbxDescription.disableProperty().bind(nothingSelected);
-		this.txtContactInfo.setPromptText("Email and/or Phone Number preferred");
-		this.tbxDescription.setPromptText("Describe the project");
-
 		this.btnAddUser.disableProperty().bind(nothingSelected);
 		this.btnSave.disableProperty().bind(nothingSelected);
+
+		// Add prompt text to the contact info and description so that users know what the fields are for
+		this.txtContactInfo.setPromptText("Email and/or Phone Number preferred");
+		this.tbxDescription.setPromptText("Describe the project/collection");
+
 		// Disable this button when the selected permission is the owner
 		this.btnRemoveUser.disableProperty().bind(EasyBind.monadic(this.tvwPermissions.getSelectionModel().selectedItemProperty()).selectProperty(Permission::ownerProperty).orElse(nothingSelected));
 
@@ -154,6 +174,7 @@ public class SanimalUploadController implements Initializable
 		this.clmOwner.setCellValueFactory(param -> param.getValue().ownerProperty());
 		this.clmOwner.setCellFactory(param -> new CheckBoxTableCell<>());
 
+		// Upon double clicking an empty cell, add a new user
 		this.tvwPermissions.setRowFactory(table -> {
 			TableRow<Permission> row = new TableRow<>();
 			row.setOnMouseClicked(event -> {
@@ -164,35 +185,61 @@ public class SanimalUploadController implements Initializable
 			return row;
 		});
 
+		// Ensure that the table view is editable
 		this.tvwPermissions.setEditable(true);
 	}
 
+	/**
+	 * This is purely used so that the action listeners are not garbage collected early
+	 *
+	 * @param reference The reference to cache
+	 * @param <T> The type of the property, can be anything
+	 * @return Returns the property passed in purely for convenience
+	 */
 	private <T> Property<T> cache(Property<T> reference)
 	{
+		// Add the reference and return it
 		this.hardReferences.add(reference);
 		return reference;
 	}
 
+	/**
+	 * When we click the new collection button
+	 *
+	 * @param actionEvent
+	 */
 	public void newCollectionPressed(ActionEvent actionEvent)
 	{
+		// Create the collection
 		ImageCollection collection = new ImageCollection();
+		// Create permissions for the owner
 		Permission owner = new Permission();
+		// Ensure that the owner has own permissions and then add it to the collection
 		owner.setUsername(SanimalData.getInstance().usernameProperty().getValue());
 		owner.setUpload(true);
 		owner.setOwner(true);
 		collection.getPermissions().add(owner);
+		// Add the collection to the global collection list
 		SanimalData.getInstance().getCollectionList().add(collection);
 	}
 
+	/**
+	 * When we click the delete collection button
+	 *
+	 * @param actionEvent
+	 */
 	public void deleteCollectionPressed(ActionEvent actionEvent)
 	{
+		// Grab the selected collection
 		ImageCollection selected = this.collectionListView.getSelectionModel().getSelectedItem();
 		if (selected != null)
 		{
+			// Remove the selected collection
 			SanimalData.getInstance().getCollectionList().remove(selected);
 		}
 		else
 		{
+			// If no collection is selected, show an alert
 			Alert alert = new Alert(Alert.AlertType.WARNING);
 			alert.initOwner(this.collectionListView.getScene().getWindow());
 			alert.setTitle("No Selection");
@@ -202,21 +249,35 @@ public class SanimalUploadController implements Initializable
 		}
 	}
 
+	/**
+	 * When we click the add new user button
+	 *
+	 * @param actionEvent
+	 */
 	public void addNewUser(ActionEvent actionEvent)
 	{
+		// Just create a new user with permissions
 		createUser();
 		actionEvent.consume();
 	}
 
+	/**
+	 * Creates a new user without a name and no permissions
+	 */
 	private void createUser()
 	{
+		// Create the permission
 		Permission permission = new Permission();
-		permission.setUpload(false);
-		permission.setOwner(false);
-		permission.setUsername("Unnamed");
-		this.selectedCollection.getValue().getPermissions().add(permission);
+		// If the selected collection is not null, add it to the collection
+		if (this.selectedCollection.getValue() != null)
+			this.selectedCollection.getValue().getPermissions().add(permission);
 	}
 
+	/**
+	 * Revokes permission from a given user
+	 *
+	 * @param actionEvent
+	 */
 	public void removeCurrentUser(ActionEvent actionEvent)
 	{
 		// Grab the selected permission
@@ -240,6 +301,10 @@ public class SanimalUploadController implements Initializable
 		actionEvent.consume();
 	}
 
+	/**
+	 * Temporary, pushes changes to CyVerse. Not to actually be used on release
+	 * @param actionEvent
+	 */
 	public void savePermissions(ActionEvent actionEvent)
 	{
 		SanimalData.getInstance().getConnectionManager().pushLocalCollections(SanimalData.getInstance().getCollectionList());

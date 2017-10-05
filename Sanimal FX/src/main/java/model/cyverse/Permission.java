@@ -7,7 +7,7 @@ import javafx.beans.property.StringProperty;
 
 public class Permission
 {
-	private StringProperty usernameProperty = new SimpleStringProperty("");
+	private StringProperty usernameProperty = new SimpleStringProperty("Unnamed");
 	private BooleanProperty uploadProperty = new SimpleBooleanProperty(false);
 	private BooleanProperty ownerProperty = new SimpleBooleanProperty(false);
 

@@ -73,56 +73,37 @@ public class SanimalMapController implements Initializable
 			// Initialize the google map
 			this.googleMap = this.googleMapView.createMap(mapOptions);
 
+			// When the location list changes, we put the locations onto the map display
 			SanimalData.getInstance().getLocationList().addListener((ListChangeListener<Location>) c -> {
+				// Iterate over changes
 				while (c.next())
 				{
+					// If the item was updated
 					if (c.wasUpdated())
 					{
+						// Loop over updated items
 						for (int i = c.getFrom(); i < c.getTo(); ++i)
 						{
+							// Get the updated location
 							Location changed = c.getList().get(i);
-							if (locationMarkers.containsKey(changed))
-							{
-								Marker marker = locationMarkers.get(changed);
-								marker.setOptions(new MarkerOptions()
-									.title(changed.getName())
-									.position(new LatLong(changed.getLat(), changed.getLng())));
-								InfoWindowOptions infoWindowOptions = new InfoWindowOptions()
-										.content(changed.getName())
-										.position(new LatLong(changed.getLat(), changed.getLng()));
-								InfoWindow infoWindow = new InfoWindow(infoWindowOptions);
-								this.googleMap.addUIEventHandler(marker, UIEventType.click, (JSObject obj) -> {
-									infoWindow.open(googleMap, marker);
-								});
-							}
+							// This also removes the old marker!
+							this.addMarkerForLocation(changed);
 						}
 					}
+					// If the item was removed
 					else if (c.wasRemoved())
 					{
+						// Remove each of the removed location's markers from the map
 						c.getRemoved().forEach(removedLoc -> {
 							if (locationMarkers.containsKey(removedLoc))
 								this.googleMap.removeMarker(locationMarkers.remove(removedLoc));
 						});
 					}
+					// If the item was added
 					else if (c.wasAdded())
 					{
-						c.getAddedSubList().forEach(addedLoc -> {
-							if (locationMarkers.containsKey(addedLoc))
-								this.googleMap.removeMarker(locationMarkers.remove(addedLoc));
-							MarkerOptions options = new MarkerOptions()
-									.title(addedLoc.getName())
-									.position(new LatLong(addedLoc.getLat(), addedLoc.getLng()));
-							Marker marker = new Marker(options);
-							this.googleMap.addMarker(marker);
-							InfoWindowOptions infoWindowOptions = new InfoWindowOptions()
-									.content(addedLoc.getName())
-									.position(new LatLong(addedLoc.getLat(), addedLoc.getLng()));
-							InfoWindow infoWindow = new InfoWindow(infoWindowOptions);
-							this.googleMap.addUIEventHandler(marker, UIEventType.click, (JSObject obj) -> {
-								infoWindow.open(googleMap, marker);
-							});
-							locationMarkers.put(addedLoc, marker);
-						});
+						// Add a marker for each new location element
+						c.getAddedSubList().forEach(this::addMarkerForLocation);
 					}
 				}
 			});
@@ -158,5 +139,35 @@ public class SanimalMapController implements Initializable
 
 			*/
 		});
+	}
+
+	/**
+	 * Removes the current marker for the location if it exists, and adds a new one
+	 *
+	 * @param location The location to add/update a marker for
+	 */
+	private void addMarkerForLocation(Location location)
+	{
+		// If we already have a marker for the location, remove it
+		if (locationMarkers.containsKey(location))
+			this.googleMap.removeMarker(locationMarkers.remove(location));
+		// Create the marker options which defines the title and position
+		MarkerOptions options = new MarkerOptions()
+				.title(location.getName())
+				.position(new LatLong(location.getLat(), location.getLng()));
+		Marker marker = new Marker(options);
+		// Add a marker to the map
+		this.googleMap.addMarker(marker);
+		// Create an info window that shows the location details when opened
+		InfoWindowOptions infoWindowOptions = new InfoWindowOptions()
+				.content(location.getName())
+				.position(new LatLong(location.getLat(), location.getLng()));
+		InfoWindow infoWindow = new InfoWindow(infoWindowOptions);
+		// When we click the map marker, open the info window
+		this.googleMap.addUIEventHandler(marker, UIEventType.click, (JSObject obj) -> {
+			infoWindow.open(googleMap, marker);
+		});
+		// Add the marker reference to the map
+		locationMarkers.put(location, marker);
 	}
 }

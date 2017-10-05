@@ -12,15 +12,20 @@ import model.species.Species;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * Controller class for the image collection list
+ */
 public class ImageCollectionListEntry extends ListCell<ImageCollection>
 {
 	///
 	/// FXML Bound Fields Start
 	///
 
+	// The main background pane
 	@FXML
 	public HBox mainPane;
 
+	// The labels for the collection pieces
 	@FXML
 	public Label lblCollectionName;
 	@FXML
@@ -38,7 +43,6 @@ public class ImageCollectionListEntry extends ListCell<ImageCollection>
 	@FXML
 	public void initialize()
 	{
-
 	}
 
 	/**

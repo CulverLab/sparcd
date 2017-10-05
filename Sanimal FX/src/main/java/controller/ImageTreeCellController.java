@@ -20,7 +20,9 @@ import java.util.Optional;
 
 import static model.constant.SanimalDataFormats.*;
 
-
+/**
+ * Controller class for the image tree cells
+ */
 public class ImageTreeCellController extends TreeCell<ImageContainer>
 {
 	///

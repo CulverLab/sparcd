@@ -6,11 +6,17 @@ import org.irods.jargon.core.pub.*;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.transfer.TransferControlBlock;
 
+/**
+ * Class used to singleton-ize the Access object factor class and avoids allocating extra memory
+ */
 public class CyVerseAOs
 {
+	// The access object factory object we want to optimize
 	private final IRODSAccessObjectFactory ao;
+	// The account that is logged in
 	private final IRODSAccount account;
 
+	// All access object references that we "singletonize"
 	private final UserAO userAO;
 	private final EnvironmentalInfoAO environmentalInfoAO;
 	private final IRODSGenQueryExecutor genQueryExecutor;
@@ -38,11 +44,19 @@ public class CyVerseAOs
 	private final ResourceGroupAO resourceGroupAO;
 	private final SpecificQueryAO specificQueryAO;
 
+	/**
+	 * The constructor takes an access object factory and the logged in account
+	 *
+	 * @param ao The access object factory
+	 * @param account The logged in a account
+	 * @throws JargonException This gets throw if anything goes wrong in creating the access objects
+	 */
 	public CyVerseAOs(IRODSAccessObjectFactory ao, IRODSAccount account) throws JargonException
 	{
 		this.ao = ao;
 		this.account = account;
 
+		// Initialize all the access objects
 		this.userAO = ao.getUserAO(account);
 		this.environmentalInfoAO = ao.getEnvironmentalInfoAO(account);
 		this.genQueryExecutor = ao.getIRODSGenQueryExecutor(account);
@@ -130,93 +144,109 @@ public class CyVerseAOs
 		return userGroupAO;
 	}
 
-	// Modifies permissions of collections, not sure what this does
+	// Modifies permissions of collections (aka folders)
 	public CollectionAO getCollectionAO()
 	{
 		return collectionAO;
 	}
 
-	//
+	// Modifies permissions of data objects (aka files)
 	public DataObjectAO getDataObjectAO()
 	{
 		return dataObjectAO;
 	}
 
+	// Performs queries of collections and data objects and returns permissions
 	public CollectionAndDataObjectListAndSearchAO getCollectionAndDataObjectListAndSearchAO()
 	{
 		return collectionAndDataObjectListAndSearchAO;
 	}
 
+	// Not sure what this does
 	public RuleProcessingAO getRuleProcessingAO()
 	{
 		return ruleProcessingAO;
 	}
 
+	// Used to send and receive files from CyVerse
 	public DataTransferOperations getDataTransferOperations()
 	{
 		return dataTransferOperations;
 	}
 
+	// Used to execute commands on the remote server
 	public RemoteExecutionOfCommandsAO getRemoteExecutionOfCommandsAO()
 	{
 		return remoteExecutionOfCommandsAO;
 	}
 
+	// Used to automatically tar files and upload them to irods for maximum upload performance
 	public BulkFileOperationsAO getBulkFileOperationsAO()
 	{
 		return bulkFileOperationsAO;
 	}
 
+	// Used to get a user's quota, only available to admins though :/
 	public QuotaAO getQuotaAO()
 	{
 		return quotaAO;
 	}
 
+	// Used to execute queries against the database, however this is mostly used by the other function calls
 	public SimpleQueryExecutorAO getSimpleQueryExecutorAO()
 	{
 		return simpleQueryExecutorAO;
 	}
 
+	// Used to open streams on the remote server and read from files
 	public Stream2StreamAO getStream2StreamAO()
 	{
 		return stream2StreamAO;
 	}
 
+	// The properties on the remote irods system
 	public JargonProperties getJargonProperties()
 	{
 		return jargonProperties;
 	}
 
+	// No idea what this is for
 	public DataObjectAuditAO getDataObjectAuditAO()
 	{
 		return dataObjectAuditAO;
 	}
 
+	// No idea what this is for
 	public CollectionAuditAO getCollectionAuditAO()
 	{
 		return collectionAuditAO;
 	}
 
+	// This allows for mounting a data collection (folder) locally on the system
 	public MountedCollectionAO getMountedCollectionAO()
 	{
 		return mountedCollectionAO;
 	}
 
+	// No idea what this is for
 	public IRODSRegistrationOfFilesAO getRegistrationOfFilesAO()
 	{
 		return registrationOfFilesAO;
 	}
 
+	// This is used to block the transfer of files to or from the irods system
 	public TransferControlBlock getTransferControlBlock()
 	{
 		return transferControlBlock;
 	}
 
+	// Not sure what this is for
 	public ResourceGroupAO getResourceGroupAO()
 	{
 		return resourceGroupAO;
 	}
 
+	// Not sure what this is for
 	public SpecificQueryAO getSpecificQueryAO()
 	{
 		return specificQueryAO;

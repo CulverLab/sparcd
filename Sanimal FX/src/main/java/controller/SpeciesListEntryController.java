@@ -82,6 +82,8 @@ public class SpeciesListEntryController extends ListCell<Species>
                 event.consume();
             }
         });
+
+        // When the keybind loses focus, and no key is pressed, we're not awaiting a keybind anymore so reset the label
         this.btnKeybind.focusedProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue && this.awaitingKeybind.getValue())
             {
@@ -105,6 +107,7 @@ public class SpeciesListEntryController extends ListCell<Species>
             }
         });
 
+        // When we click preview, set the image preview
         this.btnPreview.setOnAction(event ->
         {
             if (this.currentImagePreview != null)

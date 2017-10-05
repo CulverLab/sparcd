@@ -11,16 +11,28 @@ import javafx.collections.ObservableList;
 
 import java.util.UUID;
 
+/**
+ * The image collection class represents a collection of photos on CyVerse
+ */
 public class ImageCollection
 {
+	// The collection name, does not need to be unique
 	private StringProperty nameProperty = new SimpleStringProperty("");
+	// The organization that owns the collection
 	private StringProperty organizationProperty = new SimpleStringProperty("");
+	// The contact info of the owner of the collection
 	private StringProperty contactInfoProperty = new SimpleStringProperty("");
+	// The description of the collection used to display collection purpose
 	private StringProperty descriptionProperty = new SimpleStringProperty("");
+	// A list containing permissions of this collection
 	private ObservableList<Permission> permissions = FXCollections.observableArrayList(permission -> new Observable[] { permission.usernameProperty(), permission.uploadProperty(), permission.ownerProperty()});
+	// The unique identifier for the collection
 	private ObjectProperty<UUID> idProperty = new SimpleObjectProperty<>(UUID.randomUUID());
 
 
+	/**
+	 * Constructs a new image collection with a default name
+	 */
 	public ImageCollection()
 	{
 		this.setName("Untitled");
@@ -31,16 +43,21 @@ public class ImageCollection
 		this.permissions.addListener((ListChangeListener<Permission>) change -> {
 			while (change.next())
 			{
+				// If the permission was updated, perform the checks
 				if (change.wasUpdated())
 				{
 					for (int i = change.getFrom(); i < change.getTo(); i++)
 					{
+						// Grab the updated permission
 						Permission updated = change.getList().get(i);
+						// Check to see if the new permission does not have owner set
 						if (!updated.isOwner())
 						{
+							// If not, test to ensure that this was not the only owner
 							boolean noOwner = change.getList().filtered(Permission::isOwner).isEmpty();
 							if (noOwner)
 								updated.setOwner(true);
+						// If the new user is the owner, then ensure no one else has owner permissions
 						} else if (updated.isOwner())
 							change.getList().filtered(perm -> !perm.equals(updated)).forEach(perm -> perm.setOwner(false));
 					}
@@ -48,6 +65,10 @@ public class ImageCollection
 			}
 		});
 	}
+
+	///
+	/// Getters/Setters
+	///
 
 	public void setName(String name)
 	{

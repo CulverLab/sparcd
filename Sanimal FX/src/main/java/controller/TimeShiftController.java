@@ -19,12 +19,16 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.ResourceBundle;
 
+/**
+ * Controller class for the time shift window
+ */
 public class TimeShiftController implements Initializable
 {
 	///
 	/// FXML Bound fields start
 	///
 
+	// Spinners for offsets for the following units: year, month, day, hour, minute, and second
 	@FXML
 	public Spinner<Integer> spnYear;
 	@FXML
@@ -38,14 +42,17 @@ public class TimeShiftController implements Initializable
 	@FXML
 	public Spinner<Integer> spnSecond;
 
+	// The label for date on the top
 	@FXML
 	public Label lblDate;
 
+	// Buttons for swapping date format from 12 hour to 24 hour
 	@FXML
 	public ToggleButton tbn12Hr;
 	@FXML
 	public ToggleButton tbn24Hr;
 
+	// Buttons for swapping date format from day-month vs month-day
 	@FXML
 	public ToggleButton tbnDayMonthYear;
 	@FXML
@@ -55,13 +62,23 @@ public class TimeShiftController implements Initializable
 	/// FXML Bound fields end
 	///
 
+	// The original calendar, this should never be modified after assigned
 	private Calendar original = Calendar.getInstance();
+	// This is the edited date, which updates whenever the spinners chnage
 	private Calendar dateToEdit = Calendar.getInstance();
+	// Default date format is day month year 24hour:minute:seconds
 	private DateFormat dateFormat = new SimpleDateFormat("dd MMMMM yyyy HH:mm:ss");
 
+	/**
+	 * Used to initialize the UI
+	 *
+	 * @param location ignored
+	 * @param resources ignored
+	 */
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
+		// The spinners can have the full range of integers
 		this.spnYear.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE, Integer.MAX_VALUE, 0));
 		this.spnMonth.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE, Integer.MAX_VALUE, 0));
 		this.spnDay.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE, Integer.MAX_VALUE, 0));
@@ -69,6 +86,7 @@ public class TimeShiftController implements Initializable
 		this.spnMinute.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE, Integer.MAX_VALUE, 0));
 		this.spnSecond.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(Integer.MIN_VALUE, Integer.MAX_VALUE, 0));
 
+		// When any of the spinners change, we recalculate the date labels
 		EasyBind.subscribe(this.spnYear.valueProperty(), this::updateDate);
 		EasyBind.subscribe(this.spnMonth.valueProperty(), this::updateDate);
 		EasyBind.subscribe(this.spnDay.valueProperty(), this::updateDate);
@@ -76,6 +94,7 @@ public class TimeShiftController implements Initializable
 		EasyBind.subscribe(this.spnMinute.valueProperty(), this::updateDate);
 		EasyBind.subscribe(this.spnSecond.valueProperty(), this::updateDate);
 
+		// When we select a new time or date format, we update the date labels too
 		this.tbn12Hr.selectedProperty().addListener((observable, oldValue, newValue) -> this.refreshDateFormat());
 		this.tbn24Hr.selectedProperty().addListener((observable, oldValue, newValue) -> this.refreshDateFormat());
 		this.tbnDayMonthYear.selectedProperty().addListener((observable, oldValue, newValue) -> this.refreshDateFormat());
@@ -89,6 +108,11 @@ public class TimeShiftController implements Initializable
 		ToggleButtonSelector.makeUnselectable(this.tbnMonthDayYear);
 	}
 
+	/**
+	 * Takes the original date and calculates the new date based on the spinner positions
+	 *
+	 * @param ignored
+	 */
 	private void updateDate(Integer ignored)
 	{
 		this.dateToEdit.setTime(this.original.getTime());
@@ -102,17 +126,28 @@ public class TimeShiftController implements Initializable
 		this.refreshLabel();
 	}
 
+	/**
+	 * Re-calculates the date format based on the state of the toggle buttons and refreshes the label
+	 */
 	private void refreshDateFormat()
 	{
 		this.dateFormat = new SimpleDateFormat(String.format("%s yyyy %s", this.tbnDayMonthYear.isSelected() ? "dd MMMMM" : "MMMMM dd", this.tbn12Hr.isSelected() ? "hh:mm:ss aa" : "HH:mm:ss"));
 		this.refreshLabel();
 	}
 
+	/**
+	 * Sets the date label to be the original date + the recalculated date
+	 */
 	private void refreshLabel()
 	{
 		this.lblDate.setText(dateFormat.format(this.original.getTime()) + " -> " + dateFormat.format(this.dateToEdit.getTime()));
 	}
 
+	/**
+	 * This should be called once, sets the original date and updates the label
+	 *
+	 * @param date The original date to be edited
+	 */
 	public void setDate(Date date)
 	{
 		this.original.setTime((Date) date.clone());
@@ -120,16 +155,30 @@ public class TimeShiftController implements Initializable
 		this.refreshLabel();
 	}
 
+	/**
+	 * Getter for the modified date
+	 *
+	 * @return The new date
+	 */
 	public Date getDate()
 	{
 		return this.dateToEdit.getTime();
 	}
 
+	/**
+	 * When confirm is pressed, we close the window
+	 *
+	 * @param mouseEvent
+	 */
 	public void confirmPressed(MouseEvent mouseEvent)
 	{
 		((Stage) this.tbn12Hr.getScene().getWindow()).close();
 	}
 
+	/**
+	 * When cancel is pressed, we set the new date to be the original date, and then close the window
+	 * @param mouseEvent
+	 */
 	public void cancelPressed(MouseEvent mouseEvent)
 	{
 		this.dateToEdit = original;

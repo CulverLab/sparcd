@@ -81,6 +81,7 @@ public class LocationCreatorController implements Initializable
 	@FXML
 	public TextField txtNorthing;
 
+	// The toggle buttons for meters and feet
 	@FXML
 	public ToggleButton tbnMeters;
 	@FXML
@@ -196,12 +197,14 @@ public class LocationCreatorController implements Initializable
 										.then(this.latLngValidator.invalidProperty())
 										.otherwise(this.UTMValidator.invalidProperty())));
 
+		// When we select the meters button, we convert the existing elevation to meters
 		this.tbnMeters.selectedProperty().addListener((observable, oldValue, newValue) -> {
 			if (!oldValue && newValue)
 				if (this.isValidDouble(this.txtElevation.getText()))
 					this.txtElevation.setText(RoundingUtils.round(Double.parseDouble(this.txtElevation.getText()) * FEET_TO_METERS, 1) + "");
 		});
 
+		// When we select the feet button, we convert the existing elevation to feet
 		this.tbnFeet.selectedProperty().addListener((observable, oldValue, newValue) -> {
 			if (!oldValue && newValue)
 				if (this.isValidDouble(this.txtElevation.getText()))
