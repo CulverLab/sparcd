@@ -8,25 +8,43 @@ import javafx.beans.property.StringProperty;
 public class Permission
 {
 	private StringProperty usernameProperty = new SimpleStringProperty("Unnamed");
+	private BooleanProperty readProperty = new SimpleBooleanProperty(false);
 	private BooleanProperty uploadProperty = new SimpleBooleanProperty(false);
 	private BooleanProperty ownerProperty = new SimpleBooleanProperty(false);
 
 	public Permission()
 	{
+		this.usernameProperty.addListener((observable, oldValue, newValue) -> System.out.println("User: " + newValue));
+		this.readProperty.addListener((observable, oldValue, newValue) -> System.out.println("Read: " + newValue));
+		this.uploadProperty.addListener((observable, oldValue, newValue) -> System.out.println("Upload: " + newValue));
+		this.ownerProperty.addListener((observable, oldValue, newValue) -> System.out.println("Owner: " + newValue));
+
+
+		/*
+
 		// If owner is set, also set the rest of the properties to true
 		this.ownerProperty.addListener((observable, oldValue, newValue) -> {
 			if (newValue)
 			{
 				// Bound values can't be set!
 				this.setUpload(true);
+				this.setRead(true);
 			}
 		});
-
 		// If the owner property is set and we try to disable any of the other properties, ignore the change
 		this.uploadProperty.addListener((observable, oldValue, newValue) -> {
 			if (!newValue && this.ownerProperty.getValue())
-				this.uploadProperty.setValue(true);
+				this.setUpload(true);
+			else if (newValue)
+				this.setRead(true);
 		});
+
+		// If the owner property is set and we try to disable any of the other properties, ignore the change
+		this.readProperty.addListener((observable, oldValue, newValue) -> {
+			if (!newValue && this.ownerProperty.getValue())
+				this.setRead(true);
+		});
+		*/
 	}
 
 	public void setUsername(String username)
@@ -59,6 +77,21 @@ public class Permission
 		return this.uploadProperty;
 	}
 
+	public void setRead(boolean read)
+	{
+		this.readProperty.setValue(read);
+	}
+
+	public boolean canRead()
+	{
+		return this.readProperty.getValue();
+	}
+
+	public BooleanProperty readProperty()
+	{
+		return readProperty;
+	}
+
 	public void setOwner(boolean owner)
 	{
 		this.ownerProperty.setValue(owner);
@@ -77,6 +110,6 @@ public class Permission
 	@Override
 	public String toString()
 	{
-		return "Permission for " + this.getUsername() + ", Owner: " + this.isOwner() + ", Can upload: " + this.canUpload();
+		return "Permission for " + this.getUsername() + ", Owner: " + this.isOwner() + ", Can upload: " + this.canUpload() + ", Can Read: " + this.canRead();
 	}
 }

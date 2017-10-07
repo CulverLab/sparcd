@@ -1,5 +1,6 @@
 package model.cyverse;
 
+import com.google.gson.annotations.Expose;
 import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -25,7 +26,8 @@ public class ImageCollection
 	// The description of the collection used to display collection purpose
 	private StringProperty descriptionProperty = new SimpleStringProperty("");
 	// A list containing permissions of this collection
-	private ObservableList<Permission> permissions = FXCollections.observableArrayList(permission -> new Observable[] { permission.usernameProperty(), permission.uploadProperty(), permission.ownerProperty()});
+	// We don't serialize it when converting to JSON sicne we want to keep this field transient
+	private transient ObservableList<Permission> permissions = FXCollections.observableArrayList(permission -> new Observable[] { permission.usernameProperty(), permission.readProperty(), permission.uploadProperty(), permission.ownerProperty()});
 	// The unique identifier for the collection
 	private ObjectProperty<UUID> idProperty = new SimpleObjectProperty<>(UUID.randomUUID());
 
@@ -37,6 +39,8 @@ public class ImageCollection
 	{
 		this.setName("Untitled");
 		this.setOrganization("None");
+
+		/*
 
 		// When the permission list changes we perform checks to ensure that the list is in a valid state
 		// When the collection changes
@@ -50,6 +54,7 @@ public class ImageCollection
 					{
 						// Grab the updated permission
 						Permission updated = change.getList().get(i);
+
 						// Check to see if the new permission does not have owner set
 						if (!updated.isOwner())
 						{
@@ -64,6 +69,8 @@ public class ImageCollection
 				}
 			}
 		});
+
+		*/
 	}
 
 	///

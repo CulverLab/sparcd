@@ -12,6 +12,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.util.converter.DefaultStringConverter;
 import library.EditCell;
+import library.TableColumnHeaderUtil;
 import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
@@ -45,9 +46,11 @@ public class SanimalUploadController implements Initializable
 	// The actual tableview
 	@FXML
 	public TableView<Permission> tvwPermissions;
-	// All 3 columns
+	// All 4 columns
 	@FXML
 	public TableColumn<Permission, String> clmUser;
+	@FXML
+	public TableColumn<Permission, Boolean> clmRead;
 	@FXML
 	public TableColumn<Permission, Boolean> clmUpload;
 	@FXML
@@ -60,6 +63,9 @@ public class SanimalUploadController implements Initializable
 	public Button btnSave;
 	@FXML
 	public Button btnAddUser;
+
+	@FXML
+	public Button btnTransferOwnership;
 
 	// The primary split pane
 	@FXML
@@ -75,6 +81,8 @@ public class SanimalUploadController implements Initializable
 	// https://stackoverflow.com/questions/14558266/clean-javafx-property-listeners-and-bindings-memory-leaks
 	// https://stackoverflow.com/questions/26312651/bidirectional-javafx-binding-is-destroyed-by-unrelated-code
 	private final List<Property> hardReferences = new ArrayList<>();
+
+
 
 	// Store an admin pane reference and the divider positions. This is used in removing and showing the admin pane
 	private Node adminPane;
@@ -159,6 +167,7 @@ public class SanimalUploadController implements Initializable
 		this.tbxDescription.disableProperty().bind(nothingSelected);
 		this.btnAddUser.disableProperty().bind(nothingSelected);
 		this.btnSave.disableProperty().bind(nothingSelected);
+		this.btnTransferOwnership.disableProperty().bind(nothingSelected);
 
 		// Add prompt text to the contact info and description so that users know what the fields are for
 		this.txtContactInfo.setPromptText("Email and/or Phone Number preferred");
@@ -169,10 +178,14 @@ public class SanimalUploadController implements Initializable
 
 		this.clmUser.setCellValueFactory(param -> param.getValue().usernameProperty());
 		this.clmUser.setCellFactory(x -> new EditCell<>(new DefaultStringConverter()));
+		this.clmRead.setCellValueFactory(param -> param.getValue().readProperty());
+		this.clmRead.setCellFactory(param -> new CheckBoxTableCell<>());
 		this.clmUpload.setCellValueFactory(param -> param.getValue().uploadProperty());
 		this.clmUpload.setCellFactory(param -> new CheckBoxTableCell<>());
 		this.clmOwner.setCellValueFactory(param -> param.getValue().ownerProperty());
 		this.clmOwner.setCellFactory(param -> new CheckBoxTableCell<>());
+		TableColumnHeaderUtil.makeHeaderWrappable(this.clmOwner);
+		this.clmOwner.setEditable(false);
 
 		// Upon double clicking an empty cell, add a new user
 		this.tvwPermissions.setRowFactory(table -> {
@@ -216,6 +229,7 @@ public class SanimalUploadController implements Initializable
 		Permission owner = new Permission();
 		// Ensure that the owner has own permissions and then add it to the collection
 		owner.setUsername(SanimalData.getInstance().usernameProperty().getValue());
+		owner.setRead(true);
 		owner.setUpload(true);
 		owner.setOwner(true);
 		collection.getPermissions().add(owner);
@@ -308,5 +322,50 @@ public class SanimalUploadController implements Initializable
 	public void savePermissions(ActionEvent actionEvent)
 	{
 		SanimalData.getInstance().getConnectionManager().pushLocalCollections(SanimalData.getInstance().getCollectionList());
+	}
+
+	/**
+	 * Transfers ownership from one user to another
+	 *
+	 * @param actionEvent
+	 */
+	public void transferOwnership(ActionEvent actionEvent)
+	{
+		TextInputDialog input = new TextInputDialog();
+		input.setTitle("Transfer Ownership");
+		input.setContentText("Enter the username of the user to transfer ownership to");
+
+		Alert alert = new Alert(Alert.AlertType.WARNING);
+		alert.setTitle("Invalid User");
+		alert.setHeaderText("Username entered invalid");
+		alert.setContentText("The username you entered was not found on the CyVerse system, please try again...");
+
+		String newOwner;
+		Boolean gotValidUsername = false;
+		while (!gotValidUsername)
+		{
+			Optional<String> inputValue = input.showAndWait();
+			if (inputValue.isPresent())
+			{
+				newOwner = inputValue.get();
+				gotValidUsername = SanimalData.getInstance().getConnectionManager().isValidUsername(newOwner);
+				if (!gotValidUsername)
+					alert.showAndWait();
+			}
+			else
+				return;
+		}
+
+		Alert transferConfirmation = new Alert(Alert.AlertType.CONFIRMATION);
+		transferConfirmation.setTitle("Transfer Confirmation");
+		transferConfirmation.setHeaderText("Continue finalizing transfer?");
+		transferConfirmation.setContentText("Once the owner has been set, you will no longer be able to edit collection permissions, description, title, or any other settings. Are you sure you want to continue?");
+		Optional<ButtonType> buttonTypeSelected = transferConfirmation.showAndWait();
+		buttonTypeSelected.ifPresent(buttonType -> {
+			if (buttonType == ButtonType.OK)
+			{
+
+			}
+		});
 	}
 }
