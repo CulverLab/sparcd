@@ -39,38 +39,6 @@ public class ImageCollection
 	{
 		this.setName("Untitled");
 		this.setOrganization("None");
-
-		/*
-
-		// When the permission list changes we perform checks to ensure that the list is in a valid state
-		// When the collection changes
-		this.permissions.addListener((ListChangeListener<Permission>) change -> {
-			while (change.next())
-			{
-				// If the permission was updated, perform the checks
-				if (change.wasUpdated())
-				{
-					for (int i = change.getFrom(); i < change.getTo(); i++)
-					{
-						// Grab the updated permission
-						Permission updated = change.getList().get(i);
-
-						// Check to see if the new permission does not have owner set
-						if (!updated.isOwner())
-						{
-							// If not, test to ensure that this was not the only owner
-							boolean noOwner = change.getList().filtered(Permission::isOwner).isEmpty();
-							if (noOwner)
-								updated.setOwner(true);
-						// If the new user is the owner, then ensure no one else has owner permissions
-						} else if (updated.isOwner())
-							change.getList().filtered(perm -> !perm.equals(updated)).forEach(perm -> perm.setOwner(false));
-					}
-				}
-			}
-		});
-
-		*/
 	}
 
 	///

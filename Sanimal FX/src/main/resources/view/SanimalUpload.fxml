@@ -53,7 +53,7 @@
                     <TextField fx:id="txtOrganization" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                     <Label text="Contact Info: " GridPane.rowIndex="2"/>
                     <TextField fx:id="txtContactInfo" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-                    <Label text="Desciption: " GridPane.rowIndex="3"/>
+                    <Label text="Description: " GridPane.rowIndex="3"/>
                     <TextArea fx:id="tbxDescription" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
                 </children>
             </GridPane>

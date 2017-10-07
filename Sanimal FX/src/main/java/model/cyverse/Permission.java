@@ -14,23 +14,15 @@ public class Permission
 
 	public Permission()
 	{
-		this.usernameProperty.addListener((observable, oldValue, newValue) -> System.out.println("User: " + newValue));
-		this.readProperty.addListener((observable, oldValue, newValue) -> System.out.println("Read: " + newValue));
-		this.uploadProperty.addListener((observable, oldValue, newValue) -> System.out.println("Upload: " + newValue));
-		this.ownerProperty.addListener((observable, oldValue, newValue) -> System.out.println("Owner: " + newValue));
+		this.initListeners();
+	}
 
-
-		/*
-
-		// If owner is set, also set the rest of the properties to true
-		this.ownerProperty.addListener((observable, oldValue, newValue) -> {
-			if (newValue)
-			{
-				// Bound values can't be set!
-				this.setUpload(true);
-				this.setRead(true);
-			}
-		});
+	/**
+	 * When we deserialize this class the properties get wiped and listeners/bindings are lost. To avoid this, we call this method on each permission after the
+	 * deserialization
+	 */
+	public void initListeners()
+	{
 		// If the owner property is set and we try to disable any of the other properties, ignore the change
 		this.uploadProperty.addListener((observable, oldValue, newValue) -> {
 			if (!newValue && this.ownerProperty.getValue())
@@ -44,7 +36,6 @@ public class Permission
 			if (!newValue && this.ownerProperty.getValue())
 				this.setRead(true);
 		});
-		*/
 	}
 
 	public void setUsername(String username)

@@ -320,6 +320,8 @@ public class CyVerseConnectionManager
 										List<Permission> permissions = SanimalData.getInstance().getGson().fromJson(permissionsJSON, PERMISSION_LIST_TYPE);
 										if (permissions != null && imageCollection != null)
 										{
+											// We need to initialize the internal listeners because the deserialization process causes the fields to get wiped and reset
+											permissions.forEach(Permission::initListeners);
 											imageCollection.getPermissions().addAll(permissions);
 										}
 									}
@@ -385,43 +387,40 @@ public class CyVerseConnectionManager
 				if (!collectionDir.exists())
 					collectionDir.mkdir();
 
-				if (collectionDir.canRead())
-				{
-					String collectionJSONFile = collectionDirName + "/collection.json";
-					String json = SanimalData.getInstance().getGson().toJson(collection);
-					this.writeRemoteFile(collectionJSONFile, json);
+				String collectionJSONFile = collectionDirName + "/collection.json";
+				String json = SanimalData.getInstance().getGson().toJson(collection);
+				this.writeRemoteFile(collectionJSONFile, json);
 
-					String collectionPermissionFile = collectionDirName + "/permissions.json";
-					json = SanimalData.getInstance().getGson().toJson(collection.getPermissions());
-					this.writeRemoteFile(collectionPermissionFile, json);
+				String collectionPermissionFile = collectionDirName + "/permissions.json";
+				json = SanimalData.getInstance().getGson().toJson(collection.getPermissions());
+				this.writeRemoteFile(collectionPermissionFile, json);
 
-					IRODSFile collectionDirUploads = fileFactory.instanceIRODSFile(collectionDirName + "/Uploads");
-					if (!collectionDirUploads.exists())
-						collectionDirUploads.mkdir();
+				IRODSFile collectionDirUploads = fileFactory.instanceIRODSFile(collectionDirName + "/Uploads");
+				if (!collectionDirUploads.exists())
+					collectionDirUploads.mkdir();
 
-					SortedList<Permission> sorted = collection.getPermissions().sorted((permission1, permission2) -> Boolean.compare(permission1.isOwner(), permission2.isOwner()));
-					CollectionAO collectionAO = this.accessObjects.getCollectionAO();
-					this.removeAllFilePermissions(collectionDir);
-					sorted.forEach(permission -> {
-						try
+				SortedList<Permission> sorted = collection.getPermissions().sorted((permission1, permission2) -> Boolean.compare(permission1.isOwner(), permission2.isOwner()));
+				CollectionAO collectionAO = this.accessObjects.getCollectionAO();
+				this.removeAllFilePermissions(collectionDir);
+				sorted.forEach(permission -> {
+					try
+					{
+						// Ensure valid users only
+						if (this.accessObjects.getUserAO().findByName(permission.getUsername()) != null)
 						{
-							// Ensure valid users only
-							if (this.accessObjects.getUserAO().findByName(permission.getUsername()) != null)
-							{
-								collectionAO.setAccessPermissionRead(ZONE, collectionDir.getAbsolutePath(), permission.getUsername(), true);
-								if (permission.canUpload())
-									collectionAO.setAccessPermissionWrite(ZONE, collectionDir.getAbsolutePath(), permission.getUsername(), true);
-								if (permission.isOwner())
-									collectionAO.setAccessPermissionOwn(ZONE, collectionDir.getAbsolutePath(), permission.getUsername(), true);
-							}
+							collectionAO.setAccessPermissionRead(ZONE, collectionDir.getAbsolutePath(), permission.getUsername(), true);
+							if (permission.canUpload())
+								collectionAO.setAccessPermissionWrite(ZONE, collectionDir.getAbsolutePath(), permission.getUsername(), true);
+							if (permission.isOwner())
+								collectionAO.setAccessPermissionOwn(ZONE, collectionDir.getAbsolutePath(), permission.getUsername(), true);
 						}
-						catch (JargonException e)
-						{
-							System.err.println("Can't set user permissions???");
-							e.printStackTrace();
-						}
-					});
-				}
+					}
+					catch (JargonException e)
+					{
+						System.err.println("Can't set user permissions???");
+						e.printStackTrace();
+					}
+				});
 			}
 			catch (JargonException e)
 			{
