@@ -369,7 +369,7 @@ public class CyVerseConnectionManager
 	 */
 	public void pushLocalCollections(List<ImageCollection> collections)
 	{
-		String collectionsDir = "./Sanimal/Collection";
+		String collectionsDir = "/iplant/home/dslovikosky/Sanimal/Collection";
 		IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 		// Upload collection which we are owners of
 		collections.stream()
