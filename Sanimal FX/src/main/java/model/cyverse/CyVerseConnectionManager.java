@@ -7,6 +7,7 @@ import model.SanimalData;
 import model.location.Location;
 import model.species.Species;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.irods.jargon.core.connection.AuthScheme;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.connection.IRODSSession;
@@ -17,6 +18,7 @@ import org.irods.jargon.core.exception.InvalidUserException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.pub.*;
+import org.irods.jargon.core.pub.domain.User;
 import org.irods.jargon.core.pub.io.*;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 
@@ -28,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A class used to wrap the CyVerse Jargon FTP library
@@ -173,11 +176,6 @@ public class CyVerseConnectionManager
 					e.printStackTrace();
 				}
 			}
-
-			// Create a subfolder containing all images uploaded with Sanimal. This is temporary
-			IRODSFile sanimalUploads = fileFactory.instanceIRODSFile("./Sanimal/Collections");
-			if (!sanimalUploads.exists())
-				sanimalUploads.mkdir();
 		}
 		catch (JargonException e)
 		{
@@ -565,4 +563,16 @@ public class CyVerseConnectionManager
 		}
 	}
 
+	public void derp()
+	{
+		try
+		{
+			this.accessObjects.getCollectionAO().listPermissionsForCollection("/");
+		}
+		catch (JargonException e)
+		{
+
+
+		}
+	}
 }
