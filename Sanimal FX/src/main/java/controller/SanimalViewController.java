@@ -214,10 +214,6 @@ public class SanimalViewController implements Initializable
 
 					if (loginSuccessful)
 					{
-						connectionManager.derp();
-						System.exit(0);
-
-						/*
 						// Then initialize the remove sanimal directory
 						this.updateMessage("Initializing Sanimal remote directory...");
 						this.updateProgress(2, 6);
@@ -248,7 +244,6 @@ public class SanimalViewController implements Initializable
 							// Set the image collection list to be these collections
 							SanimalData.getInstance().getCollectionList().addAll(imageCollections);
 						});
-						*/
 
 						this.updateProgress(6, 6);
 					}

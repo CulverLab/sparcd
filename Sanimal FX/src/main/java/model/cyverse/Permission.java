@@ -33,7 +33,7 @@ public class Permission
 
 		// If the owner property is set and we try to disable any of the other properties, ignore the change
 		this.readProperty.addListener((observable, oldValue, newValue) -> {
-			if (!newValue && this.ownerProperty.getValue())
+			if (!newValue && (this.ownerProperty.getValue() || this.uploadProperty.getValue()))
 				this.setRead(true);
 		});
 	}

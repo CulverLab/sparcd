@@ -16,6 +16,7 @@ import library.TableColumnHeaderUtil;
 import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
+import model.image.ImageContainer;
 import model.util.FXMLLoaderUtils;
 import org.fxmisc.easybind.EasyBind;
 
@@ -134,27 +135,25 @@ public class SanimalUploadController implements Initializable
 			{
 				// Grab the permission for the currently logged in user
 				Optional<Permission> myPerms = newValue.getPermissions().stream().filter(permission -> permission.getUsername().equals(SanimalData.getInstance().getUsername())).findFirst();
-				myPerms.ifPresent(permission ->
+
+				// If the user is the owner, show the admin functionality if not already showing
+				if (myPerms.isPresent() && myPerms.get().isOwner())
 				{
-					// If the user is not the owner, hide admin functionality
-					if (!permission.isOwner())
+					// If the split pane does not have the admin pane yet, add it and update the divider positions
+					if (!this.mainSplitPane.getItems().contains(adminPane))
 					{
-						// Store the divider positions
-						splitPaneDividers = this.mainSplitPane.getDividerPositions();
-						// Remove the admin pane
-						this.mainSplitPane.getItems().remove(adminPane);
+						this.mainSplitPane.getItems().add(adminPane);
+						this.mainSplitPane.setDividerPositions(splitPaneDividers);
 					}
-					// If the user is the owner, show the admin functionality if not already showing
-					else
-					{
-						// If the split pane does not have the admin pane yet, add it and update the divider positions
-						if (!this.mainSplitPane.getItems().contains(adminPane))
-						{
-							this.mainSplitPane.getItems().add(adminPane);
-							this.mainSplitPane.setDividerPositions(splitPaneDividers);
-						}
-					}
-				});
+				}
+				// If the user is not the owner, hide admin functionality
+				else
+				{
+					// Store the divider positions
+					splitPaneDividers = this.mainSplitPane.getDividerPositions();
+					// Remove the admin pane
+					this.mainSplitPane.getItems().remove(adminPane);
+				}
 			}
 		});
 
@@ -321,7 +320,23 @@ public class SanimalUploadController implements Initializable
 	 */
 	public void savePermissions(ActionEvent actionEvent)
 	{
-		SanimalData.getInstance().getConnectionManager().pushLocalCollections(SanimalData.getInstance().getCollectionList());
+		ImageCollection currentlySelected = this.collectionListView.getSelectionModel().getSelectedItem();
+		if (currentlySelected != null)
+		{
+			for (Permission permission : currentlySelected.getPermissions())
+			{
+				if (!SanimalData.getInstance().getConnectionManager().isValidUsername(permission.getUsername()))
+				{
+					Alert alert = new Alert(Alert.AlertType.WARNING);
+					alert.setTitle("Invalid User");
+					alert.setHeaderText("Username entered invalid");
+					alert.setContentText("The username (" + permission.getUsername() + ") you entered was not found on the CyVerse system. Reminder: permissions are expecting usernames, not real names.");
+					alert.showAndWait();
+					return;
+				}
+			}
+		}
+		//SanimalData.getInstance().getConnectionManager().pushLocalCollections(SanimalData.getInstance().getCollectionList());
 	}
 
 	/**

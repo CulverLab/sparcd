@@ -2,6 +2,7 @@ package model.cyverse;
 
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import model.SanimalData;
 import model.location.Location;
@@ -19,6 +20,7 @@ import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.pub.*;
 import org.irods.jargon.core.pub.domain.User;
+import org.irods.jargon.core.pub.domain.UserFilePermission;
 import org.irods.jargon.core.pub.io.*;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 
@@ -59,6 +61,9 @@ public class CyVerseConnectionManager
 	// Start all the Access Objects we use to accesss the user's account
 	private CyVerseAOs accessObjects;
 
+	private User userUser;
+	private User publicUser;
+
 	/**
 	 * Given a username and password, this method logs a cyverse user in
 	 *
@@ -87,11 +92,9 @@ public class CyVerseConnectionManager
 				// Setup all access objects to the account (Represented by the AO at the end of the class name)
 				this.accessObjects = new CyVerseAOs(irodsAO, account);
 
-				/*
-				accessObjects.getDataObjectAO().setAccessPermission(ZONE, "/iplant/home/dslovikosky/Sanimal/Collection", "smalusa", FilePermissionEnum.READ);
-
-				System.exit(0);
-				*/
+				// Grab the two public users (the "user" user and the "public" user)
+				this.userUser = this.accessObjects.getUserAO().findByName("users");
+				this.publicUser = this.accessObjects.getUserAO().findByName("public");
 
 				// We're good, return true
 				return true;
@@ -279,7 +282,7 @@ public class CyVerseConnectionManager
 	 */
 	public List<ImageCollection> pullRemoteCollections()
 	{
-		String collectionsFolderName = "/iplant/home/dslovikosky/Sanimal/Collection";
+		String collectionsFolderName = "/iplant/home/dslovikosky/Sanimal/Collections";
 		List<ImageCollection> imageCollections = new ArrayList<>();
 		try
 		{
@@ -331,23 +334,11 @@ public class CyVerseConnectionManager
 									e.printStackTrace();
 								}
 							}
-
-							//List<UserFilePermission> userFilePermissions = this.accessObjects.getDataObjectAO().listPermissionsForDataObject(collectionDir.getAbsolutePath());
-							//userFilePermissions.forEach(System.out::println);
-
-							//this.accessObjects.getCollectionAO().findByAbsolutePath(collectionDir.getAbsolutePath());
-							//List<CollectionAndDataObjectListingEntry> collectionAndDataObjectListingEntries = this.accessObjects.getCollectionAndDataObjectListAndSearchAO().listDataObjectsAndCollectionsUnderPathWithPermissions(collectionDir.getParent());
-
-							//collectionAndDataObjectListingEntries.get(0)
-
-							//DataObject byAbsolutePath = this.accessObjects.getDataObjectAO().findByCollectionNameAndDataName(collectionDir.getParent(), collectionDir.getName());
-
-							//this.accessObjects.getDataObjectAO().setAccessPermissionRead(ZONE, collectionDir.getAbsolutePath(), "smalusa");
-
 						}
 					}
 				}
-			} else
+			}
+			else
 			{
 				System.out.println("Collections folder not found!");
 			}
@@ -367,7 +358,7 @@ public class CyVerseConnectionManager
 	 */
 	public void pushLocalCollections(List<ImageCollection> collections)
 	{
-		String collectionsDir = "/iplant/home/dslovikosky/Sanimal/Collection";
+		String collectionsDir = "/iplant/home/dslovikosky/Sanimal/Collections";
 		IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 		// Upload collection which we are owners of
 		collections.stream()
@@ -384,10 +375,12 @@ public class CyVerseConnectionManager
 				IRODSFile collectionDir = fileFactory.instanceIRODSFile(collectionDirName);
 				if (!collectionDir.exists())
 					collectionDir.mkdir();
+				this.setFilePermissions(collectionDirName, collection.getPermissions(), false);
 
 				String collectionJSONFile = collectionDirName + "/collection.json";
 				String json = SanimalData.getInstance().getGson().toJson(collection);
 				this.writeRemoteFile(collectionJSONFile, json);
+				this.setFilePermissions(collectionJSONFile, collection.getPermissions(), true);
 
 				String collectionPermissionFile = collectionDirName + "/permissions.json";
 				json = SanimalData.getInstance().getGson().toJson(collection.getPermissions());
@@ -396,29 +389,7 @@ public class CyVerseConnectionManager
 				IRODSFile collectionDirUploads = fileFactory.instanceIRODSFile(collectionDirName + "/Uploads");
 				if (!collectionDirUploads.exists())
 					collectionDirUploads.mkdir();
-
-				SortedList<Permission> sorted = collection.getPermissions().sorted((permission1, permission2) -> Boolean.compare(permission1.isOwner(), permission2.isOwner()));
-				CollectionAO collectionAO = this.accessObjects.getCollectionAO();
-				this.removeAllFilePermissions(collectionDir);
-				sorted.forEach(permission -> {
-					try
-					{
-						// Ensure valid users only
-						if (this.accessObjects.getUserAO().findByName(permission.getUsername()) != null)
-						{
-							collectionAO.setAccessPermissionRead(ZONE, collectionDir.getAbsolutePath(), permission.getUsername(), true);
-							if (permission.canUpload())
-								collectionAO.setAccessPermissionWrite(ZONE, collectionDir.getAbsolutePath(), permission.getUsername(), true);
-							if (permission.isOwner())
-								collectionAO.setAccessPermissionOwn(ZONE, collectionDir.getAbsolutePath(), permission.getUsername(), true);
-						}
-					}
-					catch (JargonException e)
-					{
-						System.err.println("Can't set user permissions???");
-						e.printStackTrace();
-					}
-				});
+				this.setFilePermissions(collectionDirUploads.getAbsolutePath(), collection.getPermissions(), false);
 			}
 			catch (JargonException e)
 			{
@@ -427,22 +398,83 @@ public class CyVerseConnectionManager
 		});
 	}
 
-	private void removeAllFilePermissions(IRODSFile directory) throws JargonException
+	private void setFilePermissions(String fileName, ObservableList<Permission> permissions, boolean forceReadOnly) throws JargonException
 	{
-		CollectionAndDataObjectListingEntry collectionPermissions = this.accessObjects.getCollectionAndDataObjectListAndSearchAO().getCollectionAndDataObjectListingEntryAtGivenAbsolutePath(directory.getAbsolutePath());
-		CollectionAO collectionAO = this.accessObjects.getCollectionAO();
-		collectionPermissions.getUserFilePermission().forEach(userFilePermission -> {
-			if (userFilePermission.getFilePermissionEnum() != FilePermissionEnum.OWN)
+		IRODSFile file = this.accessObjects.getFileFactory().instanceIRODSFile(fileName);
+		this.removeAllFilePermissions(file);
+		if (file.isDirectory())
+		{
+			CollectionAO collectionAO = this.accessObjects.getCollectionAO();
+			permissions.filtered(permission -> !permission.isOwner()).forEach(permission -> {
 				try
 				{
-					collectionAO.removeAccessPermissionForUser(ZONE, directory.getAbsolutePath(), userFilePermission.getUserName(), true);
+					if (permission.canUpload() && !forceReadOnly)
+						collectionAO.setAccessPermissionWrite(ZONE, file.getAbsolutePath(), permission.getUsername(), false);
+					else if (permission.canRead())
+						collectionAO.setAccessPermissionRead(ZONE, file.getAbsolutePath(), permission.getUsername(), false);
 				}
 				catch (JargonException e)
 				{
-					System.err.println("Error removing permissions from user.");
+					System.err.println("Can't set user permissions???");
 					e.printStackTrace();
 				}
-		});
+			});
+		}
+		else if (file.isFile())
+		{
+			DataObjectAO dataObjectAO = this.accessObjects.getDataObjectAO();
+			permissions.filtered(permission -> !permission.isOwner()).forEach(permission -> {
+				try
+				{
+					if (permission.canUpload() && !forceReadOnly)
+						dataObjectAO.setAccessPermissionWrite(ZONE, file.getAbsolutePath(), permission.getUsername());
+					else if (permission.canRead())
+						dataObjectAO.setAccessPermissionRead(ZONE, file.getAbsolutePath(), permission.getUsername());
+				}
+				catch (JargonException e)
+				{
+					System.err.println("Can't set user permissions???");
+					e.printStackTrace();
+				}
+			});
+		}
+	}
+
+	private void removeAllFilePermissions(IRODSFile file) throws JargonException
+	{
+		if (file.isDirectory())
+		{
+			CollectionAndDataObjectListingEntry collectionPermissions = this.accessObjects.getCollectionAndDataObjectListAndSearchAO().getCollectionAndDataObjectListingEntryAtGivenAbsolutePath(file.getAbsolutePath());
+			CollectionAO collectionAO = this.accessObjects.getCollectionAO();
+			collectionPermissions.getUserFilePermission().forEach(userFilePermission -> {
+				if (userFilePermission.getFilePermissionEnum() != FilePermissionEnum.OWN)
+					try
+					{
+						collectionAO.removeAccessPermissionForUser(ZONE, file.getAbsolutePath(), userFilePermission.getUserName(), true);
+					}
+					catch (JargonException e)
+					{
+						System.err.println("Error removing permissions from user.");
+						e.printStackTrace();
+					}
+			});
+		}
+		else if (file.isFile())
+		{
+			DataObjectAO dataObjectAO = this.accessObjects.getDataObjectAO();
+			dataObjectAO.listPermissionsForDataObject(file.getAbsolutePath()).forEach(userFilePermission -> {
+				if (userFilePermission.getFilePermissionEnum() != FilePermissionEnum.OWN)
+					try
+					{
+						dataObjectAO.removeAccessPermissionsForUser(ZONE, file.getAbsolutePath(), userFilePermission.getUserName());
+					}
+					catch (JargonException e)
+					{
+						System.err.println("Error removing permissions from user.");
+						e.printStackTrace();
+					}
+			});
+		}
 	}
 
 	public Boolean isValidUsername(String username)
@@ -567,12 +599,21 @@ public class CyVerseConnectionManager
 	{
 		try
 		{
-			this.accessObjects.getCollectionAO().listPermissionsForCollection("/");
+
+			//List<UserFilePermission> userFilePermissions = this.accessObjects.getCollectionAO().listPermissionsForCollection("/iplant/home/dslovikosky/Sanimal/Collections");
+			//userFilePermissions.forEach(x -> System.out.println(x.getUserName()));
+
+			this.accessObjects.getCollectionAO().setAccessPermissionWrite(ZONE, "/iplant/home/dslovikosky/Sanimal/Collections", userUser.getName(), false);
+			this.accessObjects.getCollectionAO().setAccessPermissionRead(ZONE, "/iplant/home/dslovikosky/Sanimal", userUser.getName(), false);
+			this.accessObjects.getCollectionAO().setAccessPermissionWrite(ZONE, "/iplant/home/dslovikosky/Sanimal/Collections", publicUser.getName(), false);
+			this.accessObjects.getCollectionAO().setAccessPermissionRead(ZONE, "/iplant/home/dslovikosky/Sanimal", publicUser.getName(), false);
+			IRODSFile irodsFile = this.accessObjects.getFileFactory().instanceIRODSFile("/iplant/home/dslovikosky/Sanimal/Collections/Test");
+			irodsFile.delete();
+			irodsFile.mkdir();
 		}
 		catch (JargonException e)
 		{
-
-
+			e.printStackTrace();
 		}
 	}
 }
