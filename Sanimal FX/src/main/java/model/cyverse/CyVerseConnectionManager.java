@@ -352,21 +352,17 @@ public class CyVerseConnectionManager
 	}
 
 	/**
-	 * Connects to CyVerse and uploads the given list of collections to CyVerse's data store
+	 * Connects to CyVerse and uploads the given collection to CyVerse's data store
 	 *
-	 * @param collections The list of new species to upload
+	 * @param collection The list of new species to upload
 	 */
-	public void pushLocalCollections(List<ImageCollection> collections)
+	public void pushLocalCollection(ImageCollection collection)
 	{
 		String collectionsDir = "/iplant/home/dslovikosky/Sanimal/Collections";
 		IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
-		// Upload collection which we are owners of
-		collections.stream()
-				.filter(imageCollection ->
-					imageCollection.getPermissions().stream().filter(permission ->
-						permission.getUsername().equals(SanimalData.getInstance().getUsername()) &&
-						permission.isOwner()).count() == 1)
-				.forEach(collection ->
+		// Check if we are the owner of the collection
+		String ownerUsername = collection.getOwner();
+		if (ownerUsername != null && ownerUsername.equals(SanimalData.getInstance().getUsername()))
 		{
 			try
 			{
@@ -395,7 +391,23 @@ public class CyVerseConnectionManager
 			{
 				e.printStackTrace();
 			}
-		});
+		}
+	}
+
+	public void removeCollection(ImageCollection collection)
+	{
+		String collectionsDirName = "/iplant/home/dslovikosky/Sanimal/Collections/" + collection.getID().toString();
+		try
+		{
+			IRODSFile collectionDir = this.accessObjects.getFileFactory().instanceIRODSFile(collectionsDirName);
+			if (collectionDir.exists())
+				collectionDir.delete();
+		}
+		catch (JargonException e)
+		{
+			e.printStackTrace();
+			System.out.println("Error deleting collection: " + collection.getName());
+		}
 	}
 
 	private void setFilePermissions(String fileName, ObservableList<Permission> permissions, boolean forceReadOnly) throws JargonException
@@ -591,28 +603,6 @@ public class CyVerseConnectionManager
 		catch (JargonException e)
 		{
 			System.err.println("Error pushing remote file (" + file + "). Error was:\n");
-			e.printStackTrace();
-		}
-	}
-
-	public void derp()
-	{
-		try
-		{
-
-			//List<UserFilePermission> userFilePermissions = this.accessObjects.getCollectionAO().listPermissionsForCollection("/iplant/home/dslovikosky/Sanimal/Collections");
-			//userFilePermissions.forEach(x -> System.out.println(x.getUserName()));
-
-			this.accessObjects.getCollectionAO().setAccessPermissionWrite(ZONE, "/iplant/home/dslovikosky/Sanimal/Collections", userUser.getName(), false);
-			this.accessObjects.getCollectionAO().setAccessPermissionRead(ZONE, "/iplant/home/dslovikosky/Sanimal", userUser.getName(), false);
-			this.accessObjects.getCollectionAO().setAccessPermissionWrite(ZONE, "/iplant/home/dslovikosky/Sanimal/Collections", publicUser.getName(), false);
-			this.accessObjects.getCollectionAO().setAccessPermissionRead(ZONE, "/iplant/home/dslovikosky/Sanimal", publicUser.getName(), false);
-			IRODSFile irodsFile = this.accessObjects.getFileFactory().instanceIRODSFile("/iplant/home/dslovikosky/Sanimal/Collections/Test");
-			irodsFile.delete();
-			irodsFile.mkdir();
-		}
-		catch (JargonException e)
-		{
 			e.printStackTrace();
 		}
 	}

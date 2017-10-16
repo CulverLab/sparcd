@@ -27,8 +27,8 @@
                 <padding>
                     <Insets bottom="20" left="5" right="5" top="20" />
                 </padding>
-                <Button onAction="#newCollectionPressed" styleClass="newCollectionBtn" text="New Collection" />
-                <Button onAction="#deleteCollectionPressed" styleClass="deleteCollectionBtn" text="Delete Collection" />
+                <Button fx:id="btnNewCollection" onAction="#newCollectionPressed" styleClass="newCollectionBtn" text="New Collection" />
+                <Button fx:id="btnDeleteCollection" onAction="#deleteCollectionPressed" styleClass="deleteCollectionBtn" text="Delete Collection" />
             </FlowPane>
         </VBox>
         <SplitPane dividerPositions=".18, .89" orientation="VERTICAL">
@@ -70,8 +70,8 @@
             </TableView>
             <FlowPane alignment="CENTER" hgap="5" vgap="10" SplitPane.resizableWithParent="false">
                 <Button fx:id="btnAddUser" onAction="#addNewUser" text="Add User" />
-                <Button fx:id="btnSave" onAction="#savePermissions" text="Save Permissions"/>
                 <Button fx:id="btnRemoveUser" onAction="#removeCurrentUser" text="Remove User" />
+                <Button fx:id="btnSave" onAction="#saveCollection" text="Save Collection Settings"/>
                 <Button fx:id="btnTransferOwnership" onAction="#transferOwnership" text="Transfer Collection Ownership"/>
             </FlowPane>
         </SplitPane>

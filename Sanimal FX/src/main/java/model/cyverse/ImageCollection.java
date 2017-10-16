@@ -41,6 +41,11 @@ public class ImageCollection
 		this.setOrganization("None");
 	}
 
+	public String getOwner()
+	{
+		return permissions.stream().filter(Permission::isOwner).map(Permission::getUsername).findFirst().orElse(null);
+	}
+
 	///
 	/// Getters/Setters
 	///

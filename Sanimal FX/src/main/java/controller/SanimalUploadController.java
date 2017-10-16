@@ -4,6 +4,7 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.SortedList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -18,6 +19,7 @@ import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
 import model.image.ImageContainer;
 import model.util.FXMLLoaderUtils;
+import model.util.FinishableTask;
 import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
@@ -66,6 +68,11 @@ public class SanimalUploadController implements Initializable
 	public Button btnAddUser;
 
 	@FXML
+	public Button btnNewCollection;
+	@FXML
+	public Button btnDeleteCollection;
+
+	@FXML
 	public Button btnTransferOwnership;
 
 	// The primary split pane
@@ -82,8 +89,6 @@ public class SanimalUploadController implements Initializable
 	// https://stackoverflow.com/questions/14558266/clean-javafx-property-listeners-and-bindings-memory-leaks
 	// https://stackoverflow.com/questions/26312651/bidirectional-javafx-binding-is-destroyed-by-unrelated-code
 	private final List<Property> hardReferences = new ArrayList<>();
-
-
 
 	// Store an admin pane reference and the divider positions. This is used in removing and showing the admin pane
 	private Node adminPane;
@@ -134,39 +139,21 @@ public class SanimalUploadController implements Initializable
 			if (newValue != null)
 			{
 				// Grab the permission for the currently logged in user
-				Optional<Permission> myPerms = newValue.getPermissions().stream().filter(permission -> permission.getUsername().equals(SanimalData.getInstance().getUsername())).findFirst();
-
+				String ownerUsername = newValue.getOwner();
 				// If the user is the owner, show the admin functionality if not already showing
-				if (myPerms.isPresent() && myPerms.get().isOwner())
-				{
-					// If the split pane does not have the admin pane yet, add it and update the divider positions
-					if (!this.mainSplitPane.getItems().contains(adminPane))
-					{
-						this.mainSplitPane.getItems().add(adminPane);
-						this.mainSplitPane.setDividerPositions(splitPaneDividers);
-					}
-				}
+				if (ownerUsername != null && ownerUsername.equals(SanimalData.getInstance().getUsername()))
+					this.showAdminPane();
 				// If the user is not the owner, hide admin functionality
 				else
-				{
-					// Store the divider positions
-					splitPaneDividers = this.mainSplitPane.getDividerPositions();
-					// Remove the admin pane
-					this.mainSplitPane.getItems().remove(adminPane);
-				}
+					this.hideAdminPane();
 			}
+			// If the collection is null, hide the admin pane
+			else
+				this.hideAdminPane();
 		});
 
 		// If no collection is selected, disable the text fields and buttons
 		BooleanBinding nothingSelected = selectedCollection.isNull();
-
-		this.txtName.disableProperty().bind(nothingSelected);
-		this.txtOrganization.disableProperty().bind(nothingSelected);
-		this.txtContactInfo.disableProperty().bind(nothingSelected);
-		this.tbxDescription.disableProperty().bind(nothingSelected);
-		this.btnAddUser.disableProperty().bind(nothingSelected);
-		this.btnSave.disableProperty().bind(nothingSelected);
-		this.btnTransferOwnership.disableProperty().bind(nothingSelected);
 
 		// Add prompt text to the contact info and description so that users know what the fields are for
 		this.txtContactInfo.setPromptText("Email and/or Phone Number preferred");
@@ -174,6 +161,13 @@ public class SanimalUploadController implements Initializable
 
 		// Disable this button when the selected permission is the owner
 		this.btnRemoveUser.disableProperty().bind(EasyBind.monadic(this.tvwPermissions.getSelectionModel().selectedItemProperty()).selectProperty(Permission::ownerProperty).orElse(nothingSelected));
+
+		// Disable this button when we are not the owner of the collection
+		this.btnDeleteCollection.disableProperty().bind(EasyBind.monadic(this.selectedCollection).map(collection ->
+		{
+			String ownerUsername = collection.getOwner();
+			return ownerUsername == null || !ownerUsername.equals(SanimalData.getInstance().getUsername());
+		}).orElse(nothingSelected));
 
 		this.clmUser.setCellValueFactory(param -> param.getValue().usernameProperty());
 		this.clmUser.setCellFactory(x -> new EditCell<>(new DefaultStringConverter()));
@@ -199,6 +193,8 @@ public class SanimalUploadController implements Initializable
 
 		// Ensure that the table view is editable
 		this.tvwPermissions.setEditable(true);
+
+		this.hideAdminPane();
 	}
 
 	/**
@@ -213,6 +209,24 @@ public class SanimalUploadController implements Initializable
 		// Add the reference and return it
 		this.hardReferences.add(reference);
 		return reference;
+	}
+
+	private void showAdminPane()
+	{
+		// If the split pane does not have the admin pane yet, add it and update the divider positions
+		if (!this.mainSplitPane.getItems().contains(adminPane))
+		{
+			this.mainSplitPane.getItems().add(adminPane);
+			this.mainSplitPane.setDividerPositions(splitPaneDividers);
+		}
+	}
+
+	private void hideAdminPane()
+	{
+		// Store the divider positions
+		splitPaneDividers = this.mainSplitPane.getDividerPositions();
+		// Remove the admin pane
+		this.mainSplitPane.getItems().remove(adminPane);
 	}
 
 	/**
@@ -247,8 +261,24 @@ public class SanimalUploadController implements Initializable
 		ImageCollection selected = this.collectionListView.getSelectionModel().getSelectedItem();
 		if (selected != null)
 		{
-			// Remove the selected collection
-			SanimalData.getInstance().getCollectionList().remove(selected);
+			// If a collection is selected, show an alert that data may be deleted!
+			Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+			alert.initOwner(this.collectionListView.getScene().getWindow());
+			alert.setTitle("Confirmation");
+			alert.setHeaderText("Are you sure you want to delete this collection?");
+			alert.setContentText("Deleting this collection will result in the permanent removal of all images uploaded to CyVerse to this collection. Are you sure you want to continue?");
+			Optional<ButtonType> buttonType = alert.showAndWait();
+			if (buttonType.isPresent())
+			{
+				if (buttonType.get() == ButtonType.OK)
+				{
+					// Remove the collection on the CyVerse system
+					SanimalData.getInstance().getConnectionManager().removeCollection(selected);
+
+					// Remove the selected collection
+					SanimalData.getInstance().getCollectionList().remove(selected);
+				}
+			}
 		}
 		else
 		{
@@ -318,8 +348,9 @@ public class SanimalUploadController implements Initializable
 	 * Temporary, pushes changes to CyVerse. Not to actually be used on release
 	 * @param actionEvent
 	 */
-	public void savePermissions(ActionEvent actionEvent)
+	public void saveCollection(ActionEvent actionEvent)
 	{
+		btnSave.setDisable(true);
 		ImageCollection currentlySelected = this.collectionListView.getSelectionModel().getSelectedItem();
 		if (currentlySelected != null)
 		{
@@ -332,11 +363,31 @@ public class SanimalUploadController implements Initializable
 					alert.setHeaderText("Username entered invalid");
 					alert.setContentText("The username (" + permission.getUsername() + ") you entered was not found on the CyVerse system. Reminder: permissions are expecting usernames, not real names.");
 					alert.showAndWait();
+					btnSave.setDisable(false);
 					return;
 				}
 			}
+
+
+			FinishableTask<Void> saveTask = new FinishableTask<Void>()
+			{
+				@Override
+				protected Void call() throws Exception
+				{
+					this.updateProgress(0, 1);
+					this.updateMessage("Saving the collection: " + currentlySelected.getName());
+
+
+					SanimalData.getInstance().getConnectionManager().pushLocalCollection(currentlySelected);
+
+					this.updateProgress(0, 1);
+					return null;
+				}
+			};
+			saveTask.setOnFinished(event -> btnSave.setDisable(false));
+
+			SanimalData.getInstance().getSanimalExecutor().addTask(saveTask);
 		}
-		//SanimalData.getInstance().getConnectionManager().pushLocalCollections(SanimalData.getInstance().getCollectionList());
 	}
 
 	/**
