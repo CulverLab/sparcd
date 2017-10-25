@@ -2,9 +2,8 @@ package controller;
 
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
-import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -18,6 +17,7 @@ import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
 import model.image.ImageContainer;
+import model.image.ImageDirectory;
 import model.util.FXMLLoaderUtils;
 import model.util.FinishableTask;
 import org.fxmisc.easybind.EasyBind;
@@ -77,7 +77,14 @@ public class SanimalUploadController implements Initializable
 
 	// The primary split pane
 	@FXML
-	public SplitPane mainSplitPane;
+	public SplitPane spnMain;
+
+	// The upload split pane
+	@FXML
+	public SplitPane spnUpload;
+
+	@FXML
+	public ListView<ImageDirectory> lstItemsToUpload;
 
 	///
 	/// FXML Bound Fields End
@@ -93,6 +100,7 @@ public class SanimalUploadController implements Initializable
 	// Store an admin pane reference and the divider positions. This is used in removing and showing the admin pane
 	private Node adminPane;
 	private double[] splitPaneDividers;
+	private int adminPaneIndex;
 
 	// The currently selected image collection
 	private ObjectProperty<ImageCollection> selectedCollection = new SimpleObjectProperty<>();
@@ -101,7 +109,8 @@ public class SanimalUploadController implements Initializable
 	public void initialize(URL location, ResourceBundle resources)
 	{
 		// Store the admin pane reference
-		adminPane = this.mainSplitPane.getItems().get(1);
+		adminPaneIndex = 1;
+		adminPane = this.spnMain.getItems().get(adminPaneIndex);
 
 		// First setup the collection list
 
@@ -169,6 +178,11 @@ public class SanimalUploadController implements Initializable
 			return ownerUsername == null || !ownerUsername.equals(SanimalData.getInstance().getUsername());
 		}).orElse(nothingSelected));
 
+		this.spnUpload.disableProperty().bind(EasyBind.monadic(this.selectedCollection).map(collection ->
+				collection.getPermissions()
+						.filtered(perm -> !(perm.getUsername().equals(SanimalData.getInstance().getUsername()) && perm.canUpload())).size() == 1)
+				.orElse(nothingSelected));
+
 		this.clmUser.setCellValueFactory(param -> param.getValue().usernameProperty());
 		this.clmUser.setCellFactory(x -> new EditCell<>(new DefaultStringConverter()));
 		this.clmRead.setCellValueFactory(param -> param.getValue().readProperty());
@@ -194,6 +208,11 @@ public class SanimalUploadController implements Initializable
 		// Ensure that the table view is editable
 		this.tvwPermissions.setEditable(true);
 
+		this.lstItemsToUpload.setCellFactory(list -> FXMLLoaderUtils.loadFXML("uploadView/ImageUploadListEntry.fxml").getController());
+		ObservableList<ImageContainer> containers = SanimalData.getInstance().getImageTree().getChildren();
+		ObservableList<ImageDirectory> directories = EasyBind.map(containers.filtered(imageContainer -> imageContainer instanceof ImageDirectory), imageContainer -> (ImageDirectory) imageContainer);
+		this.lstItemsToUpload.setItems(directories);
+
 		this.hideAdminPane();
 	}
 
@@ -214,19 +233,19 @@ public class SanimalUploadController implements Initializable
 	private void showAdminPane()
 	{
 		// If the split pane does not have the admin pane yet, add it and update the divider positions
-		if (!this.mainSplitPane.getItems().contains(adminPane))
+		if (!this.spnMain.getItems().contains(adminPane))
 		{
-			this.mainSplitPane.getItems().add(adminPane);
-			this.mainSplitPane.setDividerPositions(splitPaneDividers);
+			this.spnMain.getItems().add(adminPaneIndex, adminPane);
+			this.spnMain.setDividerPositions(splitPaneDividers);
 		}
 	}
 
 	private void hideAdminPane()
 	{
 		// Store the divider positions
-		splitPaneDividers = this.mainSplitPane.getDividerPositions();
+		splitPaneDividers = this.spnMain.getDividerPositions();
 		// Remove the admin pane
-		this.mainSplitPane.getItems().remove(adminPane);
+		this.spnMain.getItems().remove(adminPane);
 	}
 
 	/**
@@ -432,6 +451,15 @@ public class SanimalUploadController implements Initializable
 			{
 
 			}
+		});
+	}
+
+	public void uploadImages(ActionEvent actionEvent)
+	{
+		this.lstItemsToUpload.getItems().forEach(imageDirectory ->
+		{
+			if (imageDirectory.isSelectedForUpload())
+				SanimalData.getInstance().getConnectionManager().uploadImages(selectedCollection.getValue(), imageDirectory.getFile());
 		});
 	}
 }

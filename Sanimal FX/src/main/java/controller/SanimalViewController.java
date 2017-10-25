@@ -214,6 +214,12 @@ public class SanimalViewController implements Initializable
 
 					if (loginSuccessful)
 					{
+						Platform.runLater(() ->
+						{
+							SanimalData.getInstance().setUsername(username);
+							SanimalData.getInstance().setLoggedIn(true);
+						});
+
 						// Then initialize the remove sanimal directory
 						this.updateMessage("Initializing Sanimal remote directory...");
 						this.updateProgress(2, 6);
@@ -264,11 +270,6 @@ public class SanimalViewController implements Initializable
 					invalidAlert.setContentText("Invalid Username or Password");
 					invalidAlert.initOwner(this.tabPane.getScene().getWindow());
 					invalidAlert.showAndWait();
-				}
-				else
-				{
-					SanimalData.getInstance().setLoggedIn(true);
-					SanimalData.getInstance().setUsername(username);
 				}
 				this.loggingIn.setValue(false);
 				// Hide the loading graphic

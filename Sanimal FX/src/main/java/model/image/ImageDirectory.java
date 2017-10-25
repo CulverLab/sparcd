@@ -1,7 +1,9 @@
 package model.image;
 
 import javafx.beans.Observable;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -49,6 +51,9 @@ public class ImageDirectory extends ImageContainer
 
 	// The file representing the directory
 	private ObjectProperty<File> directoryProperty = new SimpleObjectProperty<File>();
+
+	// If this image directory is currently selected to be uploaded
+	private transient BooleanProperty selectedForUpload = new SimpleBooleanProperty(false);
 
 	/**
 	 * Construct an image directoryProperty
@@ -166,9 +171,36 @@ public class ImageDirectory extends ImageContainer
 	}
 
 	/**
+	 * Set to true if the directory is selected to be uploaded
+	 *
+	 * @param selectedForUpload if the directory is selected to be uploaded to cyverse
+	 */
+	public void setSelectedForUpload(boolean selectedForUpload)
+	{
+		this.selectedForUpload.setValue(selectedForUpload);
+	}
+
+	/**
+	 * @return True if the directory is selected to be uploaded
+	 */
+	public boolean isSelectedForUpload()
+	{
+		return this.selectedForUpload.getValue();
+	}
+
+	/**
+	 * @return The property representing if this directory is selected for upload
+	 */
+	public BooleanProperty selectedForUploadProperty()
+	{
+		return this.selectedForUpload;
+	}
+
+	/**
 	 * Setting the location taken on a directory sets the location on all children recursively
 	 * @param location The location to set to
 	 */
+	@Override
 	public void setLocationTaken(Location location)
 	{
 		this.getChildren().forEach(child -> child.setLocationTaken(location));

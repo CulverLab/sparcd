@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import model.SanimalData;
+import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
 import org.apache.commons.io.FilenameUtils;
@@ -23,13 +24,17 @@ import org.irods.jargon.core.pub.domain.User;
 import org.irods.jargon.core.pub.domain.UserFilePermission;
 import org.irods.jargon.core.pub.io.*;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
+import org.irods.jargon.core.transfer.TransferStatus;
+import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
 
 import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -57,6 +62,7 @@ public class CyVerseConnectionManager
 	private static final Type PERMISSION_LIST_TYPE = new TypeToken<ArrayList<Permission>>()
 	{
 	}.getType();
+	private static final SimpleDateFormat FOLDER_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss") ;
 
 	// Start all the Access Objects we use to accesss the user's account
 	private CyVerseAOs accessObjects;
@@ -310,20 +316,33 @@ public class CyVerseConnectionManager
 									if (imageCollection != null)
 									{
 										imageCollections.add(imageCollection);
-									}
 
-									String permissionsJSONFile = collectionDir.getAbsolutePath() + "/permissions.json";
-									String permissionsJSON = this.readRemoteFile(permissionsJSONFile);
+										String permissionsJSONFile = collectionDir.getAbsolutePath() + "/permissions.json";
+										String permissionsJSON = this.readRemoteFile(permissionsJSONFile);
 
-									if (permissionsJSON != null)
-									{
-										// Get the GSON object to parse the JSON.
-										List<Permission> permissions = SanimalData.getInstance().getGson().fromJson(permissionsJSON, PERMISSION_LIST_TYPE);
-										if (permissions != null && imageCollection != null)
+										if (permissionsJSON != null)
 										{
-											// We need to initialize the internal listeners because the deserialization process causes the fields to get wiped and reset
-											permissions.forEach(Permission::initListeners);
-											imageCollection.getPermissions().addAll(permissions);
+											// Get the GSON object to parse the JSON.
+											List<Permission> permissions = SanimalData.getInstance().getGson().fromJson(permissionsJSON, PERMISSION_LIST_TYPE);
+											if (permissions != null)
+											{
+												// We need to initialize the internal listeners because the deserialization process causes the fields to get wiped and reset
+												permissions.forEach(Permission::initListeners);
+												imageCollection.getPermissions().addAll(permissions);
+											}
+										}
+										else
+										{
+											IRODSFile collectionDirUploads = fileFactory.instanceIRODSFile(collectionDir.getAbsolutePath() + "/Uploads");
+											if (collectionDirUploads.exists())
+											{
+												Permission myPermission = new Permission();
+												myPermission.setOwner(false);
+												myPermission.setUsername(SanimalData.getInstance().getUsername());
+												myPermission.setUpload(collectionDirUploads.canWrite());
+												myPermission.setRead(collectionDirUploads.canRead());
+												imageCollection.getPermissions().add(myPermission);
+											}
 										}
 									}
 								}
@@ -499,6 +518,31 @@ public class CyVerseConnectionManager
 		{
 		}
 		return false;
+	}
+
+	public void uploadImages(ImageCollection collection, File localPath)
+	{
+		try
+		{
+			String collectionUploadDirStr = "/iplant/home/dslovikosky/Sanimal/Collections/" + collection.getID().toString() + "/Uploads";
+			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
+			IRODSFile collectionUploadDir = fileFactory.instanceIRODSFile(collectionUploadDirStr);
+			if (collectionUploadDir.exists() && collectionUploadDir.canWrite())
+			{
+				String uploadFolderName = FOLDER_FORMAT.format(new Date(this.accessObjects.getEnvironmentalInfoAO().getIRODSServerCurrentTime())) + " " + SanimalData.getInstance().getUsername();
+				String uploadDirName = collectionUploadDirStr + "/" + uploadFolderName;
+
+				IRODSFile uploadDir = fileFactory.instanceIRODSFile(uploadDirName);
+				uploadDir.mkdir();
+
+				this.accessObjects.getDataTransferOperations().putOperation(localPath, uploadDir, null, null);
+			}
+		}
+		catch (JargonException e)
+		{
+			e.printStackTrace();
+			System.out.println("Upload failed!");
+		}
 	}
 
 	/**
