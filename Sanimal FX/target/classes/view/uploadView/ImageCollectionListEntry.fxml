@@ -10,8 +10,7 @@
 <?import java.net.URL?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
-<HBox alignment="CENTER_LEFT" fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minWidth="-Infinity" minHeight="100.0" spacing="5"
-      xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ImageCollectionListEntry">
+<HBox alignment="CENTER_LEFT" fx:id="mainPane" maxHeight="-Infinity" minHeight="100.0" spacing="5" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ImageCollectionListEntryController">
     <stylesheets>
         <URL value="@ImageCollectionListEntry.css"/>
     </stylesheets>
@@ -22,10 +21,32 @@
         <ImageView fitHeight="90" fitWidth="90">
             <Image url="@../../images/uploadWindow/imageCollection.png"/>
         </ImageView>
-        <VBox spacing="5" alignment="CENTER_LEFT">
-            <Label fx:id="lblCollectionName" text="Collection Name" styleClass="collectionNameLbl"/>
-            <Label fx:id="lblCollectionContactInfo" text="Contact Info"/>
-            <Label fx:id="lblCollectionDescription" wrapText="true" text="Description"/>
-        </VBox>
+        <StackPane HBox.hgrow="ALWAYS" maxWidth="Infinity">
+            <VBox spacing="5" alignment="CENTER_LEFT">
+                <Label fx:id="lblCollectionName" text="Collection Name" styleClass="collectionNameLbl"/>
+                <Label fx:id="lblCollectionContactInfo" text="Contact Info"/>
+                <Label fx:id="lblCollectionDescription" wrapText="true" text="Description"/>
+            </VBox>
+            <HBox spacing="5" alignment="BOTTOM_RIGHT" StackPane.alignment="BOTTOM_RIGHT">
+                <children>
+                    <ImageView fx:id="imgOwner" fitWidth="30" fitHeight="30">
+                        <Image url="@../../images/uploadWindow/ownerIcon.png"/>
+                    </ImageView>
+                    <ImageView fx:id="imgUpload" fitWidth="30" fitHeight="30">
+                        <Image url="@../../images/uploadWindow/uploadIcon.png"/>
+                    </ImageView>
+                    <ImageView fx:id="imgRead" fitWidth="30" fitHeight="30">
+                        <Image url="@../../images/uploadWindow/downloadIcon.png"/>
+                    </ImageView>
+                </children>
+            </HBox>
+            <Button fx:id="btnSettings" minWidth="40" maxWidth="40" maxHeight="40" minHeight="40" onAction="#settingsClicked" StackPane.alignment="TOP_RIGHT">
+                <graphic>
+                    <ImageView fitHeight="30" fitWidth="30">
+                        <Image url="@../../images/uploadWindow/gear.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+        </StackPane>
     </children>
 </HBox>

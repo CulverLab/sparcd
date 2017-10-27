@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<SplitPane fx:id="spnMain" dividerPositions="0.25, 0.625" minHeight="600" minWidth="600" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalUploadController">
+<SplitPane fx:id="spnMain" dividerPositions="0.5" minHeight="600" minWidth="600" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalUploadController">
     <stylesheets>
         <URL value="@SanimalUpload.css" />
     </stylesheets>
@@ -31,54 +31,10 @@
                 <Button fx:id="btnDeleteCollection" onAction="#deleteCollectionPressed" styleClass="deleteCollectionBtn" text="Delete Collection" />
             </FlowPane>
         </VBox>
-        <SplitPane dividerPositions="0.2, 0.915" orientation="VERTICAL">
-            <GridPane hgap="5" vgap="5" SplitPane.resizableWithParent="false">
-                <columnConstraints>
-                    <ColumnConstraints maxWidth="100" minWidth="100" />
-                    <ColumnConstraints hgrow="ALWAYS" />
-                </columnConstraints>
-                <rowConstraints>
-                    <RowConstraints vgrow="NEVER" />
-                    <RowConstraints vgrow="NEVER" />
-                    <RowConstraints vgrow="NEVER" />
-                    <RowConstraints vgrow="ALWAYS" />
-                </rowConstraints>
-                <padding>
-                    <Insets bottom="10" left="10" right="10" top="10" />
-                </padding>
-                <children>
-                    <Label text="Name:" />
-                    <TextField fx:id="txtName" GridPane.columnIndex="1" />
-                    <Label text="Organization:" GridPane.rowIndex="1" />
-                    <TextField fx:id="txtOrganization" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                    <Label text="Contact Info: " GridPane.rowIndex="2" />
-                    <TextField fx:id="txtContactInfo" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                    <Label text="Description: " GridPane.rowIndex="3" />
-                    <TextArea fx:id="tbxDescription" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                </children>
-            </GridPane>
-            <TableView fx:id="tvwPermissions">
-                <columnResizePolicy>
-                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                </columnResizePolicy>
-                <columns>
-                    <TableColumn fx:id="clmUser" text="User" />
-                    <TableColumn fx:id="clmRead" maxWidth="70" minWidth="70" text="Read" />
-                    <TableColumn fx:id="clmUpload" maxWidth="70" minWidth="70" text="Upload" />
-                    <TableColumn fx:id="clmOwner" maxWidth="130" minWidth="130" text="Administrator (Non-editable)" />
-                </columns>
-            </TableView>
-            <FlowPane alignment="CENTER" hgap="5" vgap="10" SplitPane.resizableWithParent="false">
-                <Button fx:id="btnAddUser" onAction="#addNewUser" text="Add User" />
-                <Button fx:id="btnRemoveUser" onAction="#removeCurrentUser" text="Remove User" />
-                <Button fx:id="btnSave" onAction="#saveCollection" text="Save Collection Settings" />
-                <Button fx:id="btnTransferOwnership" onAction="#transferOwnership" text="Transfer Collection Ownership" />
-            </FlowPane>
-        </SplitPane>
         <SplitPane fx:id="spnUpload" dividerPositions="0.915" orientation="VERTICAL">
             <ListView fx:id="lstItemsToUpload" />
             <FlowPane alignment="CENTER" hgap="5" SplitPane.resizableWithParent="false">
-                <Button onAction="#uploadImages" text="Upload" />
+                <Button onAction="#uploadImages" text="Upload to Collection" />
             </FlowPane>
         </SplitPane>
     </items>
