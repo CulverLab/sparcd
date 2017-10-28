@@ -1,7 +1,9 @@
 package model.image;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -16,9 +18,13 @@ import model.species.Species;
 import model.species.SpeciesEntry;
 import model.util.MetadataUtils;
 import model.util.RoundingUtils;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
 import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -316,5 +322,52 @@ public class DirectoryManager
 				}
 			}
 		}
+	}
+
+	public static File directoryToTar(ImageDirectory directory)
+	{
+		try
+		{
+			File tempZip = Files.createTempFile("tarToUpload", ".tar").toFile();
+			TarArchiveOutputStream tarOut = new TarArchiveOutputStream(new FileOutputStream(tempZip));
+
+			writeSpecificDirectoryToTar(tarOut, directory, "/");
+
+			tarOut.flush();
+			tarOut.close();
+			System.out.println("Wrote: " + tempZip.getAbsolutePath());
+			tempZip.deleteOnExit();
+			return tempZip;
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private static void writeSpecificDirectoryToTar(TarArchiveOutputStream tarOut, ImageDirectory currentDir, String currentPath)
+	{
+		String newPath = currentPath + currentDir.getFile().getName() + "/";
+
+		currentDir.getChildren().filtered(imageContainer -> imageContainer instanceof ImageEntry).forEach(imageContainer ->
+		{
+			ImageEntry imageEntry = (ImageEntry) imageContainer;
+			try
+			{
+				ArchiveEntry archiveEntry = tarOut.createArchiveEntry(imageEntry.getFile(), newPath + imageEntry.getFile().getName());
+				tarOut.putArchiveEntry(archiveEntry);
+				tarOut.write(Files.readAllBytes(imageEntry.getFile().toPath()));
+				tarOut.closeArchiveEntry();
+			}
+			catch (IOException e)
+			{
+				System.out.println("Error creating tar archive entry!");
+				e.printStackTrace();
+			}
+		});
+		currentDir.getChildren().filtered(imageContainer -> imageContainer instanceof ImageDirectory).forEach(imageContainer -> {
+			writeSpecificDirectoryToTar(tarOut, (ImageDirectory) imageContainer, newPath);
+		});
 	}
 }

@@ -5,9 +5,15 @@ import com.google.gson.reflect.TypeToken;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import model.SanimalData;
+import model.image.DirectoryManager;
+import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.compressors.CompressorOutputStream;
+import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.irods.jargon.core.connection.AuthScheme;
@@ -520,7 +526,7 @@ public class CyVerseConnectionManager
 		return false;
 	}
 
-	public void uploadImages(ImageCollection collection, File localPath)
+	public void uploadImages(ImageCollection collection, ImageDirectory directoryToWrite, TransferStatusCallbackListener transferCallback)
 	{
 		try
 		{
@@ -535,7 +541,17 @@ public class CyVerseConnectionManager
 				IRODSFile uploadDir = fileFactory.instanceIRODSFile(uploadDirName);
 				uploadDir.mkdir();
 
-				this.accessObjects.getDataTransferOperations().putOperation(localPath, uploadDir, null, null);
+				// Make a tar file from the image files
+				File toWrite = DirectoryManager.directoryToTar(directoryToWrite);
+
+				if (toWrite != null)
+				{
+					this.accessObjects.getDataTransferOperations().putOperation(toWrite, uploadDir, transferCallback, null);
+					this.accessObjects.getBulkFileOperationsAO().extractABundleIntoAnIrodsCollection(uploadDirName + "/" + toWrite.getName(), uploadDirName, "");
+					IRODSFile uploadedFile = this.accessObjects.getFileFactory().instanceIRODSFile(uploadDirName + "/" + toWrite.getName());
+					if (uploadedFile.exists())
+						uploadedFile.delete();
+				}
 			}
 		}
 		catch (JargonException e)

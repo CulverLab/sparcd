@@ -8,14 +8,14 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import model.util.FXMLLoaderUtils;
 import org.apache.commons.logging.impl.Log4JLogger;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.*;
 import org.apache.log4j.lf5.Log4JLogRecord;
+import org.apache.log4j.spi.LoggerFactory;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.globus.util.log4j.NullAppender;
 import org.slf4j.impl.StaticLoggerBinder;
+
+import java.util.logging.Level;
 
 /**
  * Main class entry point
@@ -35,7 +35,6 @@ public class Sanimal extends Application
     public void start(Stage primaryStage) throws Exception
     {
         Application.setUserAgentStylesheet(STYLESHEET_MODENA);
-        PropertyConfigurator.configure("./src/main/resources/log4j.properties");
 
         // Load the FXML document
         FXMLLoader root = FXMLLoaderUtils.loadFXML("SanimalView.fxml");
