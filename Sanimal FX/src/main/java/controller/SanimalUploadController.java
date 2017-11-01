@@ -196,7 +196,7 @@ public class SanimalUploadController implements Initializable
 								@Override
 								public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) throws JargonException
 								{
-									System.out.println("XXXXX" + transferStatus.getBytesTransfered());
+									System.out.println("XXXXX" + (transferStatus.getBytesTransfered() / (double) transferStatus.getTotalSize()));
 									return FileStatusCallbackResponse.CONTINUE;
 								}
 

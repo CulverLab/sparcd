@@ -73,9 +73,6 @@ public class CyVerseConnectionManager
 	// Start all the Access Objects we use to accesss the user's account
 	private CyVerseAOs accessObjects;
 
-	private User userUser;
-	private User publicUser;
-
 	/**
 	 * Given a username and password, this method logs a cyverse user in
 	 *
@@ -105,8 +102,6 @@ public class CyVerseConnectionManager
 				this.accessObjects = new CyVerseAOs(irodsAO, account);
 
 				// Grab the two public users (the "user" user and the "public" user)
-				this.userUser = this.accessObjects.getUserAO().findByName("users");
-				this.publicUser = this.accessObjects.getUserAO().findByName("public");
 
 				// We're good, return true
 				return true;
