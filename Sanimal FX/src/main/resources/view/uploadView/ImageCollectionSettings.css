@@ -1,0 +1,15 @@
+.transferOwnershipBtn {
+    -fx-graphic: url("../../images/uploadWindow/transfer16.png");
+}
+
+.saveBtn {
+    -fx-graphic: url("../../images/uploadWindow/save16.png");
+}
+
+.removeUserBtn {
+    -fx-graphic: url("../../images/uploadWindow/removeUser16.png");
+}
+
+.addUserBtn {
+    -fx-graphic: url("../../images/uploadWindow/addUser16.png");
+}

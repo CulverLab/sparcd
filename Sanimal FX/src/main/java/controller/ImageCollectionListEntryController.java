@@ -35,6 +35,8 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 	@FXML
 	public Label lblCollectionContactInfo;
 	@FXML
+	public Label lblCollectionOrganization;
+	@FXML
 	public Label lblCollectionDescription;
 
 	@FXML
@@ -85,6 +87,8 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 			this.lblCollectionName.setText(collection.getName());
 			// Set the contact info to be the collection contact info
 			this.lblCollectionContactInfo.setText(collection.getContactInfo());
+			// Set the organization of the collection
+			this.lblCollectionOrganization.setText(collection.getOrganization());
 			// Set the description of the collection
 			this.lblCollectionDescription.setText(collection.getDescription());
 			// Hide the settings button if we are not the owner

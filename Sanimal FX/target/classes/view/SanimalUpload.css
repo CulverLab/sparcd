@@ -1,7 +1,17 @@
 .newCollectionBtn {
-    -fx-graphic: url("../images/uploadWindow/save16.png");
+    -fx-graphic: url("../images/uploadWindow/add16.png");
 }
 
 .deleteCollectionBtn {
     -fx-graphic: url("../images/uploadWindow/delete16.png");
+}
+
+.uploadBtn {
+    -fx-graphic: url("../images/uploadWindow/uploadIcon16.png");
+}
+
+.collectionLvw .list-cell:selected {
+    -fx-border-color: black;
+    -fx-border-radius: 1px;
+    -fx-border-width: 3px;
 }

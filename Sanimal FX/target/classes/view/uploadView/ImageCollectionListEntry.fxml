@@ -23,8 +23,9 @@
         </ImageView>
         <StackPane HBox.hgrow="ALWAYS" maxWidth="Infinity">
             <VBox spacing="5" alignment="CENTER_LEFT">
-                <Label fx:id="lblCollectionName" text="Collection Name" styleClass="collectionNameLbl"/>
+                <Label fx:id="lblCollectionName" text="Name" styleClass="collectionNameLbl"/>
                 <Label fx:id="lblCollectionContactInfo" text="Contact Info"/>
+                <Label fx:id="lblCollectionOrganization" text="Organization"/>
                 <Label fx:id="lblCollectionDescription" wrapText="true" text="Description"/>
             </VBox>
             <HBox spacing="5" alignment="BOTTOM_RIGHT" StackPane.alignment="BOTTOM_RIGHT">

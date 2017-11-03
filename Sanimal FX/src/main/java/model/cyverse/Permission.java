@@ -5,7 +5,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class Permission
+public class Permission implements Cloneable
 {
 	private StringProperty usernameProperty = new SimpleStringProperty("Unnamed");
 	private BooleanProperty readProperty = new SimpleBooleanProperty(false);
@@ -102,5 +102,16 @@ public class Permission
 	public String toString()
 	{
 		return "Permission for " + this.getUsername() + ", Owner: " + this.isOwner() + ", Can upload: " + this.canUpload() + ", Can Read: " + this.canRead();
+	}
+
+	@Override
+	public Permission clone()
+	{
+		Permission clone = new Permission();
+		clone.setRead(this.canRead());
+		clone.setUpload(this.canUpload());
+		clone.setOwner(this.isOwner());
+		clone.setUsername(this.getUsername());
+		return clone;
 	}
 }

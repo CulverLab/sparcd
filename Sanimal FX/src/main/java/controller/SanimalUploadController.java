@@ -1,5 +1,7 @@
 package controller;
 
+import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
 import javafx.collections.ObservableList;
@@ -11,6 +13,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.layout.VBox;
 import javafx.util.converter.DefaultStringConverter;
 import library.EditCell;
 import library.TableColumnHeaderUtil;
@@ -49,17 +52,26 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public Button btnDeleteCollection;
 
+	@FXML
+	public Button btnUpload;
 
 	// The primary split pane
 	@FXML
 	public SplitPane spnMain;
 
-	// The upload split pane
+	// The upload box pane
 	@FXML
-	public SplitPane spnUpload;
+	public VBox vbxUpload;
+
+	@FXML
+	public Label lblCantUpload;
+	@FXML
+	public Label lblNoImagesToUpload;
 
 	@FXML
 	public ListView<ImageDirectory> lstItemsToUpload;
+
+
 
 	///
 	/// FXML Bound Fields End
@@ -94,10 +106,14 @@ public class SanimalUploadController implements Initializable
 			return ownerUsername == null || !ownerUsername.equals(SanimalData.getInstance().getUsername());
 		}).orElse(nothingSelected));
 
-		this.spnUpload.disableProperty().bind(EasyBind.monadic(this.selectedCollection).map(collection ->
-				collection.getPermissions()
-						.filtered(perm -> !(perm.getUsername().equals(SanimalData.getInstance().getUsername()) && perm.canUpload())).size() == 1)
-				.orElse(nothingSelected));
+		this.lblCantUpload.visibleProperty().bind(
+				EasyBind.monadic(this.selectedCollection)
+					.map(collection -> collection.getPermissions()
+						.filtered(perm -> !(perm.getUsername().equals(SanimalData.getInstance().getUsername()) && perm.canUpload())).size() == 1));
+
+		this.lblNoImagesToUpload.visibleProperty().bind(Bindings.size(SanimalData.getInstance().getImageTree().getChildren()).isEqualTo(0));
+
+		this.vbxUpload.disableProperty().bind(this.lblCantUpload.visibleProperty().or(this.lblNoImagesToUpload.visibleProperty()));
 
 		this.lstItemsToUpload.setCellFactory(list -> FXMLLoaderUtils.loadFXML("uploadView/ImageUploadListEntry.fxml").getController());
 		ObservableList<ImageContainer> containers = SanimalData.getInstance().getImageTree().getChildren();
@@ -170,6 +186,7 @@ public class SanimalUploadController implements Initializable
 
 	public void uploadImages(ActionEvent actionEvent)
 	{
+		this.btnUpload.setDisable(true);
 		this.lstItemsToUpload.getItems().forEach(imageDirectory ->
 		{
 			if (imageDirectory.isSelectedForUpload())
@@ -177,7 +194,7 @@ public class SanimalUploadController implements Initializable
 				boolean validDirectory = true;
 				for (ImageEntry imageEntry : imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).collect(Collectors.toList()))
 				{
-					if (imageEntry.getLocationTaken() == null || imageEntry.getSpeciesPresent().isEmpty())
+					if (imageEntry.getLocationTaken() == null)// || imageEntry.getSpeciesPresent().isEmpty())
 					{
 						validDirectory = false;
 						break;
@@ -191,30 +208,37 @@ public class SanimalUploadController implements Initializable
 						@Override
 						protected Void call() throws Exception
 						{
+							this.updateProgress(0, 1);
+							StringProperty messageCallback = new SimpleStringProperty("");
+							this.updateMessage("Uploading image directory " + imageDirectory.getFile().getName() + " to CyVerse.");
+							messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
 							SanimalData.getInstance().getConnectionManager().uploadImages(selectedCollection.getValue(), imageDirectory, new TransferStatusCallbackListener()
 							{
 								@Override
 								public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) throws JargonException
 								{
-									System.out.println("XXXXX" + (transferStatus.getBytesTransfered() / (double) transferStatus.getTotalSize()));
+									Platform.runLater(() -> imageDirectory.setUploadProgress(transferStatus.getBytesTransfered() / (double) transferStatus.getTotalSize()));
+									updateProgress((double) transferStatus.getBytesTransfered(), (double) transferStatus.getTotalSize());
 									return FileStatusCallbackResponse.CONTINUE;
 								}
 
 								@Override
-								public void overallStatusCallback(TransferStatus transferStatus) throws JargonException
-								{
-
-								}
+								public void overallStatusCallback(TransferStatus transferStatus) throws JargonException {}
 
 								@Override
 								public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection)
 								{
 									return CallbackResponse.YES_FOR_ALL;
 								}
-							});
+							}, messageCallback);
 							return null;
 						}
 					};
+					uploadTask.setOnSucceeded(event ->
+					{
+						imageDirectory.setUploadProgress(-1);
+						this.btnUpload.setDisable(false);
+					});
 					SanimalData.getInstance().getSanimalExecutor().addTask(uploadTask);
 				}
 				else

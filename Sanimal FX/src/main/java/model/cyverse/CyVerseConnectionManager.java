@@ -2,6 +2,7 @@ package model.cyverse;
 
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import model.SanimalData;
@@ -521,7 +522,7 @@ public class CyVerseConnectionManager
 		return false;
 	}
 
-	public void uploadImages(ImageCollection collection, ImageDirectory directoryToWrite, TransferStatusCallbackListener transferCallback)
+	public void uploadImages(ImageCollection collection, ImageDirectory directoryToWrite, TransferStatusCallbackListener transferCallback, StringProperty messageCallback)
 	{
 		try
 		{
@@ -530,22 +531,34 @@ public class CyVerseConnectionManager
 			IRODSFile collectionUploadDir = fileFactory.instanceIRODSFile(collectionUploadDirStr);
 			if (collectionUploadDir.exists() && collectionUploadDir.canWrite())
 			{
+				if (messageCallback != null)
+					messageCallback.setValue("Creating upload folder on CyVerse...");
+
 				String uploadFolderName = FOLDER_FORMAT.format(new Date(this.accessObjects.getEnvironmentalInfoAO().getIRODSServerCurrentTime())) + " " + SanimalData.getInstance().getUsername();
 				String uploadDirName = collectionUploadDirStr + "/" + uploadFolderName;
 
 				IRODSFile uploadDir = fileFactory.instanceIRODSFile(uploadDirName);
 				uploadDir.mkdir();
 
+				if (messageCallback != null)
+					messageCallback.setValue("Creating TAR file out of the directory before uploading...");
+
 				// Make a tar file from the image files
 				File toWrite = DirectoryManager.directoryToTar(directoryToWrite);
 
 				if (toWrite != null)
 				{
+					if (messageCallback != null)
+						messageCallback.setValue("Uploading TAR file to CyVerse...");
 					this.accessObjects.getDataTransferOperations().putOperation(toWrite, uploadDir, transferCallback, null);
-					this.accessObjects.getBulkFileOperationsAO().extractABundleIntoAnIrodsCollection(uploadDirName + "/" + toWrite.getName(), uploadDirName, "");
-					IRODSFile uploadedFile = this.accessObjects.getFileFactory().instanceIRODSFile(uploadDirName + "/" + toWrite.getName());
-					if (uploadedFile.exists())
-						uploadedFile.delete();
+					if (messageCallback != null)
+						messageCallback.setValue("Extracting TAR file on CyVerse into a directory...");
+					this.accessObjects.getBulkFileOperationsAO().extractABundleIntoAnIrodsCollectionWithForceOption(uploadDirName + "/" + toWrite.getName(), uploadDirName, "");
+					if (messageCallback != null)
+						messageCallback.setValue("Removing temporary TAR file...");
+					//IRODSFile uploadedFile = this.accessObjects.getFileFactory().instanceIRODSFile(uploadDirName + "/" + toWrite.getName());
+					//if (uploadedFile.exists())
+					//	uploadedFile.delete();
 				}
 			}
 		}

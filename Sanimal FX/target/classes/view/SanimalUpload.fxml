@@ -6,23 +6,18 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.FlowPane?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
+<?import javafx.scene.layout.StackPane?>
 <SplitPane fx:id="spnMain" dividerPositions="0.5" minHeight="600" minWidth="600" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalUploadController">
     <stylesheets>
         <URL value="@SanimalUpload.css" />
     </stylesheets>
     <items>
         <VBox SplitPane.resizableWithParent="false">
-            <ListView fx:id="collectionListView" VBox.vgrow="ALWAYS" />
+            <ListView fx:id="collectionListView" styleClass="collectionLvw" VBox.vgrow="ALWAYS" />
             <FlowPane alignment="CENTER" hgap="5" vgap="10">
                 <padding>
                     <Insets bottom="20" left="5" right="5" top="20" />
@@ -31,11 +26,36 @@
                 <Button fx:id="btnDeleteCollection" onAction="#deleteCollectionPressed" styleClass="deleteCollectionBtn" text="Delete Collection" />
             </FlowPane>
         </VBox>
-        <SplitPane fx:id="spnUpload" dividerPositions="0.915" orientation="VERTICAL">
-            <ListView fx:id="lstItemsToUpload" />
-            <FlowPane alignment="CENTER" hgap="5" SplitPane.resizableWithParent="false">
-                <Button onAction="#uploadImages" text="Upload to Collection" />
-            </FlowPane>
-        </SplitPane>
+        <StackPane>
+            <VBox fx:id="vbxUpload">
+                <Label alignment="CENTER" text="Items to Upload" prefWidth="Infinity" textAlignment="CENTER">
+                    <font>
+                        <Font size="20.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets top="10" bottom="10" left="10" right="10"/>
+                    </VBox.margin>
+                </Label>
+                <ListView fx:id="lstItemsToUpload" VBox.vgrow="ALWAYS" />
+                <FlowPane alignment="CENTER" hgap="5" vgap="10" SplitPane.resizableWithParent="false">
+                    <padding>
+                        <Insets bottom="20" left="5" right="5" top="20" />
+                    </padding>
+                    <Button fx:id="btnUpload" onAction="#uploadImages" styleClass="uploadBtn" text="Upload to Collection" />
+                </FlowPane>
+            </VBox>
+            <VBox pickOnBounds="false" StackPane.alignment="CENTER" alignment="CENTER" spacing="5">
+                <Label fx:id="lblCantUpload" pickOnBounds="false" text="You cannot upload to this collection.">
+                    <font>
+                        <Font size="20.0" />
+                    </font>
+                </Label>
+                <Label fx:id="lblNoImagesToUpload" pickOnBounds="false" text="Import images in the import tab before uploading.">
+                    <font>
+                        <Font size="20.0" />
+                    </font>
+                </Label>
+            </VBox>
+        </StackPane>
     </items>
 </SplitPane>

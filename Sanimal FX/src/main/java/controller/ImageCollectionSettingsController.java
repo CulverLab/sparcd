@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.stage.Stage;
 import javafx.util.converter.DefaultStringConverter;
 import library.EditCell;
 import library.TableColumnHeaderUtil;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class ImageCollectionSettingsController implements Initializable
 {
@@ -76,6 +78,7 @@ public class ImageCollectionSettingsController implements Initializable
 
 	// The currently selected image collection
 	private ObjectProperty<ImageCollection> selectedCollection = new SimpleObjectProperty<>();
+	private ImageCollection originalCollection;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
@@ -149,7 +152,14 @@ public class ImageCollectionSettingsController implements Initializable
 
 	public void setSelectedCollection(ImageCollection collection)
 	{
-		this.selectedCollection.setValue(collection);
+		ImageCollection clone = new ImageCollection();
+		clone.setName(collection.getName());
+		clone.setContactInfo(collection.getContactInfo());
+		clone.setOrganization(collection.getOrganization());
+		clone.setDescription(collection.getDescription());
+		clone.getPermissions().addAll(collection.getPermissions().stream().map(Permission::clone).collect(Collectors.toList()));
+		this.selectedCollection.setValue(clone);
+		originalCollection = collection;
 	}
 
 	/**
@@ -212,41 +222,43 @@ public class ImageCollectionSettingsController implements Initializable
 	{
 		btnSave.setDisable(true);
 		ImageCollection currentlySelected = this.selectedCollection.getValue();
-		if (currentlySelected != null)
+		originalCollection.setName(currentlySelected.getName());
+		originalCollection.setContactInfo(currentlySelected.getContactInfo());
+		originalCollection.setOrganization(currentlySelected.getOrganization());
+		originalCollection.setDescription(currentlySelected.getDescription());
+		originalCollection.getPermissions().setAll(currentlySelected.getPermissions());
+		for (Permission permission : originalCollection.getPermissions())
 		{
-			for (Permission permission : currentlySelected.getPermissions())
+			if (!SanimalData.getInstance().getConnectionManager().isValidUsername(permission.getUsername()))
 			{
-				if (!SanimalData.getInstance().getConnectionManager().isValidUsername(permission.getUsername()))
-				{
-					Alert alert = new Alert(Alert.AlertType.WARNING);
-					alert.setTitle("Invalid User");
-					alert.setHeaderText("Username entered invalid");
-					alert.setContentText("The username (" + permission.getUsername() + ") you entered was not found on the CyVerse system. Reminder: permissions are expecting usernames, not real names.");
-					alert.showAndWait();
-					btnSave.setDisable(false);
-					return;
-				}
+				Alert alert = new Alert(Alert.AlertType.WARNING);
+				alert.setTitle("Invalid User");
+				alert.setHeaderText("Username entered invalid");
+				alert.setContentText("The username (" + permission.getUsername() + ") you entered was not found on the CyVerse system. Reminder: permissions are expecting usernames, not real names.");
+				alert.showAndWait();
+				btnSave.setDisable(false);
+				return;
 			}
-
-			FinishableTask<Void> saveTask = new FinishableTask<Void>()
-			{
-				@Override
-				protected Void call() throws Exception
-				{
-					this.updateProgress(0, 1);
-					this.updateMessage("Saving the collection: " + currentlySelected.getName());
-
-
-					SanimalData.getInstance().getConnectionManager().pushLocalCollection(currentlySelected);
-
-					this.updateProgress(0, 1);
-					return null;
-				}
-			};
-			saveTask.setOnFinished(event -> btnSave.setDisable(false));
-
-			SanimalData.getInstance().getSanimalExecutor().addTask(saveTask);
 		}
+
+		FinishableTask<Void> saveTask = new FinishableTask<Void>()
+		{
+			@Override
+			protected Void call() throws Exception
+			{
+				this.updateProgress(0, 1);
+				this.updateMessage("Saving the collection: " + originalCollection.getName());
+
+				SanimalData.getInstance().getConnectionManager().pushLocalCollection(originalCollection);
+
+				this.updateProgress(1, 1);
+				return null;
+			}
+		};
+
+		SanimalData.getInstance().getSanimalExecutor().addTask(saveTask);
+
+		((Stage) this.tvwPermissions.getScene().getWindow()).close();
 	}
 
 	/**

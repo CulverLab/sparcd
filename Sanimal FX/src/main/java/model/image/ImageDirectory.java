@@ -1,10 +1,7 @@
 package model.image;
 
 import javafx.beans.Observable;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
@@ -54,6 +51,9 @@ public class ImageDirectory extends ImageContainer
 
 	// If this image directory is currently selected to be uploaded
 	private transient BooleanProperty selectedForUpload = new SimpleBooleanProperty(false);
+
+	// The progress of the directory upload to CyVerse
+	private transient DoubleProperty uploadProgress = new SimpleDoubleProperty(-1);
 
 	/**
 	 * Construct an image directoryProperty
@@ -194,6 +194,21 @@ public class ImageDirectory extends ImageContainer
 	public BooleanProperty selectedForUploadProperty()
 	{
 		return this.selectedForUpload;
+	}
+
+	public void setUploadProgress(double uploadProgress)
+	{
+		this.uploadProgress.setValue(uploadProgress);
+	}
+
+	public double getUploadProgress()
+	{
+		return this.uploadProgress.getValue();
+	}
+
+	public DoubleProperty uploadProgressProperty()
+	{
+		return this.uploadProgress;
 	}
 
 	/**

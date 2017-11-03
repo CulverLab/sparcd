@@ -335,7 +335,6 @@ public class DirectoryManager
 
 			tarOut.flush();
 			tarOut.close();
-			System.out.println("Wrote: " + tempZip.getAbsolutePath());
 			tempZip.deleteOnExit();
 			return tempZip;
 		}

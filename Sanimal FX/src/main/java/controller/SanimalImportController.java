@@ -780,7 +780,9 @@ public class SanimalImportController implements Initializable
 					return null;
 				}
 			};
-			importTask.setOnFinished(event -> this.btnImportImages.setDisable(false));
+			importTask.setOnSucceeded(event -> this.btnImportImages.setDisable(false));
+			if (importTask.getException() != null)
+				importTask.getException().printStackTrace();
 			SanimalData.getInstance().getSanimalExecutor().addTask(importTask);
 		}
 		// Consume the event

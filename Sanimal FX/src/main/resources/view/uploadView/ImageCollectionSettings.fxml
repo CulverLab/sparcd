@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<SplitPane dividerPositions="0.38, 0.85" orientation="VERTICAL" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ImageCollectionSettingsController">
+<SplitPane dividerPositions="0.38, 0.85" orientation="VERTICAL" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ImageCollectionSettingsController">
     <stylesheets>
         <URL value="@ImageCollectionSettings.css" />
     </stylesheets>
@@ -55,9 +55,9 @@
         </columns>
     </TableView>
     <FlowPane alignment="CENTER" hgap="5" vgap="10" SplitPane.resizableWithParent="false">
-        <Button fx:id="btnAddUser" onAction="#addNewUser" text="Add User" />
-        <Button fx:id="btnRemoveUser" onAction="#removeCurrentUser" text="Remove User" />
-        <Button fx:id="btnSave" onAction="#saveCollection" text="Save Collection Settings" />
-        <Button fx:id="btnTransferOwnership" onAction="#transferOwnership" text="Transfer Collection Ownership" />
+        <Button fx:id="btnAddUser" styleClass="addUserBtn" onAction="#addNewUser" text="Add User" />
+        <Button fx:id="btnRemoveUser" styleClass="removeUserBtn" onAction="#removeCurrentUser" text="Remove User" />
+        <Button fx:id="btnSave" styleClass="saveBtn" onAction="#saveCollection" text="Save Collection Settings" />
+        <Button fx:id="btnTransferOwnership" disable="true" styleClass="transferOwnershipBtn" onAction="#transferOwnership" text="Transfer Collection Ownership" />
     </FlowPane>
 </SplitPane>

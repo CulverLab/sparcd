@@ -6,6 +6,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -78,11 +79,12 @@ public class ImageEntry extends ImageContainer
 		this.imageFileProperty.setValue(file);
 		try
 		{
+			this.dateTakenProperty.setValue(Calendar.getInstance().getTime());
 			TiffImageMetadata tiffImageMetadata = MetadataUtils.readImageMetadata(this);
 			if (tiffImageMetadata != null)
 			{
 				String[] dateTaken = tiffImageMetadata.getFieldValue(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
-				if (dateTaken.length == 1)
+				if (dateTaken != null && dateTaken.length == 1)
 					this.dateTakenProperty.setValue(DATE_FORMAT.parse(dateTaken[0]));
 			}
 		}
