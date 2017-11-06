@@ -44,14 +44,17 @@ public class SanimalUploadController implements Initializable
 	/// FXML Bound Fields Start
 	///
 
+	// The list view of collections
 	@FXML
 	public ListView<ImageCollection> collectionListView;
 
+	// The new and delete collection buttons
 	@FXML
 	public Button btnNewCollection;
 	@FXML
 	public Button btnDeleteCollection;
 
+	// Button to upload images
 	@FXML
 	public Button btnUpload;
 
@@ -63,15 +66,15 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public VBox vbxUpload;
 
+	// Warning labels used to show if there is a problem uploading
 	@FXML
 	public Label lblCantUpload;
 	@FXML
 	public Label lblNoImagesToUpload;
 
+	// A list of items to upload
 	@FXML
 	public ListView<ImageDirectory> lstItemsToUpload;
-
-
 
 	///
 	/// FXML Bound Fields End
@@ -106,16 +109,21 @@ public class SanimalUploadController implements Initializable
 			return ownerUsername == null || !ownerUsername.equals(SanimalData.getInstance().getUsername());
 		}).orElse(nothingSelected));
 
+		// Disable the can't upload label if we can't upload to a given collection
 		this.lblCantUpload.visibleProperty().bind(
 				EasyBind.monadic(this.selectedCollection)
 					.map(collection -> collection.getPermissions()
 						.filtered(perm -> !(perm.getUsername().equals(SanimalData.getInstance().getUsername()) && perm.canUpload())).size() == 1));
 
+		// Disable the no images imported label if no images are imported into the program
 		this.lblNoImagesToUpload.visibleProperty().bind(Bindings.size(SanimalData.getInstance().getImageTree().getChildren()).isEqualTo(0));
 
+		// Disable the upload button if either of the labels are visible
 		this.vbxUpload.disableProperty().bind(this.lblCantUpload.visibleProperty().or(this.lblNoImagesToUpload.visibleProperty()));
 
+		// Set the cell factory to be our custom cell
 		this.lstItemsToUpload.setCellFactory(list -> FXMLLoaderUtils.loadFXML("uploadView/ImageUploadListEntry.fxml").getController());
+		// Populate the list of directories
 		ObservableList<ImageContainer> containers = SanimalData.getInstance().getImageTree().getChildren();
 		ObservableList<ImageDirectory> directories = EasyBind.map(containers.filtered(imageContainer -> imageContainer instanceof ImageDirectory), imageContainer -> (ImageDirectory) imageContainer);
 		this.lstItemsToUpload.setItems(directories);
@@ -184,47 +192,65 @@ public class SanimalUploadController implements Initializable
 		}
 	}
 
+	/**
+	 * When we click the upload button
+	 * @param actionEvent
+	 */
 	public void uploadImages(ActionEvent actionEvent)
 	{
+		// Disable the upload button so that we can't click it twice
 		this.btnUpload.setDisable(true);
+		// Go over each directory in the list of items to upload and upload them
 		this.lstItemsToUpload.getItems().forEach(imageDirectory ->
 		{
+			// If the image directory is selected for upload, upload it
 			if (imageDirectory.isSelectedForUpload())
 			{
+				// Make sure we've got a valid directory
 				boolean validDirectory = true;
+				// Each image must have a location and species tagged
 				for (ImageEntry imageEntry : imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).collect(Collectors.toList()))
 				{
-					if (imageEntry.getLocationTaken() == null)// || imageEntry.getSpeciesPresent().isEmpty())
+					if (imageEntry.getLocationTaken() == null || imageEntry.getSpeciesPresent().isEmpty())
 					{
 						validDirectory = false;
 						break;
 					}
 				}
 
+				// If we have a valid directory, perform the upload
 				if (validDirectory)
 				{
+					// Create an upload task
 					Task<Void> uploadTask = new Task<Void>()
 					{
 						@Override
 						protected Void call() throws Exception
 						{
+							// Update the progress
 							this.updateProgress(0, 1);
+							// Create a string property used as a callback
 							StringProperty messageCallback = new SimpleStringProperty("");
 							this.updateMessage("Uploading image directory " + imageDirectory.getFile().getName() + " to CyVerse.");
 							messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
+							// Upload images to CyVerse, we give it a transfer status callback so that we can show the progress
 							SanimalData.getInstance().getConnectionManager().uploadImages(selectedCollection.getValue(), imageDirectory, new TransferStatusCallbackListener()
 							{
 								@Override
 								public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) throws JargonException
 								{
+									// Set the upload progress in the directory we get a callback
 									Platform.runLater(() -> imageDirectory.setUploadProgress(transferStatus.getBytesTransfered() / (double) transferStatus.getTotalSize()));
+									// Set the upload progress whenever we get a callback
 									updateProgress((double) transferStatus.getBytesTransfered(), (double) transferStatus.getTotalSize());
 									return FileStatusCallbackResponse.CONTINUE;
 								}
 
+								// Ignore this status callback
 								@Override
 								public void overallStatusCallback(TransferStatus transferStatus) throws JargonException {}
 
+								// Ignore this as well
 								@Override
 								public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection)
 								{
@@ -234,6 +260,7 @@ public class SanimalUploadController implements Initializable
 							return null;
 						}
 					};
+					// When the upload finishes, we enable the upload button
 					uploadTask.setOnSucceeded(event ->
 					{
 						imageDirectory.setUploadProgress(-1);

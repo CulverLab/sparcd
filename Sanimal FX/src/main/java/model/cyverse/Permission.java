@@ -104,6 +104,10 @@ public class Permission implements Cloneable
 		return "Permission for " + this.getUsername() + ", Owner: " + this.isOwner() + ", Can upload: " + this.canUpload() + ", Can Read: " + this.canRead();
 	}
 
+	/**
+	 * Used to clone the permission
+	 * @return A clone of the current permission
+	 */
 	@Override
 	public Permission clone()
 	{

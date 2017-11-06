@@ -96,6 +96,7 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 			boolean isOwner = forUser != null && forUser.isOwner();
 			boolean canUpload = forUser != null && forUser.canUpload();
 			boolean canRead = forUser != null && forUser.canRead();
+			// Hide the owner, upload and read icons if we do not have the respective permission
 			this.btnSettings.setDisable(!isOwner);
 			this.imgOwner.setVisible(isOwner);
 			this.imgUpload.setVisible(canUpload);
@@ -111,7 +112,7 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 		FXMLLoader loader = FXMLLoaderUtils.loadFXML("uploadView/ImageCollectionSettings.fxml");
 		// Grab the controller and set the species of that controller
 		ImageCollectionSettingsController controller = loader.getController();
-		controller.setSelectedCollection(this.getItem());
+		controller.setCollectionToEdit(this.getItem());
 
 		// Create the stage that will have the Image Collection Editor
 		Stage dialogStage = new Stage();

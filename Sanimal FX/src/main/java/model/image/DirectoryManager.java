@@ -324,15 +324,26 @@ public class DirectoryManager
 		}
 	}
 
+	/**
+	 * Given an image directory, this will create a TAR file out of the directory
+	 *
+	 * @param directory The image directory to TAR
+	 *
+	 * @return The TAR file
+	 */
 	public static File directoryToTar(ImageDirectory directory)
 	{
 		try
 		{
+			// Create a temporarily TAR file to write to
 			File tempZip = Files.createTempFile("tarToUpload", ".tar").toFile();
+			// Create a TAR output stream to write to
 			TarArchiveOutputStream tarOut = new TarArchiveOutputStream(new FileOutputStream(tempZip));
 
+			// Write the directory to the TAR file
 			writeSpecificDirectoryToTar(tarOut, directory, "/");
 
+			// Flush the file and close it. We delete the TAR after the program closes
 			tarOut.flush();
 			tarOut.close();
 			tempZip.deleteOnExit();
@@ -342,21 +353,35 @@ public class DirectoryManager
 		{
 			e.printStackTrace();
 		}
+		// If something goes wrong, return null
 		return null;
 	}
 
+	/**
+	 * Given an output stream and a current directory, this will recursively build the TAR file given the current directory level
+	 *
+	 * @param tarOut The tar file to write to
+	 * @param currentDir The current directory in the recursion
+	 * @param currentPath The path in the TAR file in this recursion iteration
+	 */
 	private static void writeSpecificDirectoryToTar(TarArchiveOutputStream tarOut, ImageDirectory currentDir, String currentPath)
 	{
+		// The new path to write to this iteration of the recursion
 		String newPath = currentPath + currentDir.getFile().getName() + "/";
 
+		// Go through each child, and add it to the tar
 		currentDir.getChildren().filtered(imageContainer -> imageContainer instanceof ImageEntry).forEach(imageContainer ->
 		{
 			ImageEntry imageEntry = (ImageEntry) imageContainer;
 			try
 			{
+				// Create an archive entry for the image
 				ArchiveEntry archiveEntry = tarOut.createArchiveEntry(imageEntry.getFile(), newPath + imageEntry.getFile().getName());
+				// Put the archive entry into the TAR file
 				tarOut.putArchiveEntry(archiveEntry);
+				// Write all the bytes in the file into the TAR file
 				tarOut.write(Files.readAllBytes(imageEntry.getFile().toPath()));
+				// Finish writing the TAR entry
 				tarOut.closeArchiveEntry();
 			}
 			catch (IOException e)
@@ -365,6 +390,7 @@ public class DirectoryManager
 				e.printStackTrace();
 			}
 		});
+		// After doing all the images in the directory, we recursively move down the structure and do sub-directories
 		currentDir.getChildren().filtered(imageContainer -> imageContainer instanceof ImageDirectory).forEach(imageContainer -> {
 			writeSpecificDirectoryToTar(tarOut, (ImageDirectory) imageContainer, newPath);
 		});

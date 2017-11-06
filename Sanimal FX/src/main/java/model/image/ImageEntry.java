@@ -79,10 +79,13 @@ public class ImageEntry extends ImageContainer
 		this.imageFileProperty.setValue(file);
 		try
 		{
+			// Set the date to a default
 			this.dateTakenProperty.setValue(Calendar.getInstance().getTime());
+			//Read the metadata off of the image
 			TiffImageMetadata tiffImageMetadata = MetadataUtils.readImageMetadata(this);
 			if (tiffImageMetadata != null)
 			{
+				// Grab the date taken from the metadata
 				String[] dateTaken = tiffImageMetadata.getFieldValue(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
 				if (dateTaken != null && dateTaken.length == 1)
 					this.dateTakenProperty.setValue(DATE_FORMAT.parse(dateTaken[0]));

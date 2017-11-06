@@ -30,13 +30,16 @@
     <items>
         <VBox prefWidth="310" styleClass="lightBorder" SplitPane.resizableWithParent="false">
             <children>
-                <HBox>
+                <ListView fx:id="speciesListView" onDragDetected="#speciesListDrag" VBox.vgrow="ALWAYS" />
+                <HBox spacing="5">
+                    <VBox.margin>
+                        <Insets top="5" bottom="5" left="5" right="5"/>
+                    </VBox.margin>
                     <children>
                         <TextField fx:id="txtSpeciesSearch" promptText="Search Species" HBox.hgrow="ALWAYS" />
                         <Button fx:id="btnResetSearch" onAction="#resetSpeciesSearch" styleClass="resetSearchBtn" HBox.hgrow="NEVER" />
                     </children>
                 </HBox>
-                <ListView fx:id="speciesListView" onDragDetected="#speciesListDrag" VBox.vgrow="ALWAYS" />
                 <FlowPane alignment="CENTER" hgap="5" vgap="10">
                     <padding>
                         <Insets bottom="20" left="5" right="5" top="20" />

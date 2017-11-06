@@ -335,9 +335,11 @@ public class CyVerseConnectionManager
 										}
 										else
 										{
+											// If we got a null permissions JSON, we check if we can see the uploads folder. If so, we have upload permissions!
 											IRODSFile collectionDirUploads = fileFactory.instanceIRODSFile(collectionDir.getAbsolutePath() + "/Uploads");
 											if (collectionDirUploads.exists())
 											{
+												// Add a permission for my own permissions
 												Permission myPermission = new Permission();
 												myPermission.setOwner(false);
 												myPermission.setUsername(SanimalData.getInstance().getUsername());
@@ -377,7 +379,7 @@ public class CyVerseConnectionManager
 	 *
 	 * @param collection The list of new species to upload
 	 */
-	public void pushLocalCollection(ImageCollection collection)
+	public void pushLocalCollection(ImageCollection collection, StringProperty messageCallback)
 	{
 		String collectionsDir = "/iplant/home/dslovikosky/Sanimal/Collections";
 		IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
@@ -387,22 +389,37 @@ public class CyVerseConnectionManager
 		{
 			try
 			{
+				// The name of the collection directory is the UUID of the collection
 				String collectionDirName = collectionsDir + "/" + collection.getID().toString();
 
+				// Create the directory, and set the permissions appropriately
 				IRODSFile collectionDir = fileFactory.instanceIRODSFile(collectionDirName);
 				if (!collectionDir.exists())
 					collectionDir.mkdir();
 				this.setFilePermissions(collectionDirName, collection.getPermissions(), false);
 
+				if (messageCallback != null)
+					messageCallback.setValue("Writing collection JSON file...");
+
+				// Create a collections JSON file to hold the settings
 				String collectionJSONFile = collectionDirName + "/collection.json";
 				String json = SanimalData.getInstance().getGson().toJson(collection);
 				this.writeRemoteFile(collectionJSONFile, json);
+				// Set the file's permissions. We force read only so that even users with write permissions cannot change this file
 				this.setFilePermissions(collectionJSONFile, collection.getPermissions(), true);
 
+				if (messageCallback != null)
+					messageCallback.setValue("Writing permissions JSON file...");
+
+				// Create a permissions JSON file to hold the permissions
 				String collectionPermissionFile = collectionDirName + "/permissions.json";
 				json = SanimalData.getInstance().getGson().toJson(collection.getPermissions());
 				this.writeRemoteFile(collectionPermissionFile, json);
 
+				if (messageCallback != null)
+					messageCallback.setValue("Creating collection Uploads directory...");
+
+				// Create the folder containing uploads, and set its permissions
 				IRODSFile collectionDirUploads = fileFactory.instanceIRODSFile(collectionDirName + "/Uploads");
 				if (!collectionDirUploads.exists())
 					collectionDirUploads.mkdir();
@@ -415,11 +432,17 @@ public class CyVerseConnectionManager
 		}
 	}
 
+	/**
+	 * Removes a collection from CyVerse's system
+	 * @param collection
+	 */
 	public void removeCollection(ImageCollection collection)
 	{
+		// The name of the collection to remove
 		String collectionsDirName = "/iplant/home/dslovikosky/Sanimal/Collections/" + collection.getID().toString();
 		try
 		{
+			// If it exists, delete it
 			IRODSFile collectionDir = this.accessObjects.getFileFactory().instanceIRODSFile(collectionsDirName);
 			if (collectionDir.exists())
 				collectionDir.delete();
@@ -431,18 +454,31 @@ public class CyVerseConnectionManager
 		}
 	}
 
+	/**
+	 * Sets the file permission for a file on the CyVerse system
+	 *
+	 * @param fileName The name of the file to update permissions of
+	 * @param permissions The list of permissions to set
+	 * @param forceReadOnly If the highest level of permission should be READ not WRITE
+	 * @throws JargonException Thrown if something goes wrong in the Jargon library
+	 */
 	private void setFilePermissions(String fileName, ObservableList<Permission> permissions, boolean forceReadOnly) throws JargonException
 	{
+		// Create the file, and remove all permissions from it
 		IRODSFile file = this.accessObjects.getFileFactory().instanceIRODSFile(fileName);
 		this.removeAllFilePermissions(file);
+		// If the file is a directory, set the directory permissions
 		if (file.isDirectory())
 		{
+			// Go through each non-owner permission
 			CollectionAO collectionAO = this.accessObjects.getCollectionAO();
 			permissions.filtered(permission -> !permission.isOwner()).forEach(permission -> {
 				try
 				{
+					// If the user can upload, and we're not forcing read only, set the permission to write
 					if (permission.canUpload() && !forceReadOnly)
 						collectionAO.setAccessPermissionWrite(ZONE, file.getAbsolutePath(), permission.getUsername(), false);
+					// If the user can read set the permission to write
 					else if (permission.canRead())
 						collectionAO.setAccessPermissionRead(ZONE, file.getAbsolutePath(), permission.getUsername(), false);
 				}
@@ -453,14 +489,18 @@ public class CyVerseConnectionManager
 				}
 			});
 		}
+		// File permissions are done differently, so do that here
 		else if (file.isFile())
 		{
 			DataObjectAO dataObjectAO = this.accessObjects.getDataObjectAO();
+			// Go through each permission and set the file permissions
 			permissions.filtered(permission -> !permission.isOwner()).forEach(permission -> {
 				try
 				{
+					// If the user can upload, and we're not forcing read only, set the permission to write
 					if (permission.canUpload() && !forceReadOnly)
 						dataObjectAO.setAccessPermissionWrite(ZONE, file.getAbsolutePath(), permission.getUsername());
+						// If the user can read set the permission to write
 					else if (permission.canRead())
 						dataObjectAO.setAccessPermissionRead(ZONE, file.getAbsolutePath(), permission.getUsername());
 				}
@@ -473,12 +513,21 @@ public class CyVerseConnectionManager
 		}
 	}
 
+	/**
+	 * Removes all file permissions except the owner
+	 *
+	 * @param file The file to remove permission from
+	 * @throws JargonException Thrown if something goes wrong in the Jargon library
+	 */
 	private void removeAllFilePermissions(IRODSFile file) throws JargonException
 	{
+		// Directories are done differently than files, so test this first
 		if (file.isDirectory())
 		{
+			// If it's a collection, we list all permission for the folder
 			CollectionAndDataObjectListingEntry collectionPermissions = this.accessObjects.getCollectionAndDataObjectListAndSearchAO().getCollectionAndDataObjectListingEntryAtGivenAbsolutePath(file.getAbsolutePath());
 			CollectionAO collectionAO = this.accessObjects.getCollectionAO();
+			// We go through each permission, and remove all access permissions from that user
 			collectionPermissions.getUserFilePermission().forEach(userFilePermission -> {
 				if (userFilePermission.getFilePermissionEnum() != FilePermissionEnum.OWN)
 					try
@@ -494,7 +543,9 @@ public class CyVerseConnectionManager
 		}
 		else if (file.isFile())
 		{
+			// If it's a file, we list all permission for the file
 			DataObjectAO dataObjectAO = this.accessObjects.getDataObjectAO();
+			// We go through each permission, and remove all access permissions from that user
 			dataObjectAO.listPermissionsForDataObject(file.getAbsolutePath()).forEach(userFilePermission -> {
 				if (userFilePermission.getFilePermissionEnum() != FilePermissionEnum.OWN)
 					try
@@ -510,10 +561,17 @@ public class CyVerseConnectionManager
 		}
 	}
 
+	/**
+	 * Test to see if the given username is valid on the CyVerse system
+	 *
+	 * @param username The username to test
+	 * @return True if the username exists on CyVerse, false otherwise
+	 */
 	public Boolean isValidUsername(String username)
 	{
 		try
 		{
+			// Grab the user object for a given name, if it's null, it doesn't exist!
 			return this.accessObjects.getUserAO().findByName(username) != null;
 		}
 		catch (JargonException ignored)
@@ -522,21 +580,33 @@ public class CyVerseConnectionManager
 		return false;
 	}
 
+	/**
+	 * Uploads a set of images to CyVerse
+	 *
+	 * @param collection The collection to upload to
+	 * @param directoryToWrite The directory to write
+	 * @param transferCallback The callback that will receive callbacks if the transfer is in progress
+	 * @param messageCallback Optional message callback that will show what is currently going on
+	 */
 	public void uploadImages(ImageCollection collection, ImageDirectory directoryToWrite, TransferStatusCallbackListener transferCallback, StringProperty messageCallback)
 	{
 		try
 		{
+			// Grab the uploads folder for a given collection
 			String collectionUploadDirStr = "/iplant/home/dslovikosky/Sanimal/Collections/" + collection.getID().toString() + "/Uploads";
 			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 			IRODSFile collectionUploadDir = fileFactory.instanceIRODSFile(collectionUploadDirStr);
+			// If the uploads directory exists and we can write to it, upload
 			if (collectionUploadDir.exists() && collectionUploadDir.canWrite())
 			{
 				if (messageCallback != null)
 					messageCallback.setValue("Creating upload folder on CyVerse...");
 
+				// Create a new folder for the upload, we will use the current date as the name plus our username
 				String uploadFolderName = FOLDER_FORMAT.format(new Date(this.accessObjects.getEnvironmentalInfoAO().getIRODSServerCurrentTime())) + " " + SanimalData.getInstance().getUsername();
 				String uploadDirName = collectionUploadDirStr + "/" + uploadFolderName;
 
+				// Make the directory to upload to
 				IRODSFile uploadDir = fileFactory.instanceIRODSFile(uploadDirName);
 				uploadDir.mkdir();
 
@@ -546,19 +616,23 @@ public class CyVerseConnectionManager
 				// Make a tar file from the image files
 				File toWrite = DirectoryManager.directoryToTar(directoryToWrite);
 
+				// If the tar was created, upload it
 				if (toWrite != null)
 				{
 					if (messageCallback != null)
 						messageCallback.setValue("Uploading TAR file to CyVerse...");
+					// Uplaod the tar
 					this.accessObjects.getDataTransferOperations().putOperation(toWrite, uploadDir, transferCallback, null);
 					if (messageCallback != null)
 						messageCallback.setValue("Extracting TAR file on CyVerse into a directory...");
+					// Extract the tar
 					this.accessObjects.getBulkFileOperationsAO().extractABundleIntoAnIrodsCollectionWithForceOption(uploadDirName + "/" + toWrite.getName(), uploadDirName, "");
 					if (messageCallback != null)
 						messageCallback.setValue("Removing temporary TAR file...");
-					//IRODSFile uploadedFile = this.accessObjects.getFileFactory().instanceIRODSFile(uploadDirName + "/" + toWrite.getName());
-					//if (uploadedFile.exists())
-					//	uploadedFile.delete();
+					// Remove the tar, since it was extracted by now
+					IRODSFile uploadedFile = this.accessObjects.getFileFactory().instanceIRODSFile(uploadDirName + "/" + toWrite.getName());
+					if (uploadedFile.exists())
+						uploadedFile.delete();
 				}
 			}
 		}
