@@ -53,7 +53,7 @@ public class ImageEntry extends ImageContainer
 	private static final Image CHECKED_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIconDone.png").toString());
 
 	// A property to wrap the currently selected image property. Must not be static!
-	private final ObjectProperty<Image> selectedImageProperty = new SimpleObjectProperty<>(DEFAULT_IMAGE_ICON);
+	private transient final ObjectProperty<Image> selectedImageProperty = new SimpleObjectProperty<>(DEFAULT_IMAGE_ICON);
 	// The actual file 
 	private final ObjectProperty<File> imageFileProperty = new SimpleObjectProperty<File>();
 	// The date that the image was taken
@@ -66,7 +66,7 @@ public class ImageEntry extends ImageContainer
 			image.getSpeciesProperty()
 	});
 	// If this image is dirty, we set a flag to write it to disk at some later point
-	private final AtomicBoolean isDirty = new AtomicBoolean(false);
+	private transient final AtomicBoolean isDirty = new AtomicBoolean(false);
 
 	/**
 	 * Create a new image entry with an image file
@@ -223,8 +223,7 @@ public class ImageEntry extends ImageContainer
 	 */
 	public void removeSpecies(Species species)
 	{
-		this.speciesPresent.removeIf(entry ->
-				entry.getSpecies() == species);
+		this.speciesPresent.removeIf(entry -> entry.getSpecies() == species);
 	}
 
 	/**

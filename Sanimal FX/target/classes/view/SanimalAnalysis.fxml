@@ -1,30 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<GridPane minHeight="500" minWidth="1000" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalAnalysisController">
+<GridPane minHeight="500" minWidth="1000" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+          fx:controller="controller.SanimalAnalysisController">
     <padding>
-        <Insets top="5" left="5" bottom="5" right="5"/>
+        <Insets bottom="5" left="5" right="5" top="5"/>
     </padding>
     <columnConstraints>
-        <ColumnConstraints hgrow="SOMETIMES" />
+        <ColumnConstraints hgrow="SOMETIMES"/>
     </columnConstraints>
     <rowConstraints>
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0" />
-        <RowConstraints vgrow="ALWAYS" />
+        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
+        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
+        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
+        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
+        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
+        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
+        <RowConstraints vgrow="ALWAYS"/>
     </rowConstraints>
-   <children>
-      <TextArea fx:id="txtResults" GridPane.rowIndex="6" />
-       <Label GridPane.halignment="CENTER" GridPane.rowIndex="3" text="Work in Progress"/>
-   </children>
+    <children>
+        <TextArea fx:id="txtResults" GridPane.rowIndex="6"/>
+        <Label text="Work in Progress" GridPane.halignment="CENTER" GridPane.rowIndex="3"/>
+        <HBox alignment="CENTER" spacing="10">
+            <children>
+                <Button mnemonicParsing="false" onAction="#createJimsOutput" text="Create Jim's Output"/>
+                <TextField fx:id="txtEventInterval"/>
+            </children>
+        </HBox>
+        <Button onAction="#createJSONOutput" GridPane.valignment="CENTER" GridPane.halignment="CENTER" mnemonicParsing="false" text="Create JSON" GridPane.rowIndex="1"/>
+    </children>
 </GridPane>
