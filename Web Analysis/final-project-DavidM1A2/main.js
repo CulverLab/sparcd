@@ -1,3 +1,8 @@
+// Class: CS 544
+// Author: David Slovikosky
+// Final Project
+
+// testData for smaller dataset
 let images = fullData;
 
 let firstDate;
@@ -6,16 +11,21 @@ let lastDate;
 let uniqueLocations;
 let uniqueSpecies;
 
-let margin = { top: 5, right: 30, bottom: 30, left: 30 };
-let width = 700 - margin.left - margin.right;
-let height = 700 - margin.top - margin.bottom;
+let marginPrimary = { top: 30, right: 30, bottom: 30, left: 50 };
+let widthPrimary = 500 - marginPrimary.left - marginPrimary.right;
+let heightPrimary = 500 - marginPrimary.top - marginPrimary.bottom;
+
+let marginSpeciesAccum = { top: 30, right: 30, bottom: 30, left: 100 };
+let widthSpeciesAccum = 500 - marginSpeciesAccum.left - marginSpeciesAccum.right;
+let heightSpeciesAccum = 500 - marginSpeciesAccum.top - marginSpeciesAccum.bottom;
 
 let oneDay = 1000 * 60 * 60 * 24;
 
 let startDatePicker;
 let endDatePicker;
 
-let svgBase;
+let svgPrimaryBase;
+let svgSpeciesAccumBase;
 
 let XAxisEnum =
 {
@@ -33,17 +43,19 @@ let YAxisEnum =
     Period: 3
 };
 
+// Prepares the data for drawing
 function prepareData()
 {
+    // Convert Java's date format to JavaScript's date format
     images.forEach(image => image.dateTakenProperty = new Date(image.dateTakenProperty));
 
+    // Find the first and last dates
     let datesTaken = images.map(image => image.dateTakenProperty);
     let sortedDates = datesTaken.slice(0).sort((a, b) => a - b);
     firstDate = sortedDates[0];
     lastDate = sortedDates[sortedDates.length - 1];
-    let firstImage = images.filter(image => image.dateTakenProperty === firstDate)[0];
-    let lastImage = images.filter(image => image.dateTakenProperty === lastDate)[0];
 
+    // Find the unique locations and species on the images
     uniqueLocations = images
         .map(image => image.locationTakenProperty)
         .filter((loc1, index, self) => self.findIndex(loc2 => loc2.idProperty === loc1.idProperty) === index);
@@ -53,14 +65,20 @@ function prepareData()
         .map(point => point.speciesProperty)
         .filter((value, index, self) => self.findIndex(t => t.scientificName === value.scientificName) === index);
 
-    d3.select("#refreshButton").on("click", () =>
-    {
-        refreshScatterplot();
-    });
+    // Create action listeners for the buttons
+    d3.select("#refreshButton").on("click", () => refreshScatterplot());
+    d3.select("#saveButton").on("click", () => saveSvgAsPng(d3.select("#svg").node(), "chart.png"));
+    d3.select("#saveButton2").on("click", () => saveSvgAsPng(d3.select("#svg2").node(), "speciesAccumulationCurve.png"));
+    d3.select("#selectAllSpecies").on("click", () => d3.select("#species").selectAll("input").property("checked", true));
+    d3.select("#selectNoSpecies").on("click", () => d3.select("#species").selectAll("input").property("checked", false));
+    d3.select("#selectAllLocations").on("click", () => d3.select("#locations").selectAll("input").property("checked", true));
+    d3.select("#selectNoLocations").on("click", () => d3.select("#locations").selectAll("input").property("checked", false));
 }
 
+// Initializes the visualization with axis, labels, and inputs
 function initializeVis()
 {
+    // Create a list of species checkboxes
     let labels = d3.select("#species")
         .selectAll("label")
         .data(uniqueSpecies)
@@ -76,6 +94,7 @@ function initializeVis()
     labels.append("text").text(data => data.name);
     labels.append("br");
 
+    // Create a list of location checkboxes
     labels = d3.select("#locations")
         .selectAll("label")
         .data(uniqueLocations)
@@ -91,6 +110,7 @@ function initializeVis()
     labels.append("text").text(data => data.nameProperty);
     labels.append("br");
 
+    // Initialize the datepicker start and end
     startDatePicker = datepicker("#startDate", {
         minDate: firstDate,
         maxDate: lastDate,
@@ -103,25 +123,28 @@ function initializeVis()
         dateSelected: lastDate
     });
 
-    let svg = d3
+    // Create the primary SVG width and height
+    let svgPrimary = d3
         .select("#svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom);
+        .attr("width", widthPrimary + marginPrimary.left + marginPrimary.right)
+        .attr("height", heightPrimary + marginPrimary.top + marginPrimary.bottom);
 
-    svg
+    svgPrimary
         .append("rect")
         .attr("x", "0")
         .attr("y", "0")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
+        .attr("width", widthPrimary + marginPrimary.left + marginPrimary.right)
+        .attr("height", heightPrimary + marginPrimary.top + marginPrimary.bottom)
         .attr("stroke", "none")
         .attr("fill", "#f0f0f0");
 
-    svgBase = svg
+    // Setup a base position to draw axis and points at
+    svgPrimaryBase = svgPrimary
         .append("g")
-        .attr("transform", createTranslate(margin.left, margin.top));
+        .attr("transform", createTranslate(marginPrimary.left, marginPrimary.top));
 
-    svgBase.append("g")
+    // Create the path which we will manipulate to create the scatterplot
+    svgPrimaryBase.append("g")
         .attr("class", "pathAndPoints")
         .selectAll("path")
         .data([1])
@@ -131,24 +154,25 @@ function initializeVis()
         .attr("fill", "none")
         .attr("stroke", "black");
 
-    svgBase.append("g")
-        .attr("transform", createTranslate(0, height))
+    // Create the X and Y axis
+    svgPrimaryBase.append("g")
+        .attr("transform", createTranslate(0, heightPrimary))
         .attr("class", "xAxisMarkings")
         .call(d3
             .axisBottom(d3.scaleLinear()));
 
-    svgBase.append("g")
+    svgPrimaryBase.append("g")
         .attr("class", "yAxisMarkings")
         .call(d3
             .axisLeft(d3.scaleLinear()));
 
-    let axisLabels = svgBase.append("g");
+    // Create X and Y axis labels
+    let axisLabels = svgPrimaryBase.append("g");
 
     axisLabels.append("text")
         .attr("class", "xLabel")
         .text("XAxis")
         .attr("font-size", "25")
-        .attr("stroke", "#black")
         .attr("fill", "#007c61")
         .attr("transform", createTranslate(10, 0) + createRotate(90, 0, 0));
 
@@ -156,12 +180,73 @@ function initializeVis()
         .attr("class", "yLabel")
         .text("YAxis")
         .attr("font-size", "25")
-        .attr("stroke", "#black")
         .attr("fill", "#007c61")
         .attr("text-anchor", "end")
-        .attr("transform", createTranslate(width, height - 5));
+        .attr("transform", createTranslate(widthPrimary, heightPrimary - 5));
+
+    // Create the species accumulation curve SVG width and height
+    let svgSpeciesAccum = d3
+        .select("#svg2")
+        .attr("width", widthSpeciesAccum + marginSpeciesAccum.left + marginSpeciesAccum.right)
+        .attr("height", heightSpeciesAccum + marginSpeciesAccum.top + marginSpeciesAccum.bottom);
+
+    // Create the path which we will manipulate to create the scatterplot
+    svgSpeciesAccum
+        .append("rect")
+        .attr("x", "0")
+        .attr("y", "0")
+        .attr("width", widthSpeciesAccum + marginSpeciesAccum.left + marginSpeciesAccum.right)
+        .attr("height", heightSpeciesAccum + marginSpeciesAccum.top + marginSpeciesAccum.bottom)
+        .attr("stroke", "none")
+        .attr("fill", "#f0f0f0");
+
+    // Setup a base position to draw axis and points at
+    svgSpeciesAccumBase = svgSpeciesAccum
+        .append("g")
+        .attr("transform", createTranslate(marginSpeciesAccum.left, marginSpeciesAccum.top));
+
+    svgSpeciesAccumBase.append("g")
+        .attr("class", "pathAndPoints")
+        .selectAll("path")
+        .data([1])
+        .enter()
+        .append("path")
+        .attr("d", "")
+        .attr("fill", "none")
+        .attr("stroke", "black");
+
+    // Create the X and Y axis
+    svgSpeciesAccumBase.append("g")
+        .attr("transform", createTranslate(0, heightSpeciesAccum))
+        .attr("class", "xAxisMarkings")
+        .call(d3
+            .axisBottom(d3.scaleLinear()));
+
+    svgSpeciesAccumBase.append("g")
+        .attr("class", "yAxisMarkings")
+        .call(d3
+            .axisLeft(d3.scaleLinear()));
+
+    // Create X and Y axis labels
+    let axisLabelsSpeciesAccum = svgSpeciesAccumBase.append("g");
+
+    axisLabelsSpeciesAccum.append("text")
+        .attr("class", "xLabel")
+        .text("Species")
+        .attr("font-size", "25")
+        .attr("fill", "#007c61")
+        .attr("transform", createTranslate(10, 0) + createRotate(90, 0, 0));
+
+    axisLabelsSpeciesAccum.append("text")
+        .attr("class", "yLabel")
+        .text("Day First Seen")
+        .attr("font-size", "25")
+        .attr("fill", "#007c61")
+        .attr("text-anchor", "end")
+        .attr("transform", createTranslate(widthSpeciesAccum, heightSpeciesAccum - 5));
 }
 
+// Called whenever the user clicks "refresh"
 function refreshScatterplot()
 {
     ///
@@ -178,7 +263,7 @@ function refreshScatterplot()
     {
         let temp = endDate;
         endDate = startDate;
-        startDate = endDate;
+        startDate = temp;
     }
 
     let speciesSelected = [];
@@ -256,90 +341,288 @@ function refreshScatterplot()
             yAxis = YAxisEnum.Count;
     }
 
-    ///
-    /// Update the SVG elements with the new data
-    ///
+    let isBarChart = d3.select("#showBars").node().value === "bar";
 
+    ///
+    /// Update the SVG elements with the new data we just calculated
+    ///
+    updatePrimarySVG(inputImages, xAxis, yAxis, isBarChart, eventInterval);
+
+    updateSpeciesAccumSVG(inputImages);
+}
+
+// Updates the left SVG element
+function updatePrimarySVG(inputImages, xAxis, yAxis, isBarChart, eventInterval)
+{
     // Calculate how we want to aggregate our input images based on the chosen X axis and setup the according scale
-    let values = computeXAndYValues(xAxis, yAxis, inputImages, eventInterval);
+    let values = computeXAndYValues(xAxis, yAxis, inputImages);
     let xData = values[0];
     let yData = values[1];
     let xValues = xData.map(data => dataToXValue(xAxis, data));
     let yValues = yData.map(data => dataToYValue(yAxis, data, eventInterval));
-    let scaleX = d3.scaleLinear().domain([d3.min(xValues), d3.max(xValues)]).range([0, width]);
-    let scaleY = d3.scaleLinear().domain([d3.min(yValues), d3.max(yValues)]).range([height, 0]);
+    let scaleX = d3.scaleLinear().domain([d3.min(xValues), d3.max(xValues)]).range([0, widthPrimary]);
+    let scaleY = d3.scaleLinear().domain([d3.min(yValues), d3.max(yValues)]).range([heightPrimary, 0]);
     let lineFunction = d3.line().x(d => scaleX(dataToXValue(xAxis, d[0]))).y(d => scaleY(dataToYValue(yAxis, d[1], eventInterval)));
     let zippedValues = xData.map((d, i) => [d, yData[i]]);
 
-    svgBase.select(".pathAndPoints")
+    // Update the path element
+    svgPrimaryBase.select(".pathAndPoints")
         .selectAll("path")
         .data([zippedValues])
         .transition()
-        .attr("d", lineFunction);
+        .attr("d", isBarChart ? "" : lineFunction);
 
-    let circles = svgBase.select(".pathAndPoints")
+    // Update the bar elements
+    let bars = svgPrimaryBase.select(".pathAndPoints")
+        .selectAll("rect")
+        .data(zippedValues);
+
+    // Update the bar elements if it's a bar chart, otherwise remove them
+    if (isBarChart)
+    {
+        bars.enter()
+            .append("rect")
+            .merge(bars)
+            .transition()
+            .attr("x", d => scaleX(dataToXValue(xAxis, d[0])) - 5)
+            .attr("y", d => scaleY(dataToYValue(yAxis, d[1], eventInterval)))
+            .attr("fill", "#d7d7d7")
+            .attr("width", "10")
+            .attr("height", d => heightPrimary - scaleY(dataToYValue(yAxis, d[1], eventInterval)));
+
+        bars.exit().remove();
+    }
+    else
+    {
+        bars.remove();
+    }
+
+    // Update the vertex circle elements
+    let circles = svgPrimaryBase.select(".pathAndPoints")
         .selectAll("circle")
         .data(zippedValues);
 
     circles.enter()
         .append("circle")
         .merge(circles)
-        .on("click", d => {
-            alert(d[0] + ", " + d[1]);
-        })
+        .moveToFront()
+        .on("click", d => circleClicked(d[1]))
         .on("mouseover", function (d) {
             d3.select(this)
                 .attr("fill", "orange")
                 .attr("r", "8")
                 .attr("stroke", "black")
-                .attr("stroke-width", "2")
+                .attr("stroke-width", "2");
+            svgPrimaryBase.select(".pathAndPoints")
+                .append("text")
+                .attr("x", () => {
+                    let baseX = scaleX(dataToXValue(xAxis, d[0]));
+                    return baseX > widthPrimary / 2 ? baseX - 15 : baseX + 15;
+                })
+                .attr("y", scaleY(dataToYValue(yAxis, d[1], eventInterval)) + 4)
+                .attr("text-anchor", scaleX(dataToXValue(xAxis, d[0])) > widthPrimary / 2 ? "end" : "left")
+                .text("(" + Math.floor(dataToXValue(xAxis, d[0])) + ", " + Math.floor(dataToYValue(yAxis, d[1], eventInterval)) + ")")
         })
-        .on("mouseout", function (d) {
+        .on("mouseout", function () {
             d3.select(this)
                 .attr("fill", "black")
                 .attr("r", "5")
                 .attr("stroke", "none")
-                .attr("stroke-width", "0")
+                .attr("stroke-width", "0");
+            svgPrimaryBase.select(".pathAndPoints").select("text").remove();
         })
         .transition()
         .attr("cx", d => scaleX(dataToXValue(xAxis, d[0])))
         .attr("cy", d => scaleY(dataToYValue(yAxis, d[1], eventInterval)))
         .attr("r", "5");
 
+    // Remove extra circles without data
     circles.exit().remove();
 
+    // Update the axis
     let bottomAxis = d3
         .axisBottom(scaleX)
         .ticks(Math.clamp(xData.length + 1, 2, 25))
         .tickFormat(null);
 
+    // Update the month axis labels to be the months instead of integers
     if (xAxis === XAxisEnum.Month)
     {
-        tickFormats = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const tickFormats = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         bottomAxis.tickFormat(d => tickFormats[d]);
     }
+    // Years or days are integers only
     else if (xAxis === XAxisEnum.Year || xAxis === XAxisEnum.Day)
     {
         bottomAxis.tickFormat(d3.format("d"));
     }
 
-    svgBase.select(".xAxisMarkings")
+    svgPrimaryBase.select(".xAxisMarkings")
         .transition()
         .call(bottomAxis);
 
-    svgBase.select(".yAxisMarkings")
+    svgPrimaryBase.select(".yAxisMarkings")
         .transition()
         .call(d3.axisLeft(scaleY));
 
+    // Update the axis labels
     d3.select(".xLabel")
-        .text(yAxis === YAxisEnum.Count ? "Count" : yAxis === YAxisEnum.Activity ? "Activity" : yAxis === YAxisEnum.Abundance ? "Abundance" : "Period");
+        .text(yAxis === YAxisEnum.Count     ? "Count" :
+              yAxis === YAxisEnum.Activity  ? "Activity" :
+              yAxis === YAxisEnum.Abundance ? "Abundance" :
+                                              "Period");
 
     d3.select(".yLabel")
-        .text(xAxis === XAxisEnum.Day ? "Day of Year" : xAxis === XAxisEnum.Time ? "Time of Day" : xAxis === XAxisEnum.Year ? "Year" : "Month of Year");
+        .text(xAxis === XAxisEnum.Day  ? "Day of Year" :
+              xAxis === XAxisEnum.Time ? "Time of Day" :
+              xAxis === XAxisEnum.Year ? "Year" :
+                                         "Month of Year");
 }
 
-function computeXAndYValues(xAxis, yAxis, inputImages, eventInterval)
+// Updates the right SVG element
+function updateSpeciesAccumSVG(inputImages)
 {
+    // We need images sorted
+    let sortedImages = inputImages.slice(0).sort((a, b) => a.dateTakenProperty - b.dateTakenProperty);
+    let data = [];
+    uniqueSpecies.forEach(species => {
+        let firstImage = sortedImages.filter(image => image.speciesPresent.map(speciesEntry => speciesEntry.speciesProperty.scientificName).includes(species.scientificName))[0];
+        if (firstImage !== undefined)
+        {
+            let currentDate = firstImage.dateTakenProperty;
+            let start = firstDate;
+            let diff = (currentDate - start) + ((start.getTimezoneOffset() - currentDate.getTimezoneOffset()) * 60 * 1000);
+            let day = Math.floor(diff / oneDay);
+            data.push([day, {speciesID: species, imageID: firstImage }]);
+        }
+    });
+
+    data.sort((a, b) => a[0] - b[0]);
+
+    let xValues = data.map(x => x[0]);
+    let yValues = data.map((x, i) => i);
+    let scaleX = d3.scaleLinear().domain([d3.min(xValues), d3.max(xValues)]).range([0, widthSpeciesAccum]);
+    let scaleY = d3.scaleLinear().domain([d3.min(yValues), d3.max(yValues)]).range([heightSpeciesAccum, 0]);
+    let lineFunction = d3.line().x(d => scaleX(d[0])).y((d, i) => scaleY(i));
+
+    // Update the path with newly calculated data
+    svgSpeciesAccumBase.select(".pathAndPoints")
+        .selectAll("path")
+        .data([data])
+        .transition()
+        .attr("d", lineFunction);
+
+    // Update the vertex circle elements
+    let circles = svgSpeciesAccumBase.select(".pathAndPoints")
+        .selectAll("circle")
+        .data(data);
+
+    circles.enter()
+        .append("circle")
+        .merge(circles)
+        .on("click", d => circleClicked([d[1].imageID]))
+        .on("mouseover", function (d, i) {
+            d3.select(this)
+                .attr("fill", "orange")
+                .attr("r", "8")
+                .attr("stroke", "black")
+                .attr("stroke-width", "2");
+            svgSpeciesAccumBase.select(".pathAndPoints")
+                .append("text")
+                .attr("x", () => {
+                    let baseX = scaleX(d[0]);
+                    return baseX > widthSpeciesAccum / 2 ? baseX - 15 : baseX + 15;
+                })
+                .attr("y", scaleY(i) + 4)
+                .attr("text-anchor", scaleX(d[0]) > widthSpeciesAccum / 2 ? "end" : "left")
+                .text(d[1].speciesID.name + ": " + d[0]);
+            // Highlight the circle from the other chart that contains this image
+            svgPrimaryBase.select(".pathAndPoints")
+                .selectAll("circle")
+                .filter(dataOther => dataOther[1].includes(d[1].imageID))
+                .attr("fill", "orange")
+                .attr("r", "10")
+                .attr("stroke", "black")
+                .attr("stroke-width", "2");
+        })
+        .on("mouseout", function (d) {
+            d3.select(this)
+                .attr("fill", "black")
+                .attr("r", "5")
+                .attr("stroke", "none")
+                .attr("stroke-width", "0");
+            svgSpeciesAccumBase.select(".pathAndPoints").select("text").remove();
+            // Stop highlighting the circle from the other chart that contains this image
+            svgPrimaryBase.select(".pathAndPoints")
+                .selectAll("circle")
+                .filter(dataOther => dataOther[1].includes(d[1].imageID))
+                .attr("fill", "black")
+                .attr("r", "5")
+                .attr("stroke", "none")
+                .attr("stroke-width", "0");
+        })
+        .transition()
+        .attr("cx", d => scaleX(d[0]))
+        .attr("cy", (d, i) => scaleY(i))
+        .attr("r", "5");
+
+    // Remoe extra elements
+    circles.exit().remove();
+
+    // Update the axis
+    svgSpeciesAccumBase.select(".xAxisMarkings")
+        .transition()
+        .call(d3.axisBottom(scaleX));
+
+    // The left axis contains the species names instead of indices
+    let leftAxis = d3
+        .axisLeft(scaleY)
+        .ticks(data.length + 1)
+        .tickFormat(d => d % 1 === 0 ? data[d][1].speciesID.name: "");
+
+    svgSpeciesAccumBase.select(".yAxisMarkings")
+        .transition()
+        .call(leftAxis);
+}
+
+// When we click a vertex, update the selected images
+function circleClicked(images)
+{
+    // Browser will not let me load images from disk because of security concerns
+    /*
+    let fileReader = new FileReader();
+    fileReader.onload = (event) => {
+        d3.select("#previewImg")
+            .attr("src", event.target.result);
+    };
+
+    console.log("file:///" + d[1][0].imageFileProperty.path);
+    let request = new XMLHttpRequest();
+    request.responseType = "blob";
+    request.open("GET", "file:///" + d[1][0].imageFileProperty.path);
+    request.onload = () => {
+        console.log(request.response);
+        fileReader.readAsDataURL(request.response);
+    }
+    request.send();
+    */
+    // Grab the selected items list and append the first 10 to the list
+    let listItems = d3.select("#selectedImages")
+        .selectAll("li")
+        .data(images.slice(0, 10));
+
+    listItems.enter()
+        .append("li")
+        .merge(listItems)
+        .text(d => d.imageFileProperty.path.replace(/\\/g,'/').replace(/.*\//, '') + " -- " + d.imageFileProperty.path);
+
+    listItems.exit().remove();
+}
+
+// Compute the X and Y values of the left SVG graph based on the axis selected and input images
+function computeXAndYValues(xAxis, yAxis, inputImages)
+{
+    // The aggregation function for the X axis values
     let groupBy = function(array, func)
     {
         return array.reduce((currentArr, currentValue) => {
@@ -354,7 +637,7 @@ function computeXAndYValues(xAxis, yAxis, inputImages, eventInterval)
         // Domain can be between 0 and 23
         xAndYPoints = groupBy(inputImages, image => image.dateTakenProperty.getHours());
     else if (xAxis === XAxisEnum.Day)
-        // Domain can be between 0 and 366
+        // Domain can be between 0 and 365
         xAndYPoints = groupBy(inputImages, image => {
             let currentDate = image.dateTakenProperty;
             let start = new Date(currentDate.getFullYear(), 0, 0);
@@ -374,13 +657,16 @@ function computeXAndYValues(xAxis, yAxis, inputImages, eventInterval)
     return [xValues, yValues];
 }
 
+// Used to convert a data point and x axis type to an integer
 function dataToXValue(xAxis, data)
 {
     return parseInt(data);
 }
 
+// Used to convert a data point and y axis type to an integer
 function dataToYValue(yAxis, data, eventInterval)
 {
+    // Depending on the y axis type, we calculate different y values
     if (yAxis === YAxisEnum.Count)
         return data.length;
     else if (yAxis === YAxisEnum.Activity)
@@ -391,16 +677,19 @@ function dataToYValue(yAxis, data, eventInterval)
         return calculateAbundance(data, eventInterval);
 }
 
+// Useful helper function to create SVG transform strings
 function createTranslate(x, y)
 {
     return " translate (" + x + ", " + y + ")"
 }
 
+// Useful helper function to create SVG transform strings
 function createRotate(deg, x, y)
 {
     return " rotate (" + deg + ", " + x + ", " + y + ")"
 }
 
+// Used to calculate the activity value of an image list, algorithm is described in the writeup
 function calculateActivity(imageList)
 {
     imageList.sort((a, b) => a.dateTakenProperty - b.dateTakenProperty);
@@ -436,6 +725,7 @@ function calculateActivity(imageList)
     return activity;
 }
 
+// Used to calculate the period value of an image list, algorithm is described in the writeup
 function calculatePeriod(imageList, eventInterval)
 {
     imageList.sort((a, b) => a.dateTakenProperty - b.dateTakenProperty);
@@ -458,6 +748,7 @@ function calculatePeriod(imageList, eventInterval)
     return period;
 }
 
+// Used to calculate the abundance value of an image list, algorithm is described in the writeup
 function calculateAbundance(imageList, eventInterval, speciesFilter = null)
 {
     imageList.sort((a, b) => a.dateTakenProperty - b.dateTakenProperty);
@@ -494,6 +785,16 @@ function calculateAbundance(imageList, eventInterval, speciesFilter = null)
     return abundance;
 }
 
+// Add a function I've used a lot from C# or Java which ensures a value is inbetween a min and max value, or returns the closest thing in the range [min, max]
 Math.clamp = (number, min, max) => Math.max(min, Math.min(number, max));
+
+// Add a move-to-front method which moves a DOM element to the front of the rendering process
+d3.selection.prototype.moveToFront = function() {
+    return this.each(function(){
+        this.parentNode.appendChild(this);
+    });
+};
+
+// the "main" of the program is really simple. We prepare our data and then initialize the visualization
 prepareData();
 initializeVis();

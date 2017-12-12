@@ -8,7 +8,7 @@
 <body style="padding: 0; margin: 0">
     <table width="100%">
         <tr>
-            <td width="150">
+            <td width="170">
                 <label>Event interval: </label>
             </td>
             <td>
@@ -37,6 +37,8 @@
             </td>
             <td>
                 <form id="species" action=""></form>
+                <button id="selectAllSpecies" style="margin-bottom: 10px">Select All Species</button>
+                <button id="selectNoSpecies" style="margin-bottom: 10px">Select No Species</button>
             </td>
         </tr>
         <tr>
@@ -45,6 +47,8 @@
             </td>
             <td>
                 <form id="locations" action=""></form>
+                <button id="selectAllLocations" style="margin-bottom: 10px">Select All Locations</button>
+                <button id="selectNoLocations" style="margin-bottom: 10px">Select No Locations</button>
             </td>
         </tr>
         <tr>
@@ -91,12 +95,58 @@
         </tr>
         <tr>
             <td>
-                <button id="refreshButton">Refresh</button>
+                <label>Primary Chart Type:</label>
+            </td>
+            <td>
+                <select id="showBars">
+                    <option value="line">Scatterplot</option>
+                    <option value="bar">Bar Chart</option>
+                </select>
             </td>
         </tr>
     </table>
-    <svg id="svg"></svg>
-    <script src="https://unpkg.com/js-datepicker"></script>
+    <table>
+        <tr>
+            <td colspan="2" align="center">
+                <button id="refreshButton" style="font-size: 16px">Refresh Visualizations</button>
+            </td>
+        </tr>
+        <tr>
+            <td align="center">
+                <button id="saveButton">Save to PNG</button>
+            </td>
+            <td align="center">
+                <button id="saveButton2">Save to PNG</button>
+            </td>
+        </tr>
+        <tr>
+            <td align="center">
+                <label style="font-size: 26px; font-weight: bold">Primary Chart</label>
+            </td>
+            <td align="center">
+                <label style="font-size: 26px; font-weight: bold">Species Accumulation Curve</label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <svg id="svg"></svg>
+            </td>
+            <td>
+                <svg id="svg2"></svg>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <center>
+                    <label style="font-size: 26px">First 10 selected images:</label>
+                </center>
+                <ul id="selectedImages"></ul>
+            </td>
+        </tr>
+    </table>
+    <!--<img id="previewImg" src="" widthPrimary="100" heightPrimary="100">-->
+    <script src="https://rawgit.com/exupero/saveSvgAsPng/gh-pages/saveSvgAsPng.js"></script>
+    <script src="https://unpkg.com/js-datepicker@2.1.5/datepicker.min.js"></script>
     <script src="main.js"></script>
 </body>
 </html>
