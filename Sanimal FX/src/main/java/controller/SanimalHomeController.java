@@ -22,6 +22,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
@@ -126,10 +127,58 @@ public class SanimalHomeController implements Initializable
 	/**
 	 * When the logout button is pressed
 	 *
-	 * @param actionEvent consumed
+	 * @param actionEvent ignored
 	 */
 	public void logoutPressed(ActionEvent actionEvent)
 	{
 		System.exit(0);
+	}
+
+	/**
+	 * When the user clicks the cyverse logo
+	 *
+	 * @param mouseEvent ignored
+	 */
+	public void showCyverseWebsite(MouseEvent mouseEvent)
+	{
+		try
+		{
+			Desktop.getDesktop().browse(new URI("http://www.cyverse.org"));
+		}
+		catch (IOException | URISyntaxException ignored)
+		{
+		}
+	}
+
+	/**
+	 * When the user clicks the UA CS logo
+	 *
+	 * @param mouseEvent ignored
+	 */
+	public void showCSWebsite(MouseEvent mouseEvent)
+	{
+		try
+		{
+			Desktop.getDesktop().browse(new URI("https://www.cs.arizona.edu"));
+		}
+		catch (IOException | URISyntaxException ignored)
+		{
+		}
+	}
+
+	/**
+	 * When the user clicks the UA SNRE logo
+	 *
+	 * @param mouseEvent ignored
+	 */
+	public void showSNREWebsite(MouseEvent mouseEvent)
+	{
+		try
+		{
+			Desktop.getDesktop().browse(new URI("https://snre.arizona.edu/"));
+		}
+		catch (IOException | URISyntaxException ignored)
+		{
+		}
 	}
 }

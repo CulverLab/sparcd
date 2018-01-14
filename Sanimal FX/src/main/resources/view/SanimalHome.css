@@ -7,7 +7,7 @@
 
 .logoutBtn {
     -fx-background-image: url("../images/mainMenu/login.png");
-    -fx-background-position: 90%;
+    -fx-background-position: 5%;
     -fx-background-repeat: no-repeat;
     -fx-font-size: 18px;
 }
@@ -24,4 +24,29 @@
     -fx-background-radius: 10px 10px;
     -fx-border-color: black;
     -fx-border-radius: 10px 10px;
+}
+
+
+.imgCyverse {
+    -fx-effect: dropshadow(gaussian, black, 15, .1, 0, 0);
+}
+
+.imgCyverse:hover {
+    -fx-effect: dropshadow(gaussian, yellow, 15, .5, 0, 0);
+}
+
+.imgSNRE {
+    -fx-effect: dropshadow(gaussian, black, 15, .1, 0, 0);
+}
+
+.imgSNRE:hover {
+    -fx-effect: dropshadow(gaussian, yellow, 15, .5, 0, 0);
+}
+
+.imgCS {
+    -fx-effect: dropshadow(gaussian, black, 15, .1, 0, 0);
+}
+
+.imgCS:hover {
+    -fx-effect: dropshadow(gaussian, yellow, 15, .5, 0, 0);
 }

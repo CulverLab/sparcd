@@ -1,20 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.net.URL?>
-<?import javafx.scene.Group?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.shape.Rectangle?>
 <?import library.ImageViewPane?>
 
-<?import javafx.geometry.Insets?>
 <AnchorPane fx:id="mainPane" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalHomeController">
     <stylesheets>
         <URL value="@SanimalHome.css" />
@@ -29,38 +25,38 @@
                 </ImageView>
             </imageView>
         </ImageViewPane>
-        <ImageView fitHeight="100" preserveRatio="true" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
-            <Image url="@../images/mainMenu/poweredByCyverse.png" />
-        </ImageView>
-        <ImageView fitHeight="100" preserveRatio="true" AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10">
-            <Image url="@../images/mainMenu/snre.PNG" />
-        </ImageView>
-        <ImageView fitHeight="100" preserveRatio="true" AnchorPane.bottomAnchor="110" AnchorPane.leftAnchor="10">
-            <Image url="@../images/mainMenu/cs.png" />
-        </ImageView>
         <StackPane AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
             <children>
-                <ImageView fitHeight="200.0" StackPane.alignment="TOP_CENTER" pickOnBounds="true" preserveRatio="true">
+                <ImageView fitHeight="168.0" pickOnBounds="true" preserveRatio="true" StackPane.alignment="TOP_LEFT">
                     <image>
                         <Image url="@../images/mainMenu/sanimalTitle.png" />
                     </image>
                 </ImageView>
-                <Button fx:id="btnExit" minWidth="130" StackPane.alignment="TOP_CENTER" onAction="#exitPressed" styleClass="exitBtn" text="Exit" alignment="CENTER_RIGHT">
+                <Label fx:id="lblUsername" styleClass="usernameLbl" textAlignment="RIGHT" GridPane.hgrow="ALWAYS" StackPane.alignment="TOP_LEFT">
                     <StackPane.margin>
-                        <Insets right="550" top="200"/>
-                    </StackPane.margin>
-                </Button>
-                <Button fx:id="btnLogout" minWidth="130" StackPane.alignment="TOP_CENTER" onAction="#logoutPressed" styleClass="logoutBtn" text="Logout" alignment="CENTER_LEFT">
-                    <StackPane.margin>
-                        <Insets left="550" top="200"/>
-                    </StackPane.margin>
-                </Button>
-                <Label fx:id="lblUsername" StackPane.alignment="TOP_CENTER" styleClass="usernameLbl" textAlignment="RIGHT" GridPane.hgrow="ALWAYS">
-                    <StackPane.margin>
-                        <Insets top="200"/>
+                        <Insets left="20" top="170" />
                     </StackPane.margin>
                 </Label>
+                <Button fx:id="btnLogout" minWidth="130" onAction="#logoutPressed" styleClass="logoutBtn" text="Logout" StackPane.alignment="TOP_LEFT">
+                    <StackPane.margin>
+                        <Insets left="20" top="220" />
+                    </StackPane.margin>
+                </Button>
+                <Button fx:id="btnExit" minWidth="130" onAction="#exitPressed" styleClass="exitBtn" text="Exit" StackPane.alignment="TOP_LEFT">
+                    <StackPane.margin>
+                        <Insets left="20" top="270" />
+                    </StackPane.margin>
+                </Button>
             </children>
         </StackPane>
+        <ImageView fitHeight="100" preserveRatio="true" styleClass="imgCyverse" onMouseClicked="#showCyverseWebsite" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
+            <Image url="@../images/mainMenu/poweredByCyverse.png" />
+        </ImageView>
+        <ImageView fitHeight="100" preserveRatio="true" styleClass="imgSNRE" onMouseClicked="#showSNREWebsite" AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10">
+            <Image url="@../images/mainMenu/snre.PNG" />
+        </ImageView>
+        <ImageView fitHeight="100" preserveRatio="true" styleClass="imgCS" onMouseClicked="#showCSWebsite" AnchorPane.bottomAnchor="120" AnchorPane.leftAnchor="10">
+            <Image url="@../images/mainMenu/cs.png" />
+        </ImageView>
     </children>
 </AnchorPane>
