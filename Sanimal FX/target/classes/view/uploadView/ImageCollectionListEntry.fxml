@@ -30,13 +30,13 @@
             </VBox>
             <HBox spacing="5" alignment="BOTTOM_RIGHT" StackPane.alignment="BOTTOM_RIGHT">
                 <children>
-                    <ImageView fx:id="imgOwner" fitWidth="30" fitHeight="30">
+                    <ImageView fx:id="imgOwner" styleClass="imgOwner" fitWidth="30" fitHeight="30">
                         <Image url="@../../images/uploadWindow/ownerIcon.png"/>
                     </ImageView>
-                    <ImageView fx:id="imgUpload" fitWidth="30" fitHeight="30">
+                    <ImageView fx:id="imgUpload" styleClass="imgUpload" fitWidth="30" fitHeight="30">
                         <Image url="@../../images/uploadWindow/uploadIcon.png"/>
                     </ImageView>
-                    <ImageView fx:id="imgRead" fitWidth="30" fitHeight="30">
+                    <ImageView fx:id="imgRead" styleClass="imgRead" fitWidth="30" fitHeight="30">
                         <Image url="@../../images/uploadWindow/downloadIcon.png"/>
                     </ImageView>
                 </children>

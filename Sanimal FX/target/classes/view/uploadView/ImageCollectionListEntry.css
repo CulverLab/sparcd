@@ -14,3 +14,15 @@
     -fx-background-radius: 15px;
     -fx-background-color: rgba(255, 255, 0, 0.35);
 }
+
+.imgOwner:hover {
+    -fx-effect: dropshadow(gaussian, yellow, 15, .5, 0, 0);
+}
+
+.imgUpload:hover {
+    -fx-effect: dropshadow(gaussian, yellow, 15, .5, 0, 0);
+}
+
+.imgRead:hover {
+    -fx-effect: dropshadow(gaussian, yellow, 15, .5, 0, 0);
+}

@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import library.ImageViewPane?>
 
-<AnchorPane fx:id="mainPane" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalHomeController">
+<AnchorPane fx:id="mainPane" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalHomeController">
     <stylesheets>
         <URL value="@SanimalHome.css" />
     </stylesheets>
@@ -32,7 +32,7 @@
                         <Image url="@../images/mainMenu/sanimalTitle.png" />
                     </image>
                 </ImageView>
-                <Label fx:id="lblUsername" styleClass="usernameLbl" textAlignment="RIGHT" GridPane.hgrow="ALWAYS" StackPane.alignment="TOP_LEFT">
+                <Label fx:id="lblUsername" styleClass="usernameLbl" text="Welcome &lt;Username&gt;" textAlignment="RIGHT" GridPane.hgrow="ALWAYS" StackPane.alignment="TOP_LEFT">
                     <StackPane.margin>
                         <Insets left="20" top="170" />
                     </StackPane.margin>
@@ -49,13 +49,13 @@
                 </Button>
             </children>
         </StackPane>
-        <ImageView fitHeight="100" preserveRatio="true" styleClass="imgCyverse" onMouseClicked="#showCyverseWebsite" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
+        <ImageView fitHeight="100" onMouseClicked="#showCyverseWebsite" preserveRatio="true" styleClass="imgCyverse" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
             <Image url="@../images/mainMenu/poweredByCyverse.png" />
         </ImageView>
-        <ImageView fitHeight="100" preserveRatio="true" styleClass="imgSNRE" onMouseClicked="#showSNREWebsite" AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10">
+        <ImageView fitHeight="100" onMouseClicked="#showSNREWebsite" preserveRatio="true" styleClass="imgSNRE" AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10">
             <Image url="@../images/mainMenu/snre.PNG" />
         </ImageView>
-        <ImageView fitHeight="100" preserveRatio="true" styleClass="imgCS" onMouseClicked="#showCSWebsite" AnchorPane.bottomAnchor="120" AnchorPane.leftAnchor="10">
+        <ImageView fitHeight="100" onMouseClicked="#showCSWebsite" preserveRatio="true" styleClass="imgCS" AnchorPane.bottomAnchor="120" AnchorPane.leftAnchor="10">
             <Image url="@../images/mainMenu/cs.png" />
         </ImageView>
     </children>

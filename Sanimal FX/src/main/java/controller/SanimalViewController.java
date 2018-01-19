@@ -1,8 +1,6 @@
 package controller;
 
 import com.panemu.tiwulfx.control.DetachableTabPane;
-import javafx.animation.ScaleTransition;
-import javafx.animation.SequentialTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -11,8 +9,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -22,16 +18,14 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
-import javafx.util.Duration;
 import model.SanimalData;
 import model.cyverse.CyVerseConnectionManager;
 import model.cyverse.ImageCollection;
 import model.location.Location;
 import model.species.Species;
-import model.util.FinishableTask;
+import model.util.ErrorTask;
 import org.controlsfx.control.HyperlinkLabel;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
@@ -202,7 +196,7 @@ public class SanimalViewController implements Initializable
 			String username = this.txtUsername.getText();
 			String password = this.txtPassword.getText();
 			// Thread off logging in...
-			FinishableTask<Boolean> loginAttempt = new FinishableTask<Boolean>()
+			ErrorTask<Boolean> loginAttempt = new ErrorTask<Boolean>()
 			{
 				@Override
 				protected Boolean call() throws Exception
@@ -258,7 +252,7 @@ public class SanimalViewController implements Initializable
 				}
 			};
 			// Once the task succeeds
-			loginAttempt.setOnFinished(event -> {
+			loginAttempt.setOnSucceeded(event -> {
 				Boolean loginSucceeded = loginAttempt.getValue();
 				// If we did not succeed, notify the user
 				if (!loginSucceeded)

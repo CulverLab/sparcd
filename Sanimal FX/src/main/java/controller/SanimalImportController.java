@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -38,7 +39,7 @@ import model.image.DirectoryManager;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
-import model.util.FinishableTask;
+import model.util.ErrorTask;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.StatusBar;
 import org.fxmisc.easybind.EasyBind;
@@ -706,10 +707,10 @@ public class SanimalImportController implements Initializable
 		if (file != null && file.isDirectory())
 		{
 			this.btnImportImages.setDisable(true);
-			FinishableTask<Void> importTask = new FinishableTask<Void>()
+			Task<Void> importTask = new ErrorTask<Void>()
 			{
 				@Override
-				protected Void call() throws Exception
+				protected Void call()
 				{
 					final Long MAX_WORK = 6L;
 

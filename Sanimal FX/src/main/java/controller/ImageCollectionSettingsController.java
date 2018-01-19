@@ -15,7 +15,7 @@ import library.TableColumnHeaderUtil;
 import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
-import model.util.FinishableTask;
+import model.util.ErrorTask;
 import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
@@ -263,10 +263,10 @@ public class ImageCollectionSettingsController implements Initializable
 		originalCollection.getPermissions().setAll(currentlySelected.getPermissions());
 
 		// Create a task used to thread off the saving process
-		Task<Void> saveTask = new Task<Void>()
+		Task<Void> saveTask = new ErrorTask<Void>()
 		{
 			@Override
-			protected Void call() throws Exception
+			protected Void call()
 			{
 				// We have done no work yet, so our progress is 0
 				this.updateProgress(0, 1);

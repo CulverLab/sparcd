@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
@@ -59,6 +60,9 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 	@FXML
 	public void initialize()
 	{
+		Tooltip.install(this.imgRead, new Tooltip("You may see images uploaded to this collection."));
+		Tooltip.install(this.imgUpload, new Tooltip("You may upload images to this collection."));
+		Tooltip.install(this.imgOwner, new Tooltip("You are the owner of this collection."));
 	}
 
 	/**

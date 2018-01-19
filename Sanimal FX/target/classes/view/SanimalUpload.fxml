@@ -50,7 +50,7 @@
                         <Font size="20.0" />
                     </font>
                 </Label>
-                <Label fx:id="lblNoImagesToUpload" pickOnBounds="false" text="Import images in the import tab before uploading.">
+                <Label fx:id="lblNoImagesToUpload" pickOnBounds="false" text="Import images in the import tab to upload.">
                     <font>
                         <Font size="20.0" />
                     </font>

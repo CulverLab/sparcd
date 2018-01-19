@@ -102,8 +102,6 @@ public class CyVerseConnectionManager
 				// Setup all access objects to the account (Represented by the AO at the end of the class name)
 				this.accessObjects = new CyVerseAOs(irodsAO, account);
 
-				// Grab the two public users (the "user" user and the "public" user)
-
 				// We're good, return true
 				return true;
 			}

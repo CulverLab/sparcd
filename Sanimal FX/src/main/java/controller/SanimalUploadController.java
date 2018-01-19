@@ -10,24 +10,18 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.layout.VBox;
-import javafx.util.converter.DefaultStringConverter;
-import library.EditCell;
-import library.TableColumnHeaderUtil;
 import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
 import model.image.ImageContainer;
 import model.image.ImageDirectory;
 import model.image.ImageEntry;
+import model.util.ErrorTask;
 import model.util.FXMLLoaderUtils;
-import model.util.FinishableTask;
 import org.fxmisc.easybind.EasyBind;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.DefaultIntraFileProgressCallbackListener;
 import org.irods.jargon.core.transfer.TransferStatus;
 import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
 
@@ -200,85 +194,115 @@ public class SanimalUploadController implements Initializable
 	{
 		// Disable the upload button so that we can't click it twice
 		this.btnUpload.setDisable(true);
-		// Go over each directory in the list of items to upload and upload them
-		this.lstItemsToUpload.getItems().forEach(imageDirectory ->
+
+		// Need to make sure that we have a selected collection
+		if (this.selectedCollection.getValue() != null)
 		{
-			// If the image directory is selected for upload, upload it
-			if (imageDirectory.isSelectedForUpload())
+			Integer numberOfDirectoriesToUpload = 0;
+
+			// Go over each directory in the list of items to upload and upload them
+			for (ImageDirectory imageDirectory : this.lstItemsToUpload.getItems())
 			{
-				// Make sure we've got a valid directory
-				boolean validDirectory = true;
-				// Each image must have a location and species tagged
-				for (ImageEntry imageEntry : imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).collect(Collectors.toList()))
+				// If the image directory is selected for upload, upload it
+				if (imageDirectory.isSelectedForUpload())
 				{
-					if (imageEntry.getLocationTaken() == null || imageEntry.getSpeciesPresent().isEmpty())
+					// Make sure we've got a valid directory
+					boolean validDirectory = true;
+					// Each image must have a location and species tagged
+					for (ImageEntry imageEntry : imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).collect(Collectors.toList()))
 					{
-						validDirectory = false;
-						break;
+						if (imageEntry.getLocationTaken() == null || imageEntry.getSpeciesPresent().isEmpty())
+						{
+							validDirectory = false;
+							break;
+						}
+					}
+
+					// If we have a valid directory, perform the upload
+					if (validDirectory)
+					{
+						numberOfDirectoriesToUpload++;
+						// Create an upload task
+						Task<Void> uploadTask = new ErrorTask<Void>()
+						{
+							@Override
+							protected Void call()
+							{
+								// Update the progress
+								this.updateProgress(0, 1);
+
+								// Create a string property used as a callback
+								StringProperty messageCallback = new SimpleStringProperty("");
+								this.updateMessage("Uploading image directory " + imageDirectory.getFile().getName() + " to CyVerse.");
+								messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
+								// Upload images to CyVerse, we give it a transfer status callback so that we can show the progress
+								SanimalData.getInstance().getConnectionManager().uploadImages(selectedCollection.getValue(), imageDirectory, new TransferStatusCallbackListener()
+								{
+									@Override
+									public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus)
+									{
+										// Set the upload progress in the directory we get a callback
+										Platform.runLater(() -> imageDirectory.setUploadProgress(transferStatus.getBytesTransfered() / (double) transferStatus.getTotalSize()));
+										// Set the upload progress whenever we get a callback
+										updateProgress((double) transferStatus.getBytesTransfered(), (double) transferStatus.getTotalSize());
+										return FileStatusCallbackResponse.CONTINUE;
+									}
+
+									// Ignore this status callback
+									@Override
+									public void overallStatusCallback(TransferStatus transferStatus) throws JargonException
+									{
+									}
+
+									// Ignore this as well
+									@Override
+									public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection)
+									{
+										return CallbackResponse.YES_FOR_ALL;
+									}
+								}, messageCallback);
+								return null;
+							}
+						};
+						// When the upload finishes, we enable the upload button
+						uploadTask.setOnSucceeded(event ->
+						{
+							imageDirectory.setUploadProgress(-1);
+							this.btnUpload.setDisable(false);
+						});
+						SanimalData.getInstance().getSanimalExecutor().addTask(uploadTask);
+					}
+					else
+					{
+						// If an invalid directory is selected, show an alert
+						Alert alert = new Alert(Alert.AlertType.WARNING);
+						alert.initOwner(this.collectionListView.getScene().getWindow());
+						alert.setTitle("Invalid Directory");
+						alert.setHeaderText("Invalid Directory (" + imageDirectory.getFile().getName() + ") Selected");
+						alert.setContentText("An image in the directory (" + imageDirectory.getFile().getName() + ") you selected does not have a location or species tagged. Please ensure all images are tagged with at least one species and a location!");
+						alert.showAndWait();
 					}
 				}
-
-				// If we have a valid directory, perform the upload
-				if (validDirectory)
-				{
-					// Create an upload task
-					Task<Void> uploadTask = new Task<Void>()
-					{
-						@Override
-						protected Void call() throws Exception
-						{
-							// Update the progress
-							this.updateProgress(0, 1);
-							// Create a string property used as a callback
-							StringProperty messageCallback = new SimpleStringProperty("");
-							this.updateMessage("Uploading image directory " + imageDirectory.getFile().getName() + " to CyVerse.");
-							messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
-							// Upload images to CyVerse, we give it a transfer status callback so that we can show the progress
-							SanimalData.getInstance().getConnectionManager().uploadImages(selectedCollection.getValue(), imageDirectory, new TransferStatusCallbackListener()
-							{
-								@Override
-								public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) throws JargonException
-								{
-									// Set the upload progress in the directory we get a callback
-									Platform.runLater(() -> imageDirectory.setUploadProgress(transferStatus.getBytesTransfered() / (double) transferStatus.getTotalSize()));
-									// Set the upload progress whenever we get a callback
-									updateProgress((double) transferStatus.getBytesTransfered(), (double) transferStatus.getTotalSize());
-									return FileStatusCallbackResponse.CONTINUE;
-								}
-
-								// Ignore this status callback
-								@Override
-								public void overallStatusCallback(TransferStatus transferStatus) throws JargonException {}
-
-								// Ignore this as well
-								@Override
-								public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection)
-								{
-									return CallbackResponse.YES_FOR_ALL;
-								}
-							}, messageCallback);
-							return null;
-						}
-					};
-					// When the upload finishes, we enable the upload button
-					uploadTask.setOnSucceeded(event ->
-					{
-						imageDirectory.setUploadProgress(-1);
-						this.btnUpload.setDisable(false);
-					});
-					SanimalData.getInstance().getSanimalExecutor().addTask(uploadTask);
-				}
-				else
-				{
-					// If an invalid directory is selected, show an alert
-					Alert alert = new Alert(Alert.AlertType.WARNING);
-					alert.initOwner(this.collectionListView.getScene().getWindow());
-					alert.setTitle("Invalid Directory");
-					alert.setHeaderText("Invalid Directory (" + imageDirectory.getFile().getName() + ") Selected");
-					alert.setContentText("An image in the directory (" + imageDirectory.getFile().getName() + ") you selected does not have a location or species tagged. Please ensure all images are tagged with at least one species and a location!");
-					alert.showAndWait();
-				}
 			}
-		});
+
+			// If no directories were uploaded show the upload button again
+			if (numberOfDirectoriesToUpload == 0)
+			{
+				this.btnUpload.setDisable(false);
+			}
+		}
+		else
+		{
+			// If an invalid collection is selected, show an alert
+			Alert alert = new Alert(Alert.AlertType.WARNING);
+			alert.initOwner(this.collectionListView.getScene().getWindow());
+			alert.setTitle("No Collection");
+			alert.setHeaderText("No image collection selected to upload to!");
+			alert.setContentText("Please select an image collection to upload the images to.");
+			alert.showAndWait();
+
+			// Enable the upload button
+			this.btnUpload.setDisable(false);
+		}
 	}
 }

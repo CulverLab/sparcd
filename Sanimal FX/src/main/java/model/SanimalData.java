@@ -6,10 +6,7 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
 import model.cyverse.CyVerseConnectionManager;
 import model.cyverse.ImageCollection;
 import model.image.ImageContainer;
@@ -17,19 +14,16 @@ import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
-import model.util.FinishableService;
-import model.util.FinishableTask;
+import model.util.ErrorService;
+import model.util.ErrorTask;
 import model.util.SanimalExecutor;
 import org.hildan.fxgson.FxGson;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A singleton class containing all data SANIMAL needs
@@ -112,15 +106,15 @@ public class SanimalData
 	 */
 	private void setupAutoSpeciesSync()
 	{
-		FinishableService<Void> syncService = new FinishableService<Void>()
+		ErrorService<Void> syncService = new ErrorService<Void>()
 		{
 			@Override
 			protected Task<Void> createTask()
 			{
-				return new FinishableTask<Void>()
+				return new ErrorTask<Void>()
 				{
 					@Override
-					protected Void call() throws Exception
+					protected Void call()
 					{
 						// Perform the push of the location data
 						this.updateMessage("Syncing new species list to CyVerse...");
@@ -168,12 +162,12 @@ public class SanimalData
 	 */
 	private void setupAutoLocationSync()
 	{
-		FinishableService<Void> syncService = new FinishableService<Void>()
+		ErrorService<Void> syncService = new ErrorService<Void>()
 		{
 			@Override
 			protected Task<Void> createTask()
 			{
-				return new FinishableTask<Void>()
+				return new ErrorTask<Void>()
 				{
 					@Override
 					protected Void call() throws Exception
@@ -224,12 +218,12 @@ public class SanimalData
 	 */
 	private void setupAutoWriteMetadata()
 	{
-		FinishableService<Void> syncService = new FinishableService<Void>()
+		ErrorService<Void> syncService = new ErrorService<Void>()
 		{
 			@Override
 			protected Task<Void> createTask()
 			{
-				return new FinishableTask<Void>()
+				return new ErrorTask<Void>()
 				{
 					@Override
 					protected Void call() throws Exception
