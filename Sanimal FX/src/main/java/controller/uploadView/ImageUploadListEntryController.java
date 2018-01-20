@@ -1,4 +1,4 @@
-package controller;
+package controller.uploadView;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.fxml.FXML;

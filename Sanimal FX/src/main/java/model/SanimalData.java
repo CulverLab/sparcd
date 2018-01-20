@@ -254,7 +254,7 @@ public class SanimalData
 		// When we finish syncing...
 		syncService.setOnSucceeded(event -> {
 			// After finishing the sync, check if we need to sync again. If so set the flag to false and sync once again
-			Boolean moreImagesToWrite = this.getAllImages().stream().filter(ImageEntry::isDirty).count() > 0;
+			Boolean moreImagesToWrite = this.getAllImages().stream().anyMatch(ImageEntry::isDirty);
 			if (moreImagesToWrite)
 				syncService.restart();
 			// If we don't need to sync again set the sync in progress flag to false

@@ -1,4 +1,4 @@
-package controller;
+package controller.importView;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -11,10 +11,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
-import model.image.ImageEntry;
 import model.species.Species;
 
-import java.awt.event.FocusEvent;
 import java.util.HashMap;
 import java.util.Map;
 

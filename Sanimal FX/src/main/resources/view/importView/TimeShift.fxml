@@ -9,7 +9,7 @@
 <?import javafx.geometry.Insets?>
 <?import java.net.URL?>
 <?import org.controlsfx.control.SegmentedButton?>
-<GridPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.TimeShiftController">
+<GridPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.importView.TimeShiftController">
     <stylesheets>
         <URL value="@TimeShift.css"/>
     </stylesheets>

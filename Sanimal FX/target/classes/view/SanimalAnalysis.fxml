@@ -1,41 +1,140 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
 
-<GridPane minHeight="500" minWidth="1000" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
-          fx:controller="controller.SanimalAnalysisController">
+<?import javafx.scene.control.DatePicker?>
+<?import com.panemu.tiwulfx.control.DetachableTabPane?>
+<?import com.panemu.tiwulfx.control.DetachableTab?>
+<SplitPane dividerPositions="0.3" minHeight="500" minWidth="1000" orientation="VERTICAL" xmlns="http://javafx.com/javafx/8.0.121"
+           xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalAnalysisController">
+    <stylesheets>
+        <URL value="@SanimalAnalysis.css"/>
+    </stylesheets>
     <padding>
         <Insets bottom="5" left="5" right="5" top="5"/>
     </padding>
-    <columnConstraints>
-        <ColumnConstraints hgrow="SOMETIMES"/>
-    </columnConstraints>
-    <rowConstraints>
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
-        <RowConstraints maxHeight="30" minHeight="30.0" prefHeight="30.0"/>
-        <RowConstraints vgrow="ALWAYS"/>
-    </rowConstraints>
-    <children>
-        <TextArea fx:id="txtResults" GridPane.rowIndex="6"/>
-        <Label text="Work in Progress" GridPane.halignment="CENTER" GridPane.rowIndex="3"/>
-        <HBox alignment="CENTER" spacing="10">
-            <children>
-                <Button mnemonicParsing="false" onAction="#createJimsOutput" text="Create Jim's Output"/>
-                <TextField fx:id="txtEventInterval"/>
-            </children>
-        </HBox>
-        <Button onAction="#createJSONOutput" GridPane.valignment="CENTER" GridPane.halignment="CENTER" mnemonicParsing="false" text="Create JSON" GridPane.rowIndex="1"/>
-    </children>
-</GridPane>
+    <items>
+        <SplitPane dividerPositions="0.15, 0.3">
+            <items>
+                <BorderPane>
+                    <GridPane.margin>
+                        <Insets left="5" right="5"/>
+                    </GridPane.margin>
+                    <top>
+                        <Label text="Species Filter" BorderPane.alignment="TOP_CENTER"/>
+                    </top>
+                    <center>
+                        <ListView fx:id="speciesFilterListView"/>
+                    </center>
+                    <bottom>
+                        <VBox>
+                            <children>
+                                <HBox spacing="5">
+                                    <VBox.margin>
+                                        <Insets left="5" right="5" top="10"/>
+                                    </VBox.margin>
+                                    <children>
+                                        <TextField fx:id="txtSpeciesSearch" promptText="Search Species" HBox.hgrow="ALWAYS"/>
+                                        <Button onAction="#clearSpeciesSearch" styleClass="resetSearchBtn" HBox.hgrow="NEVER"/>
+                                    </children>
+                                </HBox>
+                                <FlowPane alignment="CENTER" hgap="5" vgap="10">
+                                    <padding>
+                                        <Insets bottom="10" left="5" right="5" top="10"/>
+                                    </padding>
+                                    <children>
+                                        <Button onAction="#selectAllSpecies" mnemonicParsing="false" text="Select All"/>
+                                        <Button onAction="#selectNoSpecies" mnemonicParsing="false" text="Select None"/>
+                                    </children>
+                                </FlowPane>
+                            </children>
+                        </VBox>
+                    </bottom>
+                </BorderPane>
+                <BorderPane>
+                    <GridPane.margin>
+                        <Insets left="5" right="5"/>
+                    </GridPane.margin>
+                    <top>
+                        <Label text="Location Filter" BorderPane.alignment="TOP_CENTER"/>
+                    </top>
+                    <center>
+                        <ListView fx:id="locationFilterListView"/>
+                    </center>
+                    <bottom>
+                        <VBox>
+                            <children>
+                                <HBox spacing="5">
+                                    <VBox.margin>
+                                        <Insets left="5" right="5" top="10"/>
+                                    </VBox.margin>
+                                    <children>
+                                        <TextField fx:id="txtLocationSearch" promptText="Search Locations" HBox.hgrow="ALWAYS"/>
+                                        <Button onAction="#clearLocationSearch" styleClass="resetSearchBtn" HBox.hgrow="NEVER"/>
+                                    </children>
+                                </HBox>
+                                <FlowPane alignment="CENTER" hgap="5" vgap="10">
+                                    <padding>
+                                        <Insets bottom="10" left="5" right="5" top="10"/>
+                                    </padding>
+                                    <children>
+                                        <Button onAction="#selectAllLocations" mnemonicParsing="false" text="Select All"/>
+                                        <Button onAction="#selectNoLocations" mnemonicParsing="false" text="Select None"/>
+                                    </children>
+                                </FlowPane>
+                            </children>
+                        </VBox>
+                    </bottom>
+                </BorderPane>
+                <GridPane>
+                    <padding>
+                        <Insets left="5" right="5"/>
+                    </padding>
+                    <rowConstraints>
+                        <RowConstraints minHeight="35"/>
+                        <RowConstraints minHeight="35"/>
+                        <RowConstraints minHeight="35"/>
+                        <RowConstraints minHeight="35"/>
+                        <RowConstraints minHeight="35"/>
+                        <RowConstraints minHeight="35"/>
+                    </rowConstraints>
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="150" maxWidth="150"/>
+                        <ColumnConstraints minWidth="150" maxWidth="150"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+                    <children>
+                        <Label text="Visualization Preferences" GridPane.columnSpan="2" GridPane.halignment="CENTER"/>
+                        <Label text="Event Interval (minutes):" GridPane.rowIndex="1"/>
+                        <TextField fx:id="txtEventInterval" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                        <Label text="Start Date:" GridPane.rowIndex="2"/>
+                        <DatePicker fx:id="dateStart" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                        <Label text="End Date:" GridPane.rowIndex="3"/>
+                        <DatePicker fx:id="dateEnd" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                        <Button text="Refresh Visualizations" onAction="#refreshVisualizations" GridPane.rowIndex="4" GridPane.columnSpan="2" GridPane.halignment="CENTER"/>
+                    </children>
+                </GridPane>
+            </items>
+        </SplitPane>
+        <DetachableTabPane>
+            <DetachableTab detachable="false" text="Dr. Sanderson's Output" closable="false">
+                <fx:include fx:id="visDrSanderson" source="analysisView/VisDrSanderson.fxml"/>
+            </DetachableTab>
+            <DetachableTab detachable="false" text="Species Accumulation Curve" closable="false"/>
+        </DetachableTabPane>
+    </items>
+</SplitPane>

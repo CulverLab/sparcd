@@ -1,10 +1,7 @@
 package model.species;
 
 import com.google.gson.annotations.Expose;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.scene.input.KeyCode;
 import model.image.ImageEntry;
 
@@ -24,6 +21,9 @@ public class Species
     private StringProperty speciesIconURL = new SimpleStringProperty();
     // Each species can have a keybind that represents that species. This is used in the GUI to quickly tag species
     private final ObjectProperty<KeyCode> keyBinding = new SimpleObjectProperty<>(null);
+
+    // This field is purely used by the analysis page to test if this species should be used when running analysis
+    private transient final BooleanProperty shouldBePartOfAnalysis = new SimpleBooleanProperty(true);
 
     // Default uninitialized value
     @Expose(serialize = false, deserialize = false)
@@ -205,6 +205,30 @@ public class Species
     public ObjectProperty<KeyCode> keyBindingProperty()
     {
         return keyBinding;
+    }
+
+    /**
+     * @param should True if this species should be used in analysis, false otherwise
+     */
+    public void setShouldBePartOfAnalysis(boolean should)
+    {
+        this.shouldBePartOfAnalysis.setValue(should);
+    }
+
+    /**
+     * @return True if this species should be used in analysis, false otherwise
+     */
+    public boolean shouldBePartOfAnalysis()
+    {
+        return this.shouldBePartOfAnalysis.getValue();
+    }
+
+    /**
+     * @return The property representing if this species should be included in analysis
+     */
+    public BooleanProperty shouldBePartOfAnalysisProperty()
+    {
+        return this.shouldBePartOfAnalysis;
     }
 
     /**

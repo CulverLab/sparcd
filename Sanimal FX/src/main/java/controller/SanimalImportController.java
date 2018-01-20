@@ -1,5 +1,9 @@
 package controller;
 
+import controller.importView.LocationCreatorController;
+import controller.importView.SpeciesCreatorController;
+import controller.importView.SpeciesListEntryController;
+import controller.importView.TimeShiftController;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
@@ -182,6 +186,9 @@ public class SanimalImportController implements Initializable
 
 	private ObjectProperty<Image> speciesPreviewImage = new SimpleObjectProperty<>(null);
 
+	private Stage timeShiftStage;
+	private TimeShiftController timeShiftController;
+
 	/**
 	 * Initialize the sanimal import view and data bindings
 	 *
@@ -363,6 +370,27 @@ public class SanimalImportController implements Initializable
 				}
 			}
 		});
+
+		// Initialize the time shift controller stage
+
+		// Load the FXML file of the editor window
+		FXMLLoader timeShiftLoader = FXMLLoaderUtils.loadFXML("importView/TimeShift.fxml");
+		// Grab the controller and set the location of that controller
+		this.timeShiftController = timeShiftLoader.getController();
+
+		// Create the stage that will have the date editor
+		this.timeShiftStage = new Stage();
+		// Set the title
+		timeShiftStage.setTitle("Date Editor");
+		// Set the modality and initialize the owner to be this current window
+		timeShiftStage.initModality(Modality.WINDOW_MODAL);
+		// Make sure the window is the right size and can't be resized
+		timeShiftStage.setResizable(false);
+		timeShiftStage.setWidth(950);
+		// Set the scene to the root of the FXML file
+		Scene timeShiftScene = new Scene(timeShiftLoader.getRoot());
+		// Set the scene of the stage, and show it!
+		timeShiftStage.setScene(timeShiftScene);
 
 		// Initialize the fade transitions
 
@@ -852,31 +880,16 @@ public class SanimalImportController implements Initializable
 		// If either a date from the directory or image was detected, process it
 		if (first != null)
 		{
-			// Load the FXML file of the editor window
-			FXMLLoader loader = FXMLLoaderUtils.loadFXML("importView/TimeShift.fxml");
-			// Grab the controller and set the location of that controller
-			TimeShiftController controller = loader.getController();
-
-			controller.setDate(first);
-
-			// Create the stage that will have the date editor
-			Stage dialogStage = new Stage();
-			// Set the title
-			dialogStage.setTitle("Date Editor");
-			// Set the modality and initialize the owner to be this current window
-			dialogStage.initModality(Modality.WINDOW_MODAL);
-			dialogStage.initOwner(this.imagePreview.getScene().getWindow());
-			// Set the scene to the root of the FXML file
-			Scene scene = new Scene(loader.getRoot());
-			// Set the scene of the stage, and show it!
-			dialogStage.setScene(scene);
-			dialogStage.showAndWait();
+			timeShiftController.setDate(first);
+			if (timeShiftStage.getOwner() == null)
+				timeShiftStage.initOwner(this.imagePreview.getScene().getWindow());
+			timeShiftStage.showAndWait();
 
 			// Grab the new date from the dialog stage
-			Date newDate = controller.getDate();
 			// If a new date was created...
-			if (newDate != null)
+			if (timeShiftController.dateWasConfirmed())
 			{
+				Date newDate = timeShiftController.getDate();
 				// If just an image was selected, set the date taken of that specific image
 				if (this.currentlySelectedImage.getValue() != null)
 					this.currentlySelectedImage.getValue().setDateTaken(newDate);

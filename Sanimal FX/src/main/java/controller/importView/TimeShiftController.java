@@ -1,4 +1,4 @@
-package controller;
+package controller.importView;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -62,12 +62,14 @@ public class TimeShiftController implements Initializable
 	/// FXML Bound fields end
 	///
 
-	// The original calendar, this should never be modified after assigned
+	// The original calendar
 	private Calendar original = Calendar.getInstance();
 	// This is the edited date, which updates whenever the spinners chnage
 	private Calendar dateToEdit = Calendar.getInstance();
 	// Default date format is day month year 24hour:minute:seconds
 	private DateFormat dateFormat = new SimpleDateFormat("dd MMMMM yyyy HH:mm:ss");
+
+	private boolean dateConfirmed = false;
 
 	/**
 	 * Used to initialize the UI
@@ -150,8 +152,15 @@ public class TimeShiftController implements Initializable
 	 */
 	public void setDate(Date date)
 	{
-		this.original.setTime((Date) date.clone());
-		this.dateToEdit.setTime(this.original.getTime());
+		dateConfirmed = false;
+		this.original.setTime(date);
+		this.dateToEdit.setTime(date);
+		this.spnDay.getValueFactory().setValue(0);
+		this.spnHour.getValueFactory().setValue(0);
+		this.spnMinute.getValueFactory().setValue(0);
+		this.spnSecond.getValueFactory().setValue(0);
+		this.spnMonth.getValueFactory().setValue(0);
+		this.spnYear.getValueFactory().setValue(0);
 		this.refreshLabel();
 	}
 
@@ -166,12 +175,23 @@ public class TimeShiftController implements Initializable
 	}
 
 	/**
+	 * Test to see if the date was confirmed with the "confirm" button
+	 *
+	 * @return True if the user pressed confirm, false if he pressed cancel or the X button
+	 */
+	public boolean dateWasConfirmed()
+	{
+		return this.dateConfirmed;
+	}
+
+	/**
 	 * When confirm is pressed, we close the window
 	 *
 	 * @param mouseEvent
 	 */
 	public void confirmPressed(MouseEvent mouseEvent)
 	{
+		dateConfirmed = true;
 		((Stage) this.tbn12Hr.getScene().getWindow()).close();
 	}
 
@@ -181,7 +201,6 @@ public class TimeShiftController implements Initializable
 	 */
 	public void cancelPressed(MouseEvent mouseEvent)
 	{
-		this.dateToEdit = original;
-		confirmPressed(mouseEvent);
+		((Stage) this.tbn12Hr.getScene().getWindow()).close();
 	}
 }

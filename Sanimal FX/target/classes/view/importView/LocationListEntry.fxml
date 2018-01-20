@@ -10,7 +10,7 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.text.Font?>
 <VBox styleClass="locationBackground" fx:id="mainPane" spacing="3" minHeight="120" maxHeight="120" prefHeight="120" prefWidth="120" minWidth="120" maxWidth="120"
-      alignment="CENTER" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.LocationListEntryController">
+      alignment="CENTER" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.importView.LocationListEntryController">
     <stylesheets>
         <URL value="@LocationListEntry.css"/>
     </stylesheets>

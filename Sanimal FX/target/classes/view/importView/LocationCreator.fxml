@@ -16,7 +16,7 @@
 
 <?import org.controlsfx.control.SegmentedButton?>
 <GridPane minHeight="315" minWidth="450" maxHeight="315" maxWidth="450.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
-          fx:controller="controller.LocationCreatorController">
+          fx:controller="controller.importView.LocationCreatorController">
     <stylesheets>
         <URL value="@LocationCreator.css"/>
     </stylesheets>

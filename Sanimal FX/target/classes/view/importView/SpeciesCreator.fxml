@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane fx:id="gridBackground" minWidth="450" prefWidth="450.0" minHeight="210" prefHeight="210.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SpeciesCreatorController">
+<GridPane fx:id="gridBackground" minWidth="450" prefWidth="450.0" minHeight="210" prefHeight="210.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.importView.SpeciesCreatorController">
     <stylesheets>
         <URL value="@SpeciesCreator.css" />
     </stylesheets>

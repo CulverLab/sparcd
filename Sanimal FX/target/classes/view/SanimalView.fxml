@@ -24,7 +24,7 @@
         <URL value="@SanimalView.css"/>
     </stylesheets>
     <children>
-        <DetachableTabPane fx:id="tabPane">
+        <DetachableTabPane fx:id="tabPane" styleClass="primaryTabPane">
             <tabs>
                 <DetachableTab detachable="true" text="Home" closable="false">
                     <graphic>

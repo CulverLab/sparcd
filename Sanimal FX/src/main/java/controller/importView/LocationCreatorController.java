@@ -1,4 +1,4 @@
-package controller;
+package controller.importView;
 
 import impl.org.controlsfx.tools.MathTools;
 import javafx.beans.binding.Bindings;

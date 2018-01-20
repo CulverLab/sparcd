@@ -1,4 +1,4 @@
-package controller;
+package controller.importView;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;

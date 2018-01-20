@@ -1,4 +1,4 @@
-package controller;
+package controller.uploadView;
 
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;

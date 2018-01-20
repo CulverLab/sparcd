@@ -34,6 +34,5 @@ public abstract class ErrorTask<V> extends Task<V>
 		};
 		// When the task fails print out the failure
 		this.setOnFailed(handler);
-		this.setOnCancelled(handler);
 	}
 }
