@@ -25,6 +25,8 @@ public class DataAnalysis
 	private List<Integer> allImageYears = new ArrayList<Integer>();
 	// A list of all images but sorted by date instead of randomly
 	private List<ImageEntry> imagesSortedByDate;
+	// A list of all original images
+	private List<ImageEntry> originalImageList;
 	// The event interval, in minutes
 	private Integer eventInterval = 60;
 	// A pre-calculated list of all full and new moons over the image's interval
@@ -42,6 +44,8 @@ public class DataAnalysis
 	public DataAnalysis(List<ImageEntry> images, Integer eventInterval)
 	{
 		this.eventInterval = eventInterval;
+		this.originalImageList = images;
+
 		// Find all image locations
 		for (ImageEntry entry : images)
 			if (entry.getLocationTaken() != null)
@@ -76,7 +80,7 @@ public class DataAnalysis
 		Collections.sort(allImageYears);
 
 		// Create a copy of "images", and sort it by date
-		imagesSortedByDate = new ArrayList<ImageEntry>(images);
+		imagesSortedByDate = new ArrayList<>(images);
 		imagesSortedByDate.sort(Comparator.comparing(ImageEntry::getDateTaken));
 
 		// If we have at least one image, begin calculating lunar cycles
@@ -321,5 +325,21 @@ public class DataAnalysis
 	public List<Date> getNewMoons()
 	{
 		return newMoons;
+	}
+
+	/**
+	 * @return The event interval used in this analysis
+	 */
+	public Integer getEventInterval()
+	{
+		return this.eventInterval;
+	}
+
+	/**
+	 * @return A reference to the original list of images
+	 */
+	public List<ImageEntry> getOriginalImageList()
+	{
+		return this.originalImageList;
 	}
 }

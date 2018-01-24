@@ -27,16 +27,16 @@ public class SanimalTextOutputFormatter
 	/**
 	 * Returns a massive string that is perfectly formatted to look like "Output.txt"
 	 * 
-	 * @param images
-	 *            The image list to analyze
-	 * @param eventInterval
-	 *            The event interval
+	 * @param dataStatistics
+	 *            A set of statistics computed from the images
 	 * @return A formatted string
 	 */
-	public String format(List<ImageEntry> images, Integer eventInterval)
+	public String format(DataAnalysis dataStatistics)
 	{
 		// The string to return
 		String toReturn = "";
+
+		List<ImageEntry> images = dataStatistics.getOriginalImageList();
 
 		// If there are no images, return an appropriate string
 		if (images.isEmpty())
@@ -45,21 +45,19 @@ public class SanimalTextOutputFormatter
 		// Elapsed time in the calculation
 		long elapsedTime = System.currentTimeMillis();
 
-		// Create an analysis object
-		DataAnalysis analysis = new DataAnalysis(images, eventInterval);
 		// Create all required formatters
-		HeaderFormatter headerFormatter = new HeaderFormatter(images, analysis);
-		FirstLastSpeciesFormatter firstLastSpeciesFormatter = new FirstLastSpeciesFormatter(images, analysis);
-		ActPerAbuLocFormatter actPerAbuLocFormatter = new ActPerAbuLocFormatter(images, analysis);
-		TrapDaysAndEffortFormatter trapDaysAndEffortFormatter = new TrapDaysAndEffortFormatter(images, analysis);
-		LocationStatFormatter locationStatFormatter = new LocationStatFormatter(images, analysis);
-		ActivityPatternFormatter activityPatternFormatter = new ActivityPatternFormatter(images, analysis);
-		LunarActivityFormatter lunarActivityFormatter = new LunarActivityFormatter(images, analysis);
-		RichnessFormatter richnessFormatter = new RichnessFormatter(images, analysis);
-		SpeciesLocCoordFormatter speciesLocCoordFormatter = new SpeciesLocCoordFormatter(images, analysis);
-		TotalDayFormatter totalDayFormatter = new TotalDayFormatter(images, analysis);
-		OccouranceFormatter occouranceFormatter = new OccouranceFormatter(images, analysis);
-		DetectionRateFormatter detectionRateFormatter = new DetectionRateFormatter(images, analysis);
+		HeaderFormatter headerFormatter = new HeaderFormatter(images, dataStatistics);
+		FirstLastSpeciesFormatter firstLastSpeciesFormatter = new FirstLastSpeciesFormatter(images, dataStatistics);
+		ActPerAbuLocFormatter actPerAbuLocFormatter = new ActPerAbuLocFormatter(images, dataStatistics);
+		TrapDaysAndEffortFormatter trapDaysAndEffortFormatter = new TrapDaysAndEffortFormatter(images, dataStatistics);
+		LocationStatFormatter locationStatFormatter = new LocationStatFormatter(images, dataStatistics);
+		ActivityPatternFormatter activityPatternFormatter = new ActivityPatternFormatter(images, dataStatistics);
+		LunarActivityFormatter lunarActivityFormatter = new LunarActivityFormatter(images, dataStatistics);
+		RichnessFormatter richnessFormatter = new RichnessFormatter(images, dataStatistics);
+		SpeciesLocCoordFormatter speciesLocCoordFormatter = new SpeciesLocCoordFormatter(images, dataStatistics);
+		TotalDayFormatter totalDayFormatter = new TotalDayFormatter(images, dataStatistics);
+		OccouranceFormatter occouranceFormatter = new OccouranceFormatter(images, dataStatistics);
+		DetectionRateFormatter detectionRateFormatter = new DetectionRateFormatter(images, dataStatistics);
 
 		// Proceed to print each header:
 
@@ -278,19 +276,17 @@ public class SanimalTextOutputFormatter
 	/**
 	 * Instead of printing "output.txt" like above, this prints "Allpictures.txt"
 	 * 
-	 * @param images
-	 *            The image list to analyze
-	 * @param eventInterval
-	 *            The event interval
+	 * @param dataStatistics
+	 *            A set of statistics computed from the images
 	 * @return a formatted string
 	 */
-	public String createAllPictures(List<ImageEntry> images, Integer eventInterval)
+	public String createAllPictures(DataAnalysis dataStatistics)
 	{
 		String toReturn = "";
 
 		// Create an analysis object, then create the formatter, and create the text
-		DataAnalysis analysis = new DataAnalysis(images, eventInterval);
-		AllPicturesFormatter allPicturesFormatter = new AllPicturesFormatter(images, analysis);
+		DataAnalysis analysis = new DataAnalysis(dataStatistics.getOriginalImageList(), dataStatistics.getEventInterval());
+		AllPicturesFormatter allPicturesFormatter = new AllPicturesFormatter(dataStatistics.getOriginalImageList(), analysis);
 		toReturn = toReturn + allPicturesFormatter.createAllPictures();
 
 		return toReturn;

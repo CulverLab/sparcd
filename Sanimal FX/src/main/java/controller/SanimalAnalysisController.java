@@ -1,6 +1,8 @@
 package controller;
 
+import com.panemu.tiwulfx.control.DetachableTabPane;
 import controller.analysisView.VisDrSandersonController;
+import controller.analysisView.VisSpeciesAccumulationCurveController;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
@@ -56,11 +58,16 @@ public class SanimalAnalysisController implements Initializable
 
 	@FXML
 	public VisDrSandersonController visDrSandersonController;
+	@FXML
+	public VisSpeciesAccumulationCurveController visSpeciesAccumulationCurveController;
 
 	@FXML
 	public DatePicker dateStart;
 	@FXML
 	public DatePicker dateEnd;
+
+	@FXML
+	public DetachableTabPane tbnVisualizations;
 
 	///
 	/// FXML bound fields end
@@ -142,7 +149,10 @@ public class SanimalAnalysisController implements Initializable
 				.filter(imageEntry -> imageEntry.getDateTaken().after(startDate) && imageEntry.getDateTaken().before(endDate))
 				.collect(Collectors.toList());
 
-		visDrSandersonController.visualize(imagesToAnalyze, eventInterval);
+		DataAnalysis dataStatistics = new DataAnalysis(imagesToAnalyze, eventInterval);
+
+		visDrSandersonController.visualize(dataStatistics);
+		visSpeciesAccumulationCurveController.visualize(dataStatistics);
 	}
 
 	public void selectAllSpecies(ActionEvent actionEvent)

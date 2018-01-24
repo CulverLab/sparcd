@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextArea;
 import javafx.scene.text.Font;
+import model.analysis.DataAnalysis;
 import model.analysis.SanimalTextOutputFormatter;
 import model.image.ImageEntry;
 
@@ -35,12 +36,12 @@ public class VisDrSandersonController implements VisControllerBase
 	}
 
 	@Override
-	public void visualize(List<ImageEntry> images, Integer eventInterval)
+	public void visualize(DataAnalysis dataStatistics)
 	{
-		this.txtOutput.setText(outputFormatter.format(images, eventInterval));
+		this.txtOutput.setText(outputFormatter.format(dataStatistics));
 		this.txtOutput.setFont(Font.font(java.awt.Font.MONOSPACED, 12f));
 
-		this.txtAllPictures.setText(outputFormatter.createAllPictures(images, eventInterval));
+		this.txtAllPictures.setText(outputFormatter.createAllPictures(dataStatistics));
 		this.txtAllPictures.setFont(Font.font(java.awt.Font.MONOSPACED, 12f));
 	}
 }

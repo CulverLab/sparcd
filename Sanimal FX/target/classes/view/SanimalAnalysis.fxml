@@ -130,11 +130,13 @@
                 </GridPane>
             </items>
         </SplitPane>
-        <DetachableTabPane>
+        <DetachableTabPane fx:id="tbnVisualizations">
             <DetachableTab detachable="false" text="Dr. Sanderson's Output" closable="false">
                 <fx:include fx:id="visDrSanderson" source="analysisView/VisDrSanderson.fxml"/>
             </DetachableTab>
-            <DetachableTab detachable="false" text="Species Accumulation Curve" closable="false"/>
+            <DetachableTab detachable="false" text="Species Accumulation Curve" closable="false">
+                <fx:include fx:id="visSpeciesAccumulationCurve" source="analysisView/VisSpeciesAccumulationCurve.fxml"/>
+            </DetachableTab>
         </DetachableTabPane>
     </items>
 </SplitPane>
