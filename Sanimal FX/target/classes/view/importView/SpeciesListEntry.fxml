@@ -10,7 +10,9 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 
+<?import javafx.scene.image.Image?>
 <HBox fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" spacing="5"
       xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.importView.SpeciesListEntryController">
     <stylesheets>
@@ -20,7 +22,16 @@
         <Insets bottom="5" left="5" right="5" top="5"/>
     </padding>
     <children>
-        <ImageView fx:id="imageView" fitHeight="90.0" fitWidth="90.0" pickOnBounds="true"/>
+        <StackPane>
+            <children>
+                <ImageView fx:id="imageView" fitHeight="90" fitWidth="90" pickOnBounds="true"/>
+                <ImageView fx:id="imagePreview" fitHeight="90" fitWidth="90" onMouseClicked="#previewImage" onMouseEntered="#mouseEnteredPreview" onMouseExited="#mouseExitedPreview">
+                    <image>
+                        <Image url="@../../images/importWindow/previewButton.png"/>
+                    </image>
+                </ImageView>
+            </children>
+        </StackPane>
         <GridPane HBox.hgrow="ALWAYS">
             <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES"/>
@@ -43,7 +54,6 @@
                 </Label>
                 <HBox alignment="CENTER_LEFT" spacing="5" GridPane.rowIndex="2">
                     <children>
-                        <Button fx:id="btnPreview" text="Preview"/>
                         <Button fx:id="btnKeybind" mnemonicParsing="false"/>
                     </children>
                 </HBox>

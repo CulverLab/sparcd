@@ -4,10 +4,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
-import javafx.scene.chart.Axis;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.LineChart;
-import javafx.scene.chart.XYChart;
+import javafx.scene.chart.*;
+import javafx.util.StringConverter;
+import javafx.util.converter.NumberStringConverter;
 import model.analysis.DataAnalysis;
 import model.analysis.ImageQuery;
 import model.analysis.SanimalAnalysisUtils;
@@ -15,6 +14,7 @@ import model.image.ImageEntry;
 import model.species.Species;
 
 import java.net.URL;
+import java.text.NumberFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -28,6 +28,8 @@ public class VisSpeciesAccumulationCurveController implements VisControllerBase
 
 	@FXML
 	public LineChart<Long, String> lineChart;
+	@FXML
+	public NumberAxis xAxis;
 	@FXML
 	public CategoryAxis yAxis;
 
@@ -49,8 +51,6 @@ public class VisSpeciesAccumulationCurveController implements VisControllerBase
 	@Override
 	public void visualize(DataAnalysis dataStatistics)
 	{
-		chartData.clear();
-
 		if (dataStatistics.getImagesSortedByDate().size() > 0)
 		{
 			Date firstDate = dataStatistics.getImagesSortedByDate().get(0).getDateTaken();
@@ -61,7 +61,10 @@ public class VisSpeciesAccumulationCurveController implements VisControllerBase
 				if (!imagesWithSpecies.isEmpty())
 				{
 					Long newX = SanimalAnalysisUtils.daysBetween(firstDate, imagesWithSpecies.get(0).getDateTaken()) + 1;
-					chartData.add(new XYChart.Data<>(newX, species.getName()));
+					if (!yAxis.getCategories().contains(species.getName()))
+						chartData.add(new XYChart.Data<>(newX, species.getName()));
+					else
+						chartData.filtered(data -> data.getYValue().equals(species.getName())).get(0).setXValue(newX);
 				}
 			}
 		}

@@ -1,5 +1,6 @@
 package controller.importView;
 
+import javafx.animation.FadeTransition;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -10,7 +11,9 @@ import javafx.scene.control.ListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.util.Duration;
 import model.species.Species;
 
 import java.util.HashMap;
@@ -43,9 +46,10 @@ public class SpeciesListEntryController extends ListCell<Species>
     // The keybind button
     @FXML
     private Button btnKeybind;
-    // The preview button
+
+    // Button used to preview the species
     @FXML
-    private Button btnPreview;
+    public ImageView imagePreview;
 
     ///
     /// FXML bound fields end
@@ -59,6 +63,9 @@ public class SpeciesListEntryController extends ListCell<Species>
 
     // Used to cache species icons to avoid reloading them over and over again
     private static final Map<String, Image> IMAGE_CACHE = new HashMap<>();
+
+    private FadeTransition previewFadeIn;
+    private FadeTransition previewFadeOut;
 
     /**
      * Called once the controller has been setup
@@ -105,12 +112,19 @@ public class SpeciesListEntryController extends ListCell<Species>
             }
         });
 
-        // When we click preview, set the image preview
-        this.btnPreview.setOnAction(event ->
-        {
-            if (this.currentImagePreview != null)
-                this.currentImagePreview.setValue(IMAGE_CACHE.get(this.getItem().getSpeciesIcon()));
-        });
+        // First create a fade-in transition for the image preview icon
+        this.previewFadeIn = new FadeTransition(Duration.millis(100), this.imagePreview);
+        this.previewFadeIn.setFromValue(0);
+        this.previewFadeIn.setToValue(1);
+        this.previewFadeIn.setCycleCount(1);
+
+        // Then create a fade-out transition for the image preview icon
+        this.previewFadeOut = new FadeTransition(Duration.millis(100), this.imagePreview);
+        this.previewFadeOut.setFromValue(1);
+        this.previewFadeOut.setToValue(0);
+        this.previewFadeOut.setCycleCount(1);
+
+        this.previewFadeOut.play();
     }
 
     /**
@@ -160,5 +174,26 @@ public class SpeciesListEntryController extends ListCell<Species>
     public void setCurrentImagePreview(ObjectProperty<Image> currentImagePreview)
     {
         this.currentImagePreview = currentImagePreview;
+    }
+
+    /**
+     * When the user clicks the preview button show a preview of the image
+     * @param mouseEvent ignored
+     */
+    public void previewImage(MouseEvent mouseEvent)
+    {
+        // When we click preview, set the image preview
+        if (this.currentImagePreview != null)
+            this.currentImagePreview.setValue(IMAGE_CACHE.get(this.getItem().getSpeciesIcon()));
+    }
+
+    public void mouseEnteredPreview(MouseEvent mouseEvent)
+    {
+        this.previewFadeIn.play();
+    }
+
+    public void mouseExitedPreview(MouseEvent mouseEvent)
+    {
+        this.previewFadeOut.play();
     }
 }
