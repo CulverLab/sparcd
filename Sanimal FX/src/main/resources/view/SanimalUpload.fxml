@@ -11,12 +11,22 @@
 <?import javafx.scene.text.Font?>
 
 <?import javafx.scene.layout.StackPane?>
-<SplitPane fx:id="spnMain" dividerPositions="0.5" minHeight="600" minWidth="600" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalUploadController">
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<SplitPane fx:id="spnMain" dividerPositions="0.33, 0.66" prefHeight="500" prefWidth="1000" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalUploadController">
     <stylesheets>
         <URL value="@SanimalUpload.css" />
     </stylesheets>
     <items>
         <VBox SplitPane.resizableWithParent="false">
+            <Label alignment="CENTER" text="My Collections" prefWidth="Infinity" textAlignment="CENTER">
+                <font>
+                    <Font size="20.0" />
+                </font>
+                <VBox.margin>
+                    <Insets top="10" bottom="10" left="10" right="10"/>
+                </VBox.margin>
+            </Label>
             <ListView fx:id="collectionListView" styleClass="collectionLvw" VBox.vgrow="ALWAYS" />
             <FlowPane alignment="CENTER" hgap="5" vgap="10">
                 <padding>
@@ -55,6 +65,37 @@
                         <Font size="20.0" />
                     </font>
                 </Label>
+            </VBox>
+        </StackPane>
+        <StackPane>
+            <VBox fx:id="vbxDownloadList">
+                <Label alignment="CENTER" text="Items to Download" prefWidth="Infinity" textAlignment="CENTER">
+                    <font>
+                        <Font size="20.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets top="10" bottom="10" left="10" right="10"/>
+                    </VBox.margin>
+                </Label>
+                <ListView fx:id="uploadListDownloadListView" VBox.vgrow="ALWAYS" />
+                <FlowPane alignment="CENTER" hgap="5" vgap="10">
+                    <padding>
+                        <Insets bottom="20" left="5" right="5" top="20" />
+                    </padding>
+                    <Button fx:id="btnDownload" onAction="#newDownloadPressed" styleClass="downloadBtn" text="Download to Edit" />
+                </FlowPane>
+            </VBox>
+            <VBox fx:id="vbxLoadingCollection" pickOnBounds="false" StackPane.alignment="CENTER" alignment="CENTER" spacing="5">
+                <Label fx:id="lblStatus" pickOnBounds="false" text="Loading collection uploads...">
+                    <font>
+                        <Font size="20.0" />
+                    </font>
+                </Label>
+                <ImageView fitWidth="100" fitHeight="100">
+                    <image>
+                        <Image url="@../images/uploadWindow/loading.gif"/>
+                    </image>
+                </ImageView>
             </VBox>
         </StackPane>
     </items>

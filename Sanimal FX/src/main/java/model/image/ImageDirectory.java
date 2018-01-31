@@ -19,7 +19,7 @@ public class ImageDirectory extends ImageContainer
 {
 	// The icon to use for all images at the moment
 	private static final Image DEFAULT_DIR_IMAGE = new Image(ImageEntry.class.getResource("/images/importWindow/directoryIcon.png").toString());
-	private final ObjectProperty<Image> DEFAULT_DIRECTORY_ICON = new SimpleObjectProperty<>(DEFAULT_DIR_IMAGE);
+	final ObjectProperty<Image> DEFAULT_DIRECTORY_ICON = new SimpleObjectProperty<>(DEFAULT_DIR_IMAGE);
 
 	private ObservableList<ImageContainer> children = FXCollections.observableArrayList(imageContainer -> {
 		if (imageContainer instanceof ImageEntry)
@@ -63,9 +63,12 @@ public class ImageDirectory extends ImageContainer
 	 */
 	public ImageDirectory(File directory)
 	{
-		if (!directory.isDirectory())
-			throw new RuntimeException("The specified file is not a directory!");
-		this.directoryProperty.setValue(directory);
+		if (directory != null)
+		{
+			if (!directory.isDirectory())
+				throw new RuntimeException("The specified file is not a directory!");
+			this.directoryProperty.setValue(directory);
+		}
 	}
 
 	@Override

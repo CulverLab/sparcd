@@ -10,6 +10,10 @@
     -fx-graphic: url("../images/uploadWindow/uploadIcon16.png");
 }
 
+.downloadBtn {
+    -fx-graphic: url("../images/uploadWindow/downloadIcon16.png");
+}
+
 .collectionLvw .list-cell:selected {
     -fx-border-color: black;
     -fx-border-radius: 1px;

@@ -1,5 +1,6 @@
 package model.util;
 
+import model.SanimalData;
 import model.image.ImageEntry;
 import model.constant.SanimalMetadataFields;
 import org.apache.commons.imaging.ImageReadException;
@@ -40,7 +41,7 @@ public class MetadataUtils
 		TiffOutputSet outputSet = null;
 
 		// Grab the image metadata to read from
-		TiffImageMetadata tiffImageMetadata = MetadataUtils.readImageMetadata(imageEntry);
+		TiffImageMetadata tiffImageMetadata = MetadataUtils.readImageMetadata(imageEntry.getFile());
 
 		// Check if it's not null, create the output set to write to
 		if (tiffImageMetadata != null)
@@ -66,7 +67,7 @@ public class MetadataUtils
 	public static void writeOutputSet(TiffOutputSet outputSet, ImageEntry imageEntry) throws IOException, ImageWriteException, ImageReadException
 	{
 		// Write the new metadata back to the image, first we write it to a temporary file
-		File tempToWriteTo = File.createTempFile("sanimalTMP", ".jpg");
+		File tempToWriteTo = SanimalData.getInstance().getTempDirectoryManager().createTempFile("sanimalTMP.jpg");
 		// Copy the current image file to the temporary file
 		FileUtils.copyFile(imageEntry.getFile(), tempToWriteTo);
 		// Then we create an output stream to that file
@@ -77,7 +78,7 @@ public class MetadataUtils
 				// And perform the write to the temporary file
 				new ExifRewriter().updateExifMetadataLossless(imageEntry.getFile(), outputStream, outputSet);
 				// Then copy the temporary file over top of the current file to update it
-				imageEntry.getFile().delete();
+				FileUtils.forceDelete(imageEntry.getFile());
 				FileUtils.moveFile(tempToWriteTo, imageEntry.getFile());
 			}
 		}
@@ -130,17 +131,17 @@ public class MetadataUtils
 	/**
 	 * Returns the tiff image metadata which we can read sanimal data from
 	 *
-	 * @param imageEntry The image to read the metadata from
+	 * @param imageFile The image to read the metadata from
 	 *
 	 * @return The Image's metadata or null if no metadata was found (this probably means it's not a jpeg image...)
 	 *
 	 * @throws ImageReadException If something went wrong reading the image...
 	 * @throws IOException If something went wrong reading the image...
 	 */
-	public static TiffImageMetadata readImageMetadata(ImageEntry imageEntry) throws ImageReadException, IOException
+	public static TiffImageMetadata readImageMetadata(File imageFile) throws ImageReadException, IOException
 	{
 		// Read the image's metadata
-		ImageMetadata metadata = Imaging.getMetadata(imageEntry.getFile());
+		ImageMetadata metadata = Imaging.getMetadata(imageFile);
 
 		// Grab the tiff metadata to read from, or return null
 		if (metadata instanceof JpegImageMetadata)

@@ -53,7 +53,7 @@ public class DirectoryManager
 			try
 			{
 				// Read the image's metadata
-				TiffImageMetadata metadata = MetadataUtils.readImageMetadata(current);
+				TiffImageMetadata metadata = MetadataUtils.readImageMetadata(current.getFile());
 
 				// Make sure it actually has metadata to read...
 				if (metadata != null)
@@ -151,7 +151,7 @@ public class DirectoryManager
 			try
 			{
 				// Read the image's metadata
-				TiffImageMetadata metadata = MetadataUtils.readImageMetadata(current);
+				TiffImageMetadata metadata = MetadataUtils.readImageMetadata(current.getFile());
 
 				// Make sure it actually has metadata to read...
 				if (metadata != null)
@@ -336,7 +336,7 @@ public class DirectoryManager
 		try
 		{
 			// Create a temporarily TAR file to write to
-			File tempZip = Files.createTempFile("tarToUpload", ".tar").toFile();
+			File tempZip = SanimalData.getInstance().getTempDirectoryManager().createTempFile("tarToUpload.tar");
 			// Create a TAR output stream to write to
 			TarArchiveOutputStream tarOut = new TarArchiveOutputStream(new FileOutputStream(tempZip));
 
@@ -346,7 +346,6 @@ public class DirectoryManager
 			// Flush the file and close it. We delete the TAR after the program closes
 			tarOut.flush();
 			tarOut.close();
-			tempZip.deleteOnExit();
 			return tempZip;
 		}
 		catch (IOException e)

@@ -1,8 +1,6 @@
 package model.image;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,7 +28,6 @@ import org.apache.commons.imaging.ImageWriteException;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
 import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
-import org.apache.commons.imaging.formats.tiff.write.TiffOutputField;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 
 
@@ -53,7 +50,7 @@ public class ImageEntry extends ImageContainer
 	private static final Image CHECKED_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIconDone.png").toString());
 
 	// A property to wrap the currently selected image property. Must not be static!
-	private transient final ObjectProperty<Image> selectedImageProperty = new SimpleObjectProperty<>(DEFAULT_IMAGE_ICON);
+	transient final ObjectProperty<Image> selectedImageProperty = new SimpleObjectProperty<>(DEFAULT_IMAGE_ICON);
 	// The actual file 
 	private final ObjectProperty<File> imageFileProperty = new SimpleObjectProperty<File>();
 	// The date that the image was taken
@@ -76,13 +73,28 @@ public class ImageEntry extends ImageContainer
 	 */
 	public ImageEntry(File file)
 	{
+		this.readFileMetadataIntoImage(file);
+		this.initIconBindings();
+
+		this.locationTakenProperty.addListener((observable, oldValue, newValue) -> this.markDirty(true));
+		this.speciesPresent.addListener((ListChangeListener<SpeciesEntry>) c -> this.markDirty(true));
+		this.dateTakenProperty.addListener((observable, oldValue, newValue) -> this.markDirty(true));
+	}
+
+	/**
+	 * Reads the file metadata and initializes fields
+	 *
+	 * @param file The file to initialize this image entry with
+	 */
+	void readFileMetadataIntoImage(File file)
+	{
 		this.imageFileProperty.setValue(file);
 		try
 		{
 			// Set the date to a default
 			this.dateTakenProperty.setValue(Calendar.getInstance().getTime());
 			//Read the metadata off of the image
-			TiffImageMetadata tiffImageMetadata = MetadataUtils.readImageMetadata(this);
+			TiffImageMetadata tiffImageMetadata = MetadataUtils.readImageMetadata(file);
 			if (tiffImageMetadata != null)
 			{
 				// Grab the date taken from the metadata
@@ -96,6 +108,10 @@ public class ImageEntry extends ImageContainer
 			System.err.println("Could not read image metadata!!!");
 			e.printStackTrace();
 		}
+	}
+
+	void initIconBindings()
+	{
 		// Bind the image property to a conditional expression.
 		// The image is checked if the location is valid and the species present list is not empty
 		Binding<Image> imageBinding = Bindings.createObjectBinding(() ->
@@ -109,10 +125,6 @@ public class ImageEntry extends ImageContainer
 			return DEFAULT_IMAGE_ICON;
 		}, this.locationTakenProperty, this.speciesPresent);
 		selectedImageProperty.bind(imageBinding);
-
-		this.locationTakenProperty.addListener((observable, oldValue, newValue) -> this.markDirty(true));
-		this.speciesPresent.addListener((ListChangeListener<SpeciesEntry>) c -> this.markDirty(true));
-		this.dateTakenProperty.addListener((observable, oldValue, newValue) -> this.markDirty(true));
 	}
 
 	/**

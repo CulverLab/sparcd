@@ -59,7 +59,7 @@ public class ImageTreeCellController extends TreeCell<ImageContainer>
 		{
 			this.imgIcon.imageProperty().unbind();
 			this.imgIcon.imageProperty().bind(item.getTreeIconProperty());
-			this.lblText.setText(item.getFile().getName());
+			this.lblText.setText(item.toString());
 			this.setGraphic(mainPane);
 		}
 	}

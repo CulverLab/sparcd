@@ -6,9 +6,8 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import model.SanimalData;
-import model.image.DirectoryManager;
-import model.image.ImageDirectory;
-import model.image.ImageEntry;
+import model.analysis.SanimalAnalysisUtils;
+import model.image.*;
 import model.location.Location;
 import model.species.Species;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -22,9 +21,8 @@ import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.connection.IRODSSession;
 import org.irods.jargon.core.connection.IRODSSimpleProtocolManager;
 import org.irods.jargon.core.connection.auth.AuthResponse;
-import org.irods.jargon.core.exception.AuthenticationException;
-import org.irods.jargon.core.exception.InvalidUserException;
-import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.exception.*;
+import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.pub.*;
 import org.irods.jargon.core.pub.domain.User;
@@ -641,6 +639,122 @@ public class CyVerseConnectionManager
 		}
 	}
 
+	public List<String> retrieveUploadList(ImageCollection collection)
+	{
+		List<String> uploads = new ArrayList<>();
+
+		try
+		{
+			// Grab the uploads folder for a given collection
+			String collectionUploadDirStr = "/iplant/home/dslovikosky/Sanimal/Collections/" + collection.getID().toString() + "/Uploads";
+			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
+			IRODSFile collectionUploadDir = fileFactory.instanceIRODSFile(collectionUploadDirStr);
+			// If the uploads directory exists and we can read it, read
+			if (collectionUploadDir.exists() && collectionUploadDir.canRead())
+			{
+				File[] files = collectionUploadDir.listFiles(File::isDirectory);
+				for (File file : files)
+					uploads.add(file.getName());
+			}
+		}
+		catch (JargonException e)
+		{
+			e.printStackTrace();
+			System.out.println("Downloading upload list failed! (May have been canceled!)");
+		}
+
+		return uploads;
+	}
+
+	public CloudImageDirectory downloadUploadDirectory(ImageCollection collection, String uploadDirectory)
+	{
+		try
+		{
+			// Grab the uploads folder for a given collection
+			String cloudDirectoryStr = "/iplant/home/dslovikosky/Sanimal/Collections/" + collection.getID().toString() + "/Uploads/" + uploadDirectory;
+			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
+			IRODSFile cloudDirectory = fileFactory.instanceIRODSFile(cloudDirectoryStr);
+			CloudImageDirectory cloudImageDirectory = new CloudImageDirectory(cloudDirectory);
+			this.createDirectoryAndImageTree(cloudImageDirectory);
+			return cloudImageDirectory;
+		}
+		catch (JargonException e)
+		{
+			e.printStackTrace();
+			System.out.println("Downloading upload list failed! (May have been canceled!)");
+		}
+
+		return null;
+	}
+
+	/**
+	 * Recursively create the directory structure
+	 *
+	 * @param current
+	 *            The current directory to work on
+	 */
+	private void createDirectoryAndImageTree(CloudImageDirectory current)
+	{
+		IRODSFile[] subFiles = (IRODSFile []) current.getCyverseDirectory().listFiles((dir, name) -> true);
+
+		if (subFiles != null)
+		{
+			// Get all files in the directory
+			for (IRODSFile file : subFiles)
+			{
+				// Add all image files to the directory
+				if (!file.isDirectory())
+				{
+					current.addImage(new CloudImageEntry(file));
+				}
+				// Add all subdirectories to the directory
+				else
+				{
+					CloudImageDirectory subDirectory = new CloudImageDirectory(file);
+					current.addChild(subDirectory);
+					this.createDirectoryAndImageTree(subDirectory);
+				}
+			}
+		}
+	}
+
+	public File remoteToLocalImageFile(IRODSFile cyverseFile)
+	{
+		try
+		{
+			String fileName = cyverseFile.getName();
+			File localImageFile = SanimalData.getInstance().getTempDirectoryManager().createTempFile(fileName);
+
+			this.accessObjects.getDataTransferOperations().getOperation(cyverseFile, localImageFile, new TransferStatusCallbackListener()
+			{
+				@Override
+				public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) throws JargonException
+				{
+					return FileStatusCallbackResponse.CONTINUE;
+				}
+
+				@Override
+				public void overallStatusCallback(TransferStatus transferStatus) throws JargonException
+				{
+				}
+
+				@Override
+				public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection)
+				{
+					return CallbackResponse.YES_FOR_ALL;
+				}
+			}, null);
+
+			return localImageFile;
+		}
+		catch (JargonException e)
+		{
+			System.err.println("Error pulling remote file (" + cyverseFile.getName() + "). Error was:\n");
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	/**
 	 * Reads a file from CyVerse assuming a user is already logged in
 	 *
@@ -653,8 +767,7 @@ public class CyVerseConnectionManager
 		{
 			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 			// Create a temporary file to write to
-			Path localPath = Files.createTempFile("sanimalTemp", "." + FilenameUtils.getExtension(file));
-			File localFile = localPath.toFile();
+			File localFile = SanimalData.getInstance().getTempDirectoryManager().createTempFile("sanimalTemp." + FilenameUtils.getExtension(file));
 			// Delete the temporary file before copying so that we don't need to specify overwriting
 			localFile.delete();
 			// Create the remote file instance
@@ -666,8 +779,6 @@ public class CyVerseConnectionManager
 				if (remoteFile.canRead())
 				{
 					this.accessObjects.getDataTransferOperations().getOperation(remoteFile, localFile, null, null);
-					// Delete the local file after exiting
-					localFile.deleteOnExit();
 					// Ensure that the file exists and transfered
 					if (localFile.exists())
 					{
@@ -710,11 +821,8 @@ public class CyVerseConnectionManager
 		{
 			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 			// Create a local file to write to
-			Path localPath = Files.createTempFile("sanimalTemp", "." + FilenameUtils.getExtension(file));
-			// Grab the file from the path
-			File localFile = localPath.toFile();
-			// Delete the file once the program exits
-			localFile.deleteOnExit();
+			File localFile = SanimalData.getInstance().getTempDirectoryManager().createTempFile("sanimalTemp." + FilenameUtils.getExtension(file));
+			localFile.createNewFile();
 			// Ensure the file we made exists
 			if (localFile.exists())
 			{
@@ -731,16 +839,13 @@ public class CyVerseConnectionManager
 				}
 				// Perform a put operation to write the local file to the CyVerse server
 				this.accessObjects.getDataTransferOperations().putOperation(localFile, remoteLocationFile, null, null);
-			} else
+			}
+			else
 			{
 				System.err.println("Error creating a temporary file to write to.");
 			}
 		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		catch (JargonException e)
+		catch (IOException | JargonException e)
 		{
 			System.err.println("Error pushing remote file (" + file + "). Error was:\n");
 			e.printStackTrace();

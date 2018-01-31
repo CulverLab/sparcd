@@ -4,6 +4,8 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
@@ -15,6 +17,7 @@ import javafx.scene.layout.VBox;
 import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
+import model.image.CloudImageDirectory;
 import model.image.ImageContainer;
 import model.image.ImageDirectory;
 import model.image.ImageEntry;
@@ -60,6 +63,7 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public VBox vbxUpload;
 
+
 	// Warning labels used to show if there is a problem uploading
 	@FXML
 	public Label lblCantUpload;
@@ -70,12 +74,33 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public ListView<ImageDirectory> lstItemsToUpload;
 
+	// ADDED, no idea what to do here yet...
+	@FXML
+	public ListView<String> uploadListDownloadListView;
+	@FXML
+	public Button btnDownload;
+
+	// The download box pane
+	@FXML
+	public VBox vbxDownloadList;
+
+	@FXML
+	public VBox vbxLoadingCollection;
+
+	@FXML
+	public Label lblStatus;
+
 	///
 	/// FXML Bound Fields End
 	///
 
+	private static final String STATUS_LOADING = "Loading collection uploads...";
+	private static final String STATUS_DOWNLOADING = "Downloading collection uploads to edit...";
+
 	// The currently selected image collection
 	private ObjectProperty<ImageCollection> selectedCollection = new SimpleObjectProperty<>();
+
+	private ErrorTask<Void> collectionUploadDownloader;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
@@ -121,6 +146,44 @@ public class SanimalUploadController implements Initializable
 		ObservableList<ImageContainer> containers = SanimalData.getInstance().getImageTree().getChildren();
 		ObservableList<ImageDirectory> directories = EasyBind.map(containers.filtered(imageContainer -> imageContainer instanceof ImageDirectory), imageContainer -> (ImageDirectory) imageContainer);
 		this.lstItemsToUpload.setItems(directories);
+
+		this.btnDownload.disableProperty().bind(this.uploadListDownloadListView.getSelectionModel().selectedItemProperty().isNull());
+
+		this.vbxLoadingCollection.setVisible(false);
+		// When we select a new collection download the list of uploads to display
+		this.selectedCollection.addListener((observable, oldValue, newValue) ->
+		{
+			if (collectionUploadDownloader != null && collectionUploadDownloader.isRunning())
+				collectionUploadDownloader.cancel();
+
+			if (newValue != null)
+			{
+				this.vbxLoadingCollection.setVisible(true);
+				this.lblStatus.setText(STATUS_LOADING);
+				this.vbxDownloadList.setDisable(true);
+
+				collectionUploadDownloader = new ErrorTask<Void>()
+				{
+					@Override
+					protected Void call()
+					{
+						List<String> uploadDirectories = SanimalData.getInstance().getConnectionManager().retrieveUploadList(newValue);
+						Platform.runLater(() -> {
+							uploadListDownloadListView.getItems().clear();
+							uploadListDownloadListView.getItems().addAll(uploadDirectories);
+						});
+						return null;
+					}
+				};
+
+				collectionUploadDownloader.setOnSucceeded(event -> {
+					this.vbxLoadingCollection.setVisible(false);
+					this.vbxDownloadList.setDisable(false);
+				});
+
+				SanimalData.getInstance().getSanimalExecutor().addTask(collectionUploadDownloader);
+			}
+		});
 	}
 
 	/**
@@ -303,6 +366,35 @@ public class SanimalUploadController implements Initializable
 
 			// Enable the upload button
 			this.btnUpload.setDisable(false);
+		}
+	}
+
+	public void newDownloadPressed(ActionEvent actionEvent)
+	{
+		if (this.selectedCollection.getValue() != null && this.uploadListDownloadListView.getSelectionModel().getSelectedItem() != null)
+		{
+			this.vbxLoadingCollection.setVisible(true);
+			this.lblStatus.setText(STATUS_DOWNLOADING);
+			this.vbxDownloadList.setDisable(true);
+
+			ErrorTask<Void> downloadTask = new ErrorTask<Void>()
+			{
+				@Override
+				protected Void call()
+				{
+					CloudImageDirectory cloudDirectory = SanimalData.getInstance().getConnectionManager().downloadUploadDirectory(selectedCollection.getValue(), uploadListDownloadListView.getSelectionModel().getSelectedItem());
+					SanimalData.getInstance().getImageTree().addChild(cloudDirectory);
+					return null;
+				}
+			};
+
+			downloadTask.setOnSucceeded(event ->
+			{
+				this.vbxLoadingCollection.setVisible(false);
+				this.vbxDownloadList.setDisable(false);
+			});
+
+			SanimalData.getInstance().getSanimalExecutor().addTask(downloadTask);
 		}
 	}
 }

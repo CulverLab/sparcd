@@ -17,6 +17,7 @@ import model.species.Species;
 import model.util.ErrorService;
 import model.util.ErrorTask;
 import model.util.SanimalExecutor;
+import model.util.TempDirectoryManager;
 import org.hildan.fxgson.FxGson;
 
 import java.io.*;
@@ -73,6 +74,9 @@ public class SanimalData
 
 	// Preferences used to save the user's username
 	private final Preferences sanimalPreferences = Preferences.userNodeForPackage(SanimalData.class);
+
+	// Manager of all temporary files used by the SANIMAL software
+	private final TempDirectoryManager tempDirectoryManager = new TempDirectoryManager();
 
 	/**
 	 * Private constructor since we're using the singleton design pattern
@@ -226,7 +230,7 @@ public class SanimalData
 				return new ErrorTask<Void>()
 				{
 					@Override
-					protected Void call() throws Exception
+					protected Void call()
 					{
 						// Notice we perform the stream twice. This is because we cannot re-use streams in Java.
 						long dirtyImageCount =
@@ -385,5 +389,10 @@ public class SanimalData
 	public BooleanProperty loggedInProperty()
 	{
 		return loggedInProperty;
+	}
+
+	public TempDirectoryManager getTempDirectoryManager()
+	{
+		return tempDirectoryManager;
 	}
 }
