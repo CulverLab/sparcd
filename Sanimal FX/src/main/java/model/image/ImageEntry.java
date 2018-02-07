@@ -6,9 +6,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.binding.Binding;
 import javafx.beans.binding.Bindings;
@@ -18,17 +21,20 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
+import model.SanimalData;
 import model.constant.SanimalMetadataFields;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
 import model.util.MetadataUtils;
+import model.util.RoundingUtils;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.ImageWriteException;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
 import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
+import org.apache.commons.lang3.StringUtils;
 
 
 /**
@@ -38,7 +44,7 @@ import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
  */
 public class ImageEntry extends ImageContainer
 {
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
+	protected static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
 
 	// The icon to use for all images at the moment
 	private static final Image DEFAULT_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIcon.png").toString());
@@ -71,9 +77,9 @@ public class ImageEntry extends ImageContainer
 	 * @param file
 	 *            The file (must be an image file)
 	 */
-	public ImageEntry(File file)
+	public ImageEntry(File file, List<Location> knownLocations, List<Species> knownSpecies)
 	{
-		this.readFileMetadataIntoImage(file);
+		this.readFileMetadataIntoImage(file, knownLocations, knownSpecies);
 		this.initIconBindings();
 
 		this.locationTakenProperty.addListener((observable, oldValue, newValue) -> this.markDirty(true));
@@ -86,7 +92,7 @@ public class ImageEntry extends ImageContainer
 	 *
 	 * @param file The file to initialize this image entry with
 	 */
-	void readFileMetadataIntoImage(File file)
+	void readFileMetadataIntoImage(File file, List<Location> knownLocations, List<Species> knownSpecies)
 	{
 		this.imageFileProperty.setValue(file);
 		try
@@ -95,18 +101,150 @@ public class ImageEntry extends ImageContainer
 			this.dateTakenProperty.setValue(Calendar.getInstance().getTime());
 			//Read the metadata off of the image
 			TiffImageMetadata tiffImageMetadata = MetadataUtils.readImageMetadata(file);
-			if (tiffImageMetadata != null)
-			{
-				// Grab the date taken from the metadata
-				String[] dateTaken = tiffImageMetadata.getFieldValue(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
-				if (dateTaken != null && dateTaken.length == 1)
-					this.dateTakenProperty.setValue(DATE_FORMAT.parse(dateTaken[0]));
-			}
+
+			this.readDateFromMetadata(tiffImageMetadata);
+			this.readLocationFromMetadata(tiffImageMetadata, knownLocations);
+			this.readSpeciesFroMetadata(tiffImageMetadata, knownSpecies);
+
+			this.markDirty(false);
 		}
 		catch (ImageReadException | ParseException | IOException e)
 		{
 			System.err.println("Could not read image metadata!!!");
 			e.printStackTrace();
+		}
+	}
+
+	private void readDateFromMetadata(TiffImageMetadata tiffImageMetadata) throws ImageReadException, ParseException
+	{
+		if (tiffImageMetadata != null)
+		{
+			// Grab the date taken from the metadata
+			String[] dateTaken = tiffImageMetadata.getFieldValue(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
+			if (dateTaken != null && dateTaken.length == 1)
+				this.dateTakenProperty.setValue(DATE_FORMAT.parse(dateTaken[0]));
+		}
+	}
+
+	private void readLocationFromMetadata(TiffImageMetadata tiffImageMetadata, List<Location> knownLocations) throws ImageReadException
+	{
+		// Make sure it actually has metadata to read...
+		if (tiffImageMetadata != null)
+		{
+			// Grab the species field from the metadata
+			String[] locationField = tiffImageMetadata.getFieldValue(SanimalMetadataFields.LOCATION_ENTRY);
+			// Ensure that the field does actually exist...
+			if (locationField != null)
+			{
+				// We look for length 3
+				if (locationField.length == 3)
+				{
+					// Grab the location, location id, elevation, and lat/lng
+					String locationName = locationField[0];
+					String locationElevation = locationField[1];
+					String locationId = locationField[2];
+					double locationLatitude = RoundingUtils.roundLat(tiffImageMetadata.getGPS().getLatitudeAsDegreesNorth());
+					double locationLongitude = RoundingUtils.roundLng(tiffImageMetadata.getGPS().getLongitudeAsDegreesEast());
+
+					// Use a try & catch to parse the elevation
+					try
+					{
+						// Find a matching location. It must have:
+						// The same name
+						// A latitude .00001 units apart from the original
+						// A longitude .00001 units apart from the original
+						// An elevation 25 units apart from the original location
+						Optional<Location> correctLocation =
+							knownLocations
+								.stream()
+								.filter(location ->
+										StringUtils.equalsIgnoreCase(location.getId(), locationId) &&
+												Math.abs(location.getLat() - locationLatitude) < 0.0001 &&
+												Math.abs(location.getLng() - locationLongitude) < 0.0001)// For now, ignore elevation Math.abs(location.getElevation() - Double.parseDouble(locationElevation)) < 25)
+								.findFirst();
+
+						if (correctLocation.isPresent())
+						{
+							this.setLocationTaken(correctLocation.get());
+						}
+						else
+						{
+							Location newLocation = new Location(locationName, locationId, locationLatitude, locationLongitude, Double.parseDouble(locationElevation));
+							knownLocations.add(newLocation);
+							this.setLocationTaken(newLocation);
+						}
+					}
+					catch (NumberFormatException ignored)
+					{
+						System.err.println("Found an image with an invalid location elevation. The elevation was: " + locationElevation);
+					}
+				}
+			}
+		}
+	}
+
+	private void readSpeciesFroMetadata(TiffImageMetadata tiffImageMetadata, List<Species> knownSpecies) throws ImageReadException
+	{
+		// Make sure it actually has metadata to read...
+		if (tiffImageMetadata != null)
+		{
+			String[] fieldValue = tiffImageMetadata.getFieldValue(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
+			// 2015:07:21 02:02:44
+
+			// Grab the species field from the metadata
+			String[] speciesField = tiffImageMetadata.getFieldValue(SanimalMetadataFields.SPECIES_ENTRY);
+			// Ensure that the field does actually exist...
+			if (speciesField != null)
+			{
+				// Go through each of the species entries in the species field
+				// For some reason, the last element of the speciesField array will always be null. No idea why...
+				for (String speciesEntry : speciesField)
+				{
+					if (speciesEntry != null)
+					{
+						// Unpack the species entry by splitting it by the comma delimiter
+						String[] speciesEntryUnpacked = StringUtils.splitByWholeSeparator(speciesEntry, ",");
+						// Should be in the format: Name, ScientificName, Amount, so the length should be 3
+						if (speciesEntryUnpacked.length == 3)
+						{
+							// Grab the three fields
+							String speciesName = StringUtils.trim(speciesEntryUnpacked[0]);
+							String speciesScientificName = StringUtils.trim(speciesEntryUnpacked[1]);
+							String speciesCount = StringUtils.trim(speciesEntryUnpacked[2]);
+
+							// Check to see if we already have a species with the scientific and regular name
+							Optional<Species> correctSpecies =
+								knownSpecies
+									.stream()
+									.filter(species ->
+											StringUtils.equalsIgnoreCase(species.getName(), speciesName) &&
+													StringUtils.equalsIgnoreCase(species.getScientificName(), speciesScientificName))
+									.findFirst();
+
+							// We need to parse a string into an integer so ensure that this doesn't crash using a try & catch
+							try
+							{
+								// Do we have a species? If so tag this image with the species and amount
+								if (correctSpecies.isPresent())
+								{
+									this.getSpeciesPresent().add(new SpeciesEntry(correctSpecies.get(), Integer.parseInt(speciesCount)));
+								}
+								// We got a species that was not registered in the program, what do we do?
+								else
+								{
+									Species newSpecies = new Species(speciesName, speciesScientificName);
+									knownSpecies.add(newSpecies);
+									this.addSpecies(newSpecies, Integer.parseInt(speciesCount));
+								}
+							}
+							catch (NumberFormatException ignored)
+							{
+								System.err.println("Found an image with an invalid species count. The count was: " + speciesCount);
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 

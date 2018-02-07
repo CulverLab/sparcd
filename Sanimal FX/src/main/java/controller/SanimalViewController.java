@@ -219,31 +219,29 @@ public class SanimalViewController implements Initializable
 						this.updateProgress(2, 6);
 						connectionManager.initSanimalRemoteDirectory();
 
-						// Pull any locations from the remote directory
-						this.updateMessage("Pulling locations from remote directory...");
-						this.updateProgress(3, 6);
-						List<Location> locations = connectionManager.pullRemoteLocations();
-
 						// Pull any species from the remote directory
 						this.updateMessage("Pulling species from remote directory...");
-						this.updateProgress(4, 6);
+						this.updateProgress(3, 6);
 						List<Species> species = connectionManager.pullRemoteSpecies();
+
+						// Set the species list to be these species
+						Platform.runLater(() -> SanimalData.getInstance().getSpeciesList().addAll(species));
+
+						// Pull any locations from the remote directory
+						this.updateMessage("Pulling locations from remote directory...");
+						this.updateProgress(4, 6);
+						List<Location> locations = connectionManager.pullRemoteLocations();
+
+						// Set the location list to be these locations
+						Platform.runLater(() -> SanimalData.getInstance().getLocationList().addAll(locations));
 
 						// Pull any species from the remote directory
 						this.updateMessage("Pulling collections from remote directory...");
 						this.updateProgress(5, 6);
 						List<ImageCollection> imageCollections = connectionManager.pullRemoteCollections();
 
-						// Set the locations and species on the FXApplication thread
-						Platform.runLater(() ->
-						{
-							// Set the location list to be these locations
-							SanimalData.getInstance().getLocationList().addAll(locations);
-							// Set the species list to be these species
-							SanimalData.getInstance().getSpeciesList().addAll(species);
-							// Set the image collection list to be these collections
-							SanimalData.getInstance().getCollectionList().addAll(imageCollections);
-						});
+						// Set the image collection list to be these collections
+						Platform.runLater(() -> SanimalData.getInstance().getCollectionList().addAll(imageCollections));
 
 						this.updateProgress(6, 6);
 					}

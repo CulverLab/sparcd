@@ -32,18 +32,16 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.constant.SanimalDataFormats;
+import model.image.*;
 import model.util.FXMLLoaderUtils;
 import library.ImageViewPane;
 import library.TreeViewAutomatic;
 import model.SanimalData;
-import model.image.ImageContainer;
-import model.image.ImageDirectory;
-import model.image.ImageEntry;
-import model.image.DirectoryManager;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
 import model.util.ErrorTask;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.StatusBar;
 import org.fxmisc.easybind.EasyBind;
@@ -291,7 +289,7 @@ public class SanimalImportController implements Initializable
 		// Finally bind the date taken's disable property if an adjustable image is selected
 		this.txtDateTaken.textProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::dateTakenProperty).map(Date::toString).orElse(""));
 		// Bind the image preview to the selected image from the right side tree view
-		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).map(imageEntry -> new Image(imageEntry.getFile().toURI().toString())));
+		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::getFileProperty).map(file -> new Image(file.toURI().toString())));
 		// Bind the species entry list view items to the selected image species present
 		this.speciesEntryListView.itemsProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getSpeciesPresent));
 		// Bind the species entry location name to the selected image's location
@@ -352,8 +350,13 @@ public class SanimalImportController implements Initializable
 			}
 		});
 
-		// When we select a new image, reset the image viewport to center and zoomed out.
-		this.currentlySelectedImage.addListener((observable, oldValue, newValue) -> this.resetImageView(null));
+		this.currentlySelectedImage.addListener((observable, oldValue, newValue) ->
+		{
+			// When we select a new image, reset the image viewport to center and zoomed out.
+			this.resetImageView(null);
+			// We also make sure to pull the image from online if it's a cloud based image
+			if (newValue instanceof CloudImageEntry) ((CloudImageEntry) newValue).pullFromCloudIfNotPulled();
+		});
 
 		// When we press a key, we want to add the bound species to the species entry
 		this.mainPane.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
@@ -745,8 +748,11 @@ public class SanimalImportController implements Initializable
 					this.updateProgress(1, MAX_WORK);
 					this.updateMessage("Loading directory...");
 
+					List<Species> currentSpecies = new ArrayList<>(SanimalData.getInstance().getSpeciesList());
+					List<Location> currentLocations = new ArrayList<>(SanimalData.getInstance().getLocationList());
+
 					// Convert the file to a recursive image directory data structure
-					ImageDirectory directory = DirectoryManager.loadDirectory(file);
+					ImageDirectory directory = DirectoryManager.loadDirectory(file, currentLocations, currentSpecies);
 
 					this.updateProgress(2, MAX_WORK);
 					this.updateMessage("Removing empty directories...");
@@ -757,9 +763,7 @@ public class SanimalImportController implements Initializable
 					this.updateProgress(3, MAX_WORK);
 					this.updateMessage("Detecting species in images...");
 
-					// Check the list of pictures to see if there's any new species that were not there before
-					List<Species> newSpecies = DirectoryManager.detectRegisterAndTagSpecies(directory);
-
+					List<Species> newSpecies = ListUtils.subtract(currentSpecies, SanimalData.getInstance().getSpeciesList());
 					if (!newSpecies.isEmpty())
 					{
 						Platform.runLater(() ->
@@ -777,9 +781,7 @@ public class SanimalImportController implements Initializable
 					this.updateProgress(4, MAX_WORK);
 					this.updateMessage("Detecting locations in images...");
 
-					// Check the list of pictures to see if there's any new locations that need to be added
-					List<Location> newLocations = DirectoryManager.detectRegisterAndTagLocations(directory);
-
+					List<Location> newLocations = ListUtils.subtract(currentLocations, SanimalData.getInstance().getLocationList());
 					if (!newLocations.isEmpty())
 					{
 						Platform.runLater(() ->

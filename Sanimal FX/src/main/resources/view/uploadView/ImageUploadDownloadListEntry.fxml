@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<HBox fx:id="mainPane" alignment="CENTER_LEFT" prefHeight="70.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.uploadView.ImageUploadDownloadListEntryController">
+    <stylesheets>
+        <URL value="@ImageUploadDownloadListEntry.css"/>
+    </stylesheets>
+    <children>
+        <ImageView fitHeight="70" preserveRatio="true">
+            <Image url="@../../images/uploadWindow/uploadedFile.png"/>
+        </ImageView>
+        <VBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+            <Label fx:id="lblUsername" text="Upload Username" VBox.vgrow="ALWAYS">
+                <VBox.margin>
+                    <Insets bottom="5" left="5" right="5" top="5"/>
+                </VBox.margin>
+                <font>
+                    <Font size="20.0"/>
+                </font>
+            </Label>
+            <Label fx:id="lblDate" text="Upload Date" VBox.vgrow="ALWAYS">
+                <VBox.margin>
+                    <Insets bottom="5" left="5" right="5" top="5"/>
+                </VBox.margin>
+                <font>
+                    <Font size="20.0"/>
+                </font>
+            </Label>
+        </VBox>
+    </children>
+</HBox>

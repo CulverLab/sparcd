@@ -1,5 +1,6 @@
 package model.image;
 
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
@@ -8,6 +9,7 @@ import model.SanimalData;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
+import model.util.ErrorTask;
 import model.util.MetadataUtils;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
@@ -19,6 +21,8 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CloudImageEntry extends ImageEntry
@@ -26,9 +30,13 @@ public class CloudImageEntry extends ImageEntry
 	// The icon to use for all images at the moment
 	private static final Image DEFAULT_CLOUD_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageCloudIcon.png").toString());
 
+	private static final File PLACEHOLDER_FILE = new File(Objects.requireNonNull(CloudImageEntry.class.getResource("/files/placeholderImage.jpg")).getFile());
+
+
 	private ObjectProperty<IRODSFile> cyverseFileProperty = new SimpleObjectProperty<>();
 
 	private transient final AtomicBoolean hasBeenPulledFromCloud = new AtomicBoolean(false);
+	private transient final AtomicBoolean isBeingPulledFromCloud = new AtomicBoolean(false);
 
 	/**
 	 * Create a new image entry with an image file
@@ -37,7 +45,7 @@ public class CloudImageEntry extends ImageEntry
 	 */
 	public CloudImageEntry(IRODSFile cloudFile)
 	{
-		super(null);
+		super(PLACEHOLDER_FILE, null, null);
 		selectedImageProperty.setValue(DEFAULT_CLOUD_IMAGE_ICON);
 		this.setCyverseFile(cloudFile);
 	}
@@ -48,7 +56,7 @@ public class CloudImageEntry extends ImageEntry
 	 * @param file ignored
 	 */
 	@Override
-	void readFileMetadataIntoImage(File file)
+	void readFileMetadataIntoImage(File file, List<Location> knownLocations, List<Species> knownSpecies)
 	{
 	}
 
@@ -57,13 +65,19 @@ public class CloudImageEntry extends ImageEntry
 	{
 	}
 
+	// If we're asked for a file we return a temporary file until the real one is pulled from the cloud
 	@Override
 	public File getFile()
 	{
-		this.pullFromCloudIfNotPulled();
+		if (!this.hasBeenPulledFromCloud.get())
+		{
+			this.pullFromCloudIfNotPulled();
+			return PLACEHOLDER_FILE;
+		}
 		return super.getFile();
 	}
 
+	// We can set the date taken without the image but don't write to disk
 	@Override
 	public void setDateTaken(Date date)
 	{
@@ -71,6 +85,7 @@ public class CloudImageEntry extends ImageEntry
 		super.setDateTaken(date);
 	}
 
+	// If we haven't pulled yet we just return null
 	@Override
 	public Date getDateTaken()
 	{
@@ -78,6 +93,7 @@ public class CloudImageEntry extends ImageEntry
 		return super.getDateTaken();
 	}
 
+	// We can set the location taken without the image but don't write to disk
 	@Override
 	public void setLocationTaken(Location location)
 	{
@@ -85,6 +101,7 @@ public class CloudImageEntry extends ImageEntry
 		super.setLocationTaken(location);
 	}
 
+	// If we haven't pulled yet we just return null
 	@Override
 	public Location getLocationTaken()
 	{
@@ -109,7 +126,6 @@ public class CloudImageEntry extends ImageEntry
 	@Override
 	public void markDirty(Boolean dirty)
 	{
-		this.pullFromCloudIfNotPulled();
 		super.markDirty(dirty);
 	}
 
@@ -130,18 +146,30 @@ public class CloudImageEntry extends ImageEntry
 
 	private void pullFromCloud()
 	{
-		File localFile = SanimalData.getInstance().getConnectionManager().remoteToLocalImageFile(this.getCyverseFile());
-		super.readFileMetadataIntoImage(localFile);
-		this.hasBeenPulledFromCloud.set(true);
+		this.isBeingPulledFromCloud.set(true);
+		ErrorTask<File> pullTask = new ErrorTask<File>()
+		{
+			@Override
+			protected File call()
+			{
+				return SanimalData.getInstance().getConnectionManager().remoteToLocalImageFile(getCyverseFile());
+			}
+		};
+
+		pullTask.setOnSucceeded(event ->
+		{
+			File localFile = pullTask.getValue();
+			super.readFileMetadataIntoImage(localFile, SanimalData.getInstance().getLocationList(), SanimalData.getInstance().getSpeciesList());
+			this.hasBeenPulledFromCloud.set(true);
+		});
+
+		SanimalData.getInstance().getSanimalExecutor().addTask(pullTask);
 	}
 
-	private void pullFromCloudIfNotPulled()
+	public void pullFromCloudIfNotPulled()
 	{
-		if (!this.hasBeenPulledFromCloud.get())
-		{
-			System.out.println("Pulling image: " + this.getCyverseFile().getName());
+		if (!this.hasBeenPulledFromCloud.get() && !this.isBeingPulledFromCloud.get())
 			this.pullFromCloud();
-		}
 	}
 
 	@Override

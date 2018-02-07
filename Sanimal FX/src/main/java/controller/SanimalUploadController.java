@@ -147,6 +147,8 @@ public class SanimalUploadController implements Initializable
 		ObservableList<ImageDirectory> directories = EasyBind.map(containers.filtered(imageContainer -> imageContainer instanceof ImageDirectory), imageContainer -> (ImageDirectory) imageContainer);
 		this.lstItemsToUpload.setItems(directories);
 
+		this.uploadListDownloadListView.setCellFactory(list -> FXMLLoaderUtils.loadFXML("uploadView/ImageUploadDownloadListEntry.fxml").getController());
+
 		this.btnDownload.disableProperty().bind(this.uploadListDownloadListView.getSelectionModel().selectedItemProperty().isNull());
 
 		this.vbxLoadingCollection.setVisible(false);
@@ -313,7 +315,7 @@ public class SanimalUploadController implements Initializable
 
 									// Ignore this status callback
 									@Override
-									public void overallStatusCallback(TransferStatus transferStatus) throws JargonException
+									public void overallStatusCallback(TransferStatus transferStatus)
 									{
 									}
 
@@ -383,7 +385,7 @@ public class SanimalUploadController implements Initializable
 				protected Void call()
 				{
 					CloudImageDirectory cloudDirectory = SanimalData.getInstance().getConnectionManager().downloadUploadDirectory(selectedCollection.getValue(), uploadListDownloadListView.getSelectionModel().getSelectedItem());
-					SanimalData.getInstance().getImageTree().addChild(cloudDirectory);
+					Platform.runLater(() -> SanimalData.getInstance().getImageTree().addChild(cloudDirectory));
 					return null;
 				}
 			};
