@@ -69,10 +69,7 @@ public class ImageUploadListEntryController extends ListCell<ImageDirectory>
 		else
 		{
 			// Set the name to the image directory name
-			if (imageDirectory instanceof CloudImageDirectory)
-				this.lblName.setText(imageDirectory.toString());
-			else
-				this.lblName.setText(imageDirectory.getFile().getName() + " (Image Count: " + imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count() + ")");
+			this.lblName.setText(imageDirectory.toString() + " (Image Count: " + imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count() + ")");
 
 
 			// Update the binding

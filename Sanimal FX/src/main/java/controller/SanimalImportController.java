@@ -290,6 +290,7 @@ public class SanimalImportController implements Initializable
 		this.txtDateTaken.textProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::dateTakenProperty).map(Date::toString).orElse(""));
 		// Bind the image preview to the selected image from the right side tree view
 		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::getFileProperty).map(file -> new Image(file.toURI().toString())));
+		this.imagePreview.imageProperty().addListener((observable, oldValue, newValue) -> this.resetImageView(null));
 		// Bind the species entry list view items to the selected image species present
 		this.speciesEntryListView.itemsProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getSpeciesPresent));
 		// Bind the species entry location name to the selected image's location

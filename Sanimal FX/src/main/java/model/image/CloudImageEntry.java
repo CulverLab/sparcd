@@ -30,7 +30,7 @@ public class CloudImageEntry extends ImageEntry
 	// The icon to use for all images at the moment
 	private static final Image DEFAULT_CLOUD_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageCloudIcon.png").toString());
 
-	private static final File PLACEHOLDER_FILE = new File(Objects.requireNonNull(CloudImageEntry.class.getResource("/files/placeholderImage.jpg")).getFile());
+	private static final File PLACEHOLDER_FILE = new File(CloudImageEntry.class.getResource("/files/placeholderImage.jpg").getFile().replace("%2520", " ").replace("%20", " "));
 
 
 	private ObjectProperty<IRODSFile> cyverseFileProperty = new SimpleObjectProperty<>();
@@ -45,7 +45,8 @@ public class CloudImageEntry extends ImageEntry
 	 */
 	public CloudImageEntry(IRODSFile cloudFile)
 	{
-		super(PLACEHOLDER_FILE, null, null);
+		super(null, null, null);
+		this.getFileProperty().setValue(PLACEHOLDER_FILE);
 		selectedImageProperty.setValue(DEFAULT_CLOUD_IMAGE_ICON);
 		this.setCyverseFile(cloudFile);
 	}
@@ -69,11 +70,7 @@ public class CloudImageEntry extends ImageEntry
 	@Override
 	public File getFile()
 	{
-		if (!this.hasBeenPulledFromCloud.get())
-		{
-			this.pullFromCloudIfNotPulled();
-			return PLACEHOLDER_FILE;
-		}
+		this.pullFromCloudIfNotPulled();
 		return super.getFile();
 	}
 
