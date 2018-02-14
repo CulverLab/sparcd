@@ -3,6 +3,7 @@ package model.image;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.image.Image;
+import model.cyverse.ImageCollection;
 import org.irods.jargon.core.pub.io.IRODSFile;
 
 import java.io.File;
@@ -14,6 +15,8 @@ public class CloudImageDirectory extends ImageDirectory
 
 	// The file representing the directory
 	private ObjectProperty<IRODSFile> cyverseDirectoryProperty = new SimpleObjectProperty<>();
+
+	private ObjectProperty<ImageCollection> parentCollectionProperty = new SimpleObjectProperty<>();
 
 	/**
 	 * Construct a cyverse Directory
@@ -47,5 +50,20 @@ public class CloudImageDirectory extends ImageDirectory
 	public ObjectProperty<IRODSFile> getCyverseDirectoryProperty()
 	{
 		return this.cyverseDirectoryProperty;
+	}
+
+	public ImageCollection getParentCollection()
+	{
+		return parentCollectionProperty.getValue();
+	}
+
+	public void setParentCollection(ImageCollection parentCollection)
+	{
+		this.parentCollectionProperty.setValue(parentCollection);
+	}
+
+	public ObjectProperty<ImageCollection> parentCollectionProperty()
+	{
+		return this.parentCollectionProperty;
 	}
 }

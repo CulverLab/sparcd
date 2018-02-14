@@ -6,6 +6,7 @@ import controller.importView.SpeciesListEntryController;
 import controller.importView.TimeShiftController;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
@@ -205,12 +206,10 @@ public class SanimalImportController implements Initializable
 		// We create a local wrapper of the species list to filter
 		FilteredList<Species> speciesFilteredList = new FilteredList<>(species);
 		// Set the filter to update whenever the species search text changes
-		this.txtSpeciesSearch.textProperty().addListener(observable -> {
-			speciesFilteredList.setPredicate(speciesToFilter ->
-					// Allow any species with a name or scientific name containing the species search text
-					(StringUtils.containsIgnoreCase(speciesToFilter.getName(), this.txtSpeciesSearch.getCharacters()) ||
-							StringUtils.containsIgnoreCase(speciesToFilter.getScientificName(), this.txtSpeciesSearch.getCharacters())));
-		});
+		speciesFilteredList.predicateProperty().bind(Bindings.createObjectBinding(() -> (speciesToFilter ->
+			// Allow any species with a name or scientific name containing the species search text
+			(StringUtils.containsIgnoreCase(speciesToFilter.getName(), this.txtSpeciesSearch.getCharacters()) ||
+					StringUtils.containsIgnoreCase(speciesToFilter.getScientificName(), this.txtSpeciesSearch.getCharacters()))), this.txtSpeciesSearch.textProperty()));
 		// Set the items of the species list view to the newly sorted list
 		this.speciesListView.setItems(speciesFilteredList);
 		// Set the cell factory to be our custom species list cell

@@ -2,6 +2,9 @@ package model.cyverse;
 
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
@@ -420,6 +423,7 @@ public class CyVerseConnectionManager
 				if (!collectionDirUploads.exists())
 					collectionDirUploads.mkdir();
 				this.setFilePermissions(collectionDirUploads.getAbsolutePath(), collection.getPermissions(), false);
+				this.accessObjects.getCollectionAO().setAccessPermissionInherit(ZONE, collectionDirUploads.getAbsolutePath(), true);
 			}
 			catch (JargonException e)
 			{
@@ -639,6 +643,61 @@ public class CyVerseConnectionManager
 		}
 	}
 
+	/**
+	 * Save the set of images that were downloaded to CyVerse
+	 *  @param collection The collection to upload to
+	 * @param directoryToSave The directory to write
+	 * @param messageCallback Message callback that will show what is currently going on
+	 */
+	public void saveImages(ImageCollection collection, ImageDirectory directoryToSave, StringProperty messageCallback)
+	{
+		try
+		{
+			// Grab the save folder for a given collection
+			String collectionSaveDirStr = "/iplant/home/dslovikosky/Sanimal/Collections/" + collection.getID().toString() + "/Uploads";
+			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
+			IRODSFile collectionSaveDir = fileFactory.instanceIRODSFile(collectionSaveDirStr);
+			// If the save directory exists and we can write to it, save
+			if (collectionSaveDir.exists() && collectionSaveDir.canWrite())
+			{
+				List<CloudImageEntry> toUpload = directoryToSave.flattened().filter(imageContainer -> imageContainer instanceof CloudImageEntry).map(imageContainer -> (CloudImageEntry) imageContainer).collect(Collectors.toList());
+
+				messageCallback.setValue("Saving " + toUpload.size() + " images to CyVerse...");
+
+				Double numberOfImagesToUpload = (double) toUpload.size();
+				// Begin saving
+				for (int i = 0; i < toUpload.size(); i++)
+				{
+					CloudImageEntry cloudImageEntry = toUpload.get(i);
+					if (cloudImageEntry.hasBeenPulledFromCloud())
+					{
+						// Save that specific cloud image
+						this.accessObjects.getDataTransferOperations().putOperation(cloudImageEntry.getFile(), cloudImageEntry.getCyverseFile(), new TransferStatusCallbackListener()
+						{
+							@Override
+							public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) { return FileStatusCallbackResponse.CONTINUE; }
+							@Override
+							public void overallStatusCallback(TransferStatus transferStatus) {}
+							@Override
+							public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection) { return CallbackResponse.YES_FOR_ALL; }
+						}, null);
+
+						if (i % 20 == 0)
+						{
+							int finalI = i;
+							Platform.runLater(() -> directoryToSave.setUploadProgress(finalI / numberOfImagesToUpload));
+						}
+					}
+				}
+			}
+		}
+		catch (JargonException e)
+		{
+			e.printStackTrace();
+			System.out.println("Save failed!");
+		}
+	}
+
 	public List<String> retrieveUploadList(ImageCollection collection)
 	{
 		List<String> uploads = new ArrayList<>();
@@ -675,6 +734,8 @@ public class CyVerseConnectionManager
 			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 			IRODSFile cloudDirectory = fileFactory.instanceIRODSFile(cloudDirectoryStr);
 			CloudImageDirectory cloudImageDirectory = new CloudImageDirectory(cloudDirectory);
+			// The head directory gets the parent collection assigned to it
+			cloudImageDirectory.setParentCollection(collection);
 			this.createDirectoryAndImageTree(cloudImageDirectory);
 			return cloudImageDirectory;
 		}

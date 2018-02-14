@@ -174,7 +174,7 @@ public class SanimalData
 				return new ErrorTask<Void>()
 				{
 					@Override
-					protected Void call() throws Exception
+					protected Void call()
 					{
 						// Perform the push of the location data
 						this.updateMessage("Syncing new location list to CyVerse...");

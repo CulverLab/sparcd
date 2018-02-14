@@ -7,6 +7,7 @@ import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -17,10 +18,7 @@ import javafx.scene.layout.VBox;
 import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
-import model.image.CloudImageDirectory;
-import model.image.ImageContainer;
-import model.image.ImageDirectory;
-import model.image.ImageEntry;
+import model.image.*;
 import model.util.ErrorTask;
 import model.util.FXMLLoaderUtils;
 import org.fxmisc.easybind.EasyBind;
@@ -55,6 +53,9 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public Button btnUpload;
 
+	@FXML
+	public Button btnSave;
+
 	// The primary split pane
 	@FXML
 	public SplitPane spnMain;
@@ -74,6 +75,9 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public ListView<ImageDirectory> lstItemsToUpload;
 
+	@FXML
+	public ListView<CloudImageDirectory> lstItemsToSave;
+
 	// ADDED, no idea what to do here yet...
 	@FXML
 	public ListView<String> uploadListDownloadListView;
@@ -89,6 +93,17 @@ public class SanimalUploadController implements Initializable
 
 	@FXML
 	public Label lblStatus;
+
+	@FXML
+	public SplitPane spnUploadSave;
+
+	@FXML
+	public VBox vbxSave;
+
+	@FXML
+	public Label lblCantSave;
+	@FXML
+	public Label lblNoImagesToSave;
 
 	///
 	/// FXML Bound Fields End
@@ -128,24 +143,43 @@ public class SanimalUploadController implements Initializable
 			return ownerUsername == null || !ownerUsername.equals(SanimalData.getInstance().getUsername());
 		}).orElse(nothingSelected));
 
+		ObservableList<ImageDirectory> localImageDirectories = EasyBind.map(SanimalData.getInstance().getImageTree().getChildren().filtered(imageContainer -> imageContainer instanceof ImageDirectory && !(imageContainer instanceof CloudImageDirectory)), imageContainer -> (ImageDirectory) imageContainer);
+		ObservableList<CloudImageDirectory> cloudImageDirectories = EasyBind.map(SanimalData.getInstance().getImageTree().getChildren().filtered(imageContainer -> imageContainer instanceof CloudImageDirectory && ((CloudImageDirectory) imageContainer).getParentCollection() == this.selectedCollection.getValue()), imageContainer -> (CloudImageDirectory) imageContainer);
+
 		// Disable the can't upload label if we can't upload to a given collection
 		this.lblCantUpload.visibleProperty().bind(
-				EasyBind.monadic(this.selectedCollection)
-					.map(collection -> collection.getPermissions()
-						.filtered(perm -> !(perm.getUsername().equals(SanimalData.getInstance().getUsername()) && perm.canUpload())).size() == 1));
+			EasyBind.monadic(this.selectedCollection)
+				.map(collection -> collection.getPermissions()
+					.filtered(perm -> !(perm.getUsername().equals(SanimalData.getInstance().getUsername()) && perm.canUpload())).size() == 1));
+
+		this.lblCantSave.visibleProperty().bind(
+			EasyBind.monadic(this.selectedCollection)
+				.map(collection -> collection.getPermissions()
+					.filtered(perm -> !(perm.getUsername().equals(SanimalData.getInstance().getUsername()) && perm.canUpload())).size() == 1));
 
 		// Disable the no images imported label if no images are imported into the program
-		this.lblNoImagesToUpload.visibleProperty().bind(Bindings.size(SanimalData.getInstance().getImageTree().getChildren()).isEqualTo(0));
+		this.lblNoImagesToUpload.visibleProperty().bind(Bindings.size(localImageDirectories).isEqualTo(0));
+
+		// Disable the no images to save label if no images are downloaded from the cloud
+		this.lblNoImagesToSave.visibleProperty().bind(Bindings.size(cloudImageDirectories).isEqualTo(0));
 
 		// Disable the upload button if either of the labels are visible
 		this.vbxUpload.disableProperty().bind(this.lblCantUpload.visibleProperty().or(this.lblNoImagesToUpload.visibleProperty()));
 
+		// Disable the save button if either of the labels are visible
+		this.vbxSave.disableProperty().bind(this.lblCantSave.visibleProperty().or(this.lblNoImagesToSave.visibleProperty()));
+
 		// Set the cell factory to be our custom cell
 		this.lstItemsToUpload.setCellFactory(list -> FXMLLoaderUtils.loadFXML("uploadView/ImageUploadListEntry.fxml").getController());
 		// Populate the list of directories
-		ObservableList<ImageContainer> containers = SanimalData.getInstance().getImageTree().getChildren();
-		ObservableList<ImageDirectory> directories = EasyBind.map(containers.filtered(imageContainer -> imageContainer instanceof ImageDirectory), imageContainer -> (ImageDirectory) imageContainer);
-		this.lstItemsToUpload.setItems(directories);
+		this.lstItemsToUpload.setItems(localImageDirectories);
+
+		// Set the cell factory to be our custom cell
+		this.lstItemsToSave.setCellFactory(list -> FXMLLoaderUtils.loadFXML("uploadView/ImageUploadListEntry.fxml").getController());
+		FilteredList<CloudImageDirectory> correctCloudDirectories = new FilteredList<>(cloudImageDirectories);
+		correctCloudDirectories.predicateProperty().bind(Bindings.createObjectBinding(() -> (directory -> directory.getParentCollection() == this.selectedCollection.getValue()), this.selectedCollection));
+		// Populate the list of save directories
+		this.lstItemsToSave.setItems(correctCloudDirectories);
 
 		this.uploadListDownloadListView.setCellFactory(list -> FXMLLoaderUtils.loadFXML("uploadView/ImageUploadDownloadListEntry.fxml").getController());
 
@@ -169,6 +203,7 @@ public class SanimalUploadController implements Initializable
 					@Override
 					protected Void call()
 					{
+						this.updateMessage("Downloading list of uploads to collection: " + newValue.getName());
 						List<String> uploadDirectories = SanimalData.getInstance().getConnectionManager().retrieveUploadList(newValue);
 						Platform.runLater(() -> {
 							uploadListDownloadListView.getItems().clear();
@@ -371,6 +406,96 @@ public class SanimalUploadController implements Initializable
 		}
 	}
 
+	public void saveImages(ActionEvent actionEvent)
+	{
+		// Disable the save button so that we can't click it twice
+		this.btnSave.setDisable(true);
+
+		// Need to make sure that we have a selected collection
+		if (this.selectedCollection.getValue() != null)
+		{
+			Integer numberOfDirectoriesToSave = 0;
+
+			// Go over each directory in the list of items to save and save them
+			for (CloudImageDirectory imageDirectory : this.lstItemsToSave.getItems())
+			{
+				// If the image directory is selected for upload, upload it
+				if (imageDirectory.isSelectedForUpload())
+				{
+					// Make sure we've got a valid directory
+					boolean validDirectory = true;
+					// Each image must have a location and species tagged
+					for (CloudImageEntry imageEntry : imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof CloudImageEntry && ((CloudImageEntry) imageContainer).hasBeenPulledFromCloud()).map(imageContainer -> (CloudImageEntry) imageContainer).collect(Collectors.toList()))
+					{
+						if (imageEntry.getLocationTaken() == null || imageEntry.getSpeciesPresent().isEmpty())
+						{
+							validDirectory = false;
+							break;
+						}
+					}
+
+					// If we have a valid directory, perform the upload
+					if (validDirectory)
+					{
+						numberOfDirectoriesToSave++;
+						// Create an upload task
+						Task<Void> saveTask = new ErrorTask<Void>()
+						{
+							@Override
+							protected Void call()
+							{
+								// Create a string property used as a callback
+								StringProperty messageCallback = new SimpleStringProperty("");
+								this.updateMessage("Saving image directory " + imageDirectory.getCyverseDirectory().getName() + " to CyVerse.");
+								messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
+
+								// Save images to CyVerse, we give it a transfer status callback so that we can show the progress
+								SanimalData.getInstance().getConnectionManager().saveImages(selectedCollection.getValue(), imageDirectory, messageCallback);
+								return null;
+							}
+						};
+						// When the upload finishes, we enable the upload button
+						saveTask.setOnSucceeded(event ->
+						{
+							imageDirectory.setUploadProgress(-1);
+							this.btnSave.setDisable(false);
+						});
+						SanimalData.getInstance().getSanimalExecutor().addTask(saveTask);
+					}
+					else
+					{
+						// If an invalid directory is selected, show an alert
+						Alert alert = new Alert(Alert.AlertType.WARNING);
+						alert.initOwner(this.collectionListView.getScene().getWindow());
+						alert.setTitle("Invalid Directory");
+						alert.setHeaderText("Invalid Directory (" + imageDirectory.getFile().getName() + ") Selected");
+						alert.setContentText("An image in the directory (" + imageDirectory.getFile().getName() + ") you selected to save does not have a location or species tagged. Please ensure all images are tagged with at least one species and a location!");
+						alert.showAndWait();
+					}
+				}
+			}
+
+			// If no directories were uploaded show the upload button again
+			if (numberOfDirectoriesToSave == 0)
+			{
+				this.btnUpload.setDisable(false);
+			}
+		}
+		else
+		{
+			// If an invalid collection is selected, show an alert
+			Alert alert = new Alert(Alert.AlertType.WARNING);
+			alert.initOwner(this.collectionListView.getScene().getWindow());
+			alert.setTitle("No Collection");
+			alert.setHeaderText("No image collection selected to save to!");
+			alert.setContentText("Please select an image collection to save the images to.");
+			alert.showAndWait();
+
+			// Enable the upload button
+			this.btnUpload.setDisable(false);
+		}
+	}
+
 	public void newDownloadPressed(ActionEvent actionEvent)
 	{
 		if (this.selectedCollection.getValue() != null && this.uploadListDownloadListView.getSelectionModel().getSelectedItem() != null)
@@ -384,6 +509,7 @@ public class SanimalUploadController implements Initializable
 				@Override
 				protected Void call()
 				{
+					this.updateMessage("Downloading directory for editing...");
 					CloudImageDirectory cloudDirectory = SanimalData.getInstance().getConnectionManager().downloadUploadDirectory(selectedCollection.getValue(), uploadListDownloadListView.getSelectionModel().getSelectedItem());
 					Platform.runLater(() -> SanimalData.getInstance().getImageTree().addChild(cloudDirectory));
 					return null;
@@ -399,4 +525,5 @@ public class SanimalUploadController implements Initializable
 			SanimalData.getInstance().getSanimalExecutor().addTask(downloadTask);
 		}
 	}
+
 }

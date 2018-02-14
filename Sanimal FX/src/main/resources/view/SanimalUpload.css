@@ -10,6 +10,10 @@
     -fx-graphic: url("../images/uploadWindow/uploadIcon16.png");
 }
 
+.saveBtn {
+    -fx-graphic: url("../images/uploadWindow/save16.png");
+}
+
 .downloadBtn {
     -fx-graphic: url("../images/uploadWindow/downloadIcon16.png");
 }

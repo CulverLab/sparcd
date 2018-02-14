@@ -44,7 +44,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ImageEntry extends ImageContainer
 {
-	protected static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
+	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
 
 	// The icon to use for all images at the moment
 	private static final Image DEFAULT_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIcon.png").toString());

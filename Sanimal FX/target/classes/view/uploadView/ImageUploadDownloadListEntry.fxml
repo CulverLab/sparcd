@@ -16,8 +16,11 @@
         <URL value="@ImageUploadDownloadListEntry.css"/>
     </stylesheets>
     <children>
-        <ImageView fitHeight="70" preserveRatio="true">
+        <ImageView fitHeight="60" preserveRatio="true">
             <Image url="@../../images/uploadWindow/uploadedFile.png"/>
+            <HBox.margin>
+                <Insets left="5" right="5"/>
+            </HBox.margin>
         </ImageView>
         <VBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
             <Label fx:id="lblUsername" text="Upload Username" VBox.vgrow="ALWAYS">
