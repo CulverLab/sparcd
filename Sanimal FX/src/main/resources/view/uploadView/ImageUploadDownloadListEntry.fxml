@@ -10,7 +10,9 @@
 
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
-<HBox fx:id="mainPane" alignment="CENTER_LEFT" prefHeight="70.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<HBox fx:id="mainPane" alignment="CENTER_LEFT" prefHeight="135.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="controller.uploadView.ImageUploadDownloadListEntryController">
     <stylesheets>
         <URL value="@ImageUploadDownloadListEntry.css"/>
@@ -25,7 +27,7 @@
         <VBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
             <Label fx:id="lblUsername" text="Upload Username" VBox.vgrow="ALWAYS">
                 <VBox.margin>
-                    <Insets bottom="5" left="5" right="5" top="5"/>
+                    <Insets left="5" right="5" top="5"/>
                 </VBox.margin>
                 <font>
                     <Font size="20.0"/>
@@ -33,12 +35,47 @@
             </Label>
             <Label fx:id="lblDate" text="Upload Date" VBox.vgrow="ALWAYS">
                 <VBox.margin>
-                    <Insets bottom="5" left="5" right="5" top="5"/>
+                    <Insets left="5" right="5" top="5"/>
                 </VBox.margin>
                 <font>
                     <Font size="20.0"/>
                 </font>
             </Label>
+            <Label fx:id="lblTagged" text="Tagged ???">
+                <VBox.margin>
+                    <Insets left="5" right="5" top="5"/>
+                </VBox.margin>
+                <font>
+                    <Font size="20.0"/>
+                </font>
+            </Label>
+            <Label fx:id="lblEdits" text="Edit">
+                <VBox.margin>
+                    <Insets left="5" right="5" top="5"/>
+                </VBox.margin>
+                <font>
+                    <Font size="20.0"/>
+                </font>
+            </Label>
+        </VBox>
+        <VBox spacing="5">
+            <HBox.margin>
+                <Insets left="10" top="5" right="5"/>
+            </HBox.margin>
+            <Button fx:id="btnUpload" prefHeight="60" prefWidth="60" onAction="#uploadPressed">
+                <graphic>
+                    <ImageView fitHeight="40" fitWidth="40">
+                        <Image url="@../../images/uploadWindow/uploadIconNoBackground.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Button fx:id="btnDownload" prefHeight="60" prefWidth="60" onAction="#downloadPressed">
+                <graphic>
+                    <ImageView fitHeight="40" fitWidth="40">
+                        <Image url="@../../images/uploadWindow/downloadIconNoBackground.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
         </VBox>
     </children>
 </HBox>

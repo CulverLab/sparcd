@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javafx.scene.control.Alert;
 import model.SanimalData;
 import model.analysis.SanimalAnalysisUtils;
 import model.constant.SanimalMetadataFields;
@@ -25,6 +26,7 @@ import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
 import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -34,43 +36,6 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class DirectoryManager
 {
-	/**
-	 * Given a directory, this function reads all the images in the directory and tags them with the species in the list, or asks the user to input a new species
-	 *
-	 * @param imageDirectory The directory to read from
-	 *
-	 * @return A list of newly added species
-	 */
-	public static List<Species> detectRegisterAndTagSpecies(ImageDirectory imageDirectory)
-	{
-		// Grab all images in the directory
-		List<ImageEntry> newImages = imageDirectory.flattened().filter(container -> container instanceof ImageEntry).map(container -> (ImageEntry) container).collect(Collectors.toList());
-		List<Species> newlyAddedSpecies = new ArrayList<>();
-
-		// Go through each of the images
-		for (ImageEntry current : newImages)
-		{
-			try
-			{
-				// Read the image's metadata
-				TiffImageMetadata metadata = MetadataUtils.readImageMetadata(current.getFile());
-
-
-			}
-			catch (ImageReadException | IOException e)
-			{
-				System.err.println("Exception occurred when trying to read the metadata from the file: " + current.getFile().getAbsolutePath());
-				System.err.println("The error was: ");
-				e.printStackTrace();
-			}
-		}
-
-		// These images are not dirty, since we loaded them off disk
-		newImages.forEach(imageEntry -> imageEntry.markDirty(false));
-
-		return newlyAddedSpecies;
-	}
-
 	/**
 	 * Given a directory this function validates that each file exists and if they don't adds them to the invalid containers list
 	 *
@@ -234,8 +199,13 @@ public class DirectoryManager
 			}
 			catch (IOException e)
 			{
-				System.out.println("Error creating tar archive entry!");
-				e.printStackTrace();
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"Upload error",
+						"Error creating TAR file to be uploaded!\n" + ExceptionUtils.getStackTrace(e),
+						false);
 			}
 		});
 		// After doing all the images in the directory, we recursively move down the structure and do sub-directories

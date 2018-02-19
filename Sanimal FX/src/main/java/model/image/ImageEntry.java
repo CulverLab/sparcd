@@ -20,6 +20,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import model.SanimalData;
 import model.constant.SanimalMetadataFields;
@@ -34,6 +35,7 @@ import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
 import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 
@@ -110,8 +112,13 @@ public class ImageEntry extends ImageContainer
 		}
 		catch (ImageReadException | ParseException | IOException e)
 		{
-			System.err.println("Could not read image metadata!!!");
-			e.printStackTrace();
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"Metadata error",
+					"Error reading image metadata for file " + file.getName() + "!\n" + ExceptionUtils.getStackTrace(e),
+					false);
 		}
 	}
 
@@ -176,7 +183,13 @@ public class ImageEntry extends ImageContainer
 					}
 					catch (NumberFormatException ignored)
 					{
-						System.err.println("Found an image with an invalid location elevation. The elevation was: " + locationElevation);
+						SanimalData.getInstance().getErrorDisplay().showPopup(
+								Alert.AlertType.ERROR,
+								null,
+								"Error",
+								"Location error",
+								"Error parsing elevation for image, it was " + locationElevation + "!\n",
+								false);
 					}
 				}
 			}
@@ -239,7 +252,13 @@ public class ImageEntry extends ImageContainer
 							}
 							catch (NumberFormatException ignored)
 							{
-								System.err.println("Found an image with an invalid species count. The count was: " + speciesCount);
+								SanimalData.getInstance().getErrorDisplay().showPopup(
+										Alert.AlertType.ERROR,
+										null,
+										"Error",
+										"Species error",
+										"Error parsing species count for image, it was " + speciesCount + "!\n",
+										false);
 							}
 						}
 					}
@@ -439,10 +458,13 @@ public class ImageEntry extends ImageContainer
 		}
 		catch (ImageReadException | IOException | ImageWriteException e)
 		{
-			// If we get an error, print the error
-			System.err.println("Exception occurred when trying to read/write the metadata from the file: " + this.getFile().getAbsolutePath());
-			System.err.println("The error was: ");
-			e.printStackTrace();
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"Metadata error",
+					"Error writing metadata to the image " + this.getFile().getName() + "!\n" + ExceptionUtils.getStackTrace(e),
+					false);
 		}
 	}
 }

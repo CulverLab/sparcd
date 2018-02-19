@@ -1,11 +1,18 @@
 package controller.uploadView;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import model.image.CloudImageDirectory;
+import model.image.CloudUploadEntry;
 import model.image.ImageDirectory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -15,8 +22,9 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
-public class ImageUploadDownloadListEntryController extends ListCell<String>
+public class ImageUploadDownloadListEntryController extends ListCell<CloudUploadEntry>
 {
 	///
 	/// FXML Bound fields start
@@ -31,56 +39,88 @@ public class ImageUploadDownloadListEntryController extends ListCell<String>
 	@FXML
 	public Label lblUsername;
 
+	@FXML
+	public Label lblTagged;
+
+	@FXML
+	public Label lblEdits;
+
+	@FXML
+	public Button btnDownload;
+	@FXML
+	public Button btnUpload;
+
 	///
 	/// FXML Bound fields end
 	///
 
 	private static final SimpleDateFormat FOLDER_FORMAT = new SimpleDateFormat("MM/dd/yyyy 'at' HH:mm");
-	private static final SimpleDateFormat ORIGINAL_FOLDER_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss") ;
+	private static final String TAGGED_BASE = "Species/Loc Tagged ";
+	private static final String CHECK_MARK = "✓";
+	private static final String CROSS_MARK = "✕";
+
+	private Runnable onDownload;
+	private Runnable onUpload;
 
 	/**
 	 * Called when we get a new item to display
-	 * @param directoryName The image directory to show
+	 * @param cloudUploadEntry The image directory to show
 	 * @param empty If the cell is empty
 	 */
 	@Override
-	public void updateItem(String directoryName, boolean empty)
+	public void updateItem(CloudUploadEntry cloudUploadEntry, boolean empty)
 	{
 		// Update the underlying item
-		super.updateItem(directoryName, empty);
+		super.updateItem(cloudUploadEntry, empty);
 
 		// Set the text of the cell to nothing
 		this.setText(null);
 
 		// If no image directory was given and the cell was empty, clear the graphic
-		if (empty && directoryName == null)
+		if (empty && cloudUploadEntry == null)
 		{
 			this.setGraphic(null);
 		}
 		else
 		{
-			// Set the name to the image directory name
-			String[] pieces = StringUtils.split(directoryName, " ");
-
-			if (pieces.length == 3)
-			{
-				this.lblUsername.setText(pieces[2]);
-				try
-				{
-					this.lblDate.setText(FOLDER_FORMAT.format(ORIGINAL_FOLDER_FORMAT.parse(pieces[0] + " " + pieces[1])));
-				}
-				catch (ParseException ignored)
-				{
-				}
-			}
-			else
-			{
-				this.lblUsername.setText(directoryName);
-				this.lblDate.setText("");
-			}
-
+			this.lblUsername.setText(cloudUploadEntry.getUploadUser());
+			this.lblDate.setText(FOLDER_FORMAT.format(cloudUploadEntry.getUploadDate()));
+			this.lblTagged.setText(TAGGED_BASE + (cloudUploadEntry.getTagged() ? CHECK_MARK : CROSS_MARK));
+			List<String> editComments = cloudUploadEntry.getEditComments();
+			this.lblEdits.setText(editComments.isEmpty() ? "No edits to upload made." : editComments.get(editComments.size() - 1));
+			this.btnDownload.disableProperty().unbind();
+			this.btnDownload.disableProperty().bind(cloudUploadEntry.downloadedProperty());
+			this.btnUpload.disableProperty().unbind();
+			this.btnUpload.disableProperty().bind(
+					cloudUploadEntry.downloadedProperty().not().or(
+					Bindings.notEqual(
+							EasyBind.monadic(cloudUploadEntry.cloudImageDirectoryProperty()).selectProperty(ImageDirectory::uploadProgressProperty).orElse(0),
+							-1.0)
+			));
 			// Set the graphic to display
 			this.setGraphic(mainPane);
 		}
+	}
+
+	public void setOnDownload(Runnable onDownload)
+	{
+		this.onDownload = onDownload;
+	}
+
+	public void setOnUpload(Runnable onUpload)
+	{
+		this.onUpload = onUpload;
+	}
+
+	public void downloadPressed(ActionEvent actionEvent)
+	{
+		if (onDownload != null)
+			onDownload.run();
+	}
+
+	public void uploadPressed(ActionEvent actionEvent)
+	{
+		if (onUpload != null)
+			onUpload.run();
 	}
 }

@@ -8,6 +8,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import model.SanimalData;
 import model.location.Location;
@@ -19,6 +20,7 @@ import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
 import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.irods.jargon.core.pub.io.IRODSFile;
 
 import java.io.File;
@@ -77,7 +79,13 @@ public class CloudImageEntry extends ImageEntry
 			}
 			catch (IOException e)
 			{
-				System.out.println("Error loading placeholder image.");
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"Error initializing",
+						"Error initializing placeholder image for cloud images!\n" + ExceptionUtils.getStackTrace(e),
+						false);
 			}
 		}
 

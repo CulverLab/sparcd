@@ -1,8 +1,11 @@
 package model.util;
 
+import javafx.scene.control.Alert;
+import model.SanimalData;
 import org.apache.commons.compress.compressors.FileNameUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.io.File;
@@ -22,8 +25,13 @@ public class TempDirectoryManager
 		}
 		catch (IOException e)
 		{
-			System.err.println("Error creating a temporary Sanimal directory!");
-			e.printStackTrace();
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"Directory error",
+					"Error creating a temporary SANIMAL directory!\n" + ExceptionUtils.getStackTrace(e),
+					false);
 		}
 	}
 

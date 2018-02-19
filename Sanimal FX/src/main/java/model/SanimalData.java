@@ -14,10 +14,7 @@ import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
-import model.util.ErrorService;
-import model.util.ErrorTask;
-import model.util.SanimalExecutor;
-import model.util.TempDirectoryManager;
+import model.util.*;
 import org.hildan.fxgson.FxGson;
 
 import java.io.*;
@@ -77,6 +74,9 @@ public class SanimalData
 
 	// Manager of all temporary files used by the SANIMAL software
 	private final TempDirectoryManager tempDirectoryManager = new TempDirectoryManager();
+
+	// Class used to display errors as popups
+	private final ErrorDisplay errorDisplay = new ErrorDisplay();
 
 	/**
 	 * Private constructor since we're using the singleton design pattern
@@ -394,5 +394,10 @@ public class SanimalData
 	public TempDirectoryManager getTempDirectoryManager()
 	{
 		return tempDirectoryManager;
+	}
+
+	public ErrorDisplay getErrorDisplay()
+	{
+		return this.errorDisplay;
 	}
 }

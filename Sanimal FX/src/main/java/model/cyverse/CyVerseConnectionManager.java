@@ -3,33 +3,23 @@ package model.cyverse;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
+import javafx.scene.control.Alert;
 import model.SanimalData;
-import model.analysis.SanimalAnalysisUtils;
 import model.image.*;
 import model.location.Location;
 import model.species.Species;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.compress.compressors.CompressorOutputStream;
-import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.irods.jargon.core.connection.AuthScheme;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.connection.IRODSSession;
 import org.irods.jargon.core.connection.IRODSSimpleProtocolManager;
 import org.irods.jargon.core.connection.auth.AuthResponse;
 import org.irods.jargon.core.exception.*;
-import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.pub.*;
-import org.irods.jargon.core.pub.domain.User;
-import org.irods.jargon.core.pub.domain.UserFilePermission;
 import org.irods.jargon.core.pub.io.*;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 import org.irods.jargon.core.transfer.TransferStatus;
@@ -38,14 +28,9 @@ import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A class used to wrap the CyVerse Jargon FTP library
@@ -109,20 +94,25 @@ public class CyVerseConnectionManager
 			else
 			{
 				// If the authentication failed, print a message, and logout in case the login partially completed
-				System.out.println("Authentication failed. Response was: " + authResponse.getAuthMessage());
+				SanimalData.getInstance().getErrorDisplay().printError("Authentication failed. Response was: " + authResponse.getAuthMessage());
 			}
 		}
 		// If the authentication failed, print a message, and logout in case the login partially completed
 		catch (InvalidUserException | AuthenticationException e)
 		{
-			System.out.println("Authentication failed!");
+			SanimalData.getInstance().getErrorDisplay().printError("Authentication failed!");
 		}
 		// If the authentication failed due to a jargon exception, print a message, and logout in case the login partially completed
 		// Not really sure how this happens, probably if the server incorrectly responds or is down
 		catch (JargonException e)
 		{
-			System.err.println("Unknown Jargon Exception. Error was:\n");
-			e.printStackTrace();
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"Authentication failed",
+					"Could not authenticate the user!\n" + ExceptionUtils.getStackTrace(e),
+					false);
 		}
 		// Default, just return false
 		return false;
@@ -162,8 +152,13 @@ public class CyVerseConnectionManager
 				}
 				catch (IOException e)
 				{
-					System.err.println("Could not read species.json. The file might be incorrectly formatted...");
-					e.printStackTrace();
+					SanimalData.getInstance().getErrorDisplay().showPopup(
+							Alert.AlertType.ERROR,
+							null,
+							"Error",
+							"JSON error",
+							"Could not read the local species.json file!\n" + ExceptionUtils.getStackTrace(e),
+							false);
 				}
 			}
 
@@ -182,15 +177,25 @@ public class CyVerseConnectionManager
 				}
 				catch (IOException e)
 				{
-					System.err.println("Could not read locations.json. The file might be incorrectly formatted...");
-					e.printStackTrace();
+					SanimalData.getInstance().getErrorDisplay().showPopup(
+							Alert.AlertType.ERROR,
+							null,
+							"Error",
+							"JSON error",
+							"Could not read the local locations.json file!\n" + ExceptionUtils.getStackTrace(e),
+							false);
 				}
 			}
 		}
 		catch (JargonException e)
 		{
-			System.err.println("Error initializing Sanimal directory. Error was:\n");
-			e.printStackTrace();
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"Initialization error",
+					"Could not initialize the CyVerse directories!\n" + ExceptionUtils.getStackTrace(e),
+					false);
 		}
 	}
 
@@ -217,8 +222,13 @@ public class CyVerseConnectionManager
 			catch (JsonSyntaxException e)
 			{
 				// If the JSON file is incorrectly formatted, throw an error and return an empty list
-				System.out.println("Error reading the Json file " + fileName + ", Error was:\n");
-				e.printStackTrace();
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"JSON error",
+						"Could not pull the location list from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+						false);
 			}
 		}
 
@@ -261,8 +271,13 @@ public class CyVerseConnectionManager
 			catch (JsonSyntaxException e)
 			{
 				// If the JSON file is incorrectly formatted, throw an error and return an empty list
-				System.out.println("Error reading the Json file " + fileName + ", Error was:\n");
-				e.printStackTrace();
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"JSON error",
+						"Could not pull the species list from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+						false);
 			}
 		}
 
@@ -321,6 +336,7 @@ public class CyVerseConnectionManager
 										String permissionsJSONFile = collectionDir.getAbsolutePath() + "/permissions.json";
 										String permissionsJSON = this.readRemoteFile(permissionsJSONFile);
 
+										// This will be null if we can't see the upload directory
 										if (permissionsJSON != null)
 										{
 											// Get the GSON object to parse the JSON.
@@ -334,8 +350,9 @@ public class CyVerseConnectionManager
 										}
 										else
 										{
-											// If we got a null permissions JSON, we check if we can see the uploads folder. If so, we have upload permissions!
+											// Grab the uploads directory
 											IRODSFile collectionDirUploads = fileFactory.instanceIRODSFile(collectionDir.getAbsolutePath() + "/Uploads");
+											// If we got a null permissions JSON, we check if we can see the uploads folder. If so, we have upload permissions!
 											if (collectionDirUploads.exists())
 											{
 												// Add a permission for my own permissions
@@ -352,8 +369,13 @@ public class CyVerseConnectionManager
 								catch (JsonSyntaxException e)
 								{
 									// If the JSON file is incorrectly formatted, throw an error and return an empty list
-									System.out.println("Error reading the Json file " + collectionJSONFile + ", Error was:\n");
-									e.printStackTrace();
+									SanimalData.getInstance().getErrorDisplay().showPopup(
+											Alert.AlertType.ERROR,
+											null,
+											"Error",
+											"JSON collection error",
+											"Could not read the collection " + collectionJSONFile + "!\n" + ExceptionUtils.getStackTrace(e),
+											false);
 								}
 							}
 						}
@@ -362,12 +384,24 @@ public class CyVerseConnectionManager
 			}
 			else
 			{
-				System.out.println("Collections folder not found!");
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"Collection error",
+						"Collections folder not found on CyVerse!\n",
+						false);
 			}
 		}
 		catch (JargonException e)
 		{
-			e.printStackTrace();
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"JSON collection download error",
+					"Could not pull the collection list from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+					false);
 		}
 
 		return imageCollections;
@@ -449,8 +483,13 @@ public class CyVerseConnectionManager
 		}
 		catch (JargonException e)
 		{
-			e.printStackTrace();
-			System.out.println("Error deleting collection: " + collection.getName());
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"Deletion error",
+					"Could not delete the collection from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+					false);
 		}
 	}
 
@@ -484,8 +523,13 @@ public class CyVerseConnectionManager
 				}
 				catch (JargonException e)
 				{
-					System.err.println("Can't set user permissions???");
-					e.printStackTrace();
+					SanimalData.getInstance().getErrorDisplay().showPopup(
+							Alert.AlertType.ERROR,
+							null,
+							"Error",
+							"Permission error",
+							"Error setting permissions for user!\n" + ExceptionUtils.getStackTrace(e),
+							false);
 				}
 			});
 		}
@@ -506,8 +550,13 @@ public class CyVerseConnectionManager
 				}
 				catch (JargonException e)
 				{
-					System.err.println("Can't set user permissions???");
-					e.printStackTrace();
+					SanimalData.getInstance().getErrorDisplay().showPopup(
+							Alert.AlertType.ERROR,
+							null,
+							"Error",
+							"Permission error",
+							"Error setting permissions for user!\n" + ExceptionUtils.getStackTrace(e),
+							false);
 				}
 			});
 		}
@@ -536,8 +585,13 @@ public class CyVerseConnectionManager
 					}
 					catch (JargonException e)
 					{
-						System.err.println("Error removing permissions from user.");
-						e.printStackTrace();
+						SanimalData.getInstance().getErrorDisplay().showPopup(
+								Alert.AlertType.ERROR,
+								null,
+								"Error",
+								"Permission error",
+								"Error removing permissions from user!\n" + ExceptionUtils.getStackTrace(e),
+								false);
 					}
 			});
 		}
@@ -554,8 +608,13 @@ public class CyVerseConnectionManager
 					}
 					catch (JargonException e)
 					{
-						System.err.println("Error removing permissions from user.");
-						e.printStackTrace();
+						SanimalData.getInstance().getErrorDisplay().showPopup(
+								Alert.AlertType.ERROR,
+								null,
+								"Error",
+								"Permission error",
+								"Error removing permissions from user!\n" + ExceptionUtils.getStackTrace(e),
+								false);
 					}
 			});
 		}
@@ -633,23 +692,34 @@ public class CyVerseConnectionManager
 					IRODSFile uploadedFile = this.accessObjects.getFileFactory().instanceIRODSFile(uploadDirName + "/" + toWrite.getName());
 					if (uploadedFile.exists())
 						uploadedFile.delete();
+					// Upload the JSON file representing the upload
+					CloudUploadEntry uploadEntry = new CloudUploadEntry(SanimalData.getInstance().getUsername(), Calendar.getInstance().getTime(), true, uploadDirName);
+					// Convert the upload entry to JSON format
+					String json = SanimalData.getInstance().getGson().toJson(uploadEntry);
+					// Write the UploadMeta.json file to the server
+					this.writeRemoteFile(uploadDirName + "/UploadMeta.json", json);
 				}
 			}
 		}
 		catch (JargonException e)
 		{
-			e.printStackTrace();
-			System.out.println("Upload failed!");
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"Upload error",
+					"Could not upload the images to CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+					false);
 		}
 	}
 
 	/**
 	 * Save the set of images that were downloaded to CyVerse
-	 *  @param collection The collection to upload to
-	 * @param directoryToSave The directory to write
+	 * @param collection The collection to upload to
+	 * @param uploadEntryToSave The directory to write
 	 * @param messageCallback Message callback that will show what is currently going on
 	 */
-	public void saveImages(ImageCollection collection, ImageDirectory directoryToSave, StringProperty messageCallback)
+	public void saveImages(ImageCollection collection, CloudUploadEntry uploadEntryToSave, StringProperty messageCallback)
 	{
 		try
 		{
@@ -660,9 +730,17 @@ public class CyVerseConnectionManager
 			// If the save directory exists and we can write to it, save
 			if (collectionSaveDir.exists() && collectionSaveDir.canWrite())
 			{
-				List<CloudImageEntry> toUpload = directoryToSave.flattened().filter(imageContainer -> imageContainer instanceof CloudImageEntry).map(imageContainer -> (CloudImageEntry) imageContainer).collect(Collectors.toList());
+				ImageDirectory imageDirectory = uploadEntryToSave.getCloudImageDirectory();
+				List<CloudImageEntry> toUpload = imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof CloudImageEntry).map(imageContainer -> (CloudImageEntry) imageContainer).collect(Collectors.toList());
+				imageDirectory.setUploadProgress(0.0);
 
 				messageCallback.setValue("Saving " + toUpload.size() + " images to CyVerse...");
+
+				uploadEntryToSave.getEditComments().add("Edited by " + SanimalData.getInstance().getUsername() + " on " + FOLDER_FORMAT.format(Calendar.getInstance().getTime()));
+				// Convert the upload entry to JSON format
+				String json = SanimalData.getInstance().getGson().toJson(uploadEntryToSave);
+				// Write the UploadMeta.json file to the server
+				this.writeRemoteFile(uploadEntryToSave.getUploadIRODSPath() + "/UploadMeta.json", json);
 
 				Double numberOfImagesToUpload = (double) toUpload.size();
 				// Begin saving
@@ -685,7 +763,7 @@ public class CyVerseConnectionManager
 						if (i % 20 == 0)
 						{
 							int finalI = i;
-							Platform.runLater(() -> directoryToSave.setUploadProgress(finalI / numberOfImagesToUpload));
+							Platform.runLater(() -> imageDirectory.setUploadProgress(finalI / numberOfImagesToUpload));
 						}
 					}
 				}
@@ -693,15 +771,18 @@ public class CyVerseConnectionManager
 		}
 		catch (JargonException e)
 		{
-			e.printStackTrace();
-			System.out.println("Save failed!");
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"Saving error",
+					"Could not save the image list to the collection on CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+					false);
 		}
 	}
 
-	public List<String> retrieveUploadList(ImageCollection collection)
+	public void retrieveAndInsertUploadList(ImageCollection collection)
 	{
-		List<String> uploads = new ArrayList<>();
-
 		try
 		{
 			// Grab the uploads folder for a given collection
@@ -713,36 +794,73 @@ public class CyVerseConnectionManager
 			{
 				File[] files = collectionUploadDir.listFiles(File::isDirectory);
 				for (File file : files)
-					uploads.add(file.getName());
+				{
+					// We recognize uploads by their UploadMeta.json file
+					String contents = this.readRemoteFile(file.getAbsolutePath() + "/UploadMeta.json");
+					if (contents != null)
+					{
+						try
+						{
+							CloudUploadEntry uploadEntry = SanimalData.getInstance().getGson().fromJson(contents, CloudUploadEntry.class);
+							if (uploadEntry != null)
+							{
+								uploadEntry.initFromJSON();
+								Platform.runLater(() -> collection.getUploads().add(uploadEntry));
+							}
+						}
+						catch (JsonSyntaxException e)
+						{
+							// If the JSON file is incorrectly formatted, throw an error
+							SanimalData.getInstance().getErrorDisplay().showPopup(
+									Alert.AlertType.ERROR,
+									null,
+									"Error",
+									"JSON upload error",
+									"Could not read the upload metadata for the upload " + file.getName() + "!\n" + ExceptionUtils.getStackTrace(e),
+									false);
+						}
+					}
+				}
 			}
 		}
 		catch (JargonException e)
 		{
-			e.printStackTrace();
-			System.out.println("Downloading upload list failed! (May have been canceled!)");
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"Upload retrieval error",
+					"Could not download the list of uploads to the collection from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+					false);
 		}
-
-		return uploads;
 	}
 
-	public CloudImageDirectory downloadUploadDirectory(ImageCollection collection, String uploadDirectory)
+	public CloudImageDirectory downloadUploadDirectory(ImageCollection collection, CloudUploadEntry uploadEntry)
 	{
 		try
 		{
 			// Grab the uploads folder for a given collection
-			String cloudDirectoryStr = "/iplant/home/dslovikosky/Sanimal/Collections/" + collection.getID().toString() + "/Uploads/" + uploadDirectory;
+			String cloudDirectoryStr = uploadEntry.getUploadIRODSPath();
 			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 			IRODSFile cloudDirectory = fileFactory.instanceIRODSFile(cloudDirectoryStr);
 			CloudImageDirectory cloudImageDirectory = new CloudImageDirectory(cloudDirectory);
 			// The head directory gets the parent collection assigned to it
 			cloudImageDirectory.setParentCollection(collection);
 			this.createDirectoryAndImageTree(cloudImageDirectory);
+			// We need to make sure we remove the UploadMeta.json "image entry"
+			cloudImageDirectory.getChildren().removeIf(imageContainer -> imageContainer instanceof CloudImageEntry && ((CloudImageEntry) imageContainer).getCyverseFile().getAbsolutePath().contains("UploadMeta.json"));
 			return cloudImageDirectory;
 		}
 		catch (JargonException e)
 		{
 			e.printStackTrace();
-			System.out.println("Downloading upload list failed! (May have been canceled!)");
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"Download failed",
+					"Downloading uploaded collection failed!",
+					false);
 		}
 
 		return null;
@@ -810,8 +928,13 @@ public class CyVerseConnectionManager
 		}
 		catch (JargonException e)
 		{
-			System.err.println("Error pulling remote file (" + cyverseFile.getName() + "). Error was:\n");
-			e.printStackTrace();
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"JSON error",
+					"Could not pull the remote file (" + cyverseFile.getName() + ")!\n" + ExceptionUtils.getStackTrace(e),
+					false);
 		}
 		return null;
 	}
@@ -846,23 +969,28 @@ public class CyVerseConnectionManager
 						// Read the contents of the file and return them
 						return new String(Files.readAllBytes(localFile.toPath()));
 					}
-				} else
-				{
-					System.err.println("Remote file cannot be read.\n");
 				}
-			} else
-			{
-				System.err.println("Remote file does not exist.\n");
+				else
+				{
+					SanimalData.getInstance().getErrorDisplay().showPopup(
+							Alert.AlertType.ERROR,
+							null,
+							"Error",
+							"Permission error",
+							"Could not read the remote file!",
+							false);
+				}
 			}
 		}
-		catch (IOException e)
+		catch (IOException | JargonException e)
 		{
-			e.printStackTrace();
-		}
-		catch (JargonException e)
-		{
-			System.err.println("Error pulling remote file (" + file + "). Error was:\n");
-			e.printStackTrace();
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"CyVerse error",
+					"Could not pull the remote file!\n" + ExceptionUtils.getStackTrace(e),
+					false);
 		}
 
 		// If anything fails return null
@@ -903,13 +1031,24 @@ public class CyVerseConnectionManager
 			}
 			else
 			{
-				System.err.println("Error creating a temporary file to write to.");
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"File error",
+						"Error creating a temporary file to write to!",
+						false);
 			}
 		}
 		catch (IOException | JargonException e)
 		{
-			System.err.println("Error pushing remote file (" + file + "). Error was:\n");
-			e.printStackTrace();
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"Permission error",
+					"Error pushing remote file (" + file + ")!\n" + ExceptionUtils.getStackTrace(e),
+					false);
 		}
 	}
 }

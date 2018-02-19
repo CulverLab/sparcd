@@ -2,6 +2,8 @@ package model.util;
 
 import controller.Sanimal;
 import javafx.fxml.FXMLLoader;
+import model.SanimalData;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
 import java.io.IOException;
 
@@ -28,8 +30,7 @@ public class FXMLLoaderUtils
 		}
 		catch (IOException exception)
 		{
-			System.err.println("Could not load the FXML file for the file " + FXMLFileName + "!");
-			exception.printStackTrace();
+			SanimalData.getInstance().getErrorDisplay().printError("Could not load the FXML file for the file " + FXMLFileName + "!\n" + ExceptionUtils.getStackTrace(exception));
 			System.exit(-1);
 		}
 

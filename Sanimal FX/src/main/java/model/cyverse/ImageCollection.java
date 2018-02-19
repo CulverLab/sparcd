@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import model.image.CloudUploadEntry;
 
 import java.util.UUID;
 
@@ -23,12 +24,14 @@ public class ImageCollection
 	private StringProperty contactInfoProperty = new SimpleStringProperty("");
 	// The description of the collection used to display collection purpose
 	private StringProperty descriptionProperty = new SimpleStringProperty("");
-	// A list containing permissions of this collection
-	// We don't serialize it when converting to JSON sicne we want to keep this field transient
-	private transient ObservableList<Permission> permissions = FXCollections.observableArrayList(permission -> new Observable[] { permission.usernameProperty(), permission.readProperty(), permission.uploadProperty(), permission.ownerProperty()});
 	// The unique identifier for the collection
 	private ObjectProperty<UUID> idProperty = new SimpleObjectProperty<>(UUID.randomUUID());
-
+	// A list containing permissions of this collection
+	// We don't serialize it when converting to JSON since we want to keep this field transient (Because permissions are private!)
+	private transient ObservableList<Permission> permissions = FXCollections.observableArrayList(permission -> new Observable[] { permission.usernameProperty(), permission.readProperty(), permission.uploadProperty(), permission.ownerProperty()});
+	// Keep a list of uploads that is also transient so it will not be serialized. We serialize this differently because uploads should not be public
+	private transient ObservableList<CloudUploadEntry> uploads = FXCollections.observableArrayList(upload -> new Observable[] {});
+	private transient Boolean uploadsWereSynced = false;
 
 	/**
 	 * Constructs a new image collection with a default name
@@ -123,5 +126,20 @@ public class ImageCollection
 	public ObservableList<Permission> getPermissions()
 	{
 		return this.permissions;
+	}
+
+	public ObservableList<CloudUploadEntry> getUploads()
+	{
+		return this.uploads;
+	}
+
+	public void setUploadsWereSynced(Boolean uploadsWereSynced)
+	{
+		this.uploadsWereSynced = uploadsWereSynced;
+	}
+
+	public Boolean uploadsWereSynced()
+	{
+		return uploadsWereSynced;
 	}
 }

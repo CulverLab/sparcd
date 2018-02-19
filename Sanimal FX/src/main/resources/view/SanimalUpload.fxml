@@ -13,6 +13,8 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+<?import javafx.scene.layout.HBox?>
+<?import library.TreeViewAutomatic?>
 <SplitPane fx:id="spnMain" dividerPositions="0.33, 0.66" prefHeight="500" prefWidth="1000" xmlns="http://javafx.com/javafx/8.0.121"
            xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalUploadController">
     <stylesheets>
@@ -39,7 +41,7 @@
         </VBox>
         <SplitPane fx:id="spnUploadSave" orientation="VERTICAL" dividerPositions="0.5">
             <StackPane>
-                <VBox fx:id="vbxUpload">
+                <VBox>
                     <Label alignment="CENTER" text="Items to Upload" prefWidth="Infinity" textAlignment="CENTER">
                         <font>
                             <Font size="20.0"/>
@@ -48,76 +50,23 @@
                             <Insets top="10" bottom="10" left="10" right="10"/>
                         </VBox.margin>
                     </Label>
-                    <ListView fx:id="lstItemsToUpload" VBox.vgrow="ALWAYS"/>
-                    <FlowPane alignment="CENTER" hgap="5" vgap="10" SplitPane.resizableWithParent="false">
-                        <padding>
-                            <Insets bottom="20" left="5" right="5" top="20"/>
-                        </padding>
-                        <Button fx:id="btnUpload" onAction="#uploadImages" styleClass="uploadBtn" text="Upload to Collection"/>
-                    </FlowPane>
-                </VBox>
-                <VBox pickOnBounds="false" StackPane.alignment="CENTER" alignment="CENTER" spacing="5">
-                    <Label fx:id="lblCantUpload" pickOnBounds="false" text="You cannot upload to this collection.">
-                        <font>
-                            <Font size="20.0"/>
-                        </font>
-                    </Label>
-                    <Label fx:id="lblNoImagesToUpload" pickOnBounds="false" text="Import images in the import tab to upload.">
-                        <font>
-                            <Font size="20.0"/>
-                        </font>
-                    </Label>
-                </VBox>
-            </StackPane>
-            <StackPane>
-                <VBox fx:id="vbxSave">
-                    <Label alignment="CENTER" text="Items to Save/Re-Upload" prefWidth="Infinity" textAlignment="CENTER">
-                        <font>
-                            <Font size="20.0"/>
-                        </font>
-                        <VBox.margin>
-                            <Insets top="10" bottom="10" left="10" right="10"/>
-                        </VBox.margin>
-                    </Label>
-                    <ListView fx:id="lstItemsToSave" VBox.vgrow="ALWAYS"/>
-                    <FlowPane alignment="CENTER" hgap="5" vgap="10" SplitPane.resizableWithParent="false">
-                        <padding>
-                            <Insets bottom="20" left="5" right="5" top="20"/>
-                        </padding>
-                        <Button fx:id="btnSave" onAction="#saveImages" styleClass="saveBtn" text="Save to Collection"/>
-                    </FlowPane>
-                </VBox>
-                <VBox pickOnBounds="false" StackPane.alignment="CENTER" alignment="CENTER" spacing="5">
-                    <Label fx:id="lblCantSave" pickOnBounds="false" text="You cannot save to this collection.">
-                        <font>
-                            <Font size="20.0"/>
-                        </font>
-                    </Label>
-                    <Label fx:id="lblNoImagesToSave" pickOnBounds="false" text="Download images on the right to update and save.">
-                        <font>
-                            <Font size="20.0"/>
-                        </font>
-                    </Label>
+                    <TreeViewAutomatic fx:id="imageTree" VBox.vgrow="ALWAYS" />
                 </VBox>
             </StackPane>
         </SplitPane>
         <StackPane>
             <VBox fx:id="vbxDownloadList">
-                <Label alignment="CENTER" text="Items to Download" prefWidth="Infinity" textAlignment="CENTER">
-                    <font>
-                        <Font size="20.0"/>
-                    </font>
+                <HBox alignment="CENTER" prefWidth="Infinity" spacing="15">
                     <VBox.margin>
                         <Insets top="10" bottom="10" left="10" right="10"/>
                     </VBox.margin>
-                </Label>
+                    <Label text="Items to Download" textAlignment="CENTER">
+                        <font>
+                            <Font size="20.0"/>
+                        </font>
+                    </Label>
+                </HBox>
                 <ListView fx:id="uploadListDownloadListView" styleClass="uploadDownloadLvw" VBox.vgrow="ALWAYS"/>
-                <FlowPane alignment="CENTER" hgap="5" vgap="10">
-                    <padding>
-                        <Insets bottom="20" left="5" right="5" top="20"/>
-                    </padding>
-                    <Button fx:id="btnDownload" onAction="#newDownloadPressed" styleClass="downloadBtn" text="Download to Edit"/>
-                </FlowPane>
             </VBox>
             <VBox fx:id="vbxLoadingCollection" pickOnBounds="false" StackPane.alignment="CENTER" alignment="CENTER" spacing="5">
                 <Label fx:id="lblStatus" pickOnBounds="false" text="Loading collection uploads...">
