@@ -1,21 +1,39 @@
 package controller.uploadView;
 
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
+import model.image.CloudImageDirectory;
+import model.image.ImageContainer;
+import model.image.ImageDirectory;
+import model.image.ImageEntry;
+import model.species.Species;
+import model.util.ErrorTask;
 import model.util.FXMLLoaderUtils;
+import org.irods.jargon.core.transfer.TransferStatus;
+import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
+
+import java.io.File;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static model.constant.SanimalDataFormats.*;
 
 /**
  * Controller class for the image collection list
@@ -130,5 +148,150 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 		// Set the scene of the stage, and show it!
 		dialogStage.setScene(scene);
 		dialogStage.showAndWait();
+	}
+
+	/**
+	 * If our mouse hovers over the image pane and we're dragging, we accept the transfer
+	 *
+	 * @param dragEvent The event that means we are dragging over the image pane
+	 */
+	public void cellDragOver(DragEvent dragEvent)
+	{
+		Dragboard dragboard = dragEvent.getDragboard();
+		// If we started dragging from a directory we accept the transfer
+		if (dragboard.hasContent(IMAGE_DIRECTORY_FILE_FORMAT))
+			dragEvent.acceptTransferModes(TransferMode.COPY);
+		dragEvent.consume();
+	}
+
+	/**
+	 * When the drag from the image directory enters the collection
+	 *
+	 * @param dragEvent The event that means we are dragging over the collection
+	 */
+	public void cellDragEntered(DragEvent dragEvent)
+	{
+		Dragboard dragboard = dragEvent.getDragboard();
+		// If we started dragging at the image directory and the dragboard has a string we update the CSS and consume the event
+		if (dragboard.hasContent(IMAGE_DIRECTORY_FILE_FORMAT))
+			if (!this.mainPane.getStyleClass().contains("draggedOver"))
+				this.mainPane.getStyleClass().add("draggedOver");
+		dragEvent.consume();
+	}
+
+	/**
+	 * When the drag from the image directory exits the collection
+	 *
+	 * @param dragEvent The event that means we are dragging away from the collection
+	 */
+	public void cellDragExited(DragEvent dragEvent)
+	{
+		Dragboard dragboard = dragEvent.getDragboard();
+		// If we started dragging at the image directory and the dragboard has a string we update the CSS and consume the event
+		if (dragboard.hasContent(IMAGE_DIRECTORY_FILE_FORMAT))
+			if (this.mainPane.getStyleClass().contains("draggedOver"))
+				this.mainPane.getStyleClass().remove("draggedOver");
+		dragEvent.consume();
+	}
+
+	/**
+	 * When we drop the image directory onto the collection, we perform the upload
+	 *
+	 * @param dragEvent The event used to ensure the drag is valid
+	 */
+	public void cellDragDropped(DragEvent dragEvent)
+	{
+		// Grab the dragboard
+		Dragboard dragboard = dragEvent.getDragboard();
+		// If our dragboard has a string we have data which we need
+		if (dragboard.hasContent(IMAGE_DIRECTORY_FILE_FORMAT))
+		{
+			File imageDirectoryFile = (File) dragboard.getContent(IMAGE_DIRECTORY_FILE_FORMAT);
+			// Filter our list of images by directory that has the right file path
+			Optional<ImageDirectory> imageDirectoryOpt = SanimalData.getInstance().getImageTree().flattened().filter(
+					imageContainer -> imageContainer instanceof ImageDirectory &&
+					!(imageContainer instanceof CloudImageDirectory) &&
+					imageContainer.getFile().getAbsolutePath().equals(imageDirectoryFile.getAbsolutePath())).map(imageContainer -> (ImageDirectory) imageContainer).findFirst();
+
+			imageDirectoryOpt.ifPresent(imageDirectory ->
+			{
+				// Make sure we've got a valid directory
+				boolean validDirectory = true;
+				// Each image must have a location and species tagged
+				for (ImageEntry imageEntry : imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).collect(Collectors.toList()))
+				{
+					if (imageEntry.getLocationTaken() == null || imageEntry.getSpeciesPresent().isEmpty())
+					{
+						validDirectory = false;
+						break;
+					}
+				}
+
+				// If we have a valid directory, perform the upload
+				if (validDirectory)
+				{
+					// Create an upload task
+					Task<Void> uploadTask = new ErrorTask<Void>()
+					{
+						@Override
+						protected Void call()
+						{
+							// Update the progress
+							this.updateProgress(0, 1);
+
+							// Create a string property used as a callback
+							StringProperty messageCallback = new SimpleStringProperty("");
+							this.updateMessage("Uploading image directory " + imageDirectory.getFile().getName() + " to CyVerse.");
+							messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
+							// Upload images to CyVerse, we give it a transfer status callback so that we can show the progress
+							SanimalData.getInstance().getConnectionManager().uploadImages(ImageCollectionListEntryController.this.getItem(), imageDirectory, new TransferStatusCallbackListener()
+							{
+								@Override
+								public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus)
+								{
+									// Set the upload progress in the directory we get a callback
+									Platform.runLater(() -> imageDirectory.setUploadProgress(transferStatus.getBytesTransfered() / (double) transferStatus.getTotalSize()));
+									// Set the upload progress whenever we get a callback
+									updateProgress((double) transferStatus.getBytesTransfered(), (double) transferStatus.getTotalSize());
+									return FileStatusCallbackResponse.CONTINUE;
+								}
+
+								// Ignore this status callback
+								@Override
+								public void overallStatusCallback(TransferStatus transferStatus)
+								{
+								}
+
+								// Ignore this as well
+								@Override
+								public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection)
+								{
+									return CallbackResponse.YES_FOR_ALL;
+								}
+							}, messageCallback);
+							return null;
+						}
+					};
+					// When the upload finishes, we enable the upload button
+					uploadTask.setOnSucceeded(event ->
+					{
+						imageDirectory.setUploadProgress(-1);
+					});
+					dragEvent.setDropCompleted(true);
+					SanimalData.getInstance().getSanimalExecutor().addTask(uploadTask);
+				}
+				else
+				{
+					// If an invalid directory is selected, show an alert
+					Alert alert = new Alert(Alert.AlertType.WARNING);
+					alert.initOwner(this.mainPane.getScene().getWindow());
+					alert.setTitle("Invalid Directory");
+					alert.setHeaderText("Invalid Directory (" + imageDirectory.getFile().getName() + ") Selected");
+					alert.setContentText("An image in the directory (" + imageDirectory.getFile().getName() + ") you selected does not have a location or species tagged. Please ensure all images are tagged with at least one species and a location!");
+					alert.showAndWait();
+				}
+			});
+		}
+		dragEvent.consume();
 	}
 }

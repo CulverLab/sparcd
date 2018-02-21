@@ -11,4 +11,6 @@ public class SanimalDataFormats
 	// Store the species name and scientific name
 	public static final DataFormat SPECIES_NAME_FORMAT = new DataFormat("com.dslovikosky.species.speciesName");
 	public static final DataFormat SPECIES_SCIENTIFIC_NAME_FORMAT = new DataFormat("com.dslovikosky.species.speciesScientificName");
+	// Store the ImageDirectories file
+	public static final DataFormat IMAGE_DIRECTORY_FILE_FORMAT = new DataFormat("com.dslovikosky.image.imageDirectoryFile");
 }

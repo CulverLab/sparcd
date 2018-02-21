@@ -49,9 +49,6 @@ public class ImageDirectory extends ImageContainer
 	// The file representing the directory
 	private ObjectProperty<File> directoryProperty = new SimpleObjectProperty<File>();
 
-	// If this image directory is currently selected to be uploaded
-	private transient BooleanProperty selectedForUpload = new SimpleBooleanProperty(false);
-
 	// The progress of the directory upload to CyVerse
 	private transient DoubleProperty uploadProgress = new SimpleDoubleProperty(-1);
 
@@ -171,32 +168,6 @@ public class ImageDirectory extends ImageContainer
 	public ObjectProperty<File> getFileProperty()
 	{
 		return this.directoryProperty;
-	}
-
-	/**
-	 * Set to true if the directory is selected to be uploaded
-	 *
-	 * @param selectedForUpload if the directory is selected to be uploaded to cyverse
-	 */
-	public void setSelectedForUpload(boolean selectedForUpload)
-	{
-		this.selectedForUpload.setValue(selectedForUpload);
-	}
-
-	/**
-	 * @return True if the directory is selected to be uploaded
-	 */
-	public boolean isSelectedForUpload()
-	{
-		return this.selectedForUpload.getValue();
-	}
-
-	/**
-	 * @return The property representing if this directory is selected for upload
-	 */
-	public BooleanProperty selectedForUploadProperty()
-	{
-		return this.selectedForUpload;
 	}
 
 	public void setUploadProgress(double uploadProgress)

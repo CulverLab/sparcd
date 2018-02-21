@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+
+
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
+<StackPane fx:id="mainPane" onDragDetected="#cellDragDetected" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="controller.uploadView.UploadTreeCellController">
+    <stylesheets>
+        <URL value="@UploadTreeCell.css"/>
+    </stylesheets>
+    <children>
+        <ProgressBar fx:id="pbrUploadProgress" progress="0" visible="false" maxWidth="Infinity" maxHeight="Infinity"/>
+        <HBox alignment="CENTER_LEFT" prefHeight="40" spacing="5">
+            <children>
+                <ImageView fx:id="imgIcon" fitHeight="40" fitWidth="40"/>
+                <Label fx:id="lblText" HBox.hgrow="ALWAYS"/>
+            </children>
+        </HBox>
+        <Label StackPane.alignment="CENTER_RIGHT" fx:id="lblProgress" text="Progress">
+            <StackPane.margin>
+                <Insets right="10"/>
+            </StackPane.margin>
+            <font>
+                <Font size="16.0"/>
+            </font>
+        </Label>
+    </children>
+</StackPane>
