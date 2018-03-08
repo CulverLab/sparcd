@@ -1017,9 +1017,6 @@ public class CyVerseConnectionManager
 			{
 				// Create the irods file to write to
 				IRODSFile remoteLocationFile = fileFactory.instanceIRODSFile(file);
-				// If it exists already, delete it
-				if (remoteLocationFile.exists())
-					remoteLocationFile.delete();
 
 				// Create a file writer which writes a string to a file. Write the value to the local file
 				try (PrintWriter fileWriter = new PrintWriter(localFile))
@@ -1027,7 +1024,15 @@ public class CyVerseConnectionManager
 					fileWriter.write(value);
 				}
 				// Perform a put operation to write the local file to the CyVerse server
-				this.accessObjects.getDataTransferOperations().putOperation(localFile, remoteLocationFile, null, null);
+				this.accessObjects.getDataTransferOperations().putOperation(localFile, remoteLocationFile, new TransferStatusCallbackListener()
+				{
+					@Override
+					public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) { return FileStatusCallbackResponse.CONTINUE; }
+					@Override
+					public void overallStatusCallback(TransferStatus transferStatus) {}
+					@Override
+					public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection) { return CallbackResponse.YES_FOR_ALL; }
+				}, null);
 			}
 			else
 			{

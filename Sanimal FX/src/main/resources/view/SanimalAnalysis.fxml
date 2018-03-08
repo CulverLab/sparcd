@@ -137,6 +137,9 @@
             <DetachableTab detachable="false" text="Species Accumulation Curve" closable="false">
                 <fx:include fx:id="visSpeciesAccumulationCurve" source="analysisView/VisSpeciesAccumulationCurve.fxml"/>
             </DetachableTab>
+            <DetachableTab detachable="false" text="CSV Output" closable="false">
+                <fx:include fx:id="visCSV" source="analysisView/VisCSV.fxml"/>
+            </DetachableTab>
         </DetachableTabPane>
     </items>
 </SplitPane>

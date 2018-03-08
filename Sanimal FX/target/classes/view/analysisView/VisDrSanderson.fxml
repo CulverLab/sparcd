@@ -10,7 +10,7 @@
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Font?>
-<SplitPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.analysisView.VisDrSandersonController" prefHeight="300.0" prefWidth="300.0">
+<SplitPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.analysisView.VisDrSandersonController" prefHeight="300.0" prefWidth="500.0">
     <padding>
         <Insets top="5" bottom="5" left="5" right="5"/>
     </padding>

@@ -20,9 +20,9 @@ public class DataAnalysis
 	// Null locations means that at least 1 image has no location tag
 	private boolean nullLocationsFound = false;
 	// List of all images, species, and years found over the image list
-	private List<Location> allImageLocations = new ArrayList<Location>();
-	private List<Species> allImageSpecies = new ArrayList<Species>();
-	private List<Integer> allImageYears = new ArrayList<Integer>();
+	private List<Location> allImageLocations = new ArrayList<>();
+	private List<Species> allImageSpecies = new ArrayList<>();
+	private List<Integer> allImageYears = new ArrayList<>();
 	// A list of all images but sorted by date instead of randomly
 	private List<ImageEntry> imagesSortedByDate;
 	// A list of all original images
@@ -30,8 +30,8 @@ public class DataAnalysis
 	// The event interval, in minutes
 	private Integer eventInterval = 60;
 	// A pre-calculated list of all full and new moons over the image's interval
-	private List<Date> fullMoons = new ArrayList<Date>();
-	private List<Date> newMoons = new ArrayList<Date>();
+	private List<Date> fullMoons = new ArrayList<>();
+	private List<Date> newMoons = new ArrayList<>();
 
 	/**
 	 * Constructor for the analysis

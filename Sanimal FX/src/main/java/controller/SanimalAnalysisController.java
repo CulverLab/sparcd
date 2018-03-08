@@ -1,32 +1,37 @@
 package controller;
 
 import com.panemu.tiwulfx.control.DetachableTabPane;
+import controller.analysisView.VisCSVController;
 import controller.analysisView.VisDrSandersonController;
 import controller.analysisView.VisSpeciesAccumulationCurveController;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.text.Font;
 import javafx.util.StringConverter;
 import model.SanimalData;
 import model.analysis.DataAnalysis;
 import model.analysis.SanimalTextOutputFormatter;
+import model.image.CloudImageEntry;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
 import org.apache.commons.lang3.StringUtils;
+import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
 import java.sql.Date;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -60,6 +65,8 @@ public class SanimalAnalysisController implements Initializable
 	public VisDrSandersonController visDrSandersonController;
 	@FXML
 	public VisSpeciesAccumulationCurveController visSpeciesAccumulationCurveController;
+	@FXML
+	public VisCSVController visCSVController;
 
 	@FXML
 	public DatePicker dateStart;
@@ -121,6 +128,26 @@ public class SanimalAnalysisController implements Initializable
 		this.locationFilterListView.setItems(locationsFilteredList);
 		this.locationFilterListView.setCellFactory(CheckBoxListCell.forListView(Location::shouldBePartOfAnalysisProperty));
 		this.locationFilterListView.setEditable(true);
+
+		/*
+		ObjectProperty<LocalDate> dateStartProperty = new SimpleObjectProperty<>(LocalDate.now());
+		dateStartProperty.bind(Bindings.createObjectBinding(() -> LocalDate.from(Instant.ofEpochMilli(SanimalData.getInstance().getAllImages().stream().min(Comparator.comparing(ImageEntry::getDateTaken)).get().getDateTaken().getTime())), SanimalData.getInstance().getImageTree().getChildren()));
+		ObjectProperty<LocalDate> dateEndProperty = new SimpleObjectProperty<>(LocalDate.now());
+		dateEndProperty.bind(Bindings.createObjectBinding(() -> LocalDate.from(Instant.ofEpochMilli(SanimalData.getInstance().getAllImages().stream().max(Comparator.comparing(ImageEntry::getDateTaken)).get().getDateTaken().getTime())), SanimalData.getInstance().getImageTree().getChildren()));
+
+		this.dateStart.setDayCellFactory(x -> new DateCell()
+		{
+			@Override
+			public void updateItem(LocalDate item, boolean empty)
+			{
+				super.updateItem(item, empty);
+				if (item.isBefore(dateStartProperty.getValue()) || item.isAfter(dateEndProperty.getValue()))
+				{
+					setDisable(true);
+				}
+			}
+		});
+		*/
 	}
 
 	public void refreshVisualizations(ActionEvent actionEvent)
@@ -141,6 +168,8 @@ public class SanimalAnalysisController implements Initializable
 
 		// Now process the filters
 		List<ImageEntry> imagesToAnalyze = SanimalData.getInstance().getAllImages().stream()
+				// Cloud images not allowed
+				.filter(imageEntry -> !(imageEntry instanceof CloudImageEntry))
 				// Test for checked location
 				.filter(imageEntry -> imageEntry.getLocationTaken().shouldBePartOfAnalysis())
 				// Test for checked species
@@ -153,6 +182,7 @@ public class SanimalAnalysisController implements Initializable
 
 		visDrSandersonController.visualize(dataStatistics);
 		visSpeciesAccumulationCurveController.visualize(dataStatistics);
+		visCSVController.visualize(dataStatistics);
 	}
 
 	public void selectAllSpecies(ActionEvent actionEvent)
