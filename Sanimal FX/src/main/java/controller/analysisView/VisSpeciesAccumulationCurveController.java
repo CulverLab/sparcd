@@ -4,9 +4,10 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
-import javafx.scene.chart.*;
-import javafx.util.StringConverter;
-import javafx.util.converter.NumberStringConverter;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import model.analysis.DataAnalysis;
 import model.analysis.ImageQuery;
 import model.analysis.SanimalAnalysisUtils;
@@ -14,9 +15,8 @@ import model.image.ImageEntry;
 import model.species.Species;
 
 import java.net.URL;
-import java.text.NumberFormat;
+import java.time.LocalDateTime;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -53,7 +53,7 @@ public class VisSpeciesAccumulationCurveController implements VisControllerBase
 	{
 		if (dataStatistics.getImagesSortedByDate().size() > 0)
 		{
-			Date firstDate = dataStatistics.getImagesSortedByDate().get(0).getDateTaken();
+			LocalDateTime firstDate = dataStatistics.getImagesSortedByDate().get(0).getDateTaken();
 
 			for (Species species : dataStatistics.getAllImageSpecies())
 			{

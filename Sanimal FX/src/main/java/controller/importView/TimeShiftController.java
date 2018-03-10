@@ -9,14 +9,11 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import library.ToggleButtonSelector;
-import org.controlsfx.control.SegmentedButton;
 import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 
 /**
@@ -63,11 +60,11 @@ public class TimeShiftController implements Initializable
 	///
 
 	// The original calendar
-	private Calendar original = Calendar.getInstance();
+	private LocalDateTime original = LocalDateTime.now();
 	// This is the edited date, which updates whenever the spinners chnage
-	private Calendar dateToEdit = Calendar.getInstance();
+	private LocalDateTime dateToEdit = LocalDateTime.now();
 	// Default date format is day month year 24hour:minute:seconds
-	private DateFormat dateFormat = new SimpleDateFormat("dd MMMMM yyyy HH:mm:ss");
+	private DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm:ss");
 
 	private boolean dateConfirmed = false;
 
@@ -117,13 +114,13 @@ public class TimeShiftController implements Initializable
 	 */
 	private void updateDate(Integer ignored)
 	{
-		this.dateToEdit.setTime(this.original.getTime());
-		this.dateToEdit.add(Calendar.YEAR, this.spnYear.getValue());
-		this.dateToEdit.add(Calendar.MONTH, this.spnMonth.getValue());
-		this.dateToEdit.add(Calendar.DAY_OF_MONTH, this.spnDay.getValue());
-		this.dateToEdit.add(Calendar.HOUR_OF_DAY, this.spnHour.getValue());
-		this.dateToEdit.add(Calendar.MINUTE, this.spnMinute.getValue());
-		this.dateToEdit.add(Calendar.SECOND, this.spnSecond.getValue());
+		this.dateToEdit = this.original
+				.plusYears(this.spnYear.getValue())
+				.plusMonths(this.spnMonth.getValue())
+				.plusDays(this.spnDay.getValue())
+				.plusHours(this.spnHour.getValue())
+				.plusMinutes(this.spnMinute.getValue())
+				.plusSeconds(this.spnSecond.getValue());
 
 		this.refreshLabel();
 	}
@@ -133,7 +130,7 @@ public class TimeShiftController implements Initializable
 	 */
 	private void refreshDateFormat()
 	{
-		this.dateFormat = new SimpleDateFormat(String.format("%s yyyy %s", this.tbnDayMonthYear.isSelected() ? "dd MMMMM" : "MMMMM dd", this.tbn12Hr.isSelected() ? "hh:mm:ss aa" : "HH:mm:ss"));
+		this.dateFormat = DateTimeFormatter.ofPattern(String.format("%s yyyy %s", this.tbnDayMonthYear.isSelected() ? "dd MMMM" : "MMMM dd", this.tbn12Hr.isSelected() ? "h:mm:ss a" : "H:mm:ss"));
 		this.refreshLabel();
 	}
 
@@ -142,7 +139,7 @@ public class TimeShiftController implements Initializable
 	 */
 	private void refreshLabel()
 	{
-		this.lblDate.setText(dateFormat.format(this.original.getTime()) + " -> " + dateFormat.format(this.dateToEdit.getTime()));
+		this.lblDate.setText(this.original.format(dateFormat) + " -> " + this.dateToEdit.format(dateFormat));
 	}
 
 	/**
@@ -150,11 +147,11 @@ public class TimeShiftController implements Initializable
 	 *
 	 * @param date The original date to be edited
 	 */
-	public void setDate(Date date)
+	public void setDate(LocalDateTime date)
 	{
 		dateConfirmed = false;
-		this.original.setTime(date);
-		this.dateToEdit.setTime(date);
+		this.original = date; // No other way to clone?
+		this.dateToEdit = date;
 		this.spnDay.getValueFactory().setValue(0);
 		this.spnHour.getValueFactory().setValue(0);
 		this.spnMinute.getValueFactory().setValue(0);
@@ -169,9 +166,9 @@ public class TimeShiftController implements Initializable
 	 *
 	 * @return The new date
 	 */
-	public Date getDate()
+	public LocalDateTime getDate()
 	{
-		return this.dateToEdit.getTime();
+		return this.dateToEdit;
 	}
 
 	/**

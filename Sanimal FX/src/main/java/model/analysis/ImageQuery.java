@@ -1,20 +1,17 @@
 package model.analysis;
 
-import java.util.Calendar;
-import java.util.Collections;
+import model.image.ImageEntry;
+import model.location.Location;
+import model.species.Species;
+import model.species.SpeciesEntry;
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.time.DateUtils;
-
-import model.image.ImageEntry;
-import model.location.Location;
-import model.species.Species;
-import model.species.SpeciesEntry;
 
 /**
  * A class that utilizes Java 8 predicates to filter a list of images
@@ -39,7 +36,7 @@ public class ImageQuery
 	 */
 	public ImageQuery yearOnly(int... year)
 	{
-		this.predicate = this.predicate.and(image -> ArrayUtils.contains(year, DateUtils.toCalendar(image.getDateTaken()).get(Calendar.YEAR)));
+		this.predicate = this.predicate.and(image -> ArrayUtils.contains(year, image.getDateTaken().getYear()));
 		return this;
 	}
 
@@ -52,7 +49,7 @@ public class ImageQuery
 	 */
 	public ImageQuery monthOnly(int... month)
 	{
-		this.predicate = this.predicate.and(image -> ArrayUtils.contains(month, DateUtils.toCalendar(image.getDateTaken()).get(Calendar.MONTH)));
+		this.predicate = this.predicate.and(image -> ArrayUtils.contains(month, image.getDateTaken().getMonthValue()));
 		return this;
 	}
 
@@ -67,7 +64,7 @@ public class ImageQuery
 	 */
 	public ImageQuery timeFrame(Integer startTimeHour, Integer endTimeHour)
 	{
-		this.predicate = this.predicate.and(image -> (DateUtils.toCalendar(image.getDateTaken()).get(Calendar.HOUR_OF_DAY) >= startTimeHour && DateUtils.toCalendar(image.getDateTaken()).get(Calendar.HOUR_OF_DAY) < endTimeHour));
+		this.predicate = this.predicate.and(image -> (image.getDateTaken().getHour() >= startTimeHour && image.getDateTaken().getHour() < endTimeHour));
 		return this;
 	}
 
@@ -126,7 +123,7 @@ public class ImageQuery
 	{
 		this.predicate = this.predicate.and(entry ->
 		{
-			long currentTime = entry.getDateTaken().getTime();
+			long currentTime = entry.getDateTaken().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 			for (Date date : newMoons)
 			{
 				long moonDate = date.getTime();
@@ -149,7 +146,7 @@ public class ImageQuery
 	{
 		this.predicate = this.predicate.and(entry ->
 		{
-			long currentTime = entry.getDateTaken().getTime();
+			long currentTime = entry.getDateTaken().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 			for (Date date : fullMoons)
 			{
 				long moonDate = date.getTime();

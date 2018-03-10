@@ -1,24 +1,17 @@
 package model.image;
 
-import javafx.application.Platform;
 import javafx.beans.binding.Binding;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import model.SanimalData;
 import model.location.Location;
 import model.species.Species;
-import model.species.SpeciesEntry;
 import model.util.ErrorTask;
-import model.util.MetadataUtils;
-import org.apache.commons.imaging.ImageReadException;
-import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
-import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.irods.jargon.core.pub.io.IRODSFile;
@@ -26,16 +19,8 @@ import org.irods.jargon.core.pub.io.IRODSFile;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CloudImageEntry extends ImageEntry
 {
@@ -135,7 +120,7 @@ public class CloudImageEntry extends ImageEntry
 
 	// We can set the date taken without the image but don't write to disk
 	@Override
-	public void setDateTaken(Date date)
+	public void setDateTaken(LocalDateTime date)
 	{
 		this.pullFromCloudIfNotPulled();
 		super.setDateTaken(date);
@@ -143,7 +128,7 @@ public class CloudImageEntry extends ImageEntry
 
 	// If we haven't pulled yet we just return null
 	@Override
-	public Date getDateTaken()
+	public LocalDateTime getDateTaken()
 	{
 		this.pullFromCloudIfNotPulled();
 		return super.getDateTaken();

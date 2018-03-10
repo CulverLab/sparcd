@@ -1,16 +1,14 @@
 package model.analysis.textFormatters;
 
-import java.util.Calendar;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
-
 import model.analysis.DataAnalysis;
 import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
+import org.apache.commons.lang3.StringUtils;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * The text formatter for any calculations containing "total days"
@@ -96,15 +94,13 @@ public class TotalDayFormatter extends TextFormatter
 				{
 					ImageEntry first = yearLocPics.get(0);
 					ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
-					Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-					Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-					Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-					Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-					Integer firstMonth = firstCal.get(Calendar.MONTH);
-					Integer lastMonth = lastCal.get(Calendar.MONTH);
-					Calendar calendar = Calendar.getInstance();
+					LocalDateTime firstCal = first.getDateTaken();
+					LocalDateTime lastCal = last.getDateTaken();
+					Integer firstDaysInMonth = 31;
+					Integer firstDay = firstCal.getDayOfMonth();
+					Integer lastDay = lastCal.getDayOfMonth();
+					Integer firstMonth = firstCal.getMonthValue();
+					Integer lastMonth = lastCal.getMonthValue();
 					if (firstMonth == lastMonth)
 						daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 					else
@@ -113,8 +109,7 @@ public class TotalDayFormatter extends TextFormatter
 						firstMonth++;
 						while (firstMonth < lastMonth)
 						{
-							calendar.set(year, firstMonth, 1);
-							daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							daysUsed[firstMonth] = daysUsed[firstMonth] + 31;
 							firstMonth++;
 						}
 						daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
@@ -219,15 +214,13 @@ public class TotalDayFormatter extends TextFormatter
 				{
 					ImageEntry first = yearLocPics.get(0);
 					ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
-					Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-					Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-					Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-					Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-					Integer firstMonth = firstCal.get(Calendar.MONTH);
-					Integer lastMonth = lastCal.get(Calendar.MONTH);
-					Calendar calendar = Calendar.getInstance();
+					LocalDateTime firstCal = first.getDateTaken();
+					LocalDateTime lastCal = last.getDateTaken();
+					Integer firstDaysInMonth = 31;
+					Integer firstDay = firstCal.getDayOfMonth();
+					Integer lastDay = lastCal.getDayOfMonth();
+					Integer firstMonth = firstCal.getMonthValue();
+					Integer lastMonth = lastCal.getMonthValue();
 					if (firstMonth == lastMonth)
 						daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 					else
@@ -236,8 +229,7 @@ public class TotalDayFormatter extends TextFormatter
 						firstMonth++;
 						while (firstMonth < lastMonth)
 						{
-							calendar.set(year, firstMonth, 1);
-							daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							daysUsed[firstMonth] = daysUsed[firstMonth] + 31;
 							firstMonth++;
 						}
 						daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
@@ -342,15 +334,13 @@ public class TotalDayFormatter extends TextFormatter
 				{
 					ImageEntry first = yearLocPics.get(0);
 					ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
-					Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-					Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-					Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-					Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-					Integer firstMonth = firstCal.get(Calendar.MONTH);
-					Integer lastMonth = lastCal.get(Calendar.MONTH);
-					Calendar calendar = Calendar.getInstance();
+					LocalDateTime firstCal = first.getDateTaken();
+					LocalDateTime lastCal = last.getDateTaken();
+					Integer firstDaysInMonth = 31;
+					Integer firstDay = firstCal.getDayOfMonth();
+					Integer lastDay = lastCal.getDayOfMonth();
+					Integer firstMonth = firstCal.getMonthValue();
+					Integer lastMonth = lastCal.getMonthValue();
 					if (firstMonth == lastMonth)
 						daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 					else
@@ -359,8 +349,7 @@ public class TotalDayFormatter extends TextFormatter
 						firstMonth++;
 						while (firstMonth < lastMonth)
 						{
-							calendar.set(year, firstMonth, 1);
-							daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							daysUsed[firstMonth] = daysUsed[firstMonth] + 31;
 							firstMonth++;
 						}
 						daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
@@ -473,15 +462,13 @@ public class TotalDayFormatter extends TextFormatter
 
 					ImageEntry first = yearLocPics.get(0);
 					ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
-					Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-					Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-					Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-					Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-					Integer firstMonth = firstCal.get(Calendar.MONTH);
-					Integer lastMonth = lastCal.get(Calendar.MONTH);
-					Calendar calendar = Calendar.getInstance();
+					LocalDateTime firstCal = first.getDateTaken();
+					LocalDateTime lastCal = last.getDateTaken();
+					Integer firstDaysInMonth = 31;
+					Integer firstDay = firstCal.getDayOfMonth();
+					Integer lastDay = lastCal.getDayOfMonth();
+					Integer firstMonth = firstCal.getMonthValue();
+					Integer lastMonth = lastCal.getMonthValue();
 					if (firstMonth == lastMonth)
 						daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 					else
@@ -490,8 +477,7 @@ public class TotalDayFormatter extends TextFormatter
 						firstMonth++;
 						while (firstMonth < lastMonth)
 						{
-							calendar.set(year, firstMonth, 1);
-							daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							daysUsed[firstMonth] = daysUsed[firstMonth] + 31;
 							firstMonth++;
 						}
 						daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
@@ -612,15 +598,13 @@ public class TotalDayFormatter extends TextFormatter
 						{
 							ImageEntry first = yearLocPics.get(0);
 							ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
-							Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-							Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-							Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-							Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-							Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-							Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-							Integer firstMonth = firstCal.get(Calendar.MONTH);
-							Integer lastMonth = lastCal.get(Calendar.MONTH);
-							Calendar calendar = Calendar.getInstance();
+							LocalDateTime firstCal = first.getDateTaken();
+							LocalDateTime lastCal = last.getDateTaken();
+							Integer firstDaysInMonth = 31;
+							Integer firstDay = firstCal.getDayOfMonth();
+							Integer lastDay = lastCal.getDayOfMonth();
+							Integer firstMonth = firstCal.getMonthValue();
+							Integer lastMonth = lastCal.getMonthValue();
 							if (firstMonth == lastMonth)
 								daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 							else
@@ -629,8 +613,7 @@ public class TotalDayFormatter extends TextFormatter
 								firstMonth++;
 								while (firstMonth < lastMonth)
 								{
-									calendar.set(year, firstMonth, 1);
-									daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+									daysUsed[firstMonth] = daysUsed[firstMonth] + 31;
 									firstMonth++;
 								}
 								daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
@@ -730,15 +713,13 @@ public class TotalDayFormatter extends TextFormatter
 					{
 						ImageEntry first = yearLocPics.get(0);
 						ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
-						Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-						Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-						Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-						Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-						Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-						Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-						Integer firstMonth = firstCal.get(Calendar.MONTH);
-						Integer lastMonth = lastCal.get(Calendar.MONTH);
-						Calendar calendar = Calendar.getInstance();
+						LocalDateTime firstCal = first.getDateTaken();
+						LocalDateTime lastCal = last.getDateTaken();
+						Integer firstDaysInMonth = 31;
+						Integer firstDay = firstCal.getDayOfMonth();
+						Integer lastDay = lastCal.getDayOfMonth();
+						Integer firstMonth = firstCal.getMonthValue();
+						Integer lastMonth = lastCal.getMonthValue();
 						if (firstMonth == lastMonth)
 							daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 						else
@@ -747,8 +728,7 @@ public class TotalDayFormatter extends TextFormatter
 							firstMonth++;
 							while (firstMonth < lastMonth)
 							{
-								calendar.set(year, firstMonth, 1);
-								daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+								daysUsed[firstMonth] = daysUsed[firstMonth] + 31;
 								firstMonth++;
 							}
 							daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
@@ -894,15 +874,13 @@ public class TotalDayFormatter extends TextFormatter
 						{
 							ImageEntry first = yearLocPics.get(0);
 							ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
-							Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-							Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-							Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-							Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-							Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-							Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-							Integer firstMonth = firstCal.get(Calendar.MONTH);
-							Integer lastMonth = lastCal.get(Calendar.MONTH);
-							Calendar calendar = Calendar.getInstance();
+							LocalDateTime firstCal = first.getDateTaken();
+							LocalDateTime lastCal = last.getDateTaken();
+							Integer firstDaysInMonth = 31;
+							Integer firstDay = firstCal.getDayOfMonth();
+							Integer lastDay = lastCal.getDayOfMonth();
+							Integer firstMonth = firstCal.getMonthValue();
+							Integer lastMonth = lastCal.getMonthValue();
 							if (firstMonth == lastMonth)
 								daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 							else
@@ -911,8 +889,7 @@ public class TotalDayFormatter extends TextFormatter
 								firstMonth++;
 								while (firstMonth < lastMonth)
 								{
-									calendar.set(year, firstMonth, 1);
-									daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+									daysUsed[firstMonth] = daysUsed[firstMonth] + 31;
 									firstMonth++;
 								}
 								daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
@@ -1037,15 +1014,13 @@ public class TotalDayFormatter extends TextFormatter
 					{
 						ImageEntry first = yearLocPics.get(0);
 						ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
-						Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-						Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-						Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-						Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-						Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-						Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-						Integer firstMonth = firstCal.get(Calendar.MONTH);
-						Integer lastMonth = lastCal.get(Calendar.MONTH);
-						Calendar calendar = Calendar.getInstance();
+						LocalDateTime firstCal = first.getDateTaken();
+						LocalDateTime lastCal = last.getDateTaken();
+						Integer firstDaysInMonth = 31;
+						Integer firstDay = firstCal.getDayOfMonth();
+						Integer lastDay = lastCal.getDayOfMonth();
+						Integer firstMonth = firstCal.getMonthValue();
+						Integer lastMonth = lastCal.getMonthValue();
 						if (firstMonth == lastMonth)
 							daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 						else
@@ -1054,8 +1029,7 @@ public class TotalDayFormatter extends TextFormatter
 							firstMonth++;
 							while (firstMonth < lastMonth)
 							{
-								calendar.set(year, firstMonth, 1);
-								daysUsed[firstMonth] = daysUsed[firstMonth] + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+								daysUsed[firstMonth] = daysUsed[firstMonth] + 31;
 								firstMonth++;
 							}
 							daysUsed[lastMonth] = daysUsed[lastMonth] + lastDay;
@@ -1139,15 +1113,13 @@ public class TotalDayFormatter extends TextFormatter
 					{
 						ImageEntry first = yearLocPics.get(0);
 						ImageEntry last = yearLocPics.get(yearLocPics.size() - 1);
-						Calendar firstCal = DateUtils.toCalendar(first.getDateTaken());
-						Calendar lastCal = DateUtils.toCalendar(last.getDateTaken());
-						Integer firstDaysInMonth = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-						Integer lastDaysInMonth = lastCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-						Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-						Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-						Integer firstMonth = firstCal.get(Calendar.MONTH);
-						Integer lastMonth = lastCal.get(Calendar.MONTH);
-						Calendar calendar = Calendar.getInstance();
+						LocalDateTime firstCal = first.getDateTaken();
+						LocalDateTime lastCal = last.getDateTaken();
+						Integer firstDaysInMonth = 31;
+						Integer firstDay = firstCal.getDayOfMonth();
+						Integer lastDay = lastCal.getDayOfMonth();
+						Integer firstMonth = firstCal.getMonthValue();
+						Integer lastMonth = lastCal.getMonthValue();
 						if (firstMonth == lastMonth)
 							effortTotal = effortTotal + (lastDay - firstDay + 1);
 						else
@@ -1156,8 +1128,7 @@ public class TotalDayFormatter extends TextFormatter
 							firstMonth++;
 							while (firstMonth < lastMonth)
 							{
-								calendar.set(year, firstMonth, 1);
-								effortTotal = effortTotal + calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+								effortTotal = effortTotal + 31;
 								firstMonth++;
 							}
 							effortTotal = effortTotal + lastDay;

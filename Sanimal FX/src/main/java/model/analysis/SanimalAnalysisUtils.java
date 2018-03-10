@@ -1,16 +1,13 @@
 package model.analysis;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-
+import model.location.UTMCoord;
 import org.apache.commons.lang3.StringUtils;
 
-import model.location.UTMCoord;
+import java.io.File;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Utility class for Sanimal analysis
@@ -80,10 +77,10 @@ public class SanimalAnalysisUtils
 	 *            The second date
 	 * @return The days inbetween date1 and date 2
 	 */
-	public static long daysBetween(Date date1, Date date2)
+	public static long daysBetween(LocalDateTime date1, LocalDateTime date2)
 	{
 		if (date1 != null && date2 != null)
-			return ChronoUnit.DAYS.between(date1.toInstant(), date2.toInstant());
+			return date1.until(date2, ChronoUnit.DAYS);
 		else
 			return 0;
 	}

@@ -1,17 +1,5 @@
 package model.image;
 
-import java.io.*;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
-
-import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.binding.Binding;
 import javafx.beans.binding.Bindings;
@@ -38,6 +26,15 @@ import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 
 /**
  * A class representing an image file
@@ -46,7 +43,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ImageEntry extends ImageContainer
 {
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
+	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
 
 	// The icon to use for all images at the moment
 	private static final Image DEFAULT_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIcon.png").toString());
@@ -62,7 +59,7 @@ public class ImageEntry extends ImageContainer
 	// The actual file 
 	private final ObjectProperty<File> imageFileProperty = new SimpleObjectProperty<File>();
 	// The date that the image was taken
-	private final ObjectProperty<Date> dateTakenProperty = new SimpleObjectProperty<Date>();
+	private final ObjectProperty<LocalDateTime> dateTakenProperty = new SimpleObjectProperty<>();
 	// The location that the image was taken
 	private final ObjectProperty<Location> locationTakenProperty = new SimpleObjectProperty<Location>();
 	// The species present in the image
@@ -100,7 +97,7 @@ public class ImageEntry extends ImageContainer
 		try
 		{
 			// Set the date to a default
-			this.dateTakenProperty.setValue(Calendar.getInstance().getTime());
+			this.dateTakenProperty.setValue(LocalDateTime.now());
 			//Read the metadata off of the image
 			TiffImageMetadata tiffImageMetadata = MetadataUtils.readImageMetadata(file);
 
@@ -129,7 +126,7 @@ public class ImageEntry extends ImageContainer
 			// Grab the date taken from the metadata
 			String[] dateTaken = tiffImageMetadata.getFieldValue(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
 			if (dateTaken != null && dateTaken.length == 1)
-				this.dateTakenProperty.setValue(DATE_FORMAT.parse(dateTaken[0]));
+				this.dateTakenProperty.setValue(LocalDateTime.parse(dateTaken[0], DATE_FORMAT));
 		}
 	}
 
@@ -315,7 +312,7 @@ public class ImageEntry extends ImageContainer
 		return this.imageFileProperty;
 	}
 
-	public void setDateTaken(Date date)
+	public void setDateTaken(LocalDateTime date)
 	{
 		this.dateTakenProperty.setValue(date);
 	}
@@ -325,7 +322,7 @@ public class ImageEntry extends ImageContainer
 	 * 
 	 * @return The date the image was taken
 	 */
-	public Date getDateTaken()
+	public LocalDateTime getDateTaken()
 	{
 		//this.validateDate();
 		return dateTakenProperty.getValue();
@@ -336,7 +333,7 @@ public class ImageEntry extends ImageContainer
 	 *
 	 * @return The date the image was taken property
 	 */
-	public ObjectProperty<Date> dateTakenProperty()
+	public ObjectProperty<LocalDateTime> dateTakenProperty()
 	{
 		return dateTakenProperty;
 	}

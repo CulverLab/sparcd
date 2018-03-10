@@ -32,16 +32,16 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import model.constant.SanimalDataFormats;
-import model.image.*;
-import model.util.FXMLLoaderUtils;
 import library.ImageViewPane;
 import library.TreeViewAutomatic;
 import model.SanimalData;
+import model.constant.SanimalDataFormats;
+import model.image.*;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
 import model.util.ErrorTask;
+import model.util.FXMLLoaderUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.StatusBar;
@@ -51,6 +51,8 @@ import org.fxmisc.easybind.monadic.MonadicBinding;
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -188,6 +190,8 @@ public class SanimalImportController implements Initializable
 	private Stage timeShiftStage;
 	private TimeShiftController timeShiftController;
 
+	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("MMMM d',' yyyy 'at' HH:mm:ss");
+
 	/**
 	 * Initialize the sanimal import view and data bindings
 	 *
@@ -286,7 +290,7 @@ public class SanimalImportController implements Initializable
 		// Also bind the disable button's disable property if an adjustable image is selected
 		this.btnResetImage.disableProperty().bind(currentlySelectedImage.isNull());
 		// Finally bind the date taken's disable property if an adjustable image is selected
-		this.txtDateTaken.textProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::dateTakenProperty).map(Date::toString).orElse(""));
+		this.txtDateTaken.textProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::dateTakenProperty).map(localDateTime -> localDateTime.format(DATE_FORMAT)).orElse(""));
 		// Bind the image preview to the selected image from the right side tree view
 		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::getFileProperty).map(file -> new Image(file.toURI().toString())));
 		this.imagePreview.imageProperty().addListener((observable, oldValue, newValue) -> this.resetImageView(null));
@@ -866,7 +870,7 @@ public class SanimalImportController implements Initializable
 	public void timeShift(MouseEvent mouseEvent)
 	{
 		// Grab the first date in the image or image list
-		Date first = null;
+		LocalDateTime first = null;
 		// If we have an image selected, grab the date of that one image
 		if (this.currentlySelectedImage.getValue() != null)
 			first = this.currentlySelectedImage.getValue().getDateTaken();
@@ -891,7 +895,7 @@ public class SanimalImportController implements Initializable
 			// If a new date was created...
 			if (timeShiftController.dateWasConfirmed())
 			{
-				Date newDate = timeShiftController.getDate();
+				LocalDateTime newDate = timeShiftController.getDate();
 				// If just an image was selected, set the date taken of that specific image
 				if (this.currentlySelectedImage.getValue() != null)
 					this.currentlySelectedImage.getValue().setDateTaken(newDate);
@@ -899,11 +903,11 @@ public class SanimalImportController implements Initializable
 				else if (this.currentlySelectedDirectory.getValue() != null)
 				{
 					// Calculate the time between the first date and the newly created date
-					long timeBetween = ChronoUnit.MILLIS.between(first.toInstant(), newDate.toInstant());
+					long timeBetween = ChronoUnit.MILLIS.between(first, newDate);
 					// If the offset is non 0, offset the date of every image in the directory by the offset
 					if (timeBetween != 0)
 						this.currentlySelectedDirectory.getValue().flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).forEach(imageEntry -> {
-							imageEntry.setDateTaken(Date.from(imageEntry.getDateTaken().toInstant().plus(timeBetween, ChronoUnit.MILLIS)));
+							imageEntry.setDateTaken(imageEntry.getDateTaken().plus(timeBetween, ChronoUnit.MILLIS));
 						});
 				}
 			}

@@ -1,17 +1,15 @@
 package model.analysis.textFormatters;
 
-import java.util.Calendar;
-import java.util.List;
-
-import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang3.time.DateUtils;
-
 import model.analysis.DataAnalysis;
 import model.analysis.ImageQuery;
 import model.analysis.SanimalAnalysisUtils;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
+import org.apache.commons.collections4.ListUtils;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * The text formatter for statistics about locations
@@ -130,26 +128,24 @@ public class LocationStatFormatter extends TextFormatter
 					toReturn.append("\n");
 					toReturn.append("Total effort                ");
 					int totalEffort = 0;
-					Calendar firstCal = DateUtils.toCalendar(analysis.getFirstImageInList(atLocation).getDateTaken());
-					Calendar lastCal = DateUtils.toCalendar(analysis.getLastImageInList(atLocation).getDateTaken());
-					Integer firstMonth = firstCal.get(Calendar.MONTH);
-					Integer lastMonth = lastCal.get(Calendar.MONTH);
-					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-					Calendar calendar = Calendar.getInstance();
+					LocalDateTime firstCal = analysis.getFirstImageInList(atLocation).getDateTaken();
+					LocalDateTime lastCal = analysis.getLastImageInList(atLocation).getDateTaken();
+					Integer firstMonth = firstCal.getMonthValue();
+					Integer lastMonth = lastCal.getMonthValue();
+					Integer firstDay = firstCal.getDayOfMonth();
+					Integer lastDay = lastCal.getDayOfMonth();
 					for (int i = 0; i < 12; i++)
 					{
 						int effort = 0;
 						if (firstMonth == lastMonth && firstMonth == i)
 							effort = lastDay - firstDay + 1;
 						else if (firstMonth == i)
-							effort = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH) - firstDay + 1;
+							effort = 31 - firstDay + 1;
 						else if (lastMonth == i)
 							effort = lastDay;
 						else if (firstMonth < i && lastMonth > i)
 						{
-							calendar.set(Calendar.MONTH, i);
-							effort = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							effort = 31;
 						}
 
 						toReturn.append(String.format("%5d  ", effort));
@@ -158,13 +154,12 @@ public class LocationStatFormatter extends TextFormatter
 					toReturn.append(String.format("%5d  ", totalEffort));
 					toReturn.append("\n");
 					toReturn.append("Total/Total effort          ");
-					firstCal = DateUtils.toCalendar(analysis.getFirstImageInList(atLocation).getDateTaken());
-					lastCal = DateUtils.toCalendar(analysis.getLastImageInList(atLocation).getDateTaken());
-					firstMonth = firstCal.get(Calendar.MONTH);
-					lastMonth = lastCal.get(Calendar.MONTH);
-					firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-					lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-					calendar = Calendar.getInstance();
+					firstCal = analysis.getFirstImageInList(atLocation).getDateTaken();
+					lastCal = analysis.getLastImageInList(atLocation).getDateTaken();
+					firstMonth = firstCal.getMonthValue();
+					lastMonth = lastCal.getMonthValue();
+					firstDay = firstCal.getDayOfMonth();
+					lastDay = lastCal.getDayOfMonth();
 					for (int i = 0; i < 12; i++)
 					{
 						Integer period = analysis.periodForImageList(new ImageQuery().monthOnly(i).query(atLocation));
@@ -172,13 +167,12 @@ public class LocationStatFormatter extends TextFormatter
 						if (firstMonth == lastMonth && firstMonth == i)
 							effort = lastDay - firstDay + 1;
 						else if (firstMonth == i)
-							effort = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH) - firstDay + 1;
+							effort = 31 - firstDay + 1;
 						else if (lastMonth == i)
 							effort = lastDay;
 						else if (firstMonth < i && lastMonth > i)
 						{
-							calendar.set(Calendar.MONTH, i);
-							effort = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							effort = 31;
 						}
 						double ratio = 0;
 						if (effort != 0)
@@ -254,26 +248,24 @@ public class LocationStatFormatter extends TextFormatter
 				toReturn.append("\n");
 				toReturn.append("Total effort                ");
 				int totalEffort = 0;
-				Calendar firstCal = DateUtils.toCalendar(analysis.getFirstImageInList(atLocation).getDateTaken());
-				Calendar lastCal = DateUtils.toCalendar(analysis.getLastImageInList(atLocation).getDateTaken());
-				Integer firstMonth = firstCal.get(Calendar.MONTH);
-				Integer lastMonth = lastCal.get(Calendar.MONTH);
-				Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-				Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-				Calendar calendar = Calendar.getInstance();
+				LocalDateTime firstCal = analysis.getFirstImageInList(atLocation).getDateTaken();
+				LocalDateTime lastCal = analysis.getLastImageInList(atLocation).getDateTaken();
+				Integer firstMonth = firstCal.getMonthValue();
+				Integer lastMonth = lastCal.getMonthValue();
+				Integer firstDay = firstCal.getDayOfMonth();
+				Integer lastDay = lastCal.getDayOfMonth();
 				for (int i = 0; i < 12; i++)
 				{
 					int effort = 0;
 					if (firstMonth == lastMonth && firstMonth == i)
 						effort = lastDay - firstDay + 1;
 					else if (firstMonth == i)
-						effort = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH) - firstDay + 1;
+						effort = 31 - firstDay + 1;
 					else if (lastMonth == i)
 						effort = lastDay;
 					else if (firstMonth < i && lastMonth > i)
 					{
-						calendar.set(Calendar.MONTH, i);
-						effort = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+						effort = 31;
 					}
 
 					toReturn.append(String.format("%5d  ", effort));
@@ -282,13 +274,12 @@ public class LocationStatFormatter extends TextFormatter
 				toReturn.append(String.format("%5d  ", totalEffort));
 				toReturn.append("\n");
 				toReturn.append("Total/Total effort          ");
-				firstCal = DateUtils.toCalendar(analysis.getFirstImageInList(atLocation).getDateTaken());
-				lastCal = DateUtils.toCalendar(analysis.getLastImageInList(atLocation).getDateTaken());
-				firstMonth = firstCal.get(Calendar.MONTH);
-				lastMonth = lastCal.get(Calendar.MONTH);
-				firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-				lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-				calendar = Calendar.getInstance();
+				firstCal = analysis.getFirstImageInList(atLocation).getDateTaken();
+				lastCal = analysis.getLastImageInList(atLocation).getDateTaken();
+				firstMonth = firstCal.getMonthValue();
+				lastMonth = lastCal.getMonthValue();
+				firstDay = firstCal.getDayOfMonth();
+				lastDay = lastCal.getDayOfMonth();
 				for (int i = 0; i < 12; i++)
 				{
 					Integer period = analysis.periodForImageList(new ImageQuery().monthOnly(i).query(atLocation));
@@ -296,13 +287,12 @@ public class LocationStatFormatter extends TextFormatter
 					if (firstMonth == lastMonth && firstMonth == i)
 						effort = lastDay - firstDay + 1;
 					else if (firstMonth == i)
-						effort = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH) - firstDay + 1;
+						effort = 31 - firstDay + 1;
 					else if (lastMonth == i)
 						effort = lastDay;
 					else if (firstMonth < i && lastMonth > i)
 					{
-						calendar.set(Calendar.MONTH, i);
-						effort = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+						effort = 31;
 					}
 
 					double ratio = 0;

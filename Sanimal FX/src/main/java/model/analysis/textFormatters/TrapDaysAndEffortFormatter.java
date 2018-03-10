@@ -1,16 +1,14 @@
 package model.analysis.textFormatters;
 
-import java.util.Calendar;
-import java.util.List;
-
-import org.apache.commons.lang3.time.DateUtils;
-
 import model.analysis.DataAnalysis;
 import model.analysis.ImageQuery;
 import model.analysis.SanimalAnalysisUtils;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.SpeciesEntry;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * The text formatter for trap days and effort calculations
@@ -47,8 +45,8 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 			List<ImageEntry> withLocation = new ImageQuery().locationOnly(location).query(images);
 			ImageEntry firstEntry = analysis.getFirstImageInList(withLocation);
 			ImageEntry lastEntry = analysis.getLastImageInList(withLocation);
-			Calendar firstCal = DateUtils.toCalendar(firstEntry.getDateTaken());
-			Calendar lastCal = DateUtils.toCalendar(lastEntry.getDateTaken());
+			LocalDateTime firstCal = firstEntry.getDateTaken();
+			LocalDateTime lastCal = lastEntry.getDateTaken();
 			long currentDuration = SanimalAnalysisUtils.daysBetween(firstEntry.getDateTaken(), lastEntry.getDateTaken()) + 1;
 			durationTotal = durationTotal + currentDuration;
 
@@ -56,8 +54,7 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 			for (SpeciesEntry entry : firstEntry.getSpeciesPresent())
 				speciesPresent.append(entry.getSpecies().getName()).append(" ");
 
-			toReturn.append(String.format("%-27s %4s %2d %2d  %4s %2d %2d %9d   %4s %2d %2d  %s\n", location.getName(), firstCal.get(Calendar.YEAR), firstCal.get(Calendar.MONTH) + 1, firstCal.get(Calendar.DAY_OF_MONTH), lastCal.get(Calendar.YEAR), lastCal.get(Calendar.MONTH) + 1, lastCal.get(
-					Calendar.DAY_OF_MONTH), currentDuration, firstCal.get(Calendar.YEAR), firstCal.get(Calendar.MONTH) + 1, firstCal.get(Calendar.DAY_OF_MONTH), speciesPresent.toString()));
+			toReturn.append(String.format("%-27s %4s %2d %2d  %4s %2d %2d %9d   %4s %2d %2d  %s\n", location.getName(), firstCal.getYear(), firstCal.getMonthValue() + 1, firstCal.getDayOfMonth(), lastCal.getYear(), lastCal.getMonthValue() + 1, lastCal.getDayOfMonth(), currentDuration, firstCal.getYear(), firstCal.getMonthValue() + 1, firstCal.getDayOfMonth(), speciesPresent.toString()));
 		}
 
 		toReturn.append(String.format("Total camera trap days                             %9d\n", durationTotal));
@@ -98,13 +95,12 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 				for (Location location : locations)
 				{
 					List<ImageEntry> withYearLocation = new ImageQuery().locationOnly(location).query(withYear);
-					Calendar firstCal = DateUtils.toCalendar(analysis.getFirstImageInList(withYearLocation).getDateTaken());
-					Calendar lastCal = DateUtils.toCalendar(analysis.getLastImageInList(withYearLocation).getDateTaken());
-					Integer firstMonth = firstCal.get(Calendar.MONTH);
-					Integer lastMonth = lastCal.get(Calendar.MONTH);
-					Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-					Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-					Calendar calendar = Calendar.getInstance();
+					LocalDateTime firstCal = analysis.getFirstImageInList(withYearLocation).getDateTaken();
+					LocalDateTime lastCal = analysis.getLastImageInList(withYearLocation).getDateTaken();
+					Integer firstMonth = firstCal.getMonthValue();
+					Integer lastMonth = lastCal.getMonthValue();
+					Integer firstDay = firstCal.getDayOfMonth();
+					Integer lastDay = lastCal.getDayOfMonth();
 					toReturn.append(String.format("%-28s", location.getName()));
 					int monthTotal = 0;
 					for (int i = 0; i < 12; i++)
@@ -113,13 +109,12 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 						if (firstMonth == lastMonth && firstMonth == i)
 							monthValue = lastDay - firstDay + 1;
 						else if (firstMonth == i)
-							monthValue = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH) - firstDay + 1;
+							monthValue = 31 - firstDay + 1;
 						else if (lastMonth == i)
 							monthValue = lastDay;
 						else if (firstMonth < i && lastMonth > i)
 						{
-							calendar.set(Calendar.MONTH, i);
-							monthValue = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+							monthValue = 31;
 						}
 
 						toReturn.append(String.format(" %2d    ", monthValue));
@@ -174,13 +169,12 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 		for (Location location : analysis.getAllImageLocations())
 		{
 			List<ImageEntry> withLocation = new ImageQuery().locationOnly(location).query(images);
-			Calendar firstCal = DateUtils.toCalendar(analysis.getFirstImageInList(withLocation).getDateTaken());
-			Calendar lastCal = DateUtils.toCalendar(analysis.getLastImageInList(withLocation).getDateTaken());
-			Integer firstMonth = firstCal.get(Calendar.MONTH);
-			Integer lastMonth = lastCal.get(Calendar.MONTH);
-			Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-			Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-			Calendar calendar = Calendar.getInstance();
+			LocalDateTime firstCal = analysis.getFirstImageInList(withLocation).getDateTaken();
+			LocalDateTime lastCal = analysis.getLastImageInList(withLocation).getDateTaken();
+			Integer firstMonth = firstCal.getMonthValue();
+			Integer lastMonth = lastCal.getMonthValue();
+			Integer firstDay = firstCal.getDayOfMonth();
+			Integer lastDay = lastCal.getDayOfMonth();
 			toReturn.append(String.format("%-28s", location.getName()));
 			int monthTotal = 0;
 			for (int i = 0; i < 12; i++)
@@ -189,13 +183,12 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 				if (firstMonth == lastMonth && firstMonth == i)
 					monthValue = lastDay - firstDay + 1;
 				else if (firstMonth == i)
-					monthValue = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH) - firstDay + 1;
+					monthValue = 31 - firstDay + 1;
 				else if (lastMonth == i)
 					monthValue = lastDay;
 				else if (firstMonth < i && lastMonth > i)
 				{
-					calendar.set(Calendar.MONTH, i);
-					monthValue = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+					monthValue = 31;
 				}
 
 				toReturn.append(String.format(" %2d    ", monthValue));

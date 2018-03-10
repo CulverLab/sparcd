@@ -1,14 +1,15 @@
 package model.analysis;
 
-import java.util.*;
-
-import org.apache.commons.lang3.time.DateUtils;
-
 import library.MoonCalculator;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
 
 /**
  * A class used to collect all of the basic data in the analysis. Also contains utility methods for performing various analysis.
@@ -71,7 +72,7 @@ public class DataAnalysis
 		// Find all image years
 		for (ImageEntry imageEntry : images)
 		{
-			Integer year = DateUtils.toCalendar(imageEntry.getDateTaken()).get(Calendar.YEAR);
+			Integer year = imageEntry.getDateTaken().getYear();
 			if (!allImageYears.contains(year))
 				allImageYears.add(year);
 		}
@@ -87,31 +88,31 @@ public class DataAnalysis
 		if (imagesSortedByDate.size() > 0)
 		{
 			// Full moon calculations
-			Date first = imagesSortedByDate.get(0).getDateTaken();
-			Date last = imagesSortedByDate.get(imagesSortedByDate.size() - 1).getDateTaken();
-			while (first.before(last))
+			LocalDateTime first = imagesSortedByDate.get(0).getDateTaken();
+			LocalDateTime last = imagesSortedByDate.get(imagesSortedByDate.size() - 1).getDateTaken();
+			while (first.isBefore(last))
 			{
-				double julianDate = MoonCalculator.getJulian(first);
+				double julianDate = MoonCalculator.getJulian(Date.from(first.atZone(ZoneId.systemDefault()).toInstant()));
 				double[] phases = MoonCalculator.getPhase(julianDate);
 				double fullMoon = MoonCalculator.getLunation(julianDate, phases[MoonCalculator.MOONPHASE], 180);
 				long fullMillis = MoonCalculator.toMillisFromJulian(fullMoon);
 				Date nextFullMoonDate = new Date(fullMillis);
 				fullMoons.add(nextFullMoonDate);
-				first = new Date(nextFullMoonDate.getTime() + 20 * 1000 * 60 * 60 * 24);
+				first = LocalDateTime.ofInstant(Instant.ofEpochMilli(nextFullMoonDate.getTime() + 20 * 1000 * 60 * 60 * 24), ZoneId.systemDefault());
 			}
 
 			// New moon calculations
-			Date first2 = imagesSortedByDate.get(0).getDateTaken();
-			Date last2 = imagesSortedByDate.get(imagesSortedByDate.size() - 1).getDateTaken();
-			while (first2.before(last2))
+			LocalDateTime first2 = imagesSortedByDate.get(0).getDateTaken();
+			LocalDateTime last2 = imagesSortedByDate.get(imagesSortedByDate.size() - 1).getDateTaken();
+			while (first2.isBefore(last2))
 			{
-				double julianDate = MoonCalculator.getJulian(first2);
+				double julianDate = MoonCalculator.getJulian(Date.from(first2.atZone(ZoneId.systemDefault()).toInstant()));
 				double[] phases = MoonCalculator.getPhase(julianDate);
 				double newMoon = MoonCalculator.getLunation(julianDate, phases[MoonCalculator.MOONPHASE], 0);
 				long newMillis = MoonCalculator.toMillisFromJulian(newMoon);
 				Date nextNewMoonDate = new Date(newMillis);
 				newMoons.add(nextNewMoonDate);
-				first2 = new Date(nextNewMoonDate.getTime() + 20 * 1000 * 60 * 60 * 24);
+				first2 = LocalDateTime.ofInstant(Instant.ofEpochMilli(nextNewMoonDate.getTime() + 20 * 1000 * 60 * 60 * 24), ZoneId.systemDefault());
 			}
 		}
 	}
@@ -127,7 +128,7 @@ public class DataAnalysis
 	{
 		ImageEntry first = images.size() == 0 ? null : images.get(0);
 		for (ImageEntry imageEntry : images)
-			if (imageEntry.getDateTaken().before(first.getDateTaken()))
+			if (imageEntry.getDateTaken().isBefore(first.getDateTaken()))
 				first = imageEntry;
 		return first;
 	}
@@ -143,7 +144,7 @@ public class DataAnalysis
 	{
 		ImageEntry last = images.size() == 0 ? null : images.get(0);
 		for (ImageEntry imageEntry : images)
-			if (imageEntry.getDateTaken().after(last.getDateTaken()))
+			if (imageEntry.getDateTaken().isAfter(last.getDateTaken()))
 				last = imageEntry;
 		return last;
 	}
@@ -185,10 +186,10 @@ public class DataAnalysis
 		int oldYear = -1;
 		for (ImageEntry image : images)
 		{
-			Calendar calendar = DateUtils.toCalendar(image.getDateTaken());
-			int hour = calendar.get(Calendar.HOUR_OF_DAY);
-			int day = calendar.get(Calendar.DAY_OF_YEAR);
-			int year = calendar.get(Calendar.YEAR);
+			LocalDateTime date = image.getDateTaken();
+			int hour = date.getHour();
+			int day = date.getDayOfYear();
+			int year = date.getYear();
 			// If either the hour, day, or year changes, we're onto a new activity
 			if ((hour != oldHour) || (oldDay != day) || (oldYear != year))
 			{
@@ -216,7 +217,7 @@ public class DataAnalysis
 		long lastImageTimeMillis = 0;
 		for (ImageEntry image : images)
 		{
-			long imageTimeMillis = image.getDateTaken().getTime();
+			long imageTimeMillis = image.getDateTaken().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 			long differenceMillis = imageTimeMillis - lastImageTimeMillis;
 			long differenceMinutes = differenceMillis / 1000 / 60;
 			// If the difference between the last image and the current one must be > the event interval
@@ -247,7 +248,7 @@ public class DataAnalysis
 		Integer maxAnimalsInEvent = 0;
 		for (ImageEntry image : images)
 		{
-			long imageTimeMillis = image.getDateTaken().getTime();
+			long imageTimeMillis = image.getDateTaken().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 			long differenceMillis = imageTimeMillis - lastImageTimeMillis;
 			long differenceMinutes = differenceMillis / 1000 / 60;
 

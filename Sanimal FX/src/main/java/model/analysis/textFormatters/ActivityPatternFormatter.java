@@ -1,17 +1,15 @@
 package model.analysis.textFormatters;
 
-import java.util.Calendar;
-import java.util.List;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
-
 import model.analysis.DataAnalysis;
 import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * The text formatter for species activity patterns
@@ -369,13 +367,12 @@ public class ActivityPatternFormatter extends TextFormatter
 		for (Location location : analysis.getAllImageLocations())
 		{
 			List<ImageEntry> withLocation = new ImageQuery().locationOnly(location).query(images);
-			Calendar firstCal = DateUtils.toCalendar(analysis.getFirstImageInList(withLocation).getDateTaken());
-			Calendar lastCal = DateUtils.toCalendar(analysis.getLastImageInList(withLocation).getDateTaken());
-			Integer firstMonth = firstCal.get(Calendar.MONTH);
-			Integer lastMonth = lastCal.get(Calendar.MONTH);
-			Integer firstDay = firstCal.get(Calendar.DAY_OF_MONTH);
-			Integer lastDay = lastCal.get(Calendar.DAY_OF_MONTH);
-			Calendar calendar = Calendar.getInstance();
+			LocalDateTime firstDate = analysis.getFirstImageInList(withLocation).getDateTaken();
+			LocalDateTime lastDate = analysis.getLastImageInList(withLocation).getDateTaken();
+			Integer firstMonth = firstDate.getMonthValue();
+			Integer lastMonth = lastDate.getMonthValue();
+			Integer firstDay = firstDate.getDayOfMonth();
+			Integer lastDay = lastDate.getDayOfMonth();
 			toReturn.append(String.format("%-28s", location.getName()));
 			int monthTotal = 0;
 			for (int i = 0; i < 12; i++)
@@ -384,14 +381,11 @@ public class ActivityPatternFormatter extends TextFormatter
 				if (firstMonth == lastMonth && firstMonth == i)
 					monthValue = lastDay - firstDay + 1;
 				else if (firstMonth == i)
-					monthValue = firstCal.getActualMaximum(Calendar.DAY_OF_MONTH) - firstDay + 1;
+					monthValue = 31 - firstDay + 1;
 				else if (lastMonth == i)
 					monthValue = lastDay;
 				else if (firstMonth < i && lastMonth > i)
-				{
-					calendar.set(Calendar.MONTH, i);
-					monthValue = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-				}
+					monthValue = 31;
 
 				toReturn.append(String.format(" %2d    ", monthValue));
 				monthTotal = monthTotal + monthValue;
