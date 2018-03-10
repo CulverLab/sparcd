@@ -5,9 +5,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
-import java.io.Serializable;
-import java.util.Objects;
-
 /**
  * Wrapper around the species class which allows for the addition of the amount field that specifies how many animals are in an image
  * 

@@ -1,12 +1,12 @@
 package model.analysis.textFormatters;
 
-import java.util.List;
-
 import model.analysis.DataAnalysis;
 import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
+
+import java.util.List;
 
 /**
  * The text formatter for the header of the various text output

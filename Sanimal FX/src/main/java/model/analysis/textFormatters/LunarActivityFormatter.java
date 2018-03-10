@@ -1,14 +1,13 @@
 package model.analysis.textFormatters;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import model.analysis.DataAnalysis;
-import model.analysis.LunarActivityEntry;
 import model.analysis.ImageQuery;
+import model.analysis.LunarActivityEntry;
 import model.image.ImageEntry;
 import model.species.Species;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The text formatter for statistics about lunar activity

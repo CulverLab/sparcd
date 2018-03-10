@@ -1,7 +1,6 @@
 package controller.importView;
 
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeCell;
 import javafx.scene.image.ImageView;
@@ -11,7 +10,6 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import model.SanimalData;
 import model.image.ImageContainer;
-import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;

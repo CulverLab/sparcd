@@ -1,20 +1,14 @@
 package controller.importView;
 
-import impl.org.controlsfx.tools.MathTools;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import javafx.util.converter.CharacterStringConverter;
-import javafx.util.converter.DoubleStringConverter;
-import javafx.util.converter.IntegerStringConverter;
 import library.ToggleButtonSelector;
 import model.analysis.SanimalAnalysisUtils;
 import model.location.Location;
@@ -24,9 +18,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.controlsfx.control.SegmentedButton;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
-import org.controlsfx.validation.decoration.GraphicValidationDecoration;
-import org.controlsfx.validation.decoration.StyleClassValidationDecoration;
-import org.controlsfx.validation.decoration.ValidationDecoration;
 
 import java.net.URL;
 import java.util.ResourceBundle;

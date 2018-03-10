@@ -9,12 +9,10 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import model.constant.SanimalDataFormats;
 import model.image.ImageContainer;
 import model.image.ImageDirectory;
-import model.location.Location;
 import org.fxmisc.easybind.EasyBind;
 
 public class UploadTreeCellController extends TreeCell<ImageContainer>

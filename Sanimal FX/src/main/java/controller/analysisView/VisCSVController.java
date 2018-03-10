@@ -3,7 +3,6 @@ package controller.analysisView;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.scene.text.Font;
-import model.SanimalData;
 import model.analysis.DataAnalysis;
 import model.location.Location;
 

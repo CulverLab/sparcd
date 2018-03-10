@@ -2,15 +2,11 @@ package controller.importView;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
-import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import model.location.Location;
-import model.species.Species;
 
 /**
  * Controller class for the location list cell

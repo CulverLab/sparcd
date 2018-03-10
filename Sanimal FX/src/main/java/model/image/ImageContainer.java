@@ -7,12 +7,10 @@ package model.image;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.image.Image;
 import library.HierarchyData;
 import model.location.Location;
 
 import java.io.File;
-import java.io.Serializable;
 
 /**
  * A recursive datatype containing more image containers

@@ -1,14 +1,13 @@
 package model.analysis.textFormatters;
 
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-
 import model.analysis.DataAnalysis;
 import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
 
 /**
  * The text formatter for species activities, abundance, and period at locations

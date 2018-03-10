@@ -1,7 +1,5 @@
 package model.analysis.textFormatters;
 
-import java.util.List;
-
 import model.analysis.DataAnalysis;
 import model.analysis.ImageQuery;
 import model.analysis.SanimalAnalysisUtils;
@@ -9,6 +7,8 @@ import model.image.ImageEntry;
 import model.location.Location;
 import model.location.UTMCoord;
 import model.species.Species;
+
+import java.util.List;
 
 /**
  * The text formatter for species with location/utm/latlng coordinates

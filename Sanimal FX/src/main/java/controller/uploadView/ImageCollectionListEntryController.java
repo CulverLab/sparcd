@@ -20,10 +20,8 @@ import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
 import model.image.CloudImageDirectory;
-import model.image.ImageContainer;
 import model.image.ImageDirectory;
 import model.image.ImageEntry;
-import model.species.Species;
 import model.util.ErrorTask;
 import model.util.FXMLLoaderUtils;
 import org.irods.jargon.core.transfer.TransferStatus;
@@ -33,7 +31,7 @@ import java.io.File;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static model.constant.SanimalDataFormats.*;
+import static model.constant.SanimalDataFormats.IMAGE_DIRECTORY_FILE_FORMAT;
 
 /**
  * Controller class for the image collection list

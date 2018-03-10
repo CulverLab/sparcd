@@ -1,19 +1,10 @@
 package controller.importView;
 
-import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import model.SanimalData;
-import model.species.Species;
 import model.species.SpeciesEntry;
-
-import java.net.URL;
-import java.util.ResourceBundle;
 
 /**
  * Controller class for the species entry list entry

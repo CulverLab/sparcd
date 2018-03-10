@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
-
 <?import javafx.scene.control.Spinner?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
 <GridPane fx:id="mainPane" hgap="5.0" maxHeight="60" maxWidth="350" minHeight="60" minWidth="350" prefHeight="60" prefWidth="350" styleClass="mainBackground" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.importView.SpeciesEntryListEntryController">
     <stylesheets>
         <URL value="@SpeciesEntryListEntry.css" />

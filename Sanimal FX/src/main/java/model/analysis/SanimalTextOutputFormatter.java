@@ -1,21 +1,9 @@
 package model.analysis;
 
-import java.util.List;
-
-import model.analysis.textFormatters.ActPerAbuLocFormatter;
-import model.analysis.textFormatters.ActivityPatternFormatter;
-import model.analysis.textFormatters.AllPicturesFormatter;
-import model.analysis.textFormatters.DetectionRateFormatter;
-import model.analysis.textFormatters.FirstLastSpeciesFormatter;
-import model.analysis.textFormatters.HeaderFormatter;
-import model.analysis.textFormatters.LocationStatFormatter;
-import model.analysis.textFormatters.LunarActivityFormatter;
-import model.analysis.textFormatters.OccouranceFormatter;
-import model.analysis.textFormatters.RichnessFormatter;
-import model.analysis.textFormatters.SpeciesLocCoordFormatter;
-import model.analysis.textFormatters.TotalDayFormatter;
-import model.analysis.textFormatters.TrapDaysAndEffortFormatter;
+import model.analysis.textFormatters.*;
 import model.image.ImageEntry;
+
+import java.util.List;
 
 /**
  * The formatter that simulates the creation of Jim Sanderson's "Output.txt"

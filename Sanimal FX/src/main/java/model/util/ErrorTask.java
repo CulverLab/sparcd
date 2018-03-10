@@ -7,8 +7,6 @@ import javafx.event.EventHandler;
 import model.SanimalData;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-import java.util.function.Consumer;
-
 /**
  * Wrapper task that is aware of errors
  *

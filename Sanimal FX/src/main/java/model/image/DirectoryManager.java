@@ -1,33 +1,19 @@
 package model.image;
 
+import javafx.scene.control.Alert;
+import model.SanimalData;
+import model.analysis.SanimalAnalysisUtils;
+import model.location.Location;
+import model.species.Species;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.lang.exception.ExceptionUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javafx.scene.control.Alert;
-import model.SanimalData;
-import model.analysis.SanimalAnalysisUtils;
-import model.constant.SanimalMetadataFields;
-import model.location.Location;
-import model.species.Species;
-import model.species.SpeciesEntry;
-import model.util.MetadataUtils;
-import model.util.RoundingUtils;
-import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.imaging.ImageReadException;
-import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
-import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * A class that imports images into a more easily readable structure

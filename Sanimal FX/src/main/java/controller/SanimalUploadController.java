@@ -1,15 +1,13 @@
 package controller;
 
-import controller.importView.ImageTreeCellController;
 import controller.uploadView.ImageCollectionListEntryController;
 import controller.uploadView.ImageUploadDownloadListEntryController;
-import controller.uploadView.UploadTreeCellController;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.*;
-import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -21,15 +19,18 @@ import library.TreeViewAutomatic;
 import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
-import model.image.*;
+import model.image.CloudImageDirectory;
+import model.image.CloudImageEntry;
+import model.image.CloudUploadEntry;
+import model.image.ImageContainer;
 import model.util.ErrorTask;
 import model.util.FXMLLoaderUtils;
 import org.fxmisc.easybind.EasyBind;
-import org.irods.jargon.core.transfer.TransferStatus;
-import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
 
 import java.net.URL;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 /**

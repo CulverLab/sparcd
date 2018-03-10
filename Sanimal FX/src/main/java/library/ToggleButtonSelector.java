@@ -4,7 +4,6 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
-import org.controlsfx.control.SegmentedButton;
 
 /**
  * Utility class designed to make segmented buttons un-deselectable, meaning they cant be deselected.
