@@ -5,6 +5,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -15,12 +16,12 @@ public class CloudUploadEntry
 	private transient ObjectProperty<CloudImageDirectory> cloudImageDirectoryProperty = new SimpleObjectProperty<>();
 
 	private String uploadUser;
-	private Date uploadDate;
+	private LocalDateTime uploadDate;
 	private Boolean tagged;
 	private List<String> editComments = new ArrayList<>();
 	private String uploadIRODSPath;
 
-	public CloudUploadEntry(String uploadUser, Date uploadDate, Boolean tagged, String uploadIRODSPath)
+	public CloudUploadEntry(String uploadUser, LocalDateTime uploadDate, Boolean tagged, String uploadIRODSPath)
 	{
 		this.uploadUser = uploadUser;
 		this.uploadDate = uploadDate;
@@ -49,7 +50,7 @@ public class CloudUploadEntry
 		return uploadUser;
 	}
 
-	public Date getUploadDate()
+	public LocalDateTime getUploadDate()
 	{
 		return uploadDate;
 	}

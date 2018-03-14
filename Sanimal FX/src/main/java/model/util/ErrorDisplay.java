@@ -23,10 +23,10 @@ public class ErrorDisplay
 				alert.setTitle(title);
 
 			if (header != null)
-				alert.setHeaderText("No Collection Selected");
+				alert.setHeaderText(header);
 
 			if (content != null)
-				alert.setContentText("Please select a collection from the collection list to remove.");
+				alert.setContentText(content);
 
 				if (shouldWait)
 					alert.showAndWait();

@@ -16,7 +16,6 @@
         <RowConstraints minHeight="50" maxHeight="50"/>
         <RowConstraints vgrow="ALWAYS"/>
         <RowConstraints minHeight="50" maxHeight="50"/>
-        <RowConstraints minHeight="50" maxHeight="50"/>
     </rowConstraints>
     <children>
         <Label styleClass="font16" fx:id="lblDate" GridPane.halignment="CENTER" GridPane.valignment="CENTER" text="Original Date: "/>
@@ -37,23 +36,7 @@
             <Label styleClass="font16" text="Second: "/>
             <Spinner fx:id="spnSecond" prefWidth="80"/>
         </HBox>
-        <HBox GridPane.rowIndex="2" spacing="10" alignment="CENTER">
-            <children>
-                <SegmentedButton HBox.hgrow="NEVER">
-                    <buttons>
-                        <ToggleButton fx:id="tbnDayMonthYear" selected="true" mnemonicParsing="false" text="Day Month Year"/>
-                        <ToggleButton fx:id="tbnMonthDayYear" mnemonicParsing="false" text="Month Day Year"/>
-                    </buttons>
-                </SegmentedButton>
-                <SegmentedButton HBox.hgrow="NEVER">
-                    <buttons>
-                        <ToggleButton fx:id="tbn24Hr" selected="true" mnemonicParsing="false" text="24-Hour"/>
-                        <ToggleButton fx:id="tbn12Hr" mnemonicParsing="false" text="12-Hour AM/PM"/>
-                    </buttons>
-                </SegmentedButton>
-            </children>
-        </HBox>
-        <HBox spacing="5" GridPane.rowIndex="3" alignment="CENTER">
+        <HBox spacing="5" GridPane.rowIndex="2" alignment="CENTER">
             <children>
                 <Button text="Confirm" onMouseClicked="#confirmPressed"/>
                 <Button text="Cancel" onMouseClicked="#cancelPressed"/>

@@ -58,6 +58,14 @@
                     </graphic>
                     <fx:include source="SanimalUpload.fxml"/>
                 </DetachableTab>
+                <DetachableTab detachable="true" text="Settings" closable="false">
+                    <graphic>
+                        <ImageView fitWidth="25" fitHeight="25">
+                            <Image url="@../images/mainMenu/settings.png"/>
+                        </ImageView>
+                    </graphic>
+                    <fx:include source="SanimalSettings.fxml"/>
+                </DetachableTab>
             </tabs>
         </DetachableTabPane>
         <StackPane minWidth="300" maxWidth="300" minHeight="320" maxHeight="320" fx:id="loginPane">

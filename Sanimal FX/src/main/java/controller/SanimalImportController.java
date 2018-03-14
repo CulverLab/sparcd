@@ -52,7 +52,6 @@ import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -190,8 +189,6 @@ public class SanimalImportController implements Initializable
 	private Stage timeShiftStage;
 	private TimeShiftController timeShiftController;
 
-	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("MMMM d',' yyyy 'at' HH:mm:ss");
-
 	/**
 	 * Initialize the sanimal import view and data bindings
 	 *
@@ -290,7 +287,7 @@ public class SanimalImportController implements Initializable
 		// Also bind the disable button's disable property if an adjustable image is selected
 		this.btnResetImage.disableProperty().bind(currentlySelectedImage.isNull());
 		// Finally bind the date taken's disable property if an adjustable image is selected
-		this.txtDateTaken.textProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::dateTakenProperty).map(localDateTime -> localDateTime.format(DATE_FORMAT)).orElse(""));
+		this.txtDateTaken.textProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::dateTakenProperty).map(localDateTime -> SanimalData.getInstance().getSettings().formatDateTime(localDateTime, " at ")).orElse(""));
 		// Bind the image preview to the selected image from the right side tree view
 		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::getFileProperty).map(file -> new Image(file.toURI().toString())));
 		this.imagePreview.imageProperty().addListener((observable, oldValue, newValue) -> this.resetImageView(null));

@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class ImageEntry extends ImageContainer
 {
-	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
+	private static final DateTimeFormatter DATE_FORMAT_FOR_DISK = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
 
 	// The icon to use for all images at the moment
 	private static final Image DEFAULT_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageIcon.png").toString());
@@ -126,7 +126,7 @@ public class ImageEntry extends ImageContainer
 			// Grab the date taken from the metadata
 			String[] dateTaken = tiffImageMetadata.getFieldValue(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
 			if (dateTaken != null && dateTaken.length == 1)
-				this.dateTakenProperty.setValue(LocalDateTime.parse(dateTaken[0], DATE_FORMAT));
+				this.dateTakenProperty.setValue(LocalDateTime.parse(dateTaken[0], DATE_FORMAT_FOR_DISK));
 		}
 	}
 
@@ -425,7 +425,7 @@ public class ImageEntry extends ImageContainer
 			// Grab the EXIF directory from the output set
 			TiffOutputDirectory exif = outputSet.getOrCreateExifDirectory();
 			exif.removeField(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
-			exif.add(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL, DATE_FORMAT.format(this.getDateTaken()));
+			exif.add(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL, DATE_FORMAT_FOR_DISK.format(this.getDateTaken()));
 
 			// Grab the sanimal directory from the output set
 			TiffOutputDirectory directory = MetadataUtils.getOrCreateSanimalDirectory(outputSet);

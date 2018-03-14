@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import org.controlsfx.control.PropertySheet?>
+<?import java.net.URL?>
+<PropertySheet fx:id="pstSettings" fx:controller="controller.SanimalSettingsController" prefHeight="700.0" prefWidth="1300.0" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" >
+    <stylesheets>
+        <URL value="@SanimalSettings.css"/>
+    </stylesheets>
+</PropertySheet>

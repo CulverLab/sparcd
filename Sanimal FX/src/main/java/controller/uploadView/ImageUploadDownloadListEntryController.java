@@ -7,6 +7,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
+import model.SanimalData;
 import model.image.CloudUploadEntry;
 import model.image.ImageDirectory;
 import org.fxmisc.easybind.EasyBind;
@@ -44,7 +45,6 @@ public class ImageUploadDownloadListEntryController extends ListCell<CloudUpload
 	/// FXML Bound fields end
 	///
 
-	private static final SimpleDateFormat FOLDER_FORMAT = new SimpleDateFormat("MM/dd/yyyy 'at' HH:mm");
 	private static final String TAGGED_BASE = "Species/Loc Tagged ";
 	private static final String CHECK_MARK = "✓";
 	private static final String CROSS_MARK = "✕";
@@ -74,7 +74,7 @@ public class ImageUploadDownloadListEntryController extends ListCell<CloudUpload
 		else
 		{
 			this.lblUsername.setText(cloudUploadEntry.getUploadUser());
-			this.lblDate.setText(FOLDER_FORMAT.format(cloudUploadEntry.getUploadDate()));
+			this.lblDate.setText(SanimalData.getInstance().getSettings().formatDateTime(cloudUploadEntry.getUploadDate(), " at "));
 			this.lblTagged.setText(TAGGED_BASE + (cloudUploadEntry.getTagged() ? CHECK_MARK : CROSS_MARK));
 			List<String> editComments = cloudUploadEntry.getEditComments();
 			this.lblEdits.setText(editComments.isEmpty() ? "No edits to upload made." : editComments.get(editComments.size() - 1));

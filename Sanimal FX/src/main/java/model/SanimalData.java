@@ -81,6 +81,9 @@ public class SanimalData
 	// Class used to display errors as popups
 	private final ErrorDisplay errorDisplay = new ErrorDisplay();
 
+	// List of sanimal settings
+	private final SettingsData settings = new SettingsData();
+
 	/**
 	 * Private constructor since we're using the singleton design pattern
 	 */
@@ -402,5 +405,10 @@ public class SanimalData
 	public ErrorDisplay getErrorDisplay()
 	{
 		return this.errorDisplay;
+	}
+
+	public SettingsData getSettings()
+	{
+		return this.settings;
 	}
 }

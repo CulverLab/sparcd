@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.VBox?>
 <?import java.net.URL?>
-<SplitPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.analysisView.VisCSVController" prefHeight="300.0" prefWidth="500.0">
+<SplitPane dividerPositions="0.333333, 0.666666" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.analysisView.VisCSVController" prefHeight="300.0" prefWidth="500.0">
     <padding>
         <Insets top="5" bottom="5" left="5" right="5"/>
     </padding>
@@ -17,8 +15,16 @@
     </stylesheets>
     <items>
         <VBox spacing="5">
-            <Label text="Raw CSV output" alignment="CENTER" prefWidth="Infinity"/>
-            <TextArea VBox.vgrow="ALWAYS" fx:id="txtCSV"/>
+            <Label text="Raw CSV" alignment="CENTER" prefWidth="Infinity"/>
+            <TextArea VBox.vgrow="ALWAYS" fx:id="txtRawCSV"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Location CSV" alignment="CENTER" prefWidth="Infinity"/>
+            <TextArea VBox.vgrow="ALWAYS" fx:id="txtLocationCSV"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Species CSV" alignment="CENTER" prefWidth="Infinity"/>
+            <TextArea VBox.vgrow="ALWAYS" fx:id="txtSpeciesCSV"/>
         </VBox>
     </items>
 </SplitPane>

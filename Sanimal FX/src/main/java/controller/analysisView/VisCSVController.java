@@ -17,7 +17,11 @@ public class VisCSVController implements VisControllerBase
 	///
 
 	@FXML
-	public TextArea txtCSV;
+	public TextArea txtRawCSV;
+	@FXML
+	public TextArea txtLocationCSV;
+	@FXML
+	public TextArea txtSpeciesCSV;
 
 	///
 	/// FXML bound fields end
@@ -26,23 +30,36 @@ public class VisCSVController implements VisControllerBase
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
-		this.txtCSV.setFont(Font.font(java.awt.Font.MONOSPACED, 12f));
+		this.txtRawCSV.setFont(Font.font(java.awt.Font.MONOSPACED, 12f));
 	}
 
 	@Override
 	public void visualize(DataAnalysis dataStatistics)
 	{
-		String csv = dataStatistics.getImagesSortedByDate().stream().map(imageEntry -> {
-			String imageCSV = "";
+		String rawCSV = dataStatistics.getImagesSortedByDate().stream().map(imageEntry -> {
 			Location locationTaken = imageEntry.getLocationTaken();
-			imageCSV = imageCSV +
-					imageEntry.getFile().getName() + "," +
-					imageEntry.getDateTaken().toString() + "," +
-					imageEntry.getSpeciesPresent() + "," +
-					"{" + locationTaken.getName() + "," + locationTaken.getId() + "," + locationTaken.getLat() + "," + locationTaken.getLng() + "}";
-			return imageCSV;
+			return
+				imageEntry.getFile().getName() + "," +
+				imageEntry.getDateTaken().toString() + "," +
+				imageEntry.getSpeciesPresent() + "," +
+				"{" + locationTaken.getName() + "," + locationTaken.getId() + "," + locationTaken.getLat() + "," + locationTaken.getLng() + "}";
 		}).collect(Collectors.joining("\n"));
+		this.txtRawCSV.setText(rawCSV);
 
-		this.txtCSV.setText(csv);
+		String locationCSV = dataStatistics.getAllImageLocations().stream().map(location ->
+			location.getName() + "," +
+			location.getId() + "," +
+			location.getLat() + "," +
+			location.getLng() + "," +
+			location.getElevation())
+		.collect(Collectors.joining("\n"));
+		this.txtLocationCSV.setText(locationCSV);
+
+		String speciesCSV = dataStatistics.getAllImageSpecies().stream().map(species ->
+			species.getName() + "," +
+			species.getScientificName() + "," +
+			species.getKeyBinding()
+		).collect(Collectors.joining("\n"));
+		this.txtSpeciesCSV.setText(speciesCSV);
 	}
 }

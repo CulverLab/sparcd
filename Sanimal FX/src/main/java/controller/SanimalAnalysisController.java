@@ -155,8 +155,8 @@ public class SanimalAnalysisController implements Initializable
 		if (eventInterval <= 0)
 			eventInterval = 30;
 
-		LocalDate startDate = this.dateStart.getValue() == null ? LocalDate.MAX : this.dateStart.getValue();
-		LocalDate endDate = this.dateEnd.getValue() == null ? LocalDate.MIN : this.dateEnd.getValue();
+		LocalDate startDate = this.dateStart.getValue() == null ? LocalDate.MIN : this.dateStart.getValue();
+		LocalDate endDate = this.dateEnd.getValue() == null ? LocalDate.MAX : this.dateEnd.getValue();
 
 		// Now process the filters
 		List<ImageEntry> imagesToAnalyze = SanimalData.getInstance().getAllImages().stream()

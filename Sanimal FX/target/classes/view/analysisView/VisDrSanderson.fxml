@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
-<?import java.net.URL?>
-<?import javafx.scene.chart.LineChart?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+<?import java.net.URL?>
 <SplitPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.analysisView.VisDrSandersonController" prefHeight="300.0" prefWidth="500.0">
     <padding>
         <Insets top="5" bottom="5" left="5" right="5"/>

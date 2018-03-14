@@ -35,6 +35,7 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -699,7 +700,7 @@ public class CyVerseConnectionManager
 					if (uploadedFile.exists())
 						uploadedFile.delete();
 					// Upload the JSON file representing the upload
-					CloudUploadEntry uploadEntry = new CloudUploadEntry(SanimalData.getInstance().getUsername(), Calendar.getInstance().getTime(), true, uploadDirName);
+					CloudUploadEntry uploadEntry = new CloudUploadEntry(SanimalData.getInstance().getUsername(), LocalDateTime.now(), true, uploadDirName);
 					// Convert the upload entry to JSON format
 					String json = SanimalData.getInstance().getGson().toJson(uploadEntry);
 					// Write the UploadMeta.json file to the server
