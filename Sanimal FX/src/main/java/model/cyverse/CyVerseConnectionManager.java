@@ -311,22 +311,30 @@ public class CyVerseConnectionManager
 	 */
 	public List<ImageCollection> pullRemoteCollections()
 	{
+		// The collections folder is under dslovikosky currently
 		String collectionsFolderName = "/iplant/home/dslovikosky/Sanimal/Collections";
+		// Create a list of collections
 		List<ImageCollection> imageCollections = new ArrayList<>();
 		try
 		{
+			// Grab the collections folder and make sure it exists
 			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 			IRODSFile collectionsFolder = fileFactory.instanceIRODSFile(collectionsFolderName);
 			if (collectionsFolder.exists())
 			{
+				// Grab a list of files in the collections directory
 				File[] files = collectionsFolder.listFiles();
 				if (files instanceof IRODSFile[])
 				{
+					// List of collection folders
 					IRODSFile[] collections = (IRODSFile[]) files;
+					// Iterate over all collections
 					for (IRODSFile collectionDir : collections)
 					{
+						// Make sure we can read the collections directory
 						if (collectionDir.canRead() && collectionDir.isDirectory())
 						{
+							// Read the collection JSON file to get the collection properties
 							String collectionJSONFile = collectionDir.getAbsolutePath() + "/collection.json";
 							String collectionJSON = this.readRemoteFile(collectionJSONFile);
 							if (collectionJSON != null)
@@ -475,7 +483,8 @@ public class CyVerseConnectionManager
 
 	/**
 	 * Removes a collection from CyVerse's system
-	 * @param collection
+	 *
+	 * @param collection The collection to delete from CyVerse
 	 */
 	public void removeCollection(ImageCollection collection)
 	{
@@ -722,6 +731,7 @@ public class CyVerseConnectionManager
 
 	/**
 	 * Save the set of images that were downloaded to CyVerse
+	 *
 	 * @param collection The collection to upload to
 	 * @param uploadEntryToSave The directory to write
 	 * @param messageCallback Message callback that will show what is currently going on
@@ -767,6 +777,7 @@ public class CyVerseConnectionManager
 							public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection) { return CallbackResponse.YES_FOR_ALL; }
 						}, null);
 
+						// Update the progress every 20 uploads
 						if (i % 20 == 0)
 						{
 							int finalI = i;
@@ -788,10 +799,17 @@ public class CyVerseConnectionManager
 		}
 	}
 
+	/**
+	 * Used to retrieve a list of uploads to a collection and any uploads are automatically inserted into the collection
+	 *
+	 * @param collection The image collection to retrieve uploads from
+	 */
 	public void retrieveAndInsertUploadList(ImageCollection collection)
 	{
 		try
 		{
+			// Clear the current collection uploads
+			Platform.runLater(() -> collection.getUploads().clear());
 			// Grab the uploads folder for a given collection
 			String collectionUploadDirStr = "/iplant/home/dslovikosky/Sanimal/Collections/" + collection.getID().toString() + "/Uploads";
 			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
@@ -808,6 +826,7 @@ public class CyVerseConnectionManager
 					{
 						try
 						{
+							// Download the cloud upload entry
 							CloudUploadEntry uploadEntry = SanimalData.getInstance().getGson().fromJson(contents, CloudUploadEntry.class);
 							if (uploadEntry != null)
 							{
@@ -842,6 +861,13 @@ public class CyVerseConnectionManager
 		}
 	}
 
+	/**
+	 * Given a collection and an upload to that collection this method returns the local cloud image directory
+	 *
+	 * @param collection The collection to get the upload from
+	 * @param uploadEntry The upload in the collection to download
+	 * @return A local version of the uploadEntry
+	 */
 	public CloudImageDirectory downloadUploadDirectory(ImageCollection collection, CloudUploadEntry uploadEntry)
 	{
 		try
@@ -904,31 +930,30 @@ public class CyVerseConnectionManager
 		}
 	}
 
+	/**
+	 * Downloads a CyVerse file to a local file
+	 *
+	 * @param cyverseFile The file in CyVerse to download
+	 * @return The local file
+	 */
 	public File remoteToLocalImageFile(IRODSFile cyverseFile)
 	{
 		try
 		{
+			// Grab the name of the CyVerse file
 			String fileName = cyverseFile.getName();
+			// Create a temporary file to write to with the same name
 			File localImageFile = SanimalData.getInstance().getTempDirectoryManager().createTempFile(fileName);
 
+			// Download the file locally
 			this.accessObjects.getDataTransferOperations().getOperation(cyverseFile, localImageFile, new TransferStatusCallbackListener()
 			{
 				@Override
-				public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) throws JargonException
-				{
-					return FileStatusCallbackResponse.CONTINUE;
-				}
-
+				public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) { return FileStatusCallbackResponse.CONTINUE; }
 				@Override
-				public void overallStatusCallback(TransferStatus transferStatus) throws JargonException
-				{
-				}
-
+				public void overallStatusCallback(TransferStatus transferStatus) {}
 				@Override
-				public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection)
-				{
-					return CallbackResponse.YES_FOR_ALL;
-				}
+				public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection) { return CallbackResponse.YES_FOR_ALL; }
 			}, null);
 
 			return localImageFile;

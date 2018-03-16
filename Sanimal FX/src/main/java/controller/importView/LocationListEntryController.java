@@ -47,11 +47,13 @@ public class LocationListEntryController extends ListCell<Location>
     /// FXML bound fields end
     ///
 
-    public ObjectProperty<Location> x = new SimpleObjectProperty<>();
-
+    /**
+     * Initializes the location list entry by adding a listener to the format property
+     */
     @FXML
     public void initialize()
     {
+        // When we change the location format refresh the labels
         SanimalData.getInstance().getSettings().locationFormatProperty().addListener((observable, oldValue, newValue) ->
         {
             if (this.getItem() != null)
@@ -89,17 +91,28 @@ public class LocationListEntryController extends ListCell<Location>
         }
     }
 
+    /**
+     * Update the location labels based on the format
+     *
+     * @param location The new location
+     * @param format The format of the location
+     */
     private void refreshLabels(Location location, SettingsData.LocationFormat format)
     {
+        // If we are using latitude & longitude
         if (format == SettingsData.LocationFormat.LatLong)
         {
+            // Locations are stored in lat/lng so we can just use the value
             this.lblLocationFirst.setText(location.getLat().toString());
             this.lblLocationSecond.setText(location.getLng().toString());
             this.lblLocationThird.setText(location.getElevation().intValue() + "m");
         }
+        // If we are using UTM
         else if (format == SettingsData.LocationFormat.UTM)
         {
+            // Convert to UTM
             UTMCoord utmEquiv = SanimalAnalysisUtils.Deg2UTM(location.getLat(), location.getLng());
+            // Update the labels
             this.lblLocationFirst.setText(utmEquiv.getEasting().intValue() + "e");
             this.lblLocationSecond.setText(utmEquiv.getNorthing().intValue() + "n");
             this.lblLocationThird.setText("Zone " + utmEquiv.getZone().toString() + utmEquiv.getLetter().toString() + " at " + location.getElevation().intValue() + "m");

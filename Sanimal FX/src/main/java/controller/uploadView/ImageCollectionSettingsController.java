@@ -25,6 +25,9 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+/**
+ * Controller for the settings user interface
+ */
 public class ImageCollectionSettingsController implements Initializable
 {
 	///

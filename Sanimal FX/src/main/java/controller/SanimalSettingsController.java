@@ -15,12 +15,16 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+/**
+ * Controller for the settings tab
+ */
 public class SanimalSettingsController implements Initializable
 {
 	///
 	/// FXML bound fields start
 	///
 
+	// The sheet of sanimal properties
 	@FXML
 	public PropertySheet pstSettings;
 
@@ -37,6 +41,7 @@ public class SanimalSettingsController implements Initializable
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
+		// Bind the sanimal settings list to the property sheet settings because we cant bind the list property...
 		EasyBind.listBind(this.pstSettings.getItems(), SanimalData.getInstance().getSettings().getSettingList());
 	}
 }

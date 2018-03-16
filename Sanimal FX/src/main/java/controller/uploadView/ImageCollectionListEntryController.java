@@ -56,9 +56,11 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 	@FXML
 	public Label lblCollectionDescription;
 
+	// The button to access colleciton settings
 	@FXML
 	public Button btnSettings;
 
+	// Images used to display user permissions
 	@FXML
 	public ImageView imgRead;
 	@FXML

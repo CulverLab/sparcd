@@ -15,18 +15,26 @@ import model.image.ImageContainer;
 import model.image.ImageDirectory;
 import org.fxmisc.easybind.EasyBind;
 
+/**
+ * Class used as the controller for an upload entry in the treeview
+ */
 public class UploadTreeCellController extends TreeCell<ImageContainer>
 {
 	///
 	/// FXML Bound Fields start
 	///
 
+	// Icon of tree entry
 	@FXML
 	public ImageView imgIcon;
+	// The text to display
 	@FXML
 	public Label lblText;
+	// A reference to the main pane
 	@FXML
 	public StackPane mainPane;
+
+	// The upload progress bar and label
 	@FXML
 	public ProgressBar pbrUploadProgress;
 	@FXML
@@ -36,6 +44,12 @@ public class UploadTreeCellController extends TreeCell<ImageContainer>
 	/// FXML Bound Fields end
 	///
 
+	/**
+	 * Called when we want to display a new image container
+	 *
+	 * @param item The new item to display
+	 * @param empty If the item is null and the cell should be empty
+	 */
 	@Override
 	protected void updateItem(ImageContainer item, boolean empty)
 	{
@@ -90,16 +104,20 @@ public class UploadTreeCellController extends TreeCell<ImageContainer>
 			{
 				ImageDirectory selectedDirectory = (ImageDirectory) selected;
 
-				// Create a dragboard and begin the drag and drop
-				Dragboard dragboard = this.startDragAndDrop(TransferMode.ANY);
+				// Make sure we're not uploading
+				if (selectedDirectory.getUploadProgress() == -1)
+				{
+					// Create a dragboard and begin the drag and drop
+					Dragboard dragboard = this.startDragAndDrop(TransferMode.ANY);
 
-				// Create a clipboard and put the location unique ID into that clipboard
-				ClipboardContent content = new ClipboardContent();
-				content.put(SanimalDataFormats.IMAGE_DIRECTORY_FILE_FORMAT, selectedDirectory.getFile());
-				// Set the dragboard's context, and then consume the event
-				dragboard.setContent(content);
+					// Create a clipboard and put the location unique ID into that clipboard
+					ClipboardContent content = new ClipboardContent();
+					content.put(SanimalDataFormats.IMAGE_DIRECTORY_FILE_FORMAT, selectedDirectory.getFile());
+					// Set the dragboard's context, and then consume the event
+					dragboard.setContent(content);
 
-				mouseEvent.consume();
+					mouseEvent.consume();
+				}
 			}
 		}
 	}

@@ -17,15 +17,23 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
+/**
+ * Class containing sanimal settings
+ */
 public class SettingsData
 {
+	// A list of settings SANIMAL uses
 	private ObservableList<CustomPropertyItem<?>> settingList = FXCollections.observableArrayList(item -> new Observable[] { item.value });
 
+	// The current setting value
 	private ObjectProperty<DateFormat> dateFormat = new SimpleObjectProperty<>(DateFormat.MonthDayYear);
 	private ObjectProperty<TimeFormat> timeFormat = new SimpleObjectProperty<>(TimeFormat.Time24Hour);
 	private ObjectProperty<LocationFormat> locationFormat = new SimpleObjectProperty<>(LocationFormat.LatLong);
 	private ObjectProperty<DistanceUnits> distanceUnits = new SimpleObjectProperty<>(DistanceUnits.Meters);
 
+	/**
+	 * Constructor adds all settings SANIMAL will use to the dictionary
+	 */
 	public SettingsData()
 	{
 		settingList.add(new CustomPropertyItem<>("Date Format: ", "DateTime", "The date format to be used when displaying dates", dateFormat, DateFormat.class));
@@ -34,29 +42,66 @@ public class SettingsData
 		settingList.add(new CustomPropertyItem<>("Distance units: ", "Units", "The units to be used by the program", distanceUnits, DistanceUnits.class));
 	}
 
+	/**
+	 * Utility method used to format a date with the proper format
+	 *
+	 * @param date The date to format
+	 * @return A string representing the date in the proper format
+	 */
 	public String formatDate(LocalDate date)
 	{
 		return this.dateFormat.getValue().format(date);
 	}
 
+	/**
+	 * Utility method used to format a time with the proper format
+	 *
+	 * @param time The time to format
+	 * @return A string representing the time in the proper format
+	 */
 	public String formatTime(LocalTime time)
 	{
 		return this.timeFormat.getValue().format(time);
 	}
 
+	/**
+	 * Utility method used to format a date & time with the proper format
+	 *
+	 * @param dateTime The date & time to format
+	 * @param delimeter An optional delimeter put between date and time
+	 * @return A string representing the date & time in the proper format
+	 */
 	public String formatDateTime(LocalDateTime dateTime, String delimeter)
 	{
 		return this.dateFormat.getValue().format(dateTime.toLocalDate()) + delimeter + this.timeFormat.getValue().format(dateTime.toLocalTime());
 	}
 
+	/**
+	 * Class used to create the PropertySheet and bind the setting to the sheet
+	 * @param <T> The type of the setting value
+	 */
 	private class CustomPropertyItem<T> implements PropertySheet.Item
 	{
-		private String name;
-		private String category;
-		private String description;
-		private Class<T> clazz;
-		private Property<T> value;
+		// The name of the property
+		private final String name;
+		// The category of the property
+		private final String category;
+		// The description of the property
+		private final String description;
+		// The class type of the property
+		private final Class<T> clazz;
+		// The actual property to bind to and update
+		private final Property<T> value;
 
+		/**
+		 * Constructor used to initialize all fields
+		 *
+		 * @param name The name of the property
+		 * @param category The category of the property
+		 * @param description The description of the property
+		 * @param value The actual property to bind to and update
+		 * @param clazz The class type of the property
+		 */
 		public CustomPropertyItem(String name, String category, String description, Property<T> value, Class<T> clazz)
 		{
 			this.name = name;
@@ -65,6 +110,10 @@ public class SettingsData
 			this.clazz = clazz;
 			this.value = value;
 		}
+
+		///
+		/// Getters/Setters
+		///
 
 		@Override
 		public Class<?> getType()

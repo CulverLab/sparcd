@@ -38,21 +38,25 @@ public class SanimalAnalysisController implements Initializable
 	/// FXML bound fields start
 	///
 
+	// The list view of all species used in analysis
 	@FXML
 	public ListView<Species> speciesFilterListView;
-
+	// The species search box
 	@FXML
 	public TextField txtSpeciesSearch;
 
+	// The list view of all locations used in analysis
 	@FXML
 	public ListView<Location> locationFilterListView;
-
+	// The location search box
 	@FXML
 	public TextField txtLocationSearch;
 
+	// The event interval to be used
 	@FXML
 	public TextField txtEventInterval;
 
+	// References to all controllers in the tabs of the analysis page
 	@FXML
 	public VisDrSandersonController visDrSandersonController;
 	@FXML
@@ -60,11 +64,13 @@ public class SanimalAnalysisController implements Initializable
 	@FXML
 	public VisCSVController visCSVController;
 
+	// Date picker used to select start and end dates
 	@FXML
 	public DatePicker dateStart;
 	@FXML
 	public DatePicker dateEnd;
 
+	// The tab pane containing all visualizations
 	@FXML
 	public DetachableTabPane tbnVisualizations;
 
@@ -121,6 +127,7 @@ public class SanimalAnalysisController implements Initializable
 		this.locationFilterListView.setCellFactory(CheckBoxListCell.forListView(Location::shouldBePartOfAnalysisProperty));
 		this.locationFilterListView.setEditable(true);
 
+		// Need to ensure start date and end dates are properly set
 		/*
 		ObjectProperty<LocalDate> dateStartProperty = new SimpleObjectProperty<>(LocalDate.now());
 		dateStartProperty.bind(Bindings.createObjectBinding(() -> LocalDate.from(Instant.ofEpochMilli(SanimalData.getInstance().getAllImages().stream().min(Comparator.comparing(ImageEntry::getDateTaken)).get().getDateTaken().getTime())), SanimalData.getInstance().getImageTree().getChildren()));
@@ -142,19 +149,27 @@ public class SanimalAnalysisController implements Initializable
 		*/
 	}
 
+	/**
+	 * Called when the refresh button is pressed
+	 *
+	 * @param actionEvent ignored
+	 */
 	public void refreshVisualizations(ActionEvent actionEvent)
 	{
 		// First parse all parameters, starting with event interval (default 30 min)
 		Integer eventInterval = 30;
 		try
 		{
+			// If we got a valid event interval, use it
 			eventInterval = Integer.parseInt(this.txtEventInterval.getText());
 		}
 		catch (NumberFormatException ignored) {}
 
+		// Make sure it's a positive number
 		if (eventInterval <= 0)
 			eventInterval = 30;
 
+		// Grab the start and end date
 		LocalDate startDate = this.dateStart.getValue() == null ? LocalDate.MIN : this.dateStart.getValue();
 		LocalDate endDate = this.dateEnd.getValue() == null ? LocalDate.MAX : this.dateEnd.getValue();
 
@@ -170,38 +185,70 @@ public class SanimalAnalysisController implements Initializable
 				.filter(imageEntry -> imageEntry.getDateTaken().isAfter(startDate.atStartOfDay()) && imageEntry.getDateTaken().isBefore(endDate.atStartOfDay()))
 				.collect(Collectors.toList());
 
+		// Compute the analysis
 		DataAnalysis dataStatistics = new DataAnalysis(imagesToAnalyze, eventInterval);
 
+		// Hand the analysis over to the visualizations to graph
 		visDrSandersonController.visualize(dataStatistics);
 		visSpeciesAccumulationCurveController.visualize(dataStatistics);
 		visCSVController.visualize(dataStatistics);
 	}
 
+	/**
+	 * Button used to select all species for analysis use
+	 *
+	 * @param actionEvent ignored
+	 */
 	public void selectAllSpecies(ActionEvent actionEvent)
 	{
 		SanimalData.getInstance().getSpeciesList().forEach(species -> species.setShouldBePartOfAnalysis(true));
 	}
 
+	/**
+	 * Button used to select no species to be part of the analysis
+	 *
+	 * @param actionEvent ignored
+	 */
 	public void selectNoSpecies(ActionEvent actionEvent)
 	{
 		SanimalData.getInstance().getSpeciesList().forEach(species -> species.setShouldBePartOfAnalysis(false));
 	}
 
+	/**
+	 * Button used to clear the species search box
+	 *
+	 * @param actionEvent ignored
+	 */
 	public void clearSpeciesSearch(ActionEvent actionEvent)
 	{
 		this.txtSpeciesSearch.clear();
 	}
 
+	/**
+	 * Button used to select all locations for analysis use
+	 *
+	 * @param actionEvent ignored
+	 */
 	public void selectAllLocations(ActionEvent actionEvent)
 	{
 		SanimalData.getInstance().getLocationList().forEach(location -> location.setShouldBePartOfAnalysis(true));
 	}
 
+	/**
+	 * Button used to select no locations to be part of the analysis
+	 *
+	 * @param actionEvent ignored
+	 */
 	public void selectNoLocations(ActionEvent actionEvent)
 	{
 		SanimalData.getInstance().getLocationList().forEach(location -> location.setShouldBePartOfAnalysis(false));
 	}
 
+	/**
+	 * Button used to clear the location search box
+	 *
+	 * @param actionEvent ignored
+	 */
 	public void clearLocationSearch(ActionEvent actionEvent)
 	{
 		this.txtLocationSearch.clear();

@@ -14,9 +14,13 @@ import org.apache.commons.lang.exception.ExceptionUtils;
  */
 public abstract class ErrorTask<V> extends Task<V>
 {
+	/**
+	 * Constructor adds a failed listener
+	 */
 	public ErrorTask()
 	{
 		super();
+		// If the task fails, print an error
 		EventHandler<WorkerStateEvent> handler = event ->
 		{
 			SanimalData.getInstance().getErrorDisplay().printError("Task failed! Error was: ");

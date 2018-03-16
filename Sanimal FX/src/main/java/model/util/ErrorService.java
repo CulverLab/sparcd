@@ -1,6 +1,7 @@
 package model.util;
 
 import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -15,9 +16,13 @@ import org.apache.commons.lang.exception.ExceptionUtils;
  */
 public abstract class ErrorService<V> extends Service<V>
 {
+	/**
+	 * Constructor adds a failed listener
+	 */
 	public ErrorService()
 	{
 		super();
+		// If the service's task fails, print an error
 		EventHandler<WorkerStateEvent> handler = event ->
 		{
 			SanimalData.getInstance().getErrorDisplay().printError("Service failed! Error was: ");

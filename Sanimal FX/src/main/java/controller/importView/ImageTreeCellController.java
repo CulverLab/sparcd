@@ -27,10 +27,13 @@ public class ImageTreeCellController extends TreeCell<ImageContainer>
 	/// FXML Bound Fields start
 	///
 
+	// The icon of the image or folder
 	@FXML
 	public ImageView imgIcon;
+	// The label for the file name
 	@FXML
 	public Label lblText;
+	// Reference to the main pane of the tree cell
 	@FXML
 	public HBox mainPane;
 
@@ -38,7 +41,12 @@ public class ImageTreeCellController extends TreeCell<ImageContainer>
 	/// FXML Bound Fields end
 	///
 
-
+	/**
+	 * If this cell should display a new image container
+	 *
+	 * @param item The new item to display
+	 * @param empty If the item is empty
+	 */
 	@Override
 	protected void updateItem(ImageContainer item, boolean empty)
 	{

@@ -45,6 +45,7 @@ import model.util.FXMLLoaderUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.StatusBar;
+import org.controlsfx.control.textfield.TextFields;
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
 
@@ -749,6 +750,7 @@ public class SanimalImportController implements Initializable
 					this.updateProgress(1, MAX_WORK);
 					this.updateMessage("Loading directory...");
 
+					// Grab the current list of species and locations and duplicate it
 					List<Species> currentSpecies = new ArrayList<>(SanimalData.getInstance().getSpeciesList());
 					List<Location> currentLocations = new ArrayList<>(SanimalData.getInstance().getLocationList());
 
@@ -764,7 +766,9 @@ public class SanimalImportController implements Initializable
 					this.updateProgress(3, MAX_WORK);
 					this.updateMessage("Detecting species in images...");
 
+					// Diff the new species list and the old one to see if we have new species
 					List<Species> newSpecies = ListUtils.subtract(currentSpecies, SanimalData.getInstance().getSpeciesList());
+					// If we have new species, show an alert
 					if (!newSpecies.isEmpty())
 					{
 						Platform.runLater(() ->
@@ -782,7 +786,9 @@ public class SanimalImportController implements Initializable
 					this.updateProgress(4, MAX_WORK);
 					this.updateMessage("Detecting locations in images...");
 
+					// Diff the new locations list and the old one to see if we have new locations
 					List<Location> newLocations = ListUtils.subtract(currentLocations, SanimalData.getInstance().getLocationList());
+					// If we have new locations, show an alert
 					if (!newLocations.isEmpty())
 					{
 						Platform.runLater(() ->
@@ -1269,7 +1275,6 @@ public class SanimalImportController implements Initializable
 	// Found here: https://gist.github.com/james-d/ce5ec1fd44ce6c64e81a
 	private double clamp(double value, double min, double max)
 	{
-
 		if (value < min)
 			return min;
 		if (value > max)

@@ -37,7 +37,7 @@
                 </FlowPane>
             </children>
         </VBox>
-        <SplitPane dividerPositions="0.7" orientation="VERTICAL">
+        <SplitPane dividerPositions="0.65" orientation="VERTICAL">
             <items>
                 <StackPane fx:id="imagePane" onDragDropped="#imagePaneDragDropped" onDragEntered="#imagePaneDragEntered" onDragExited="#imagePaneDragExited" onDragOver="#imagePaneDragOver" onMouseEntered="#imagePaneMouseEntered" onMouseExited="#imagePaneMouseExited">
                     <children>
@@ -116,7 +116,7 @@
                             <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
                             <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
                             <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
-                            <RowConstraints minHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="65.0" maxHeight="65.0" vgrow="NEVER" />
                         </rowConstraints>
                         <children>
                             <Label text="Date Taken: " GridPane.columnIndex="0" />

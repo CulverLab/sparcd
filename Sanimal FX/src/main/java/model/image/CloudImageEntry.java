@@ -22,6 +22,9 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Represents an image on the cloud
+ */
 public class CloudImageEntry extends ImageEntry
 {
 	// The icon to use for all downloaded untagged images
@@ -35,8 +38,10 @@ public class CloudImageEntry extends ImageEntry
 	// The icon to use for an undownloaded images
 	private static final Image NO_DOWNLOAD_CLOUD_IMAGE_ICON = new Image(ImageEntry.class.getResource("/images/importWindow/imageCloudIconNotDownloaded.png").toString());
 
+	// Placeholder file used before the file has been downloaded
 	private static File PLACEHOLDER_FILE = null;
 
+	// The CyVerse file
 	private ObjectProperty<IRODSFile> cyverseFileProperty = new SimpleObjectProperty<>();
 
 	// Transient because we don't want these to be written to disk
@@ -95,6 +100,9 @@ public class CloudImageEntry extends ImageEntry
 		this.setCyverseFile(cloudFile);
 	}
 
+	/**
+	 * We don't initialize our default bindings the way an ImageEntry does it
+	 */
 	@Override
 	void initIconBindings()
 	{
@@ -110,7 +118,11 @@ public class CloudImageEntry extends ImageEntry
 	{
 	}
 
-	// If we're asked for a file we return a temporary file until the real one is pulled from the cloud
+	/**
+	 * If we're asked for a file we return a temporary file until the real one is pulled from the cloud
+	 *
+	 * @return A temporary file or a downloaded file if it has been pulled from the cloud
+	 */
 	@Override
 	public File getFile()
 	{
@@ -118,7 +130,11 @@ public class CloudImageEntry extends ImageEntry
 		return super.getFile();
 	}
 
-	// We can set the date taken without the image but don't write to disk
+	/**
+	 * We can set the date taken without the image but don't write to disk
+	 *
+	 * @param date The new date taken
+	 */
 	@Override
 	public void setDateTaken(LocalDateTime date)
 	{
@@ -126,7 +142,11 @@ public class CloudImageEntry extends ImageEntry
 		super.setDateTaken(date);
 	}
 
-	// If we haven't pulled yet we just return null
+	/**
+	 * If we haven't pulled yet we just return null
+	 *
+	 * @return Null or a real date if we have pulled from the cloud
+	 */
 	@Override
 	public LocalDateTime getDateTaken()
 	{
@@ -134,7 +154,11 @@ public class CloudImageEntry extends ImageEntry
 		return super.getDateTaken();
 	}
 
-	// We can set the location taken without the image but don't write to disk
+	/**
+	 * We can set the location taken without the image but don't write to disk
+	 *
+	 * @param location The new location the image was taken at
+	 */
 	@Override
 	public void setLocationTaken(Location location)
 	{
@@ -142,7 +166,11 @@ public class CloudImageEntry extends ImageEntry
 		super.setLocationTaken(location);
 	}
 
-	// If we haven't pulled yet we just return null
+	/**
+	 * If we haven't pulled yet we just return null
+	 *
+	 * @return The location taken or null if it has not yet been determined
+	 */
 	@Override
 	public Location getLocationTaken()
 	{
@@ -150,6 +178,12 @@ public class CloudImageEntry extends ImageEntry
 		return super.getLocationTaken();
 	}
 
+	/**
+	 * Add a species and a count to the image
+	 *
+	 * @param species The species of the animal
+	 * @param amount The amount of that species to add
+	 */
 	@Override
 	public void addSpecies(Species species, Integer amount)
 	{
@@ -157,6 +191,11 @@ public class CloudImageEntry extends ImageEntry
 		super.addSpecies(species, amount);
 	}
 
+	/**
+	 * Remove a species from the image
+	 *
+	 * @param species The species to remove
+	 */
 	@Override
 	public void removeSpecies(Species species)
 	{
@@ -164,12 +203,22 @@ public class CloudImageEntry extends ImageEntry
 		super.removeSpecies(species);
 	}
 
+	/**
+	 * Marks the image entry as dirty meaning it needs to be written to disk
+	 *
+	 * @param dirty If the image is dirty
+	 */
 	@Override
 	public void markDirty(Boolean dirty)
 	{
 		super.markDirty(dirty);
 	}
 
+	/**
+	 * True if the image is dirty, false otherwise
+	 *
+	 * @return Tells us if the image is dirty
+	 */
 	@Override
 	public Boolean isDirty()
 	{
@@ -178,6 +227,9 @@ public class CloudImageEntry extends ImageEntry
 		return super.isDirty();
 	}
 
+	/**
+	 * Writes the image to disk if it has been downloaded from the cloud
+	 */
 	@Override
 	public synchronized void writeToDisk()
 	{
@@ -185,9 +237,14 @@ public class CloudImageEntry extends ImageEntry
 			super.writeToDisk();
 	}
 
+	/**
+	 * Pulls the given image from the cloud
+	 */
 	private void pullFromCloud()
 	{
+		// Set a flag that we're pulling from the cloud
 		this.isBeingPulledFromCloud.setValue(true);
+		// Download the file
 		ErrorTask<File> pullTask = new ErrorTask<File>()
 		{
 			@Override
@@ -198,27 +255,42 @@ public class CloudImageEntry extends ImageEntry
 			}
 		};
 
+		// Once it's done set the local file and
 		pullTask.setOnSucceeded(event ->
 		{
 			File localFile = pullTask.getValue();
 			super.readFileMetadataIntoImage(localFile, SanimalData.getInstance().getLocationList(), SanimalData.getInstance().getSpeciesList());
 			this.hasBeenPulledFromCloud.setValue(true);
+			this.isBeingPulledFromCloud.setValue(false);
 		});
 
 		SanimalData.getInstance().getSanimalExecutor().addTask(pullTask);
 	}
 
+	/**
+	 * Pulls the image file from CyVerse if it has not yet been downloaded
+	 */
 	public void pullFromCloudIfNotPulled()
 	{
+		// Make sure we didnt already or are not already pulling
 		if (!this.hasBeenPulledFromCloud.getValue() && !this.isBeingPulledFromCloud.getValue())
 			this.pullFromCloud();
 	}
 
+	/**
+	 * Tostring just prints the file name
+	 *
+	 * @return A string representing the file name
+	 */
 	@Override
 	public String toString()
 	{
 		return this.getCyverseFile().getName();
 	}
+
+	///
+	/// Getters/Setters
+	///
 
 	public IRODSFile getCyverseFile()
 	{

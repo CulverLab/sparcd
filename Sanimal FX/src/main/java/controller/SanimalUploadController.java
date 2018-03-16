@@ -19,10 +19,7 @@ import library.TreeViewAutomatic;
 import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
-import model.image.CloudImageDirectory;
-import model.image.CloudImageEntry;
-import model.image.CloudUploadEntry;
-import model.image.ImageContainer;
+import model.image.*;
 import model.util.ErrorTask;
 import model.util.FXMLLoaderUtils;
 import org.fxmisc.easybind.EasyBind;
@@ -56,7 +53,7 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public SplitPane spnMain;
 
-	// ADDED, no idea what to do here yet...
+	// Upload entry on the cloud used to download...
 	@FXML
 	public ListView<CloudUploadEntry> uploadListDownloadListView;
 
@@ -64,15 +61,18 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public VBox vbxDownloadList;
 
+	// Box containing loading screen
 	@FXML
 	public VBox vbxLoadingCollection;
-
+	// The label containing the loading status
 	@FXML
 	public Label lblStatus;
 
+	// Pane containing savable images
 	@FXML
 	public SplitPane spnUploadSave;
 
+	// The tree view of uploadable images
 	@FXML
 	public TreeViewAutomatic<ImageContainer> imageTree;
 
@@ -80,6 +80,7 @@ public class SanimalUploadController implements Initializable
 	/// FXML Bound Fields End
 	///
 
+	// Constant strings used to display status
 	private static final String STATUS_LOADING = "Loading collection uploads...";
 	private static final String STATUS_DOWNLOADING = "Downloading collection uploads to edit...";
 
@@ -130,7 +131,7 @@ public class SanimalUploadController implements Initializable
 		// Set the fake invisible root
 		this.imageTree.setRoot(ROOT);
 		// Set the items of the tree to be the children of the fake invisible root
-		this.imageTree.setItems(SanimalData.getInstance().getImageTree().getChildren().filtered(imageContainer -> !(imageContainer instanceof CloudImageDirectory)));
+		this.imageTree.setItems(SanimalData.getInstance().getImageTree().getChildren().filtered(imageContainer -> !(imageContainer instanceof ImageEntry) && !(imageContainer instanceof CloudImageDirectory)));
 		// Setup the image tree cells so that when they get drag & dropped the species & locations can be tagged
 		this.imageTree.setCellFactory(x -> FXMLLoaderUtils.loadFXML("uploadView/UploadTreeCell.fxml").getController());
 
@@ -159,12 +160,19 @@ public class SanimalUploadController implements Initializable
 		});
 	}
 
+	/**
+	 * Method called to sync a list of uploads to a collection
+	 *
+	 * @param collection The image collection to download uploads for
+	 */
 	private void syncUploadsForCollection(ImageCollection collection)
 	{
+		// Disable the download list and show the loading label and circle
 		this.vbxLoadingCollection.setVisible(true);
 		this.lblStatus.setText(STATUS_LOADING);
 		this.vbxDownloadList.setDisable(true);
 
+		// Create a task to pull a collection's uploads
 		ErrorTask<Void> collectionUploadDownloader = new ErrorTask<Void>()
 		{
 			@Override
@@ -176,18 +184,21 @@ public class SanimalUploadController implements Initializable
 			}
 		};
 
-		collectionUploadDownloader.setOnSucceeded(event -> {
+		// Once done enable the download list and hide the loading label and circle
+		collectionUploadDownloader.setOnSucceeded(event ->
+		{
 			this.vbxLoadingCollection.setVisible(false);
 			this.vbxDownloadList.setDisable(false);
 		});
 
+		// Add the task
 		SanimalData.getInstance().getSanimalExecutor().addTask(collectionUploadDownloader);
 	}
 
 	/**
 	 * When we click the new collection button
 	 *
-	 * @param actionEvent
+	 * @param actionEvent ignored
 	 */
 	public void newCollectionPressed(ActionEvent actionEvent)
 	{
@@ -247,20 +258,29 @@ public class SanimalUploadController implements Initializable
 		}
 	}
 
+	/**
+	 * Called to download images from a specific upload for editing
+	 *
+	 * @param uploadEntry The upload entry which we want to pull images from
+	 */
 	private void downloadImages(CloudUploadEntry uploadEntry)
 	{
+		// Make sure we have a collection selected
 		if (this.selectedCollection.getValue() != null)
 		{
+			// Show the loading box again and disable the download entries
 			this.vbxLoadingCollection.setVisible(true);
 			this.lblStatus.setText(STATUS_DOWNLOADING);
 			this.vbxDownloadList.setDisable(true);
 
+			// Create a task to execute
 			ErrorTask<Void> downloadTask = new ErrorTask<Void>()
 			{
 				@Override
 				protected Void call()
 				{
 					this.updateMessage("Downloading directory for editing...");
+					// Download the directory and add it to our tree structure
 					CloudImageDirectory cloudDirectory = SanimalData.getInstance().getConnectionManager().downloadUploadDirectory(selectedCollection.getValue(), uploadEntry);
 					Platform.runLater(() ->
 					{
@@ -271,6 +291,7 @@ public class SanimalUploadController implements Initializable
 				}
 			};
 
+			// Once the download is done hide the download box and enable the download list again
 			downloadTask.setOnSucceeded(event ->
 			{
 				this.vbxLoadingCollection.setVisible(false);
@@ -282,10 +303,16 @@ public class SanimalUploadController implements Initializable
 		}
 	}
 
+	/**
+	 * Called to save images we edited from a downloaded upload
+	 *
+	 * @param uploadEntry The upload entry to save changes to
+	 */
 	private void saveImages(CloudUploadEntry uploadEntry)
 	{
 		// Grab the image directory
 		CloudImageDirectory imageDirectory = uploadEntry.getCloudImageDirectory();
+		// Make sure the upload has been downloaded
 		if (uploadEntry.hasBeenDownloaded() && imageDirectory != null)
 		{
 			// Make sure we've got a valid directory

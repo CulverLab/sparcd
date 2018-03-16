@@ -5,6 +5,9 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+/**
+ * Class representing permissions for a user and a collection
+ */
 public class Permission implements Cloneable
 {
 	private StringProperty usernameProperty = new SimpleStringProperty("Unnamed");

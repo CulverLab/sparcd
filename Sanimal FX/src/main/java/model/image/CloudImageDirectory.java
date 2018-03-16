@@ -6,6 +6,9 @@ import javafx.scene.image.Image;
 import model.cyverse.ImageCollection;
 import org.irods.jargon.core.pub.io.IRODSFile;
 
+/**
+ * Image directory that's originally on a cloud
+ */
 public class CloudImageDirectory extends ImageDirectory
 {
 	// The icon to use for all images at the moment
@@ -34,6 +37,10 @@ public class CloudImageDirectory extends ImageDirectory
 	{
 		return this.getCyverseDirectory().getName();
 	}
+
+	///
+	/// Setters/Getters
+	///
 
 	public IRODSFile getCyverseDirectory()
 	{
