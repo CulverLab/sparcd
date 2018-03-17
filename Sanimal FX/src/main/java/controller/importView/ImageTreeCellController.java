@@ -1,5 +1,7 @@
 package controller.importView;
 
+import controller.uploadView.UploadTreeCellController;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeCell;
@@ -10,6 +12,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import model.SanimalData;
 import model.image.ImageContainer;
+import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
@@ -41,6 +44,29 @@ public class ImageTreeCellController extends TreeCell<ImageContainer>
 	/// FXML Bound Fields end
 	///
 
+	private ChangeListener<Number> expandedListener = (observable, oldValue, newValue) ->
+	{
+		if (newValue.doubleValue() != -1)
+			if (this.getTreeItem() != null)
+				this.getTreeItem().setExpanded(false);
+	};
+
+	@FXML
+	public void initialize()
+	{
+		this.treeItemProperty().addListener((observable, oldValue, newValue) ->
+		{
+			if (oldValue != null)
+				oldValue.expandedProperty().unbind();
+			if (newValue != null)
+				newValue.expandedProperty().addListener((ignored, oldExpanded, newExpanded) ->
+				{
+					if (ImageTreeCellController.this.isDisabled() && newExpanded)
+						newValue.setExpanded(false);
+				});
+		});
+	}
+
 	/**
 	 * If this cell should display a new image container
 	 *
@@ -50,6 +76,14 @@ public class ImageTreeCellController extends TreeCell<ImageContainer>
 	@Override
 	protected void updateItem(ImageContainer item, boolean empty)
 	{
+		// Remove the previous listener if there was one
+		if (this.getItem() instanceof ImageDirectory)
+		{
+			((ImageDirectory) this.getItem()).uploadProgressProperty().removeListener(expandedListener);
+			this.disableProperty().unbind();
+			this.setDisable(false);
+		}
+
 		super.updateItem(item, empty);
 
 		// Set the text to null
@@ -66,6 +100,14 @@ public class ImageTreeCellController extends TreeCell<ImageContainer>
 			this.imgIcon.imageProperty().unbind();
 			this.imgIcon.imageProperty().bind(item.getTreeIconProperty());
 			this.lblText.setText(item.toString());
+
+			if (item instanceof ImageDirectory)
+			{
+				ImageDirectory imageDirectory = (ImageDirectory) item;
+				this.disableProperty().bind(imageDirectory.uploadProgressProperty().isNotEqualTo(-1));
+				imageDirectory.uploadProgressProperty().addListener(expandedListener);
+			}
+
 			this.setGraphic(mainPane);
 		}
 	}

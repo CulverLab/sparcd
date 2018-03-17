@@ -20,6 +20,7 @@ import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
 import model.image.CloudImageDirectory;
+import model.image.ImageContainer;
 import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.util.ErrorTask;
@@ -220,7 +221,7 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 				// Each image must have a location and species tagged
 				for (ImageEntry imageEntry : imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).collect(Collectors.toList()))
 				{
-					if (imageEntry.getLocationTaken() == null || imageEntry.getSpeciesPresent().isEmpty())
+					if (imageEntry.getLocationTaken() == null)
 					{
 						validDirectory = false;
 						break;
@@ -230,6 +231,8 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 				// If we have a valid directory, perform the upload
 				if (validDirectory)
 				{
+					// Set the upload to 0% so that we don't edit it anymore
+					imageDirectory.setUploadProgress(0.0);
 					// Create an upload task
 					Task<Void> uploadTask = new ErrorTask<Void>()
 					{
@@ -276,19 +279,21 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 					uploadTask.setOnSucceeded(event ->
 					{
 						imageDirectory.setUploadProgress(-1);
+						SanimalData.getInstance().getImageTree().removeChildRecursive(imageDirectory);
 					});
 					dragEvent.setDropCompleted(true);
-					SanimalData.getInstance().getSanimalExecutor().addTask(uploadTask);
+					SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().addTask(uploadTask);
 				}
 				else
 				{
 					// If an invalid directory is selected, show an alert
-					Alert alert = new Alert(Alert.AlertType.WARNING);
-					alert.initOwner(this.mainPane.getScene().getWindow());
-					alert.setTitle("Invalid Directory");
-					alert.setHeaderText("Invalid Directory (" + imageDirectory.getFile().getName() + ") Selected");
-					alert.setContentText("An image in the directory (" + imageDirectory.getFile().getName() + ") you selected does not have a location or species tagged. Please ensure all images are tagged with at least one species and a location!");
-					alert.showAndWait();
+					SanimalData.getInstance().getErrorDisplay().showPopup(
+							Alert.AlertType.WARNING,
+							this.mainPane.getScene().getWindow(),
+							"Invalid Directory",
+							"Invalid Directory (" + imageDirectory.getFile().getName() + ") Selected",
+							"An image in the directory (" + imageDirectory.getFile().getName() + ") you selected does not have a location. Please ensure all images are tagged with a location!",
+							true);
 				}
 			});
 		}

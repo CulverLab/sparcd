@@ -287,7 +287,7 @@ public class ImageCollectionSettingsController implements Initializable
 		};
 
 		// Perform the task
-		SanimalData.getInstance().getSanimalExecutor().addTask(saveTask);
+		SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(saveTask);
 
 		// Close the edit window, since we're done with the edit
 		((Stage) this.tvwPermissions.getScene().getWindow()).close();

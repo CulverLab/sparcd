@@ -48,7 +48,7 @@ public class Sanimal extends Application
         primaryStage.setOnCloseRequest(event ->
         {
             // If a task is still running ask for confirmation to exit
-            if (SanimalData.getInstance().getSanimalExecutor().getTaskRunning())
+            if (SanimalData.getInstance().getSanimalExecutor().anyTaskRunning())
             {
                 // Code examples from here: https://stackoverflow.com/questions/31540500/alert-box-for-when-user-attempts-to-close-application-using-setoncloserequest-in
                 Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);

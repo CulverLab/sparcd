@@ -4,10 +4,7 @@ import controller.uploadView.ImageCollectionListEntryController;
 import controller.uploadView.ImageUploadDownloadListEntryController;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -22,6 +19,7 @@ import model.cyverse.Permission;
 import model.image.*;
 import model.util.ErrorTask;
 import model.util.FXMLLoaderUtils;
+import org.controlsfx.control.MaskerPane;
 import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
@@ -61,12 +59,8 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public VBox vbxDownloadList;
 
-	// Box containing loading screen
 	@FXML
-	public VBox vbxLoadingCollection;
-	// The label containing the loading status
-	@FXML
-	public Label lblStatus;
+	public MaskerPane mpnDownloadUploads;
 
 	// Pane containing savable images
 	@FXML
@@ -144,7 +138,7 @@ public class SanimalUploadController implements Initializable
 		});
 		this.uploadListDownloadListView.itemsProperty().bind(EasyBind.monadic(this.selectedCollection).map(ImageCollection::getUploads));
 
-		this.vbxLoadingCollection.setVisible(false);
+		this.mpnDownloadUploads.setVisible(false);
 		// When we select a new collection download the list of uploads to display
 		this.selectedCollection.addListener((observable, oldValue, newValue) ->
 		{
@@ -168,8 +162,8 @@ public class SanimalUploadController implements Initializable
 	private void syncUploadsForCollection(ImageCollection collection)
 	{
 		// Disable the download list and show the loading label and circle
-		this.vbxLoadingCollection.setVisible(true);
-		this.lblStatus.setText(STATUS_LOADING);
+		this.mpnDownloadUploads.setVisible(true);
+		this.mpnDownloadUploads.setText(STATUS_LOADING);
 		this.vbxDownloadList.setDisable(true);
 
 		// Create a task to pull a collection's uploads
@@ -179,20 +173,25 @@ public class SanimalUploadController implements Initializable
 			protected Void call()
 			{
 				this.updateMessage("Downloading list of uploads to collection: " + collection.getName());
-				SanimalData.getInstance().getConnectionManager().retrieveAndInsertUploadList(collection);
+				DoubleProperty progress = new SimpleDoubleProperty(0.0);
+				progress.addListener((observable, oldValue, newValue) -> this.updateProgress(progress.getValue(), 1.0));
+				SanimalData.getInstance().getConnectionManager().retrieveAndInsertUploadList(collection, progress);
 				return null;
 			}
 		};
 
+		mpnDownloadUploads.progressProperty().unbind();
+		mpnDownloadUploads.progressProperty().bind(collectionUploadDownloader.progressProperty());
+
 		// Once done enable the download list and hide the loading label and circle
 		collectionUploadDownloader.setOnSucceeded(event ->
 		{
-			this.vbxLoadingCollection.setVisible(false);
+			this.mpnDownloadUploads.setVisible(false);
 			this.vbxDownloadList.setDisable(false);
 		});
 
 		// Add the task
-		SanimalData.getInstance().getSanimalExecutor().addTask(collectionUploadDownloader);
+		SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(collectionUploadDownloader);
 	}
 
 	/**
@@ -269,8 +268,8 @@ public class SanimalUploadController implements Initializable
 		if (this.selectedCollection.getValue() != null)
 		{
 			// Show the loading box again and disable the download entries
-			this.vbxLoadingCollection.setVisible(true);
-			this.lblStatus.setText(STATUS_DOWNLOADING);
+			this.mpnDownloadUploads.setVisible(true);
+			this.mpnDownloadUploads.setText(STATUS_DOWNLOADING);
 			this.vbxDownloadList.setDisable(true);
 
 			// Create a task to execute
@@ -294,12 +293,12 @@ public class SanimalUploadController implements Initializable
 			// Once the download is done hide the download box and enable the download list again
 			downloadTask.setOnSucceeded(event ->
 			{
-				this.vbxLoadingCollection.setVisible(false);
+				this.mpnDownloadUploads.setVisible(false);
 				this.vbxDownloadList.setDisable(false);
 				uploadEntry.setDownloaded(true);
 			});
 
-			SanimalData.getInstance().getSanimalExecutor().addTask(downloadTask);
+			SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(downloadTask);
 		}
 	}
 
@@ -321,7 +320,7 @@ public class SanimalUploadController implements Initializable
 			// Each image must have a location and species tagged
 			for (CloudImageEntry imageEntry : imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof CloudImageEntry && ((CloudImageEntry) imageContainer).hasBeenPulledFromCloud()).map(imageContainer -> (CloudImageEntry) imageContainer).collect(Collectors.toList()))
 			{
-				if (imageEntry.getLocationTaken() == null || imageEntry.getSpeciesPresent().isEmpty())
+				if (imageEntry.getLocationTaken() == null)
 				{
 					validDirectory = false;
 					break;
@@ -349,7 +348,7 @@ public class SanimalUploadController implements Initializable
 				};
 				// When the upload finishes, we enable the upload button
 				saveTask.setOnSucceeded(event -> imageDirectory.setUploadProgress(-1));
-				SanimalData.getInstance().getSanimalExecutor().addTask(saveTask);
+				SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().addTask(saveTask);
 			}
 			else
 			{
@@ -358,7 +357,7 @@ public class SanimalUploadController implements Initializable
 						this.collectionListView.getScene().getWindow(),
 						"Invalid Directory",
 						"Invalid Directory (" + imageDirectory.getFile().getName() + ") Selected",
-						"An image in the directory (" + imageDirectory.getFile().getName() + ") you selected to save does not have a location or species tagged. Please ensure all images are tagged with at least one species and a location!",
+						"An image in the directory (" + imageDirectory.getFile().getName() + ") you selected to save does not have a location. Please ensure all images are tagged with a location!",
 						true);
 			}
 		}

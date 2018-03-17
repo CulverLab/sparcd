@@ -8,6 +8,7 @@
 <?import javafx.scene.text.Font?>
 <?import library.TreeViewAutomatic?>
 <?import java.net.URL?>
+<?import org.controlsfx.control.MaskerPane?>
 <SplitPane fx:id="spnMain" dividerPositions="0.33, 0.66" prefHeight="500" prefWidth="1000" xmlns="http://javafx.com/javafx/8.0.121"
            xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalUploadController">
     <stylesheets>
@@ -61,18 +62,7 @@
                 </HBox>
                 <ListView fx:id="uploadListDownloadListView" styleClass="uploadDownloadLvw" VBox.vgrow="ALWAYS"/>
             </VBox>
-            <VBox fx:id="vbxLoadingCollection" pickOnBounds="false" StackPane.alignment="CENTER" alignment="CENTER" spacing="5">
-                <Label fx:id="lblStatus" pickOnBounds="false" text="Loading collection uploads...">
-                    <font>
-                        <Font size="20.0"/>
-                    </font>
-                </Label>
-                <ImageView fitWidth="100" fitHeight="100">
-                    <image>
-                        <Image url="@../images/uploadWindow/loading.gif"/>
-                    </image>
-                </ImageView>
-            </VBox>
+            <MaskerPane fx:id="mpnDownloadUploads" progressVisible="true"/>
         </StackPane>
     </items>
 </SplitPane>

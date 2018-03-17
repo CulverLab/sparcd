@@ -268,7 +268,7 @@ public class SanimalViewController implements Initializable
 				this.btnLogin.setGraphic(null);
 			});
 			// Perform the task
-			SanimalData.getInstance().getSanimalExecutor().addTask(loginAttempt);
+			SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(loginAttempt);
 		}
 	}
 

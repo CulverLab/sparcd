@@ -45,7 +45,6 @@ import model.util.FXMLLoaderUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.StatusBar;
-import org.controlsfx.control.textfield.TextFields;
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
 
@@ -270,6 +269,32 @@ public class SanimalImportController implements Initializable
 		this.imageTree.setItems(SanimalData.getInstance().getImageTree().getChildren());
 		// Setup the image tree cells so that when they get drag & dropped the species & locations can be tagged
 		this.imageTree.setCellFactory(x -> FXMLLoaderUtils.loadFXML("importView/ImageTreeCell.fxml").getController());
+		// If we select a node that's being uploaded clear the selection
+		this.imageTree.setOnKeyPressed(event ->
+		{
+			// If we're moving up or down on the tree, ensure we're not entering a disabled node
+			if (event.getCode() == KeyCode.UP || event.getCode() == KeyCode.DOWN)
+			{
+				// Grab the selected tree node
+				TreeItem<ImageContainer> selectedItem = this.imageTree.getSelectionModel().getSelectedItem();
+				if (selectedItem != null)
+				{
+					// Grab the next node
+					TreeItem<ImageContainer> next = event.getCode() == KeyCode.UP ? selectedItem.previousSibling() : selectedItem.nextSibling();
+					// Make sure the next node has a value
+					if (next != null && next.getValue() != null)
+					{
+						// Grab the next tree entries image container
+						ImageContainer value = next.getValue();
+						// If the image container is a directory being uploaded consome the key press
+						if (value instanceof ImageDirectory && ((ImageDirectory) value).getUploadProgress() != -1)
+						{
+							event.consume();
+						}
+					}
+				}
+			}
+		});
 
 		// When a new image is selected... we perform a bunch of actions below
 		MonadicBinding<ImageContainer> selectedImage = EasyBind.monadic(this.imageTree.getSelectionModel().selectedItemProperty()).map(TreeItem::getValue);
@@ -299,11 +324,11 @@ public class SanimalImportController implements Initializable
 		// Hide the location panel when no location is selected
 		this.hbxLocation.visibleProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::locationTakenProperty).map(location -> true).orElse(false));
 		// Hide the progress bar when no tasks remain
-		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().getSanimalExecutor().taskRunningProperty());
+		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().taskRunningProperty());
 		// Bind the progress bar's text property to tasks remaining
-		this.sbrTaskProgress.textProperty().bind(SanimalData.getInstance().getSanimalExecutor().messageProperty());
+		this.sbrTaskProgress.textProperty().bind(SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().messageProperty());
 		// Bind the progress bar's progress property to the current task's progress
-		this.sbrTaskProgress.progressProperty().bind(SanimalData.getInstance().getSanimalExecutor().progressProperty());
+		this.sbrTaskProgress.progressProperty().bind(SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().progressProperty());
 		// Bind the left arrow's visibility property to if there is a previous item available
 		this.btnLeftArrow.visibleProperty().bind(
 				this.imageTree.getSelectionModel().selectedIndexProperty()
@@ -819,7 +844,7 @@ public class SanimalImportController implements Initializable
 				}
 			};
 			importTask.setOnSucceeded(event -> this.btnImportImages.setDisable(false));
-			SanimalData.getInstance().getSanimalExecutor().addTask(importTask);
+			SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(importTask);
 		}
 		// Consume the event
 		actionEvent.consume();

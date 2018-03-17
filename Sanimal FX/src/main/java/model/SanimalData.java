@@ -17,6 +17,7 @@ import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
+import model.threading.SanimalExecutor;
 import model.util.*;
 import org.hildan.fxgson.FxGson;
 
@@ -148,7 +149,7 @@ public class SanimalData
 				this.speciesSyncInProgress.set(false);
 			}
 		});
-		this.sanimalExecutor.registerService(syncService);
+		this.sanimalExecutor.getQueuedExecutor().registerService(syncService);
 
 		// When the species list changes...
 		this.speciesList.addListener((ListChangeListener<Species>) c -> {
@@ -204,7 +205,7 @@ public class SanimalData
 				this.locationSyncInProgress.set(false);
 			}
 		});
-		this.sanimalExecutor.registerService(syncService);
+		this.sanimalExecutor.getQueuedExecutor().registerService(syncService);
 
 		// When the location list changes...
 		this.locationList.addListener((ListChangeListener<Location>) c -> {
@@ -271,7 +272,7 @@ public class SanimalData
 			else
 				this.metadataSyncInProgress.set(false);
 		});
-		this.sanimalExecutor.registerService(syncService);
+		this.sanimalExecutor.getQueuedExecutor().registerService(syncService);
 
 		this.imageTree.getChildren().addListener((ListChangeListener<ImageContainer>) c ->
 		{

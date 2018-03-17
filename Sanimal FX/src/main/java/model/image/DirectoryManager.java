@@ -165,6 +165,11 @@ public class DirectoryManager
 	 */
 	private static void writeSpecificDirectoryToTar(TarArchiveOutputStream tarOut, ImageDirectory currentDir, String currentPath)
 	{
+		// If the current directory is already being uploaded don't write it to the TAR file
+		// If the upload progress = 0 that means we're preparing to upload but haven't started yet
+		if (currentDir.getUploadProgress() != -1 && currentDir.getUploadProgress() != 0)
+			return;
+
 		// The new path to write to this iteration of the recursion
 		String newPath = currentPath + currentDir.getFile().getName() + "/";
 

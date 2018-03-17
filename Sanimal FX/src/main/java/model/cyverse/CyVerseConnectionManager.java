@@ -3,6 +3,7 @@ package model.cyverse;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
@@ -803,8 +804,9 @@ public class CyVerseConnectionManager
 	 * Used to retrieve a list of uploads to a collection and any uploads are automatically inserted into the collection
 	 *
 	 * @param collection The image collection to retrieve uploads from
+	 * @param progressProperty How far we are
 	 */
-	public void retrieveAndInsertUploadList(ImageCollection collection)
+	public void retrieveAndInsertUploadList(ImageCollection collection, DoubleProperty progressProperty)
 	{
 		try
 		{
@@ -818,8 +820,11 @@ public class CyVerseConnectionManager
 			if (collectionUploadDir.exists() && collectionUploadDir.canRead())
 			{
 				File[] files = collectionUploadDir.listFiles(File::isDirectory);
+				double totalFiles = files.length;
+				int numDone = 0;
 				for (File file : files)
 				{
+					progressProperty.setValue(++numDone / totalFiles);
 					// We recognize uploads by their UploadMeta.json file
 					String contents = this.readRemoteFile(file.getAbsolutePath() + "/UploadMeta.json");
 					if (contents != null)

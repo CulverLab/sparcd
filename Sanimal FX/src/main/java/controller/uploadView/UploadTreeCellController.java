@@ -1,14 +1,18 @@
 package controller.uploadView;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import model.constant.SanimalDataFormats;
 import model.image.ImageContainer;
@@ -32,17 +36,34 @@ public class UploadTreeCellController extends TreeCell<ImageContainer>
 	public Label lblText;
 	// A reference to the main pane
 	@FXML
-	public StackPane mainPane;
-
-	// The upload progress bar and label
-	@FXML
-	public ProgressBar pbrUploadProgress;
-	@FXML
-	public Label lblProgress;
+	public HBox mainPane;
 
 	///
 	/// FXML Bound Fields end
 	///
+
+	private ChangeListener<Number> expandedListener = (observable, oldValue, newValue) ->
+	{
+		if (newValue.doubleValue() != -1)
+			if (this.getTreeItem() != null)
+				this.getTreeItem().setExpanded(false);
+	};
+
+	@FXML
+	public void initialize()
+	{
+		this.treeItemProperty().addListener((observable, oldValue, newValue) ->
+		{
+			if (oldValue != null)
+				oldValue.expandedProperty().unbind();
+			if (newValue != null)
+				newValue.expandedProperty().addListener((ignored, oldExpanded, newExpanded) ->
+				{
+					if (UploadTreeCellController.this.isDisabled() && newExpanded)
+						newValue.setExpanded(false);
+				});
+		});
+	}
 
 	/**
 	 * Called when we want to display a new image container
@@ -53,6 +74,14 @@ public class UploadTreeCellController extends TreeCell<ImageContainer>
 	@Override
 	protected void updateItem(ImageContainer item, boolean empty)
 	{
+		// Remove the previous listener if there was one
+		if (this.getItem() instanceof ImageDirectory)
+		{
+			((ImageDirectory) this.getItem()).uploadProgressProperty().removeListener(expandedListener);
+			this.disableProperty().unbind();
+			this.setDisable(false);
+		}
+
 		super.updateItem(item, empty);
 
 		// Set the text to null
@@ -70,23 +99,11 @@ public class UploadTreeCellController extends TreeCell<ImageContainer>
 			this.imgIcon.imageProperty().bind(item.getTreeIconProperty());
 			this.lblText.setText(item.toString());
 
-			this.pbrUploadProgress.visibleProperty().unbind();
 			if (item instanceof ImageDirectory)
 			{
 				ImageDirectory imageDirectory = (ImageDirectory) item;
-				// Update the upload progress when the upload progress property changes
-				this.pbrUploadProgress.progressProperty().unbind();
-				this.pbrUploadProgress.progressProperty().bind(imageDirectory.uploadProgressProperty());
-				// The progress will be show as a formatted string percentage
-				this.lblProgress.setVisible(true);
-				this.lblProgress.textProperty().bind(EasyBind.monadic(imageDirectory.uploadProgressProperty()).map(value -> (value.doubleValue() == -1 ? "" : String.format("%4.1f%%", value.doubleValue() * 100.0))));
-				// Hide the upload progress when we are not uploading
-				this.pbrUploadProgress.visibleProperty().bind(imageDirectory.uploadProgressProperty().isNotEqualTo(-1));
-			}
-			else
-			{
-				this.pbrUploadProgress.setVisible(false);
-				this.lblProgress.setVisible(false);
+				this.disableProperty().bind(imageDirectory.uploadProgressProperty().isNotEqualTo(-1));
+				imageDirectory.uploadProgressProperty().addListener(expandedListener);
 			}
 
 			this.setGraphic(mainPane);

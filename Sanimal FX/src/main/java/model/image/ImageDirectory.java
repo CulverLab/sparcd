@@ -207,5 +207,4 @@ public class ImageDirectory extends ImageContainer
 	{
 		return this.getFile().getName();
 	}
-
 }
