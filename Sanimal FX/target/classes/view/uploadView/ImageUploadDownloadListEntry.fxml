@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 <?import java.net.URL?>
-<HBox fx:id="mainPane" alignment="CENTER_LEFT" prefHeight="135.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<?import javafx.scene.control.ListView?>
+<HBox fx:id="mainPane" alignment="CENTER_LEFT" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="controller.uploadView.ImageUploadDownloadListEntryController">
     <stylesheets>
         <URL value="@ImageUploadDownloadListEntry.css"/>
@@ -20,6 +25,9 @@
             </HBox.margin>
         </ImageView>
         <VBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+            <padding>
+                <Insets top="10" bottom="10"/>
+            </padding>
             <Label fx:id="lblUsername" text="Upload Username" VBox.vgrow="ALWAYS">
                 <VBox.margin>
                     <Insets left="5" right="5" top="5"/>
@@ -44,27 +52,30 @@
                     <Font size="20.0"/>
                 </font>
             </Label>
-            <Label fx:id="lblEdits" text="Edit">
+            <TitledPane expanded="false" text="Edits">
                 <VBox.margin>
-                    <Insets left="5" right="5" top="5"/>
+                    <Insets left="5.0" right="5.0" top="5.0"/>
                 </VBox.margin>
                 <font>
                     <Font size="20.0"/>
                 </font>
-            </Label>
+                <content>
+                    <ListView fx:id="lstEdits" prefHeight="100"/>
+                </content>
+            </TitledPane>
         </VBox>
-        <VBox spacing="5">
+        <VBox spacing="5" alignment="CENTER_RIGHT">
             <HBox.margin>
-                <Insets left="10" top="5" right="5"/>
+                <Insets left="10" right="5" top="5"/>
             </HBox.margin>
-            <Button fx:id="btnUpload" prefHeight="60" prefWidth="60" onAction="#uploadPressed">
+            <Button fx:id="btnUpload" onAction="#uploadPressed" prefHeight="60" prefWidth="60">
                 <graphic>
                     <ImageView fitHeight="40" fitWidth="40">
                         <Image url="@../../images/uploadWindow/uploadIconNoBackground.png"/>
                     </ImageView>
                 </graphic>
             </Button>
-            <Button fx:id="btnDownload" prefHeight="60" prefWidth="60" onAction="#downloadPressed">
+            <Button fx:id="btnDownload" onAction="#downloadPressed" prefHeight="60" prefWidth="60">
                 <graphic>
                     <ImageView fitHeight="40" fitWidth="40">
                         <Image url="@../../images/uploadWindow/downloadIconNoBackground.png"/>

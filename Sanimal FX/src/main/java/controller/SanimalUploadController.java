@@ -55,6 +55,9 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public ListView<CloudUploadEntry> uploadListDownloadListView;
 
+	@FXML
+	public Button btnRefreshUploads;
+
 	// The download box pane
 	@FXML
 	public VBox vbxDownloadList;
@@ -77,6 +80,7 @@ public class SanimalUploadController implements Initializable
 	// Constant strings used to display status
 	private static final String STATUS_LOADING = "Loading collection uploads...";
 	private static final String STATUS_DOWNLOADING = "Downloading collection uploads to edit...";
+
 
 	// The currently selected image collection
 	private ObjectProperty<ImageCollection> selectedCollection = new SimpleObjectProperty<>();
@@ -114,6 +118,8 @@ public class SanimalUploadController implements Initializable
 			String ownerUsername = collection.getOwner();
 			return ownerUsername == null || !ownerUsername.equals(SanimalData.getInstance().getUsername());
 		}).orElse(nothingSelected));
+
+		this.btnRefreshUploads.disableProperty().bind(nothingSelected);
 
 		// Initialize root of the right side directory/image tree and make the root invisible
 		// This is because a treeview must have ONE root.
@@ -375,6 +381,33 @@ public class SanimalUploadController implements Initializable
 					"Directory not downloaded",
 					"The Cloud directory has not been downloaded yet, how are you going to save it?",
 					false);
+		}
+	}
+
+	public void refreshUploads(ActionEvent actionEvent)
+	{
+		if (this.selectedCollection.getValue() != null)
+		{
+			Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+			alert.initOwner(this.imageTree.getScene().getWindow());
+			alert.setTitle("Changes lost");
+			alert.setHeaderText("Unsaved changes may be lost");
+			alert.setContentText("Any unsaved changes to uploads will be lost, continue?");
+			Optional<ButtonType> responseOptional = alert.showAndWait();
+			responseOptional.ifPresent(response ->
+			{
+				// If they clicked OK
+				if (response.getButtonData() == ButtonBar.ButtonData.OK_DONE)
+				{
+					// Clear any known uploads
+					for (CloudUploadEntry cloudUploadEntry : this.selectedCollection.getValue().getUploads())
+						if (cloudUploadEntry.hasBeenDownloaded())
+							SanimalData.getInstance().getImageTree().removeChildRecursive(cloudUploadEntry.getCloudImageDirectory());
+
+					this.selectedCollection.getValue().getUploads().clear();
+					this.syncUploadsForCollection(this.selectedCollection.getValue());
+				}
+			});
 		}
 	}
 }

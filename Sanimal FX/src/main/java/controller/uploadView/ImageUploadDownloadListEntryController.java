@@ -6,7 +6,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
+import javafx.scene.text.Font;
 import model.SanimalData;
 import model.image.CloudUploadEntry;
 import model.image.ImageDirectory;
@@ -36,7 +38,7 @@ public class ImageUploadDownloadListEntryController extends ListCell<CloudUpload
 	@FXML
 	public Label lblTagged;
 	@FXML
-	public Label lblEdits;
+	public ListView<String> lstEdits;
 
 	// Buttons to download and upload/save data
 	@FXML
@@ -51,6 +53,11 @@ public class ImageUploadDownloadListEntryController extends ListCell<CloudUpload
 	// The current download and upload tasks
 	private Runnable onDownload;
 	private Runnable onUpload;
+
+	@FXML
+	public void initialize()
+	{
+	}
 
 	/**
 	 * Called when we get a new item to display
@@ -79,8 +86,8 @@ public class ImageUploadDownloadListEntryController extends ListCell<CloudUpload
 			this.lblDate.setText(SanimalData.getInstance().getSettings().formatDateTime(cloudUploadEntry.getUploadDate(), " at "));
 			this.lblTagged.setText(cloudUploadEntry.getImagesWithSpecies() + "/" + cloudUploadEntry.getImageCount() + " tagged with species.");
 			// Grab the list of edits and show it
-			List<String> editComments = cloudUploadEntry.getEditComments();
-			this.lblEdits.setText(editComments.isEmpty() ? "No edits to upload made." : editComments.get(editComments.size() - 1));
+			this.lstEdits.getItems().clear();
+			this.lstEdits.getItems().addAll(cloudUploadEntry.getEditComments());
 			this.btnDownload.disableProperty().unbind();
 			this.btnDownload.disableProperty().bind(cloudUploadEntry.downloadedProperty());
 			this.btnUpload.disableProperty().unbind();
