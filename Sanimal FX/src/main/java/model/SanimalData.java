@@ -17,6 +17,8 @@ import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
+import model.threading.ErrorService;
+import model.threading.ErrorTask;
 import model.threading.SanimalExecutor;
 import model.util.*;
 import org.hildan.fxgson.FxGson;

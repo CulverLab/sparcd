@@ -1,15 +1,12 @@
 package model.threading;
 
 import javafx.beans.property.*;
-import javafx.concurrent.Service;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
 
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 public class QueuedExecutor extends BaseSanimalExecutor
 {
@@ -18,7 +15,9 @@ public class QueuedExecutor extends BaseSanimalExecutor
 	// The progress of the current task
 	private final ReadOnlyDoubleWrapper progress = new ReadOnlyDoubleWrapper();
 	// If a task is currently running
-	private final ReadOnlyBooleanWrapper taskRunning = new ReadOnlyBooleanWrapper();
+	private final ReadOnlyBooleanWrapper taskRunning = new ReadOnlyBooleanWrapper(false);
+	// The task that is currently running
+	private final ObservableList<Task<?>> tasks = FXCollections.observableArrayList();
 
 	public QueuedExecutor()
 	{
@@ -30,6 +29,8 @@ public class QueuedExecutor extends BaseSanimalExecutor
 	{
 		this.message.unbind();
 		this.progress.unbind();
+		if (worker instanceof Task<?>)
+			this.tasks.remove(worker);
 		this.taskRunning.setValue(false);
 	}
 
@@ -38,6 +39,8 @@ public class QueuedExecutor extends BaseSanimalExecutor
 	{
 		this.message.bind(worker.messageProperty());
 		this.progress.bind(worker.progressProperty());
+		if (worker instanceof Task<?>)
+			this.tasks.add((Task<?>) worker);
 		this.taskRunning.setValue(true);
 	}
 
@@ -73,5 +76,10 @@ public class QueuedExecutor extends BaseSanimalExecutor
 	public ReadOnlyBooleanProperty taskRunningProperty()
 	{
 		return this.taskRunning.getReadOnlyProperty();
+	}
+
+	public ObservableList<Task<?>> getTasks()
+	{
+		return this.tasks;
 	}
 }

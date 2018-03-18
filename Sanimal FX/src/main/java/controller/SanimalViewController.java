@@ -25,7 +25,7 @@ import model.cyverse.CyVerseConnectionManager;
 import model.cyverse.ImageCollection;
 import model.location.Location;
 import model.species.Species;
-import model.util.ErrorTask;
+import model.threading.ErrorTask;
 import org.controlsfx.control.HyperlinkLabel;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;

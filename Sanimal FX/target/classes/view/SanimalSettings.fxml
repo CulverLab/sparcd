@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import org.controlsfx.control.PropertySheet?>
 <?import java.net.URL?>
-<PropertySheet fx:id="pstSettings" fx:controller="controller.SanimalSettingsController" prefHeight="700.0" prefWidth="1300.0" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" >
+<?import javafx.scene.control.SplitPane?>
+<?import org.controlsfx.control.PropertySheet?>
+
+
+<?import org.controlsfx.control.TaskProgressView?>
+<SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="700.0" prefWidth="1300.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalSettingsController">
     <stylesheets>
         <URL value="@SanimalSettings.css"/>
     </stylesheets>
-</PropertySheet>
+    <items>
+        <PropertySheet fx:id="pstSettings"/>
+    </items>
+</SplitPane>

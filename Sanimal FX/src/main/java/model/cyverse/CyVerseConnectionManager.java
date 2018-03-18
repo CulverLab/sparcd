@@ -710,7 +710,9 @@ public class CyVerseConnectionManager
 					if (uploadedFile.exists())
 						uploadedFile.delete();
 					// Upload the JSON file representing the upload
-					CloudUploadEntry uploadEntry = new CloudUploadEntry(SanimalData.getInstance().getUsername(), LocalDateTime.now(), true, uploadDirName);
+					Integer imageCount = Math.toIntExact(directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count());
+					Integer imagesWithSpecies = Math.toIntExact(directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry && !((ImageEntry) imageContainer).getSpeciesPresent().isEmpty()).count());
+					CloudUploadEntry uploadEntry = new CloudUploadEntry(SanimalData.getInstance().getUsername(), LocalDateTime.now(), imagesWithSpecies, imageCount, uploadDirName);
 					// Convert the upload entry to JSON format
 					String json = SanimalData.getInstance().getGson().toJson(uploadEntry);
 					// Write the UploadMeta.json file to the server
@@ -750,23 +752,24 @@ public class CyVerseConnectionManager
 			{
 				ImageDirectory imageDirectory = uploadEntryToSave.getCloudImageDirectory();
 				List<CloudImageEntry> toUpload = imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof CloudImageEntry).map(imageContainer -> (CloudImageEntry) imageContainer).collect(Collectors.toList());
-				imageDirectory.setUploadProgress(0.0);
+				Platform.runLater(() -> imageDirectory.setUploadProgress(0.0));
 
 				messageCallback.setValue("Saving " + toUpload.size() + " images to CyVerse...");
 
-				uploadEntryToSave.getEditComments().add("Edited by " + SanimalData.getInstance().getUsername() + " on " + FOLDER_FORMAT.format(Calendar.getInstance().getTime()));
-				// Convert the upload entry to JSON format
-				String json = SanimalData.getInstance().getGson().toJson(uploadEntryToSave);
-				// Write the UploadMeta.json file to the server
-				this.writeRemoteFile(uploadEntryToSave.getUploadIRODSPath() + "/UploadMeta.json", json);
-
 				Double numberOfImagesToUpload = (double) toUpload.size();
+				Integer numberOfDetaggedImages = 0;
+				Integer numberOfRetaggedImages = 0;
 				// Begin saving
 				for (int i = 0; i < toUpload.size(); i++)
 				{
 					CloudImageEntry cloudImageEntry = toUpload.get(i);
 					if (cloudImageEntry.hasBeenPulledFromCloud())
 					{
+						if (cloudImageEntry.getSpeciesPresent().isEmpty() && cloudImageEntry.wasTaggedWithSpecies())
+							numberOfDetaggedImages++;
+						else if (!cloudImageEntry.getSpeciesPresent().isEmpty() && !cloudImageEntry.wasTaggedWithSpecies())
+							numberOfRetaggedImages++;
+
 						// Save that specific cloud image
 						this.accessObjects.getDataTransferOperations().putOperation(cloudImageEntry.getFile(), cloudImageEntry.getCyverseFile(), new TransferStatusCallbackListener()
 						{
@@ -786,6 +789,14 @@ public class CyVerseConnectionManager
 						}
 					}
 				}
+
+				uploadEntryToSave.getEditComments().add("Edited by " + SanimalData.getInstance().getUsername() + " on " + FOLDER_FORMAT.format(Calendar.getInstance().getTime()));
+				Integer imagesWithSpecies = uploadEntryToSave.getImagesWithSpecies() - numberOfDetaggedImages + numberOfRetaggedImages;
+				uploadEntryToSave.setImagesWithSpecies(imagesWithSpecies);
+				// Convert the upload entry to JSON format
+				String json = SanimalData.getInstance().getGson().toJson(uploadEntryToSave);
+				// Write the UploadMeta.json file to the server
+				this.writeRemoteFile(uploadEntryToSave.getUploadIRODSPath() + "/UploadMeta.json", json);
 			}
 		}
 		catch (JargonException e)

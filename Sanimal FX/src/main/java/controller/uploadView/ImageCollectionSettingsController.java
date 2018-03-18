@@ -15,7 +15,7 @@ import library.TableColumnHeaderUtil;
 import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
-import model.util.ErrorTask;
+import model.threading.ErrorTask;
 import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;

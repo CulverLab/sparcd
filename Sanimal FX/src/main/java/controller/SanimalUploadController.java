@@ -17,7 +17,7 @@ import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
 import model.image.*;
-import model.util.ErrorTask;
+import model.threading.ErrorTask;
 import model.util.FXMLLoaderUtils;
 import org.controlsfx.control.MaskerPane;
 import org.fxmisc.easybind.EasyBind;
@@ -180,13 +180,13 @@ public class SanimalUploadController implements Initializable
 			}
 		};
 
-		mpnDownloadUploads.progressProperty().unbind();
 		mpnDownloadUploads.progressProperty().bind(collectionUploadDownloader.progressProperty());
 
 		// Once done enable the download list and hide the loading label and circle
 		collectionUploadDownloader.setOnSucceeded(event ->
 		{
 			this.mpnDownloadUploads.setVisible(false);
+			this.mpnDownloadUploads.progressProperty().unbind();
 			this.vbxDownloadList.setDisable(false);
 		});
 
@@ -270,6 +270,7 @@ public class SanimalUploadController implements Initializable
 			// Show the loading box again and disable the download entries
 			this.mpnDownloadUploads.setVisible(true);
 			this.mpnDownloadUploads.setText(STATUS_DOWNLOADING);
+			this.mpnDownloadUploads.setProgress(-1);
 			this.vbxDownloadList.setDisable(true);
 
 			// Create a task to execute
@@ -347,7 +348,12 @@ public class SanimalUploadController implements Initializable
 					}
 				};
 				// When the upload finishes, we enable the upload button
-				saveTask.setOnSucceeded(event -> imageDirectory.setUploadProgress(-1));
+				saveTask.setOnSucceeded(event ->
+				{
+					imageDirectory.setUploadProgress(-1);
+					SanimalData.getInstance().getImageTree().removeChildRecursive(imageDirectory);
+					uploadEntry.clearLocalCopy();
+				});
 				SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().addTask(saveTask);
 			}
 			else

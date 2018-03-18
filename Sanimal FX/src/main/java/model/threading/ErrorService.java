@@ -1,4 +1,4 @@
-package model.util;
+package model.threading;
 
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;

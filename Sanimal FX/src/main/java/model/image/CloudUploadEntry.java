@@ -7,7 +7,6 @@ import javafx.beans.property.SimpleObjectProperty;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -24,8 +23,10 @@ public class CloudUploadEntry
 	private String uploadUser;
 	// The date the upload happened on
 	private LocalDateTime uploadDate;
-	// If the images in the upload were tagged
-	private Boolean tagged;
+	// The number of species imagesWithSpecies images
+	private Integer imagesWithSpecies;
+	// The number of images in this upload
+	private Integer imageCount;
 	// A list of edits made to the upload
 	private List<String> editComments = new ArrayList<>();
 	// A path to the upload on CyVerse
@@ -36,14 +37,15 @@ public class CloudUploadEntry
 	 *
 	 * @param uploadUser The user that uploaded the images
 	 * @param uploadDate The date the upload happened on
-	 * @param tagged If the images were tagged or not
+	 * @param imagesWithSpecies The number of images with species tagged
 	 * @param uploadIRODSPath The path to the file on CyVerse
 	 */
-	public CloudUploadEntry(String uploadUser, LocalDateTime uploadDate, Boolean tagged, String uploadIRODSPath)
+	public CloudUploadEntry(String uploadUser, LocalDateTime uploadDate, Integer imagesWithSpecies, Integer imageCount, String uploadIRODSPath)
 	{
 		this.uploadUser = uploadUser;
 		this.uploadDate = uploadDate;
-		this.tagged = tagged;
+		this.imagesWithSpecies = imagesWithSpecies;
+		this.imageCount = imageCount;
 		this.uploadIRODSPath = uploadIRODSPath;
 	}
 
@@ -56,6 +58,15 @@ public class CloudUploadEntry
 		this.cloudImageDirectoryProperty = new SimpleObjectProperty<>();
 	}
 
+	/**
+	 * After saving this cloud upload we reset it so that we need to re-download it if we want to edit it again
+	 */
+	public void clearLocalCopy()
+	{
+		this.setDownloaded(false);
+		this.setCloudImageDirectory(null);
+	}
+
 	///
 	/// Getters/Setters
 	///
@@ -63,11 +74,6 @@ public class CloudUploadEntry
 	public List<String> getEditComments()
 	{
 		return this.editComments;
-	}
-
-	public Boolean getTagged()
-	{
-		return tagged;
 	}
 
 	public String getUploadUser()
@@ -78,6 +84,21 @@ public class CloudUploadEntry
 	public LocalDateTime getUploadDate()
 	{
 		return uploadDate;
+	}
+
+	public void setImagesWithSpecies(Integer imagesWithSpecies)
+	{
+		this.imagesWithSpecies = imagesWithSpecies;
+	}
+
+	public Integer getImagesWithSpecies()
+	{
+		return imagesWithSpecies;
+	}
+
+	public Integer getImageCount()
+	{
+		return imageCount;
 	}
 
 	public String getUploadIRODSPath()

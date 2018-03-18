@@ -13,7 +13,7 @@ import java.util.concurrent.Future;
 
 public abstract class BaseSanimalExecutor
 {
-	private ExecutorService taskPerformer;
+	ExecutorService taskPerformer;
 
 	public BaseSanimalExecutor(ExecutorService taskPerformer)
 	{

@@ -11,7 +11,7 @@ import javafx.scene.image.Image;
 import model.SanimalData;
 import model.location.Location;
 import model.species.Species;
-import model.util.ErrorTask;
+import model.threading.ErrorTask;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.irods.jargon.core.pub.io.IRODSFile;
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Represents an image on the cloud
@@ -47,6 +48,8 @@ public class CloudImageEntry extends ImageEntry
 	// Transient because we don't want these to be written to disk
 	private transient final BooleanProperty hasBeenPulledFromCloud = new SimpleBooleanProperty(false);
 	private transient final BooleanProperty isBeingPulledFromCloud = new SimpleBooleanProperty(false);
+
+	private transient final AtomicBoolean wasTaggedWithSpecies = new AtomicBoolean(false);
 
 	/**
 	 * Create a new image entry with an image file
@@ -260,6 +263,8 @@ public class CloudImageEntry extends ImageEntry
 		{
 			File localFile = pullTask.getValue();
 			super.readFileMetadataIntoImage(localFile, SanimalData.getInstance().getLocationList(), SanimalData.getInstance().getSpeciesList());
+			if (!this.getSpeciesPresent().isEmpty())
+				wasTaggedWithSpecies.set(true);
 			this.hasBeenPulledFromCloud.setValue(true);
 			this.isBeingPulledFromCloud.setValue(false);
 		});
@@ -307,8 +312,13 @@ public class CloudImageEntry extends ImageEntry
 		return this.cyverseFileProperty;
 	}
 
-	public boolean hasBeenPulledFromCloud()
+	public Boolean hasBeenPulledFromCloud()
 	{
 		return this.hasBeenPulledFromCloud.getValue();
+	}
+
+	public Boolean wasTaggedWithSpecies()
+	{
+		return this.wasTaggedWithSpecies.get();
 	}
 }

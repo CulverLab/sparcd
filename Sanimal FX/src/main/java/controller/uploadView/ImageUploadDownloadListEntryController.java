@@ -48,11 +48,6 @@ public class ImageUploadDownloadListEntryController extends ListCell<CloudUpload
 	/// FXML Bound fields end
 	///
 
-	// String constants used in labels
-	private static final String TAGGED_BASE = "Species/Loc Tagged ";
-	private static final String CHECK_MARK = "✓";
-	private static final String CROSS_MARK = "✕";
-
 	// The current download and upload tasks
 	private Runnable onDownload;
 	private Runnable onUpload;
@@ -82,7 +77,7 @@ public class ImageUploadDownloadListEntryController extends ListCell<CloudUpload
 			// Update the labels
 			this.lblUsername.setText(cloudUploadEntry.getUploadUser());
 			this.lblDate.setText(SanimalData.getInstance().getSettings().formatDateTime(cloudUploadEntry.getUploadDate(), " at "));
-			this.lblTagged.setText(TAGGED_BASE + (cloudUploadEntry.getTagged() ? CHECK_MARK : CROSS_MARK));
+			this.lblTagged.setText(cloudUploadEntry.getImagesWithSpecies() + "/" + cloudUploadEntry.getImageCount() + " tagged with species.");
 			// Grab the list of edits and show it
 			List<String> editComments = cloudUploadEntry.getEditComments();
 			this.lblEdits.setText(editComments.isEmpty() ? "No edits to upload made." : editComments.get(editComments.size() - 1));

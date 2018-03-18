@@ -9,6 +9,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableBooleanValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -40,7 +41,7 @@ import model.image.*;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
-import model.util.ErrorTask;
+import model.threading.ErrorTask;
 import model.util.FXMLLoaderUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -117,6 +118,9 @@ public class SanimalImportController implements Initializable
 	// The button to begin importing images
 	@FXML
 	public Button btnImportImages;
+	// The button to delete imported images
+	@FXML
+	public Button btnDelete;
 
 	// The region that hovers over the image which is used for its border
 	@FXML
@@ -300,6 +304,11 @@ public class SanimalImportController implements Initializable
 		MonadicBinding<ImageContainer> selectedImage = EasyBind.monadic(this.imageTree.getSelectionModel().selectedItemProperty()).map(TreeItem::getValue);
 		currentlySelectedImage.bind(selectedImage.map(imageContainer -> (imageContainer instanceof ImageEntry) ? (ImageEntry) imageContainer : null));
 		currentlySelectedDirectory.bind(selectedImage.map(imageContainer -> (imageContainer instanceof ImageDirectory) ? (ImageDirectory) imageContainer : null));
+
+		// When we select a cloud image or directory, don't allow clicking delete
+		this.btnDelete.disableProperty().bind(
+				Bindings.or(Bindings.createBooleanBinding(() -> this.currentlySelectedImage.getValue() instanceof CloudImageEntry, this.currentlySelectedImage),
+							Bindings.createBooleanBinding(() -> this.currentlySelectedDirectory.getValue() instanceof CloudImageDirectory, this.currentlySelectedDirectory)));
 
 		// Create bindings in the GUI
 
