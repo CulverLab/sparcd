@@ -1,16 +1,12 @@
 package model.util;
 
-import com.lynden.gmapsfx.service.directions.Distance;
 import javafx.beans.Observable;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.controlsfx.control.PropertySheet;
 
-import javax.swing.text.DateFormatter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -23,23 +19,39 @@ import java.util.Optional;
 public class SettingsData
 {
 	// A list of settings SANIMAL uses
-	private ObservableList<CustomPropertyItem<?>> settingList = FXCollections.observableArrayList(item -> new Observable[] { item.value });
+	private transient ObservableList<CustomPropertyItem<?>> settingList = FXCollections.observableArrayList(item -> new Observable[] { item.value });
 
 	// The current setting value
 	private ObjectProperty<DateFormat> dateFormat = new SimpleObjectProperty<>(DateFormat.MonthDayYear);
 	private ObjectProperty<TimeFormat> timeFormat = new SimpleObjectProperty<>(TimeFormat.Time24Hour);
 	private ObjectProperty<LocationFormat> locationFormat = new SimpleObjectProperty<>(LocationFormat.LatLong);
 	private ObjectProperty<DistanceUnits> distanceUnits = new SimpleObjectProperty<>(DistanceUnits.Meters);
+	private BooleanProperty drSandersonCompatibility = new SimpleBooleanProperty(true);
 
 	/**
 	 * Constructor adds all settings SANIMAL will use to the dictionary
 	 */
 	public SettingsData()
 	{
+		this.setupPropertyPageItems();
+	}
+
+	public void loadFromOther(SettingsData otherSettings)
+	{
+		this.dateFormat.setValue(otherSettings.getDateFormat());
+		this.timeFormat.setValue(otherSettings.getTimeFormat());
+		this.locationFormat.setValue(otherSettings.getLocationFormat());
+		this.distanceUnits.setValue(otherSettings.getDistanceUnits());
+		this.drSandersonCompatibility.setValue(otherSettings.getDrSandersonCompatibility());
+	}
+
+	private void setupPropertyPageItems()
+	{
 		settingList.add(new CustomPropertyItem<>("Date Format: ", "DateTime", "The date format to be used when displaying dates", dateFormat, DateFormat.class));
 		settingList.add(new CustomPropertyItem<>("Time Format: ", "DateTime", "The time format to be used when displaying dates", timeFormat, TimeFormat.class));
 		settingList.add(new CustomPropertyItem<>("Location Format: ", "Location", "The location format to be used when displaying positional information", locationFormat, LocationFormat.class));
-		settingList.add(new CustomPropertyItem<>("Distance units: ", "Units", "The units to be used by the program", distanceUnits, DistanceUnits.class));
+		settingList.add(new CustomPropertyItem<>("Distance Units: ", "Units", "The units to be used by the program", distanceUnits, DistanceUnits.class));
+		settingList.add(new CustomPropertyItem<>("Dr. Sanderson's Format Compatibility: ", "Compatibility", "Gives the option to read a directory in Dr. Jim Sanderson's format and automatically tag it", drSandersonCompatibility, Boolean.class));
 	}
 
 	/**
@@ -303,5 +315,20 @@ public class SettingsData
 	public ObjectProperty<DistanceUnits> distanceUnitsProperty()
 	{
 		return distanceUnits;
+	}
+
+	public void setDrSandersonCompatibility(boolean drSandersonCompatibility)
+	{
+		this.drSandersonCompatibility.set(drSandersonCompatibility);
+	}
+
+	public boolean getDrSandersonCompatibility()
+	{
+		return this.drSandersonCompatibility.get();
+	}
+
+	public BooleanProperty drSandersonCompatibilityProperty()
+	{
+		return drSandersonCompatibility;
 	}
 }

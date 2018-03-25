@@ -33,6 +33,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.util.Pair;
 import library.ImageViewPane;
 import library.TreeViewAutomatic;
 import model.SanimalData;
@@ -55,6 +56,8 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -308,7 +311,8 @@ public class SanimalImportController implements Initializable
 		// When we select a cloud image or directory, don't allow clicking delete
 		this.btnDelete.disableProperty().bind(
 				Bindings.or(Bindings.createBooleanBinding(() -> this.currentlySelectedImage.getValue() instanceof CloudImageEntry, this.currentlySelectedImage),
-							Bindings.createBooleanBinding(() -> this.currentlySelectedDirectory.getValue() instanceof CloudImageDirectory, this.currentlySelectedDirectory)));
+				Bindings.or(Bindings.createBooleanBinding(() -> this.currentlySelectedDirectory.getValue() instanceof CloudImageDirectory, this.currentlySelectedDirectory),
+							this.imageTree.getSelectionModel().selectedIndexProperty().isEqualTo(-1))));
 
 		// Create bindings in the GUI
 
@@ -763,6 +767,36 @@ public class SanimalImportController implements Initializable
 	 */
 	public void importImages(ActionEvent actionEvent)
 	{
+		Boolean readAsLegacy = false;
+		if (SanimalData.getInstance().getSettings().getDrSandersonCompatibility())
+		{
+			Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+			alert.setTitle("Legacy Data?");
+			alert.setHeaderText("Are you importing legacy data?");
+			alert.setContentText("Would you like the directory to be read as legacy data used by Dr. Sanderson's 'Data Analyze' program?");
+
+			ButtonType yes = new ButtonType("Yes, Auto-Tag it");
+			ButtonType no = new ButtonType("No");
+			ButtonType noDontAsk = new ButtonType("No, don't ask again");
+
+			alert.getButtonTypes().setAll(yes, no, noDontAsk);
+
+			Optional<ButtonType> result = alert.showAndWait();
+			if (!result.isPresent() || result.get() == no)
+			{
+				readAsLegacy = false;
+			}
+			else if (result.get() == yes)
+			{
+				readAsLegacy = true;
+			}
+			else if (result.get() == noDontAsk)
+			{
+				readAsLegacy = false;
+				SanimalData.getInstance().getSettings().setDrSandersonCompatibility(false);
+			}
+		}
+
 		// Create a directory chooser to let the user choose where to get the images from
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 		directoryChooser.setTitle("Select Folder with Images");
@@ -774,10 +808,10 @@ public class SanimalImportController implements Initializable
 		if (file != null && file.isDirectory())
 		{
 			this.btnImportImages.setDisable(true);
-			Task<Void> importTask = new ErrorTask<Void>()
+			Task<ImageDirectory> importTask = new ErrorTask<ImageDirectory>()
 			{
 				@Override
-				protected Void call()
+				protected ImageDirectory call()
 				{
 					final Long MAX_WORK = 6L;
 
@@ -840,20 +874,103 @@ public class SanimalImportController implements Initializable
 					this.updateProgress(5, MAX_WORK);
 					this.updateMessage("Adding images to the visual tree...");
 
-					Platform.runLater(() ->
-					{
-						// Add the directory to the image tree
-						SanimalData.getInstance().getImageTree().addChild(directory);
-					});
-
 					this.updateProgress(6, MAX_WORK);
 					this.updateMessage("Finished!");
 
-					return null;
+					return directory;
 				}
 			};
-			importTask.setOnSucceeded(event -> this.btnImportImages.setDisable(false));
+			Boolean finalReadAsLegacy = readAsLegacy;
+			importTask.setOnSucceeded(event ->
+			{
+				// If we're reading non-legacy data, we're done
+				if (!finalReadAsLegacy)
+				{
+					// Add the directory to the image tree
+					SanimalData.getInstance().getImageTree().addChild(importTask.getValue());
+					this.btnImportImages.setDisable(false);
+				}
+				// If we're reading legacy data, start a new task to read it
+				else
+				{
+					final ImageDirectory directory = importTask.getValue();
+					// If we're reading legacy data, sync legacy data
+					Task<Pair<List<Species>, List<Location>>> legacySyncTask = new ErrorTask<Pair<List<Species>, List<Location>>>()
+					{
+						@Override
+						protected Pair<List<Species>, List<Location>> call()
+						{
+							this.updateProgress(0, 2);
+							this.updateMessage("Duplicating the species and location list temporarily...");
+
+							// Grab the current list of species and locations and duplicate it
+							List<Species> currentSpecies = new ArrayList<>(SanimalData.getInstance().getSpeciesList());
+							List<Location> currentLocations = new ArrayList<>(SanimalData.getInstance().getLocationList());
+
+							this.updateProgress(1, 2);
+							this.updateMessage("Reading Dr. Sanderson's Legacy Format");
+
+							DirectoryManager.parseLegacyDirectory(directory, currentLocations, currentSpecies);
+
+							this.updateProgress(2, 2);
+							this.updateMessage("Finished parsing Dr. Sanderson's Legacy data");
+
+							// A hack to return 2 values...
+							return new Pair<>(currentSpecies, currentLocations);
+						}
+					};
+
+					// If we finished reading legacy data, allow importing images
+					legacySyncTask.setOnSucceeded(event2 ->
+					{
+						// Some locations may not be initialized due to Dr. Sanderson's format so we ask the user to fix them for us
+						List<Species> newSpecies = ListUtils.subtract(legacySyncTask.getValue().getKey(), SanimalData.getInstance().getSpeciesList());
+						List<Location> newLocations = ListUtils.subtract(legacySyncTask.getValue().getValue(), SanimalData.getInstance().getLocationList());
+
+						if (!newSpecies.isEmpty())
+						{
+							SanimalData.getInstance().getErrorDisplay().showPopup(
+									Alert.AlertType.INFORMATION,
+									SanimalImportController.this.mainPane.getScene().getWindow(),
+									"New Species",
+									"New Species need to be added",
+									newSpecies.size() + " new species were found on the images that were not registered yet. Add any additional species information now.",
+									true);
+
+							for (Species species : newSpecies)
+								requestEdit(species);
+
+							SanimalData.getInstance().getSpeciesList().addAll(newSpecies);
+						}
+
+						if (!newLocations.isEmpty())
+						{
+							SanimalData.getInstance().getErrorDisplay().showPopup(
+									Alert.AlertType.INFORMATION,
+									SanimalImportController.this.mainPane.getScene().getWindow(),
+									"New Locations",
+									"New Locations need to be added",
+									newLocations.size() + " new locations were found on the images that were not registered yet. Please add location latitude/longitude/elevation.",
+									true);
+
+							for (Location location : newLocations)
+								requestEdit(location);
+
+							SanimalData.getInstance().getLocationList().addAll(newLocations);
+						}
+
+						// Add the directory to the image tree
+						SanimalData.getInstance().getImageTree().addChild(directory);
+						this.btnImportImages.setDisable(false);
+					});
+
+					SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(legacySyncTask);
+				}
+			});
+
 			SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(importTask);
+
+			// If the data is in Dr. Sanderson's format, then read that format
 		}
 		// Consume the event
 		actionEvent.consume();

@@ -21,6 +21,7 @@ import model.threading.ErrorService;
 import model.threading.ErrorTask;
 import model.threading.SanimalExecutor;
 import model.util.*;
+import org.fxmisc.easybind.EasyBind;
 import org.hildan.fxgson.FxGson;
 
 import java.io.File;
@@ -86,6 +87,8 @@ public class SanimalData
 
 	// List of sanimal settings
 	private final SettingsData settings = new SettingsData();
+	private AtomicBoolean needSettingsSync = new AtomicBoolean(false);
+	private AtomicBoolean settingsSyncInProgress = new AtomicBoolean(false);
 
 	/**
 	 * Private constructor since we're using the singleton design pattern
@@ -112,6 +115,9 @@ public class SanimalData
 
 		// When the metadata changes, we push the changes to disk
 		this.setupAutoWriteMetadata();
+
+		// When the settings change, we sync them
+		this.setupAutoSettingsSync();
 	}
 
 	/**
@@ -292,6 +298,68 @@ public class SanimalData
 				}
 			}
 		});
+	}
+
+	/**
+	 * Ensures that when settings change they get uploaded to CyVerse
+	 */
+	private void setupAutoSettingsSync()
+	{
+		ErrorService<Void> syncService = new ErrorService<Void>()
+		{
+			@Override
+			protected Task<Void> createTask()
+			{
+				return new ErrorTask<Void>()
+				{
+					@Override
+					protected Void call()
+					{
+						// Perform the push of the settings data
+						this.updateMessage("Syncing new settings to CyVerse...");
+						SanimalData.getInstance().getConnectionManager().pushLocalSettings(SanimalData.getInstance().getSettings());
+						return null;
+					}
+				};
+			}
+		};
+		// When we finish syncing...
+		syncService.setOnSucceeded(event -> {
+			// After finishing the sync, check if we need to sync again. If so set the flag to false and sync once again
+			if (this.needSettingsSync.get())
+			{
+				this.needSettingsSync.set(false);
+				syncService.restart();
+			}
+			// If we don't need to sync again set the sync in progress flag to false
+			else
+			{
+				this.settingsSyncInProgress.set(false);
+			}
+		});
+		this.sanimalExecutor.getQueuedExecutor().registerService(syncService);
+
+		// When the settings change...
+		Runnable onSettingChange = () ->
+		{
+			// If a sync is already in progress, we set a flag telling the current sync to perform another sync right after it finishes
+			if (this.settingsSyncInProgress.get())
+			{
+				this.needSettingsSync.set(true);
+			}
+			// If a sync is not in progress, go ahead and sync
+			else
+			{
+				this.settingsSyncInProgress.set(true);
+				// Perform the task
+				syncService.restart();
+			}
+		};
+		this.settings.locationFormatProperty().addListener((observable, oldValue, newValue) -> onSettingChange.run());
+		this.settings.dateFormatProperty().addListener((observable, oldValue, newValue) -> onSettingChange.run());
+		this.settings.distanceUnitsProperty().addListener((observable, oldValue, newValue) -> onSettingChange.run());
+		this.settings.drSandersonCompatibilityProperty().addListener((observable, oldValue, newValue) -> onSettingChange.run());
+		this.settings.timeFormatProperty().addListener((observable, oldValue, newValue) -> onSettingChange.run());
 	}
 
 	/**

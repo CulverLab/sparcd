@@ -11,6 +11,7 @@ import model.SanimalData;
 import model.image.*;
 import model.location.Location;
 import model.species.Species;
+import model.util.SettingsData;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.irods.jargon.core.connection.AuthScheme;
@@ -194,6 +195,31 @@ public class CyVerseConnectionManager
 							false);
 				}
 			}
+
+			// If we don't have a default settings.json file, put a default one onto the storage location
+			IRODSFile sanimalSettingsFile = fileFactory.instanceIRODSFile("./Sanimal/Settings/settings.json");
+			if (!sanimalSettingsFile.exists())
+			{
+				// Pull the default settings.json file
+				try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/settings.json"));
+					 BufferedReader fileReader = new BufferedReader(inputStreamReader))
+				{
+					// Read the Json file
+					String json = fileReader.lines().collect(Collectors.joining("\n"));
+					// Write it to the directory
+					this.writeRemoteFile("./Sanimal/Settings/settings.json", json);
+				}
+				catch (IOException e)
+				{
+					SanimalData.getInstance().getErrorDisplay().showPopup(
+							Alert.AlertType.ERROR,
+							null,
+							"Error",
+							"JSON error",
+							"Could not read the local settings.json file!\n" + ExceptionUtils.getStackTrace(e),
+							false);
+				}
+			}
 		}
 		catch (JargonException e)
 		{
@@ -205,6 +231,55 @@ public class CyVerseConnectionManager
 					"Could not initialize the CyVerse directories!\n" + ExceptionUtils.getStackTrace(e),
 					false);
 		}
+	}
+
+	/**
+	 * Connects to CyVerse and uploads the given settings into the settings.json file
+	 *
+	 * @param settingsData The new settings to upload
+	 */
+	public void pushLocalSettings(SettingsData settingsData)
+	{
+		// Convert the settings to JSON format
+		String json = SanimalData.getInstance().getGson().toJson(settingsData);
+		// Write the settings.json file to the server
+		this.writeRemoteFile("./Sanimal/Settings/settings.json", json);
+	}
+
+	/**
+	 * Connects to CyVerse and downloads the user's settings
+	 *
+	 * @return User settings stored on the CyVerse system
+	 */
+	public SettingsData pullRemoteSettings()
+	{
+		// Path to the file on the CyVerse server should be named settings.json
+		String fileName = "./Sanimal/Settings/settings.json";
+		// Read the contents of the file into a string
+		String fileContents = this.readRemoteFile(fileName);
+		// Ensure that we in fact got data back
+		if (fileContents != null)
+		{
+			// Try to parse the JSON string into a settings data
+			try
+			{
+				// Get the GSON object to parse the JSON. Return the list of new locations
+				return SanimalData.getInstance().getGson().fromJson(fileContents, SettingsData.class);
+			}
+			catch (JsonSyntaxException e)
+			{
+				// If the JSON file is incorrectly formatted, throw an error and return null
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"JSON error",
+						"Could not pull the settings from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+						false);
+			}
+		}
+
+		return null;
 	}
 
 	/**

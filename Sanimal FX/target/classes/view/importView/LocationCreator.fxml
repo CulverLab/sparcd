@@ -5,13 +5,13 @@
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.SegmentedButton?>
 <?import java.net.URL?>
-<GridPane minHeight="315" minWidth="450" maxHeight="315" maxWidth="450.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
+<GridPane xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
           fx:controller="controller.importView.LocationCreatorController">
     <stylesheets>
         <URL value="@LocationCreator.css"/>
     </stylesheets>
     <padding>
-        <Insets left="5" right="5"/>
+        <Insets left="10" right="10" top="5" bottom="5"/>
     </padding>
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" maxWidth="180.0" minWidth="180.0"/>

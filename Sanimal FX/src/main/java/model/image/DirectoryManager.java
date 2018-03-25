@@ -7,6 +7,7 @@ import model.location.Location;
 import model.species.Species;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import java.io.File;
@@ -14,6 +15,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A class that imports images into a more easily readable structure
@@ -202,6 +204,67 @@ public class DirectoryManager
 		// After doing all the images in the directory, we recursively move down the structure and do sub-directories
 		currentDir.getChildren().filtered(imageContainer -> imageContainer instanceof ImageDirectory).forEach(imageContainer -> {
 			writeSpecificDirectoryToTar(tarOut, (ImageDirectory) imageContainer, newPath);
+		});
+	}
+
+	public static void parseLegacyDirectory(ImageDirectory directory, List<Location> knownLocations, List<Species> knownSpecies)
+	{
+		// Iterate over all location directories
+		directory.getChildren().stream().filter(imageContainer -> imageContainer instanceof ImageDirectory).map(imageContainer -> (ImageDirectory) imageContainer).forEach(locationDirectory ->
+		{
+			String locationName = locationDirectory.getFile().getName();
+			Optional<Location> locationOpt = knownLocations.stream().filter(location -> location.getName().equalsIgnoreCase(locationName)).findFirst();
+			Location currentLocation;
+			if (locationOpt.isPresent())
+			{
+				currentLocation = locationOpt.get();
+			}
+			else
+			{
+				currentLocation = new Location();
+				currentLocation.setName(locationName);
+				currentLocation.setId("None");
+				currentLocation.setElevation(0.0);
+				currentLocation.setLat(0.0);
+				currentLocation.setLng(0.0);
+				knownLocations.add(currentLocation);
+			}
+
+			// Iterate over all species directories
+			locationDirectory.getChildren().stream().filter(imageContainer -> imageContainer instanceof ImageDirectory).map(imageContainer -> (ImageDirectory) imageContainer).forEach(speciesDirectory ->
+			{
+				String speciesName = speciesDirectory.getFile().getName();
+				Optional<Species> speciesOpt = knownSpecies.stream().filter(species -> species.getName().equalsIgnoreCase(speciesName)).findFirst();
+				Species currentSpecies;
+				if (speciesOpt.isPresent())
+				{
+					currentSpecies = speciesOpt.get();
+				}
+				else
+				{
+					currentSpecies = new Species();
+					currentSpecies.setName(speciesName);
+					currentSpecies.setSpeciesIcon(Species.DEFAULT_ICON);
+					knownSpecies.add(currentSpecies);
+				}
+
+				// Iterate over all species count directories
+				speciesDirectory.getChildren().stream().filter(imageContainer -> imageContainer instanceof ImageDirectory).map(imageContainer -> (ImageDirectory) imageContainer).forEach(countDirectory ->
+				{
+					try
+					{
+						Integer speciesCount = Integer.parseInt(countDirectory.getFile().getName());
+						countDirectory.getChildren().stream().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).forEach(imageEntry ->
+						{
+							if (imageEntry.getLocationTaken() == null)
+								imageEntry.setLocationTaken(currentLocation);
+							if (imageEntry.getSpeciesPresent().isEmpty())
+								imageEntry.addSpecies(currentSpecies, speciesCount);
+						});
+					}
+					catch (NumberFormatException ignored) {}
+				});
+			});
 		});
 	}
 }

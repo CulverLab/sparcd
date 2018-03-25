@@ -31,7 +31,7 @@ public class Species
 
     // Default Icon
     @Expose(serialize = false, deserialize = false)
-    public static final String DEFAULT_ICON = ImageEntry.class.getResource("/images/importWindow/defaultAnimalIcon.png").toString();
+    public static final String DEFAULT_ICON = "https://i.imgur.com/4qz5mI0.png";
 
     /**
      * Constructor for the species, sets a default icon
