@@ -1,13 +1,14 @@
 package controller.importView;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import library.ToggleButtonSelector;
 import model.analysis.SanimalAnalysisUtils;
@@ -18,6 +19,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.controlsfx.control.SegmentedButton;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
+import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -38,12 +40,6 @@ public class LocationCreatorController implements Initializable
 	@FXML
 	public TextField txtId;
 
-	// Location location in latitude and longitude
-	@FXML
-	public TextField txtLatitude;
-	@FXML
-	public TextField txtLongitude;
-
 	// Location elevation
 	@FXML
 	public TextField txtElevation;
@@ -56,19 +52,21 @@ public class LocationCreatorController implements Initializable
 	@FXML
 	public RadioButton rbnLatLng;
 
-	// Two panes each with a different way of entering location data
-	@FXML
-	public GridPane pneUTM;
-	@FXML
-	public GridPane pneLatLng;
-
 	// Location location in UTM given a letter, zone, easting, and northing
 	@FXML
-	public TextField txtLetter;
+	public Label lblZoneOrLat;
 	@FXML
-	public TextField txtZone;
+	public TextField txtZoneOrLat;
+	@FXML
+	public Label lblLetterOrLng;
+	@FXML
+	public TextField txtLetterOrLng;
+	@FXML
+	public Label lblEasting;
 	@FXML
 	public TextField txtEasting;
+	@FXML
+	public Label lblNorthing;
 	@FXML
 	public TextField txtNorthing;
 
@@ -92,22 +90,21 @@ public class LocationCreatorController implements Initializable
 
 
 	// This allows for fields to be validated and displays a red X if input is invalid
-	private ValidationSupport basicFieldValidator = new ValidationSupport();
-	private ValidationSupport latLngValidator = new ValidationSupport();
-	private ValidationSupport UTMValidator = new ValidationSupport();
+	private ValidationSupport fieldValidator = new ValidationSupport();
 
 	// The location that this creator is currently editing
 	private Location locationToEdit;
 	// The fields to bind text fields to for easy access
 	private StringProperty newName = new SimpleStringProperty("");
 	private StringProperty newId = new SimpleStringProperty("");
-	private StringProperty newLatitude = new SimpleStringProperty("");
-	private StringProperty newLongitude = new SimpleStringProperty("");
 	private StringProperty newElevation = new SimpleStringProperty("");
-	private StringProperty newLetter = new SimpleStringProperty("");
-	private StringProperty newZone = new SimpleStringProperty("");
+	private StringProperty newZoneOrLat = new SimpleStringProperty("");
+	private StringProperty newLetterOrLng = new SimpleStringProperty("");
 	private StringProperty newEasting = new SimpleStringProperty("");
 	private StringProperty newNorthing = new SimpleStringProperty("");
+
+	private BooleanProperty utmValid = new SimpleBooleanProperty(false);
+	private BooleanProperty latLngValid = new SimpleBooleanProperty(false);
 
 	// Invalid UTM letter letters
 	private static final Character[] INVALID_UTM_LETTERS = new Character[]
@@ -125,11 +122,9 @@ public class LocationCreatorController implements Initializable
 		// Bind the text fields to their fields
 		this.txtName.textProperty().bindBidirectional(newName);
 		this.txtId.textProperty().bindBidirectional(newId);
-		this.txtLatitude.textProperty().bindBidirectional(newLatitude);
-		this.txtLongitude.textProperty().bindBidirectional(newLongitude);
+		this.txtLetterOrLng.textProperty().bindBidirectional(newLetterOrLng);
 		this.txtElevation.textProperty().bindBidirectional(newElevation);
-		this.txtLetter.textProperty().bindBidirectional(newLetter);
-		this.txtZone.textProperty().bindBidirectional(newZone);
+		this.txtZoneOrLat.textProperty().bindBidirectional(newZoneOrLat);
 		this.txtEasting.textProperty().bindBidirectional(newEasting);
 		this.txtNorthing.textProperty().bindBidirectional(newNorthing);
 
@@ -139,54 +134,72 @@ public class LocationCreatorController implements Initializable
 		ToggleButtonSelector.makeUnselectable(this.tbnMeters);
 
 		// We enable decoration so that errors are represented by a red outline of the text box
-		this.latLngValidator.setErrorDecorationEnabled(true);
-		this.UTMValidator.setErrorDecorationEnabled(true);
-		this.basicFieldValidator.setErrorDecorationEnabled(true);
+		this.fieldValidator.setErrorDecorationEnabled(true);
 
 		// The name must not be empty
-		this.basicFieldValidator.registerValidator(this.txtName, true, Validator.createEmptyValidator("Location Name must not be empty!"));
+		this.fieldValidator.registerValidator(this.txtName, true, Validator.createEmptyValidator("Location Name must not be empty!"));
 		// The id must not be empty
-		this.basicFieldValidator.registerValidator(this.txtId, true, Validator.createEmptyValidator("Location Id must not be empty!"));
+		this.fieldValidator.registerValidator(this.txtId, true, Validator.createEmptyValidator("Location Id must not be empty!"));
 
-		// The latitude must be between 85 and -85
-		this.latLngValidator.registerValidator(this.txtLatitude, true, Validator.<String>createPredicateValidator(this::latitudeValid, "Latitude must be +/-85!"));
-		// The latitude must be between 180 and -180
-		this.latLngValidator.registerValidator(this.txtLongitude, true, Validator.<String>createPredicateValidator(this::longitudeValid, "Longitude must be +/-180!"));
-
-		// The letter must be C to X excluding I and O
-		this.UTMValidator.registerValidator(this.txtLetter, true, Validator.<String>createPredicateValidator(this::letterValid, "UTM Letter must be a letter from C to X excluding I and O"));
-		// The zone must be between 1 and 60
-		this.UTMValidator.registerValidator(this.txtZone, true, Validator.<String>createPredicateValidator(this::zoneValid, "UTM Zone must be a number between 1 and 60"));
+		// The letter must be C to X excluding I and O or latitude must be between 85 and -85
+		this.fieldValidator.registerValidator(this.txtLetterOrLng, true, Validator.createPredicateValidator(this::letterOrLngValid, "UTM Letter must be a letter from C to X excluding I and O or longitude between -85 and 85"));
+		// The zone must be between 1 and 60 or latitude must be between 180 and -180
+		this.fieldValidator.registerValidator(this.txtZoneOrLat, true, Validator.createPredicateValidator(this::zoneOrLatValid, "UTM Zone must be a number between 1 and 60 or latitude between -85 and 85"));
 		// The easting must be a double between 1000000 and 0
-		this.UTMValidator.registerValidator(this.txtEasting, true, Validator.<String>createPredicateValidator(this::eastingValid, "Easting must be between 0 and 1000000"));
+		this.fieldValidator.registerValidator(this.txtEasting, true, Validator.createPredicateValidator(this::eastingValid, "Easting must be between 0 and 1000000"));
 		// The northing must be a double between 10000000 and 0
-		this.UTMValidator.registerValidator(this.txtNorthing, true, Validator.<String>createPredicateValidator(this::northingValid, "Northing must be between 0 and 1000000"));
+		this.fieldValidator.registerValidator(this.txtNorthing, true, Validator.createPredicateValidator(this::northingValid, "Northing must be between 0 and 1000000"));
 
 		// Elevation must be a double
-		this.basicFieldValidator.registerValidator(this.txtElevation, true, Validator.createPredicateValidator(this::isValidDouble, "Elevation must be a number!"));
+		this.fieldValidator.registerValidator(this.txtElevation, true, Validator.createPredicateValidator(this::isValidDouble, "Elevation must be a number!"));
 
-		// Bind the pane's visibility to if the radio button is checked
-		this.pneLatLng.visibleProperty().bind(this.rbnLatLng.selectedProperty());
-		this.pneUTM.visibleProperty().bind(this.rbnUTM.selectedProperty());
+		BooleanProperty showingLatLng = this.rbnLatLng.selectedProperty();
+		this.lblZoneOrLat.textProperty().bind(EasyBind.map(showingLatLng, showingLL -> showingLL ? "Latitude (+/-85): " : "Zone (1-60): "));
+		this.lblLetterOrLng.textProperty().bind(EasyBind.map(showingLatLng, showingLL -> showingLL ? "Longitude (+/-180): " : "Letter (C-X excluding I and O): "));
+		this.lblEasting.visibleProperty().bind(showingLatLng.not());
+		this.txtEasting.visibleProperty().bind(showingLatLng.not());
+		this.lblNorthing.visibleProperty().bind(showingLatLng.not());
+		this.txtNorthing.visibleProperty().bind(showingLatLng.not());
+
+		utmValid.bind(EasyBind.combine(this.txtZoneOrLat.textProperty(), this.txtLetterOrLng.textProperty(), this.txtEasting.textProperty(), this.txtNorthing.textProperty(), (zone, letter, easting, northing) ->
+				this.zoneValid(zone) && this.letterValid(letter) && this.eastingValid(easting) && this.northingValid(northing)));
+
+		latLngValid.bind(EasyBind.combine(this.txtZoneOrLat.textProperty(), this.txtLetterOrLng.textProperty(), (latitude, longitude) ->
+			this.latitudeValid(latitude) && this.longutudeValid(longitude)));
 
 		// When we select latLng, recalculate latLng from UTM
 		this.rbnLatLng.selectedProperty().addListener(((observable, oldValue, newValue) -> {
-			if (newValue && !this.UTMValidator.isInvalid())
+			if (newValue && utmValid.getValue())
 				this.recalculateLatLngFromUTM();
+			else if (newValue && !utmValid.getValue())
+			{
+				this.txtZoneOrLat.clear();
+				this.txtLetterOrLng.clear();
+				this.txtEasting.clear();
+				this.txtNorthing.clear();
+			}
 		}));
 
 		// When we select UTM, recalculate UTM from latLng
 		this.rbnUTM.selectedProperty().addListener(((observable, oldValue, newValue) -> {
-			if (newValue && !this.latLngValidator.isInvalid())
+			if (newValue && latLngValid.getValue())
 				this.recalculateUTMFromLatLng();
+			else if (newValue && !latLngValid.getValue())
+			{
+				this.txtZoneOrLat.clear();
+				this.txtLetterOrLng.clear();
+				this.txtEasting.clear();
+				this.txtNorthing.clear();
+			}
 		}));
 
 		// Disable the confirm button if the validators are set to invalid
 		this.btnConfirm.disableProperty().bind(
-				this.basicFieldValidator.invalidProperty()
-						.or(Bindings.when(this.rbnLatLng.selectedProperty())
-										.then(this.latLngValidator.invalidProperty())
-										.otherwise(this.UTMValidator.invalidProperty())));
+			this.fieldValidator.invalidProperty()
+				.or(Bindings.when(this.rbnLatLng.selectedProperty())
+					.then(latLngValid.not())
+					.otherwise(utmValid.not())));
+
 
 		// When we select the meters button, we convert the existing elevation to meters
 		this.tbnMeters.selectedProperty().addListener((observable, oldValue, newValue) -> {
@@ -217,16 +230,11 @@ public class LocationCreatorController implements Initializable
 		if (this.locationToEdit.idValid())
 			this.newId.set(location.getId());
 		if (this.locationToEdit.latValid())
-			this.newLatitude.set(locationToEdit.getLat().toString());
+			this.newZoneOrLat.set(locationToEdit.getLat().toString());
 		if (this.locationToEdit.lngValid())
-			this.newLongitude.set(locationToEdit.getLng().toString());
+			this.newLetterOrLng.set(locationToEdit.getLng().toString());
 		if (this.locationToEdit.elevationValid())
 			this.newElevation.set(locationToEdit.getElevation().toString());
-		// If the lat and long are valid, we calculate the equivalent UTM coordinates and set our easting/northing/letter/zone
-		if (this.locationToEdit.latValid() && this.locationToEdit.lngValid())
-		{
-			this.recalculateUTMFromLatLng();
-		}
 	}
 
 	/**
@@ -243,8 +251,8 @@ public class LocationCreatorController implements Initializable
 		// Set the location's fields, and close the editor window
 		locationToEdit.setName(newName.getValue());
 		locationToEdit.setId(newId.getValue());
-		locationToEdit.setLat(RoundingUtils.roundLat(Double.parseDouble(newLatitude.getValue())));
-		locationToEdit.setLng(RoundingUtils.roundLng(Double.parseDouble(newLongitude.getValue())));
+		locationToEdit.setLat(RoundingUtils.roundLat(Double.parseDouble(newZoneOrLat.getValue())));
+		locationToEdit.setLng(RoundingUtils.roundLng(Double.parseDouble(newLetterOrLng.getValue())));
 		if (this.tbnMeters.isSelected())
 			locationToEdit.setElevation((double) Math.round(Double.parseDouble(newElevation.getValue())));
 		else if (this.tbnFeet.isSelected())
@@ -267,9 +275,9 @@ public class LocationCreatorController implements Initializable
 	 */
 	private void recalculateUTMFromLatLng()
 	{
-		UTMCoord equivalent = SanimalAnalysisUtils.Deg2UTM(Double.parseDouble(this.newLatitude.getValue()), Double.parseDouble(this.newLongitude.getValue()));
-		this.newLetter.setValue(equivalent.getLetter().toString());
-		this.newZone.setValue(equivalent.getZone().toString());
+		UTMCoord equivalent = SanimalAnalysisUtils.Deg2UTM(Double.parseDouble(this.newZoneOrLat.getValue()), Double.parseDouble(this.newLetterOrLng.getValue()));
+		this.newLetterOrLng.setValue(equivalent.getLetter().toString());
+		this.newZoneOrLat.setValue(equivalent.getZone().toString());
 		this.newEasting.setValue(Long.toString(Math.round(equivalent.getEasting())));
 		this.newNorthing.setValue(Long.toString(Math.round(equivalent.getNorthing())));
 	}
@@ -279,10 +287,10 @@ public class LocationCreatorController implements Initializable
 	 */
 	private void recalculateLatLngFromUTM()
 	{
-		Double[] equivalent = SanimalAnalysisUtils.UTM2Deg(new UTMCoord(Double.parseDouble(this.newEasting.getValue()), Double.parseDouble(this.newNorthing.getValue()), Integer.parseInt(this.newZone.getValue()), this.newLetter.getValue().charAt(0)));
+		Double[] equivalent = SanimalAnalysisUtils.UTM2Deg(new UTMCoord(Double.parseDouble(this.newEasting.getValue()), Double.parseDouble(this.newNorthing.getValue()), Integer.parseInt(this.newZoneOrLat.getValue()), this.newLetterOrLng.getValue().charAt(0)));
 		// Round to 4 decimal places
-		this.newLatitude.setValue(Double.toString(RoundingUtils.roundLat(equivalent[0])));
-		this.newLongitude.setValue(Double.toString(RoundingUtils.roundLng(equivalent[1])));
+		this.newZoneOrLat.setValue(Double.toString(RoundingUtils.roundLat(equivalent[0])));
+		this.newLetterOrLng.setValue(Double.toString(RoundingUtils.roundLng(equivalent[1])));
 	}
 
 	///
@@ -314,19 +322,24 @@ public class LocationCreatorController implements Initializable
 		}
 	}
 
-	private Boolean latitudeValid(String latitude)
+	private Boolean letterValid(String letter)
 	{
-		return this.isValidDouble(latitude) && Double.parseDouble(latitude) <= 85 && Double.parseDouble(latitude) >= -85;
+		return letter.length() == 1 && Character.isLetter(letter.charAt(0)) && !ArrayUtils.contains(INVALID_UTM_LETTERS, letter.charAt(0));
 	}
 
-	private Boolean longitudeValid(String longitude)
+	private Boolean longutudeValid(String longitude)
 	{
 		return this.isValidDouble(longitude) && Double.parseDouble(longitude) <= 180 && Double.parseDouble(longitude) >= -180;
 	}
 
-	private Boolean letterValid(String letter)
+	private Boolean letterOrLngValid(String letterOrLng)
 	{
-		return letter.length() == 1 && Character.isLetter(letter.charAt(0)) && !ArrayUtils.contains(INVALID_UTM_LETTERS, letter.charAt(0));
+		if (this.rbnLatLng.isSelected())
+			return longutudeValid(letterOrLng);
+		else if (this.rbnUTM.isSelected())
+			return letterValid(letterOrLng);
+		else
+			return false;
 	}
 
 	private Boolean zoneValid(String zone)
@@ -334,14 +347,35 @@ public class LocationCreatorController implements Initializable
 		return this.isValidInteger(zone) && Integer.parseInt(zone) >= 1 && Integer.parseInt(zone) <= 60;
 	}
 
+	private Boolean latitudeValid(String latitude)
+	{
+		return this.isValidDouble(latitude) && Double.parseDouble(latitude) <= 85 && Double.parseDouble(latitude) >= -85;
+	}
+
+	private Boolean zoneOrLatValid(String zoneOrLat)
+	{
+		if (this.rbnLatLng.isSelected())
+			return latitudeValid(zoneOrLat);
+		else if (this.rbnUTM.isSelected())
+			return zoneValid(zoneOrLat);
+		else
+			return false;
+	}
+
 	private Boolean eastingValid(String easting)
 	{
-		return this.isValidDouble(easting) && Double.parseDouble(easting) <= 1000000 && Double.parseDouble(easting) >= 0;
+		if (this.rbnLatLng.isSelected())
+			return true;
+		else
+			return this.isValidDouble(easting) && Double.parseDouble(easting) <= 1000000 && Double.parseDouble(easting) >= 0;
 	}
 
 	private Boolean northingValid(String northing)
 	{
-		return this.isValidDouble(northing) && Double.parseDouble(northing) <= 10000000 && Double.parseDouble(northing) >= 0;
+		if (this.rbnLatLng.isSelected())
+			return true;
+		else
+			return this.isValidDouble(northing) && Double.parseDouble(northing) <= 10000000 && Double.parseDouble(northing) >= 0;
 	}
 
 	///

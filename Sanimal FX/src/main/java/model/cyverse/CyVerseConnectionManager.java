@@ -30,6 +30,7 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactoryImpl;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
+import org.irods.jargon.core.query.IRODSGenQueryBuilder;
 import org.irods.jargon.core.transfer.TransferStatus;
 import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
 
@@ -50,6 +51,8 @@ public class CyVerseConnectionManager
 	private static final String CYVERSE_HOST = "data.cyverse.org";
 	// The directory that each user has as their home directory
 	private static final String HOME_DIRECTORY = "/iplant/home/";
+	// The directory that collections are stored in
+	private static final String COLLECTIONS_DIRECTORY = "/iplant/home/dslovikosky/Sanimal/Collections";
 	// Each user is part of the iPlant zone
 	private static final String ZONE = "iplant";
 	// The type used to serialize a list of locations through Gson
@@ -387,15 +390,13 @@ public class CyVerseConnectionManager
 	 */
 	public List<ImageCollection> pullRemoteCollections()
 	{
-		// The collections folder is under dslovikosky currently
-		String collectionsFolderName = "/iplant/home/dslovikosky/Sanimal/Collections";
 		// Create a list of collections
 		List<ImageCollection> imageCollections = new ArrayList<>();
 		try
 		{
 			// Grab the collections folder and make sure it exists
 			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
-			IRODSFile collectionsFolder = fileFactory.instanceIRODSFile(collectionsFolderName);
+			IRODSFile collectionsFolder = fileFactory.instanceIRODSFile(COLLECTIONS_DIRECTORY);
 			if (collectionsFolder.exists())
 			{
 				// Grab a list of files in the collections directory
@@ -505,7 +506,6 @@ public class CyVerseConnectionManager
 	 */
 	public void pushLocalCollection(ImageCollection collection, StringProperty messageCallback)
 	{
-		String collectionsDir = "/iplant/home/dslovikosky/Sanimal/Collections";
 		IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 		// Check if we are the owner of the collection
 		String ownerUsername = collection.getOwner();
@@ -514,7 +514,7 @@ public class CyVerseConnectionManager
 			try
 			{
 				// The name of the collection directory is the UUID of the collection
-				String collectionDirName = collectionsDir + "/" + collection.getID().toString();
+				String collectionDirName = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString();
 
 				// Create the directory, and set the permissions appropriately
 				IRODSFile collectionDir = fileFactory.instanceIRODSFile(collectionDirName);
@@ -548,7 +548,7 @@ public class CyVerseConnectionManager
 				if (!collectionDirUploads.exists())
 					collectionDirUploads.mkdir();
 				this.setFilePermissions(collectionDirUploads.getAbsolutePath(), collection.getPermissions(), false);
-				this.accessObjects.getCollectionAO().setAccessPermissionInherit(ZONE, collectionDirUploads.getAbsolutePath(), true);
+				this.accessObjects.getCollectionAO().setAccessPermissionInherit(ZONE, collectionDirUploads.getAbsolutePath(), false);
 			}
 			catch (JargonException e)
 			{
@@ -565,7 +565,7 @@ public class CyVerseConnectionManager
 	public void removeCollection(ImageCollection collection)
 	{
 		// The name of the collection to remove
-		String collectionsDirName = "/iplant/home/dslovikosky/Sanimal/Collections/" + collection.getID().toString();
+		String collectionsDirName = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString();
 		try
 		{
 			// If it exists, delete it
@@ -744,7 +744,7 @@ public class CyVerseConnectionManager
 		try
 		{
 			// Grab the uploads folder for a given collection
-			String collectionUploadDirStr = "/iplant/home/dslovikosky/Sanimal/Collections/" + collection.getID().toString() + "/Uploads";
+			String collectionUploadDirStr = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString() + "/Uploads";
 			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 			IRODSFile collectionUploadDir = fileFactory.instanceIRODSFile(collectionUploadDirStr);
 			// If the uploads directory exists and we can write to it, upload
@@ -819,7 +819,7 @@ public class CyVerseConnectionManager
 		try
 		{
 			// Grab the save folder for a given collection
-			String collectionSaveDirStr = "/iplant/home/dslovikosky/Sanimal/Collections/" + collection.getID().toString() + "/Uploads";
+			String collectionSaveDirStr = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString() + "/Uploads";
 			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 			IRODSFile collectionSaveDir = fileFactory.instanceIRODSFile(collectionSaveDirStr);
 			// If the save directory exists and we can write to it, save
@@ -899,7 +899,7 @@ public class CyVerseConnectionManager
 			// Clear the current collection uploads
 			Platform.runLater(() -> collection.getUploads().clear());
 			// Grab the uploads folder for a given collection
-			String collectionUploadDirStr = "/iplant/home/dslovikosky/Sanimal/Collections/" + collection.getID().toString() + "/Uploads";
+			String collectionUploadDirStr = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString() + "/Uploads";
 			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 			IRODSFile collectionUploadDir = fileFactory.instanceIRODSFile(collectionUploadDirStr);
 			// If the uploads directory exists and we can read it, read

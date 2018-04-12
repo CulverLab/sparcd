@@ -5,17 +5,20 @@
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.SegmentedButton?>
 <?import java.net.URL?>
-<GridPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.importView.TimeShiftController">
+<GridPane vgap="10" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.importView.TimeShiftController">
     <stylesheets>
         <URL value="@TimeShift.css"/>
     </stylesheets>
+    <padding>
+        <Insets top="10" bottom="10" left="10" right="10"/>
+    </padding>
     <columnConstraints>
         <ColumnConstraints hgrow="ALWAYS"/>
     </columnConstraints>
     <rowConstraints>
-        <RowConstraints minHeight="50" maxHeight="50"/>
+        <RowConstraints/>
         <RowConstraints vgrow="ALWAYS"/>
-        <RowConstraints minHeight="50" maxHeight="50"/>
+        <RowConstraints/>
     </rowConstraints>
     <children>
         <Label styleClass="font16" fx:id="lblDate" GridPane.halignment="CENTER" GridPane.valignment="CENTER" text="Original Date: "/>

@@ -3,5 +3,5 @@
   "timeFormat": "Time24Hour",
   "locationFormat": "LatLong",
   "distanceUnits": "Meters",
-  "drSandersonCompatibility": true
+  "drSandersonCompatibility": false
 }

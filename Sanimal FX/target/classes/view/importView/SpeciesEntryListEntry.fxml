@@ -24,6 +24,6 @@
     <children>
         <Label fx:id="lblName" alignment="CENTER_LEFT" styleClass="font18" text="Name" HBox.hgrow="ALWAYS" />
         <Spinner fx:id="txtCount" maxHeight="50" maxWidth="80" minHeight="50" minWidth="80" styleClass="font18" GridPane.columnIndex="1" />
-        <Button fx:id="btnRemove" onAction="#removeEntry" alignment="CENTER_RIGHT" maxHeight="50" maxWidth="50" minHeight="50" minWidth="50" styleClass="removeBtnBackground" GridPane.columnIndex="2" />
+        <Button fx:id="btnRemove" GridPane.valignment="CENTER" GridPane.halignment="CENTER" onAction="#removeEntry" alignment="CENTER_RIGHT" maxHeight="40" maxWidth="40" minHeight="40" minWidth="40" styleClass="removeBtnBackground" GridPane.columnIndex="2" />
     </children>
 </GridPane>

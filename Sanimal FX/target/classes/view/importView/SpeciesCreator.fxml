@@ -4,21 +4,21 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
-<GridPane fx:id="gridBackground" minWidth="450" prefWidth="450.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.importView.SpeciesCreatorController">
+<GridPane fx:id="gridBackground" vgap="10" hgap="10" minWidth="450" prefWidth="450.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.importView.SpeciesCreatorController">
     <stylesheets>
         <URL value="@SpeciesCreator.css" />
     </stylesheets>
     <padding>
-        <Insets left="10" right="10" top="5" bottom="5" />
+        <Insets left="10" right="10" top="10" bottom="5" />
     </padding>
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" maxWidth="165.0" minWidth="10.0" prefWidth="133.0" />
         <ColumnConstraints hgrow="SOMETIMES" />
     </columnConstraints>
     <rowConstraints>
-        <RowConstraints minHeight="35.0"/>
-        <RowConstraints minHeight="35.0"/>
-        <RowConstraints minHeight="35.0"/>
+        <RowConstraints vgrow="SOMETIMES"/>
+        <RowConstraints vgrow="SOMETIMES"/>
+        <RowConstraints vgrow="SOMETIMES"/>
     </rowConstraints>
     <children>
         <Label text="Name: " GridPane.rowIndex="0" />
