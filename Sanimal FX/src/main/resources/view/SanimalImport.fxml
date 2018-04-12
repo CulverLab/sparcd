@@ -8,7 +8,7 @@
 <?import library.TreeViewAutomatic?>
 <?import org.controlsfx.control.StatusBar?>
 <?import java.net.URL?>
-<SplitPane fx:id="mainPane" dividerPositions="0.28, 0.75" minHeight="700" minWidth="1300" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalImportController">
+<SplitPane fx:id="mainPane" dividerPositions="0.28, 0.75" minWidth="1300" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalImportController">
     <stylesheets>
         <URL value="@SanimalImport.css" />
     </stylesheets>
