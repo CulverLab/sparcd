@@ -21,6 +21,7 @@ public class ErrorDisplay
 	 */
 	public void showPopup(Alert.AlertType type, Window window, String title, String header, String content, Boolean shouldWait)
 	{
+		printError(content);
 		Platform.runLater(() ->
 		{
 			Alert alert;

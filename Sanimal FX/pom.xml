@@ -47,6 +47,12 @@
     </build>
 
     <dependencies>
+        <!-- JFXtras to get a time picker -->
+        <dependency>
+            <groupId>org.jfxtras</groupId>
+            <artifactId>jfxtras-controls</artifactId>
+            <version>8.0-r5</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-imaging -->
         <dependency>
             <groupId>org.apache.commons</groupId>

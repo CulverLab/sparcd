@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.panemu.tiwulfx.control.DetachableTab?>
-<?import com.panemu.tiwulfx.control.DetachableTabPane?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
-<SplitPane dividerPositions="0.3" minHeight="500" minWidth="1000" orientation="VERTICAL" xmlns="http://javafx.com/javafx/8.0.121"
-           xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalAnalysisController">
+
+<?import com.panemu.tiwulfx.control.DetachableTabPane?>
+<?import com.panemu.tiwulfx.control.DetachableTab?>
+<?import org.controlsfx.control.RangeSlider?>
+<?import jfxtras.scene.control.LocalDateTimePicker?>
+<SplitPane dividerPositions="0.3" orientation="VERTICAL" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalAnalysisController">
     <stylesheets>
         <URL value="@SanimalAnalysis.css"/>
     </stylesheets>
@@ -22,7 +24,11 @@
                         <Insets left="5" right="5"/>
                     </GridPane.margin>
                     <top>
-                        <Label text="Species Filter" BorderPane.alignment="TOP_CENTER"/>
+                        <Label text="Species Filter" BorderPane.alignment="TOP_CENTER">
+                            <BorderPane.margin>
+                                <Insets top="5" bottom="5"/>
+                            </BorderPane.margin>
+                        </Label>
                     </top>
                     <center>
                         <ListView fx:id="speciesFilterListView"/>
@@ -57,7 +63,11 @@
                         <Insets left="5" right="5"/>
                     </GridPane.margin>
                     <top>
-                        <Label text="Location Filter" BorderPane.alignment="TOP_CENTER"/>
+                        <Label text="Location Filter" BorderPane.alignment="CENTER">
+                            <BorderPane.margin>
+                                <Insets top="5" bottom="5"/>
+                            </BorderPane.margin>
+                        </Label>
                     </top>
                     <center>
                         <ListView fx:id="locationFilterListView"/>
@@ -87,32 +97,32 @@
                         </VBox>
                     </bottom>
                 </BorderPane>
-                <GridPane>
+                <GridPane hgap="15">
                     <padding>
                         <Insets left="5" right="5"/>
                     </padding>
                     <rowConstraints>
-                        <RowConstraints minHeight="35"/>
-                        <RowConstraints minHeight="35"/>
-                        <RowConstraints minHeight="35"/>
-                        <RowConstraints minHeight="35"/>
-                        <RowConstraints minHeight="35"/>
-                        <RowConstraints minHeight="35"/>
+                        <RowConstraints/>
+                        <RowConstraints/>
+                        <RowConstraints/>
+                        <RowConstraints/>
+                        <RowConstraints/>
                     </rowConstraints>
                     <columnConstraints>
-                        <ColumnConstraints minWidth="150" maxWidth="150"/>
-                        <ColumnConstraints minWidth="150" maxWidth="150"/>
-                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints hgrow="SOMETIMES"/>
+                        <ColumnConstraints hgrow="SOMETIMES"/>
                     </columnConstraints>
                     <children>
-                        <Label text="Visualization Preferences" GridPane.columnSpan="2" GridPane.halignment="CENTER"/>
-                        <Label text="Event Interval (minutes):" GridPane.rowIndex="1"/>
-                        <TextField fx:id="txtEventInterval" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-                        <Label text="Start Date:" GridPane.rowIndex="2"/>
-                        <DatePicker fx:id="dateStart" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-                        <Label text="End Date:" GridPane.rowIndex="3"/>
-                        <DatePicker fx:id="dateEnd" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-                        <Button text="Refresh Visualizations" onAction="#refreshVisualizations" GridPane.rowIndex="4" GridPane.columnSpan="2" GridPane.halignment="CENTER"/>
+                        <Label text="Date/Time Filter" GridPane.columnSpan="2" GridPane.halignment="CENTER">
+                            <GridPane.margin>
+                                <Insets top="5" bottom="5"/>
+                            </GridPane.margin>
+                        </Label>
+                        <Label text="Start Date and Time" GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.valignment="CENTER"/>
+                        <Label text="End Date and Time" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER"/>
+                        <LocalDateTimePicker fx:id="dateTimeStart" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <LocalDateTimePicker fx:id="dateTimeEnd" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                        <Button text="Query" onAction="#query" GridPane.rowIndex="3" GridPane.columnSpan="2" GridPane.halignment="CENTER"/>
                     </children>
                 </GridPane>
             </items>
@@ -120,9 +130,6 @@
         <DetachableTabPane fx:id="tbnVisualizations">
             <DetachableTab detachable="false" text="Dr. Sanderson's Output" closable="false">
                 <fx:include fx:id="visDrSanderson" source="analysisView/VisDrSanderson.fxml"/>
-            </DetachableTab>
-            <DetachableTab detachable="false" text="Species Accumulation Curve" closable="false">
-                <fx:include fx:id="visSpeciesAccumulationCurve" source="analysisView/VisSpeciesAccumulationCurve.fxml"/>
             </DetachableTab>
             <DetachableTab detachable="false" text="CSV Output" closable="false">
                 <fx:include fx:id="visCSV" source="analysisView/VisCSV.fxml"/>

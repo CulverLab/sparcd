@@ -3,7 +3,7 @@ package controller;
 import com.panemu.tiwulfx.control.DetachableTabPane;
 import controller.analysisView.VisCSVController;
 import controller.analysisView.VisDrSandersonController;
-import controller.analysisView.VisSpeciesAccumulationCurveController;
+import javafx.beans.binding.Bindings;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
@@ -13,6 +13,8 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxListCell;
+import javafx.util.StringConverter;
+import jfxtras.scene.control.LocalDateTimePicker;
 import model.SanimalData;
 import model.analysis.DataAnalysis;
 import model.image.CloudImageEntry;
@@ -21,11 +23,15 @@ import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
 import org.apache.commons.lang3.StringUtils;
+import org.controlsfx.control.RangeSlider;
+import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
-import java.time.LocalDate;
+import java.time.*;
+import java.time.chrono.Chronology;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -52,27 +58,22 @@ public class SanimalAnalysisController implements Initializable
 	@FXML
 	public TextField txtLocationSearch;
 
-	// The event interval to be used
-	@FXML
-	public TextField txtEventInterval;
-
 	// References to all controllers in the tabs of the analysis page
 	@FXML
 	public VisDrSandersonController visDrSandersonController;
-	@FXML
-	public VisSpeciesAccumulationCurveController visSpeciesAccumulationCurveController;
 	@FXML
 	public VisCSVController visCSVController;
 
 	// Date picker used to select start and end dates
 	@FXML
-	public DatePicker dateStart;
+	public LocalDateTimePicker dateTimeStart;
 	@FXML
-	public DatePicker dateEnd;
+	public LocalDateTimePicker dateTimeEnd;
 
 	// The tab pane containing all visualizations
 	@FXML
 	public DetachableTabPane tbnVisualizations;
+
 
 	///
 	/// FXML bound fields end
@@ -127,26 +128,12 @@ public class SanimalAnalysisController implements Initializable
 		this.locationFilterListView.setCellFactory(CheckBoxListCell.forListView(Location::shouldBePartOfAnalysisProperty));
 		this.locationFilterListView.setEditable(true);
 
-		// Need to ensure start date and end dates are properly set
-		/*
-		ObjectProperty<LocalDate> dateStartProperty = new SimpleObjectProperty<>(LocalDate.now());
-		dateStartProperty.bind(Bindings.createObjectBinding(() -> LocalDate.from(Instant.ofEpochMilli(SanimalData.getInstance().getAllImages().stream().min(Comparator.comparing(ImageEntry::getDateTaken)).get().getDateTaken().getTime())), SanimalData.getInstance().getImageTree().getChildren()));
-		ObjectProperty<LocalDate> dateEndProperty = new SimpleObjectProperty<>(LocalDate.now());
-		dateEndProperty.bind(Bindings.createObjectBinding(() -> LocalDate.from(Instant.ofEpochMilli(SanimalData.getInstance().getAllImages().stream().max(Comparator.comparing(ImageEntry::getDateTaken)).get().getDateTaken().getTime())), SanimalData.getInstance().getImageTree().getChildren()));
+		// Setup our time filters
+		this.dateTimeStart.setLocalDateTime(LocalDateTime.of(2000, Month.JANUARY, 1, 0, 0));
+		this.dateTimeEnd.setLocalDateTime(LocalDateTime.now());
 
-		this.dateStart.setDayCellFactory(x -> new DateCell()
-		{
-			@Override
-			public void updateItem(LocalDate item, boolean empty)
-			{
-				super.updateItem(item, empty);
-				if (item.isBefore(dateStartProperty.getValue()) || item.isAfter(dateEndProperty.getValue()))
-				{
-					setDisable(true);
-				}
-			}
-		});
-		*/
+		this.dateTimeStart.setAllowNull(false);
+		this.dateTimeEnd.setAllowNull(false);
 	}
 
 	/**
@@ -154,24 +141,14 @@ public class SanimalAnalysisController implements Initializable
 	 *
 	 * @param actionEvent ignored
 	 */
-	public void refreshVisualizations(ActionEvent actionEvent)
+	public void query(ActionEvent actionEvent)
 	{
-		// First parse all parameters, starting with event interval (default 30 min)
-		Integer eventInterval = 30;
-		try
-		{
-			// If we got a valid event interval, use it
-			eventInterval = Integer.parseInt(this.txtEventInterval.getText());
-		}
-		catch (NumberFormatException ignored) {}
-
-		// Make sure it's a positive number
-		if (eventInterval <= 0)
-			eventInterval = 30;
+		// Default 60s event interval
+		Integer eventInterval = 60;
 
 		// Grab the start and end date
-		LocalDate startDate = this.dateStart.getValue() == null ? LocalDate.MIN : this.dateStart.getValue();
-		LocalDate endDate = this.dateEnd.getValue() == null ? LocalDate.MAX : this.dateEnd.getValue();
+		LocalDate startDate = this.dateTimeStart.getLocalDateTime().toLocalDate() == null ? LocalDate.MIN : this.dateTimeStart.getLocalDateTime().toLocalDate();
+		LocalDate endDate = this.dateTimeEnd.getLocalDateTime().toLocalDate() == null ? LocalDate.MAX : this.dateTimeEnd.getLocalDateTime().toLocalDate();
 
 		// Now process the filters
 		List<ImageEntry> imagesToAnalyze = SanimalData.getInstance().getAllImages().stream()
@@ -190,7 +167,6 @@ public class SanimalAnalysisController implements Initializable
 
 		// Hand the analysis over to the visualizations to graph
 		visDrSandersonController.visualize(dataStatistics);
-		visSpeciesAccumulationCurveController.visualize(dataStatistics);
 		visCSVController.visualize(dataStatistics);
 	}
 

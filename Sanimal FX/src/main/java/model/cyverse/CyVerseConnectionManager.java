@@ -8,11 +8,14 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import model.SanimalData;
+import model.constant.SanimalMetadataFields;
 import model.image.*;
 import model.location.Location;
 import model.species.Species;
+import model.species.SpeciesEntry;
 import model.util.SettingsData;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.irods.jargon.core.connection.AuthScheme;
 import org.irods.jargon.core.connection.IRODSAccount;
@@ -27,10 +30,10 @@ import org.irods.jargon.core.pub.CollectionAO;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactoryImpl;
+import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
-import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
-import org.irods.jargon.core.query.IRODSGenQueryBuilder;
+import org.irods.jargon.core.query.*;
 import org.irods.jargon.core.transfer.TransferStatus;
 import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
 
@@ -39,6 +42,7 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -777,7 +781,7 @@ public class CyVerseConnectionManager
 					if (messageCallback != null)
 						messageCallback.setValue("Extracting TAR file on CyVerse into a directory...");
 					// Extract the tar
-					this.accessObjects.getBulkFileOperationsAO().extractABundleIntoAnIrodsCollectionWithForceOption(uploadDirName + "/" + toWrite.getName(), uploadDirName, "");
+					this.accessObjects.getBulkFileOperationsAO().extractABundleIntoAnIrodsCollectionWithBulkOperationOptimization(uploadDirName + "/" + toWrite.getName(), uploadDirName, "");
 					if (messageCallback != null)
 						messageCallback.setValue("Removing temporary TAR file...");
 					// Remove the tar, since it was extracted by now
@@ -792,6 +796,26 @@ public class CyVerseConnectionManager
 					String json = SanimalData.getInstance().getGson().toJson(uploadEntry);
 					// Write the UploadMeta.json file to the server
 					this.writeRemoteFile(uploadDirName + "/UploadMeta.json", json);
+					if (messageCallback != null)
+						messageCallback.setValue("Writing metadata to images on CyVerse...");
+					// Add AVU metadata to all uploaded images
+					String localDirAbsolutePath = directoryToWrite.getFile().getAbsolutePath();
+					String localDirName = directoryToWrite.getFile().getName();
+					directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).forEach(imageEntry ->
+					{
+						try
+						{
+							// Compute the image's "cyverse" path
+							String fileAbsolutePath = uploadDirName + "/" + localDirName + StringUtils.substringAfter(imageEntry.getFile().getAbsolutePath(), localDirAbsolutePath);
+							fileAbsolutePath = fileAbsolutePath.replace('\\', '/');
+							this.accessObjects.getDataObjectAO().addBulkAVUMetadataToDataObject(fileAbsolutePath, imageEntry.convertToAVUMetadata());
+						}
+						catch (JargonException e)
+						{
+							SanimalData.getInstance().getErrorDisplay().printError("Could not add metadata to image: " + imageEntry.getFile().getAbsolutePath() + ", error was: ");
+							e.printStackTrace();
+						}
+					});
 				}
 			}
 		}
@@ -855,6 +879,20 @@ public class CyVerseConnectionManager
 							@Override
 							public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection) { return CallbackResponse.YES_FOR_ALL; }
 						}, null);
+
+						String fileAbsoluteCyVersePath = cloudImageEntry.getCyverseFile().getAbsolutePath();
+						cloudImageEntry.convertToAVUMetadata().forEach(avuData ->
+						{
+							try
+							{
+								this.accessObjects.getDataObjectAO().setAVUMetadata(fileAbsoluteCyVersePath, avuData);
+							}
+							catch (JargonException e)
+							{
+								SanimalData.getInstance().getErrorDisplay().printError("Could not add metadata to image: " + cloudImageEntry.getCyverseFile().getAbsolutePath() + ", error was: ");
+								e.printStackTrace();
+							}
+						});
 
 						// Update the progress every 20 uploads
 						if (i % 20 == 0)
@@ -1018,6 +1056,26 @@ public class CyVerseConnectionManager
 					this.createDirectoryAndImageTree(subDirectory);
 				}
 			}
+		}
+	}
+
+	public void performQuery()
+	{
+		try
+		{
+			IRODSGenQueryBuilder builder = new IRODSGenQueryBuilder(true, null)
+					.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_D_DATA_PATH)
+					.addConditionAsGenQueryField(RodsGenQueryEnum.COL_DVM_OWNER_NAME, QueryConditionOperators.EQUAL, "dslovikosky");
+			IRODSQueryResultSet resultSet = this.accessObjects.getGenQueryExecutor().executeIRODSQueryInZone(builder.exportIRODSQueryFromBuilder(25), 0, ZONE);
+			for (IRODSQueryResultRow row : resultSet.getResults())
+			{
+				System.out.println(row.toString());
+			}
+			System.out.println("Query done");
+		}
+		catch (JargonQueryException | JargonException | GenQueryBuilderException e)
+		{
+			e.printStackTrace();
 		}
 	}
 

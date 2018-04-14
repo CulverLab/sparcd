@@ -264,6 +264,6 @@ public class Location
 	@Override
 	public String toString()
 	{
-		return this.getName() + "\nLatitude: " + this.getLat() + "\nLongitude: " + this.getLng() + "\nElevation: " + this.getElevation();
+		return this.getName() + "\nID: " + this.getId() + "\nLatitude: " + this.getLat() + "\nLongitude: " + this.getLng() + "\nElevation: " + this.getElevation();
 	}
 }

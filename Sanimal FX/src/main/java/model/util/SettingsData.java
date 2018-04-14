@@ -26,7 +26,7 @@ public class SettingsData
 	private ObjectProperty<TimeFormat> timeFormat = new SimpleObjectProperty<>(TimeFormat.Time24Hour);
 	private ObjectProperty<LocationFormat> locationFormat = new SimpleObjectProperty<>(LocationFormat.LatLong);
 	private ObjectProperty<DistanceUnits> distanceUnits = new SimpleObjectProperty<>(DistanceUnits.Meters);
-	private BooleanProperty drSandersonCompatibility = new SimpleBooleanProperty(true);
+	private BooleanProperty drSandersonCompatibility = new SimpleBooleanProperty(false);
 
 	/**
 	 * Constructor adds all settings SANIMAL will use to the dictionary
@@ -197,6 +197,8 @@ public class SettingsData
 		{
 			return date.format(formatter);
 		}
+
+		public DateTimeFormatter getFormatter() { return this.formatter; }
 	}
 
 	public enum TimeFormat
@@ -225,6 +227,8 @@ public class SettingsData
 		{
 			return time.format(formatter);
 		}
+
+		public DateTimeFormatter getFormatter() { return this.formatter; }
 	}
 
 	public enum LocationFormat

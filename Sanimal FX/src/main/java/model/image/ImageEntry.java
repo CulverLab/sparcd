@@ -25,12 +25,16 @@ import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.domain.AvuData;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -279,6 +283,30 @@ public class ImageEntry extends ImageContainer
 			return DEFAULT_IMAGE_ICON;
 		}, this.locationTakenProperty, this.speciesPresent);
 		selectedImageProperty.bind(imageBinding);
+	}
+
+	public List<AvuData> convertToAVUMetadata() throws JargonException
+	{
+		List<AvuData> metadata = new LinkedList<>();
+
+		Location locationTaken = this.getLocationTaken();
+		metadata.add(AvuData.instance(SanimalMetadataFields.A_SANIMAL, "true", ""));
+
+		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_TIME_TAKEN, Long.toString(this.getDateTaken().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()), ""));
+
+		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_NAME, locationTaken.getName(), ""));
+		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_ID, locationTaken.getId(), ""));
+		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LATITUDE, locationTaken.getLat().toString(), ""));
+		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, locationTaken.getLng().toString(), ""));
+		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_ELEVATION, locationTaken.getElevation().toString(), "meters"));
+
+		for (SpeciesEntry speciesEntry : this.getSpeciesPresent())
+		{
+			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_NAME, speciesEntry.getSpecies().getName(), ""));
+			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, speciesEntry.getSpecies().getScientificName(), ""));
+			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_COUNT, speciesEntry.getAmount().toString(), ""));
+		}
+		return metadata;
 	}
 
 	/**

@@ -1106,21 +1106,17 @@ public class SanimalImportController implements Initializable
 		Location selected = this.locationListView.getSelectionModel().getSelectedItem();
 		if (selected != null)
 		{
-			// Can only drag & drop if we have an image selected
-			if (this.currentlySelectedImage.getValue() != null || this.currentlySelectedDirectory.getValue() != null)
-			{
-				// Create a dragboard and begin the drag and drop
-				Dragboard dragboard = this.locationListView.startDragAndDrop(TransferMode.ANY);
+			// Create a dragboard and begin the drag and drop
+			Dragboard dragboard = this.locationListView.startDragAndDrop(TransferMode.ANY);
 
-				// Create a clipboard and put the location unique ID into that clipboard
-				ClipboardContent content = new ClipboardContent();
-				content.put(SanimalDataFormats.LOCATION_NAME_FORMAT, selected.getName());
-				content.put(SanimalDataFormats.LOCATION_ID_FORMAT, selected.getId());
-				// Set the dragboard's context, and then consume the event
-				dragboard.setContent(content);
+			// Create a clipboard and put the location unique ID into that clipboard
+			ClipboardContent content = new ClipboardContent();
+			content.put(SanimalDataFormats.LOCATION_NAME_FORMAT, selected.getName());
+			content.put(SanimalDataFormats.LOCATION_ID_FORMAT, selected.getId());
+			// Set the dragboard's context, and then consume the event
+			dragboard.setContent(content);
 
-				mouseEvent.consume();
-			}
+			mouseEvent.consume();
 		}
 	}
 
