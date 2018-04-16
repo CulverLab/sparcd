@@ -31,6 +31,7 @@ import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactoryImpl;
 import org.irods.jargon.core.pub.domain.AvuData;
+import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.query.*;
@@ -41,6 +42,7 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -1059,24 +1061,60 @@ public class CyVerseConnectionManager
 		}
 	}
 
-	public void performQuery()
+	public List<CyVerseQueryResult> performQuery(List<AVUQueryElement> query)
 	{
+		List<CyVerseQueryResult> queryResult = new LinkedList<>();
 		try
 		{
-			IRODSGenQueryBuilder builder = new IRODSGenQueryBuilder(true, null)
-					.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_D_DATA_PATH)
-					.addConditionAsGenQueryField(RodsGenQueryEnum.COL_DVM_OWNER_NAME, QueryConditionOperators.EQUAL, "dslovikosky");
-			IRODSQueryResultSet resultSet = this.accessObjects.getGenQueryExecutor().executeIRODSQueryInZone(builder.exportIRODSQueryFromBuilder(25), 0, ZONE);
-			for (IRODSQueryResultRow row : resultSet.getResults())
+			for (MetaDataAndDomainData metaDataAndDomainData : this.accessObjects.getDataObjectAO().findMetadataValuesByMetadataQuery(query))
 			{
-				System.out.println(row.toString());
+				CyVerseQueryResult specificFileResult = new CyVerseQueryResult(metaDataAndDomainData.getDomainObjectUniqueName());
+				for (MetaDataAndDomainData fileDataField : this.accessObjects.getDataObjectAO().findMetadataValuesForDataObject(metaDataAndDomainData.getDomainObjectUniqueName()))
+				{
+					switch (fileDataField.getAvuAttribute())
+					{
+						case SanimalMetadataFields.A_DATE_TIME_TAKEN:
+							Long timeTaken = Long.parseLong(fileDataField.getAvuValue());
+							specificFileResult.setDateTimeTaken(LocalDateTime.ofInstant(Instant.ofEpochMilli(timeTaken), ZoneId.systemDefault()));
+							break;
+						case SanimalMetadataFields.A_LOCATION_NAME:
+							specificFileResult.setLocationName(fileDataField.getAvuValue());
+							break;
+						case SanimalMetadataFields.A_LOCATION_ID:
+							specificFileResult.setLocationID(fileDataField.getAvuValue());
+							break;
+						case SanimalMetadataFields.A_LOCATION_LATITUDE:
+							specificFileResult.setLocationLatitude(Double.parseDouble(fileDataField.getAvuValue()));
+							break;
+						case SanimalMetadataFields.A_LOCATION_LONGITUDE:
+							specificFileResult.setLocationLongitude(Double.parseDouble(fileDataField.getAvuValue()));
+							break;
+						case SanimalMetadataFields.A_LOCATION_ELEVATION:
+							specificFileResult.setLocationElevation(Double.parseDouble(fileDataField.getAvuValue()));
+							break;
+						case SanimalMetadataFields.A_SPECIES_NAME:
+							specificFileResult.setSpeciesName(fileDataField.getAvuValue());
+							break;
+						case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
+							specificFileResult.setSpeciesScientificName(fileDataField.getAvuValue());
+							break;
+						case SanimalMetadataFields.A_SPECIES_COUNT:
+							specificFileResult.setSpeciesCount(Integer.parseInt(fileDataField.getAvuValue()));
+							break;
+						default:
+							break;
+					}
+				}
+				queryResult.add(specificFileResult);
 			}
+
 			System.out.println("Query done");
 		}
-		catch (JargonQueryException | JargonException | GenQueryBuilderException e)
+		catch (JargonQueryException | JargonException | NumberFormatException e)
 		{
 			e.printStackTrace();
 		}
+		return queryResult;
 	}
 
 	/**

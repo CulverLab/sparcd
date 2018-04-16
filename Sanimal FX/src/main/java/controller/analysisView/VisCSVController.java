@@ -5,10 +5,14 @@ import javafx.scene.control.TextArea;
 import javafx.scene.text.Font;
 import model.SanimalData;
 import model.analysis.DataAnalysis;
+import model.cyverse.CyVerseQuery;
+import model.cyverse.CyVerseQueryResult;
 import model.location.Location;
+import model.species.Species;
 import model.species.SpeciesEntry;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -58,28 +62,34 @@ public class VisCSVController implements VisControllerBase
 	@Override
 	public void visualize(DataAnalysis dataStatistics)
 	{
-		SanimalData.getInstance().getConnectionManager().performQuery();
+		CyVerseQuery query = new CyVerseQuery();
+		for (Location location : dataStatistics.getAllImageLocations())
+			query.addLocation(location);
+		for (Species species : dataStatistics.getAllImageSpecies())
+			query.addSpecies(species);
+		List<CyVerseQueryResult> queryResult = SanimalData.getInstance().getConnectionManager().performQuery(query.build());
 
 		// The raw CSV for each image is made up of 1 line per image in the format of:
 		// File Name,Date Taken, Species in image, Species count, Location name, Location ID, Location latitude, Location longitude, Location elevation
 		// If multiple species are in each image, the single entry is broken into multiple lines, one per species
-		String rawCSV = dataStatistics.getImagesSortedByDate().stream().map(imageEntry ->
+		String rawCSV = queryResult.stream().map(cyVerseQueryResult ->
 		{
-			Location locationTaken = imageEntry.getLocationTaken();
-			return imageEntry.getSpeciesPresent().stream().map(speciesEntry ->
-				imageEntry.getFile().getName() + "," +
-				imageEntry.getDateTaken().toString() + "," +
-				speciesEntry.getSpecies() + "," +
-				speciesEntry.getAmount().toString() + "," +
-				locationTaken.getName() + "," +
-				locationTaken.getId() + "," +
-				locationTaken.getLat() + "," +
-				locationTaken.getLng() + "," +
-				locationTaken.getElevation().toString())
-			.collect(Collectors.joining("\n"));
+			return cyVerseQueryResult.getIrodsFileAbsolutePath() + "," +
+					SanimalData.getInstance().getSettings().formatDateTime(cyVerseQueryResult.getDateTimeTaken(), "") + "," +
+					cyVerseQueryResult.getSpeciesName() + "," +
+					cyVerseQueryResult.getSpeciesScientificName() + "," +
+					cyVerseQueryResult.getSpeciesCount().toString() + "," +
+					cyVerseQueryResult.getLocationName() + "," +
+					cyVerseQueryResult.getLocationID() + "," +
+					cyVerseQueryResult.getLocationLatitude().toString() + "," +
+					cyVerseQueryResult.getLocationLongitude().toString() + "," +
+					cyVerseQueryResult.getLocationElevation().toString();
 		}).collect(Collectors.joining("\n"));
+		if (rawCSV.isEmpty())
+			rawCSV = "No query results found.";
 		this.txtRawCSV.setText(rawCSV);
 
+		/*
 		// The location CSV contains each location, one per line, in the form:
 		// Name, ID, Latitude, Longitude, Elevation
 		String locationCSV = dataStatistics.getAllImageLocations().stream().map(location ->
@@ -99,5 +109,6 @@ public class VisCSVController implements VisControllerBase
 			species.getKeyBinding()
 		).collect(Collectors.joining("\n"));
 		this.txtSpeciesCSV.setText(speciesCSV);
+		*/
 	}
 }

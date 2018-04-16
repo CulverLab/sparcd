@@ -111,7 +111,7 @@ public class ImageEntry extends ImageContainer
 
 			this.markDirty(false);
 		}
-		catch (ImageReadException | ParseException | IOException e)
+		catch (ImageReadException | IOException e)
 		{
 			SanimalData.getInstance().getErrorDisplay().showPopup(
 					Alert.AlertType.ERROR,
@@ -123,7 +123,7 @@ public class ImageEntry extends ImageContainer
 		}
 	}
 
-	private void readDateFromMetadata(TiffImageMetadata tiffImageMetadata) throws ImageReadException, ParseException
+	private void readDateFromMetadata(TiffImageMetadata tiffImageMetadata) throws ImageReadException
 	{
 		if (tiffImageMetadata != null)
 		{
