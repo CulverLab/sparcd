@@ -26,3 +26,7 @@
 .imgRead:hover {
     -fx-effect: dropshadow(gaussian, yellow, 15, .5, 0, 0);
 }
+
+.draggedOver {
+    -fx-background-color: rgba(255, 255, 0, 0.21);
+}

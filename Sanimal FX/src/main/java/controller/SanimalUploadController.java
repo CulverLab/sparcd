@@ -20,6 +20,7 @@ import model.image.*;
 import model.threading.ErrorTask;
 import model.util.FXMLLoaderUtils;
 import org.controlsfx.control.MaskerPane;
+import org.controlsfx.control.TaskProgressView;
 import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
@@ -72,6 +73,9 @@ public class SanimalUploadController implements Initializable
 	// The tree view of uploadable images
 	@FXML
 	public TreeViewAutomatic<ImageContainer> imageTree;
+
+	@FXML
+	public TaskProgressView<Task<?>> tpvUploads;
 
 	///
 	/// FXML Bound Fields End
@@ -158,6 +162,9 @@ public class SanimalUploadController implements Initializable
 				}
 			}
 		});
+
+		// Bind the tasks
+		EasyBind.listBind(this.tpvUploads.getTasks(), SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().getActiveTasks());
 	}
 
 	/**

@@ -6,10 +6,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.controlsfx.control.PropertySheet;
+import org.irods.jargon.core.pub.domain.Zone;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -19,7 +21,7 @@ import java.util.Optional;
 public class SettingsData
 {
 	// A list of settings SANIMAL uses
-	private transient ObservableList<CustomPropertyItem<?>> settingList = FXCollections.observableArrayList(item -> new Observable[] { item.value });
+	private transient ObservableList<CustomPropertyItem<?>> settingList = FXCollections.observableArrayList(item -> new Observable[] { item.getObservableValue().get() });
 
 	// The current setting value
 	private ObjectProperty<DateFormat> dateFormat = new SimpleObjectProperty<>(DateFormat.MonthDayYear);
@@ -27,6 +29,7 @@ public class SettingsData
 	private ObjectProperty<LocationFormat> locationFormat = new SimpleObjectProperty<>(LocationFormat.LatLong);
 	private ObjectProperty<DistanceUnits> distanceUnits = new SimpleObjectProperty<>(DistanceUnits.Meters);
 	private BooleanProperty drSandersonCompatibility = new SimpleBooleanProperty(false);
+	private BooleanProperty automaticNextImage = new SimpleBooleanProperty(false);
 
 	/**
 	 * Constructor adds all settings SANIMAL will use to the dictionary
@@ -43,6 +46,7 @@ public class SettingsData
 		this.locationFormat.setValue(otherSettings.getLocationFormat());
 		this.distanceUnits.setValue(otherSettings.getDistanceUnits());
 		this.drSandersonCompatibility.setValue(otherSettings.getDrSandersonCompatibility());
+		this.automaticNextImage.setValue(otherSettings.getAutomaticNextImage());
 	}
 
 	private void setupPropertyPageItems()
@@ -51,7 +55,8 @@ public class SettingsData
 		settingList.add(new CustomPropertyItem<>("Time Format: ", "DateTime", "The time format to be used when displaying dates", timeFormat, TimeFormat.class));
 		settingList.add(new CustomPropertyItem<>("Location Format: ", "Location", "The location format to be used when displaying positional information", locationFormat, LocationFormat.class));
 		settingList.add(new CustomPropertyItem<>("Distance Units: ", "Units", "The units to be used by the program", distanceUnits, DistanceUnits.class));
-		settingList.add(new CustomPropertyItem<>("Dr. Sanderson's Format Compatibility: ", "Compatibility", "Gives the option to read a directory in Dr. Jim Sanderson's format and automatically tag it", drSandersonCompatibility, Boolean.class));
+		settingList.add(new CustomPropertyItem<>("Dr. Sanderson's Format Compatibility: ", "Options", "Gives the option to read a directory in Dr. Jim Sanderson's format and automatically tag it", drSandersonCompatibility, Boolean.class));
+		settingList.add(new CustomPropertyItem<>("Automatically Select Next Image: ", "Options", "Automatically select the next image after tagging one with species", automaticNextImage, Boolean.class));
 	}
 
 	/**
@@ -88,95 +93,15 @@ public class SettingsData
 		return this.dateFormat.getValue().format(dateTime.toLocalDate()) + delimeter + this.timeFormat.getValue().format(dateTime.toLocalTime());
 	}
 
-	/**
-	 * Class used to create the PropertySheet and bind the setting to the sheet
-	 * @param <T> The type of the setting value
-	 */
-	private class CustomPropertyItem<T> implements PropertySheet.Item
-	{
-		// The name of the property
-		private final String name;
-		// The category of the property
-		private final String category;
-		// The description of the property
-		private final String description;
-		// The class type of the property
-		private final Class<T> clazz;
-		// The actual property to bind to and update
-		private final Property<T> value;
-
-		/**
-		 * Constructor used to initialize all fields
-		 *
-		 * @param name The name of the property
-		 * @param category The category of the property
-		 * @param description The description of the property
-		 * @param value The actual property to bind to and update
-		 * @param clazz The class type of the property
-		 */
-		public CustomPropertyItem(String name, String category, String description, Property<T> value, Class<T> clazz)
-		{
-			this.name = name;
-			this.category = category;
-			this.description = description;
-			this.clazz = clazz;
-			this.value = value;
-		}
-
-		///
-		/// Getters/Setters
-		///
-
-		@Override
-		public Class<?> getType()
-		{
-			return clazz;
-		}
-
-		@Override
-		public String getCategory()
-		{
-			return this.category;
-		}
-
-		@Override
-		public String getName()
-		{
-			return this.name;
-		}
-
-		@Override
-		public String getDescription()
-		{
-			return this.description;
-		}
-
-		@Override
-		public Object getValue()
-		{
-			return this.value.getValue();
-		}
-
-		@Override
-		@SuppressWarnings("unchecked")
-		public void setValue(Object value)
-		{
-			this.value.setValue((T) value);
-		}
-
-		@Override
-		public Optional<ObservableValue<?>> getObservableValue()
-		{
-			return Optional.of(this.value);
-		}
-	}
-
 	public enum DateFormat
 	{
-		MonthDayYear("Month Day, Year -- January 3, 2011",        "dd MMMM',' yyyy"),
-		ShortMonthDayYear("Short Month Day, Year -- Jan 3, 2011", "dd MMM',' yyyy"),
+		MonthDayYear("Month Day, Year -- January 3, 2011",        "MMMM dd',' yyyy"),
+		ShortMonthDayYear("Short Month Day, Year -- Jan 3, 2011", "MMM dd',' yyyy"),
+		NumericMonthDayYear("Numeric Month/Day/Year -- 1/3/2011", "M'/'d'/'yyyy"),
 		DayMonthYear("Day Month, Year -- 3. January 2011",        "dd'.' MMMM yyyy"),
-		ShortDayMonthYear("Day Short Month -- 3. Jan 2011",       "dd'.' MMM yyyy");
+		ShortDayMonthYear("Day Short Month -- 3. Jan 2011",       "dd'.' MMM yyyy"),
+		NumericDayMonthYear("Numeric Day/Month/Year -- 3/1/2011", "d'/'M'/'yyyy"),
+		ISO("ISO Local Date -- 2011-1-3",                         DateTimeFormatter.ISO_LOCAL_DATE);
 
 		private String stringValue;
 		private DateTimeFormatter formatter;
@@ -185,6 +110,12 @@ public class SettingsData
 		{
 			this.stringValue = stringValue;
 			this.formatter = DateTimeFormatter.ofPattern(format);
+		}
+
+		DateFormat(String stringValue, DateTimeFormatter formater)
+		{
+			this.stringValue = stringValue;
+			this.formatter = formater;
 		}
 
 		@Override
@@ -334,5 +265,20 @@ public class SettingsData
 	public BooleanProperty drSandersonCompatibilityProperty()
 	{
 		return drSandersonCompatibility;
+	}
+
+	public void setAutomaticNextImage(boolean automaticNextImage)
+	{
+		this.automaticNextImage.set(automaticNextImage);
+	}
+
+	public boolean getAutomaticNextImage()
+	{
+		return automaticNextImage.get();
+	}
+
+	public BooleanProperty automaticNextImageProperty()
+	{
+		return automaticNextImage;
 	}
 }

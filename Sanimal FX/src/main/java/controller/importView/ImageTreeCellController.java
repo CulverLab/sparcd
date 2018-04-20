@@ -179,6 +179,9 @@ public class ImageTreeCellController extends TreeCell<ImageContainer>
 			if (toAdd.isPresent())
 			{
 				((ImageEntry) item).addSpecies(toAdd.get(), 1);
+				// Automatically select the next image in the image list view if the option is selected
+				if (SanimalData.getInstance().getSettings().getAutomaticNextImage())
+					this.getTreeView().getSelectionModel().selectNext();
 				success = true;
 			}
 		}

@@ -355,11 +355,7 @@ public class SanimalData
 				syncService.restart();
 			}
 		};
-		this.settings.locationFormatProperty().addListener((observable, oldValue, newValue) -> onSettingChange.run());
-		this.settings.dateFormatProperty().addListener((observable, oldValue, newValue) -> onSettingChange.run());
-		this.settings.distanceUnitsProperty().addListener((observable, oldValue, newValue) -> onSettingChange.run());
-		this.settings.drSandersonCompatibilityProperty().addListener((observable, oldValue, newValue) -> onSettingChange.run());
-		this.settings.timeFormatProperty().addListener((observable, oldValue, newValue) -> onSettingChange.run());
+		this.settings.getSettingList().addListener((ListChangeListener<CustomPropertyItem<?>>) c -> onSettingChange.run());
 	}
 
 	/**

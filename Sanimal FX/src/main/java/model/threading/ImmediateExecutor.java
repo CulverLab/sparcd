@@ -16,7 +16,7 @@ import java.util.concurrent.Future;
 
 public class ImmediateExecutor extends BaseSanimalExecutor
 {
-	private final ObservableList<Worker<?>> activeTasks = FXCollections.observableArrayList(task -> new Observable[] { task.progressProperty(), task.messageProperty() });
+	private final ObservableList<Task<?>> activeTasks = FXCollections.observableArrayList(task -> new Observable[] { task.progressProperty(), task.messageProperty() });
 	// The number of tasks currently running
 	private final ReadOnlyIntegerWrapper tasksRunning = new ReadOnlyIntegerWrapper();
 
@@ -29,14 +29,16 @@ public class ImmediateExecutor extends BaseSanimalExecutor
 	protected void onSucceeded(Worker<?> worker)
 	{
 		this.tasksRunning.add(-1);
-		this.activeTasks.remove(worker);
+		if (worker instanceof Task<?>)
+			this.activeTasks.remove(worker);
 	}
 
 	@Override
 	protected void onRunning(Worker<?> worker)
 	{
 		this.tasksRunning.add(1);
-		this.activeTasks.add(worker);
+		if (worker instanceof Task<?>)
+			this.activeTasks.add((Task<?>) worker);
 	}
 
 	///
@@ -53,7 +55,7 @@ public class ImmediateExecutor extends BaseSanimalExecutor
 		return this.tasksRunning.getReadOnlyProperty();
 	}
 
-	public ObservableList<Worker<?>> getActiveTasks()
+	public ObservableList<Task<?>> getActiveTasks()
 	{
 		return this.activeTasks;
 	}

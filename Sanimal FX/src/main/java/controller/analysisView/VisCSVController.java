@@ -1,7 +1,10 @@
 package controller.analysisView;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.text.Font;
 import model.SanimalData;
 import model.analysis.DataAnalysis;
@@ -110,5 +113,26 @@ public class VisCSVController implements VisControllerBase
 		).collect(Collectors.joining("\n"));
 		this.txtSpeciesCSV.setText(speciesCSV);
 		*/
+	}
+
+	public void copyCSV(ActionEvent actionEvent)
+	{
+		ClipboardContent content = new ClipboardContent();
+		content.putString(this.txtRawCSV.getText());
+		Clipboard.getSystemClipboard().setContent(content);
+	}
+
+	public void copyLocations(ActionEvent actionEvent)
+	{
+		ClipboardContent content = new ClipboardContent();
+		content.putString(this.txtLocationCSV.getText());
+		Clipboard.getSystemClipboard().setContent(content);
+	}
+
+	public void copySpecies(ActionEvent actionEvent)
+	{
+		ClipboardContent content = new ClipboardContent();
+		content.putString(this.txtSpeciesCSV.getText());
+		Clipboard.getSystemClipboard().setContent(content);
 	}
 }

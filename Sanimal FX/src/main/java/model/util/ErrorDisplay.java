@@ -42,10 +42,10 @@ public class ErrorDisplay
 			if (content != null)
 				alert.setContentText(content);
 
-				if (shouldWait)
-					alert.showAndWait();
-				else
-					alert.show();
+			if (shouldWait)
+				alert.showAndWait();
+			else
+				alert.show();
 		});
 	}
 

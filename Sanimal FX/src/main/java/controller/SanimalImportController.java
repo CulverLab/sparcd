@@ -408,7 +408,12 @@ public class SanimalImportController implements Initializable
 				{
 					// Filter the species list by correctly key-bound species, and add them to the current image
 					SanimalData.getInstance().getSpeciesList().filtered(boundSpecies -> boundSpecies.getKeyBinding() == event.getCode()).forEach(boundSpecies ->
-							this.currentlySelectedImage.getValue().addSpecies(boundSpecies, 1));
+					{
+						this.currentlySelectedImage.getValue().addSpecies(boundSpecies, 1);
+						// Automatically select the next image in the image list view if the option is selected
+						if (SanimalData.getInstance().getSettings().getAutomaticNextImage())
+							this.imageTree.getSelectionModel().selectNext();
+					});
 					event.consume();
 				}
 			}
@@ -779,10 +784,14 @@ public class SanimalImportController implements Initializable
 			ButtonType no = new ButtonType("No");
 			ButtonType noDontAsk = new ButtonType("No, don't ask again");
 
-			alert.getButtonTypes().setAll(yes, no, noDontAsk);
+			alert.getButtonTypes().setAll(yes, no, noDontAsk, ButtonType.CANCEL);
 
 			Optional<ButtonType> result = alert.showAndWait();
-			if (!result.isPresent() || result.get() == no)
+			if (!result.isPresent() || result.get() == ButtonType.CANCEL)
+			{
+				return;
+			}
+			else if (result.get() == no)
 			{
 				readAsLegacy = false;
 			}
@@ -1185,6 +1194,9 @@ public class SanimalImportController implements Initializable
 				if (currentlySelectedImage.getValue() != null)
 				{
 					currentlySelectedImage.getValue().addSpecies(toAdd.get(), 1);
+					// Automatically select the next image in the image list view if the option is selected
+					if (SanimalData.getInstance().getSettings().getAutomaticNextImage())
+						this.imageTree.getSelectionModel().selectNext();
 					// We request focus after a drag and drop so that arrow keys will continue to move the selected image down or up
 					this.imageTree.requestFocus();
 					success = true;

@@ -25,6 +25,7 @@ import org.irods.jargon.core.connection.auth.AuthResponse;
 import org.irods.jargon.core.exception.AuthenticationException;
 import org.irods.jargon.core.exception.InvalidUserException;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.packinstr.IRodsPI;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.pub.CollectionAO;
 import org.irods.jargon.core.pub.DataObjectAO;
@@ -154,6 +155,11 @@ public class CyVerseConnectionManager
 			IRODSFile sanimalSettings = fileFactory.instanceIRODSFile("./Sanimal/Settings");
 			if (!sanimalSettings.exists())
 				sanimalSettings.mkdir();
+
+			// Create a subfolder for temporary image uploads
+			IRODSFile sanimalTempUploads = fileFactory.instanceIRODSFile("./Sanimal/TempUploads");
+			if (!sanimalTempUploads.exists())
+				sanimalTempUploads.mkdir();
 
 			// If we don't have a default species.json file, put a default one onto the storage location
 			IRODSFile sanimalSpeciesFile = fileFactory.instanceIRODSFile("./Sanimal/Settings/species.json");
@@ -762,34 +768,49 @@ public class CyVerseConnectionManager
 				// Create a new folder for the upload, we will use the current date as the name plus our username
 				String uploadFolderName = FOLDER_FORMAT.format(new Date(this.accessObjects.getEnvironmentalInfoAO().getIRODSServerCurrentTime())) + " " + SanimalData.getInstance().getUsername();
 				String uploadDirName = collectionUploadDirStr + "/" + uploadFolderName;
+				String tempUploadDirName = "./Sanimal/TempUploads/" + uploadFolderName;
 
 				// Make the directory to upload to
 				IRODSFile uploadDir = fileFactory.instanceIRODSFile(uploadDirName);
-				uploadDir.mkdir();
+
+				// Make the temporary directory to upload to
+				IRODSFile tempUploadDir = fileFactory.instanceIRODSFile(tempUploadDirName);
+				tempUploadDir.mkdir();
 
 				if (messageCallback != null)
 					messageCallback.setValue("Creating TAR file out of the directory before uploading...");
 
+				long time = System.currentTimeMillis();
 				// Make a tar file from the image files
 				File toWrite = DirectoryManager.directoryToTar(directoryToWrite);
+				System.out.println("Creating tar: " + (System.currentTimeMillis() - time));
+				time = System.currentTimeMillis();
 
 				// If the tar was created, upload it
 				if (toWrite != null)
 				{
+					String tarFilePath = tempUploadDirName + "/" + toWrite.getName();
+					IRODSFile tarFile = fileFactory.instanceIRODSFile(tarFilePath);
+
 					if (messageCallback != null)
 						messageCallback.setValue("Uploading TAR file to CyVerse...");
 					// Uplaod the tar
-					this.accessObjects.getDataTransferOperations().putOperation(toWrite, uploadDir, transferCallback, null);
+					this.accessObjects.getDataTransferOperations().putOperation(toWrite, tempUploadDir, transferCallback, null);
+					System.out.println("Uploading tar: " + (System.currentTimeMillis() - time));
+					time = System.currentTimeMillis();
 					if (messageCallback != null)
 						messageCallback.setValue("Extracting TAR file on CyVerse into a directory...");
 					// Extract the tar
-					this.accessObjects.getBulkFileOperationsAO().extractABundleIntoAnIrodsCollectionWithBulkOperationOptimization(uploadDirName + "/" + toWrite.getName(), uploadDirName, "");
+					this.accessObjects.getBulkFileOperationsAO().extractABundleIntoAnIrodsCollectionWithBulkOperationOptimization(tarFile.getAbsolutePath(), tempUploadDir.getAbsolutePath(), "");
+					System.out.println("Extracting tar: " + (System.currentTimeMillis() - time));
+					time = System.currentTimeMillis();
 					if (messageCallback != null)
 						messageCallback.setValue("Removing temporary TAR file...");
 					// Remove the tar, since it was extracted by now
-					IRODSFile uploadedFile = this.accessObjects.getFileFactory().instanceIRODSFile(uploadDirName + "/" + toWrite.getName());
-					if (uploadedFile.exists())
-						uploadedFile.delete();
+					if (tarFile.exists())
+						tarFile.delete();
+					System.out.println("Removing tar: " + (System.currentTimeMillis() - time));
+					time = System.currentTimeMillis();
 					// Upload the JSON file representing the upload
 					Integer imageCount = Math.toIntExact(directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count());
 					Integer imagesWithSpecies = Math.toIntExact(directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry && !((ImageEntry) imageContainer).getSpeciesPresent().isEmpty()).count());
@@ -797,7 +818,16 @@ public class CyVerseConnectionManager
 					// Convert the upload entry to JSON format
 					String json = SanimalData.getInstance().getGson().toJson(uploadEntry);
 					// Write the UploadMeta.json file to the server
-					this.writeRemoteFile(uploadDirName + "/UploadMeta.json", json);
+					this.writeRemoteFile(tempUploadDirName + "/UploadMeta.json", json);
+					System.out.println("Creating UploadMeta.json: " + (System.currentTimeMillis() - time));
+					time = System.currentTimeMillis();
+
+					if (messageCallback != null)
+						messageCallback.setValue("Moving upload into correct directory...");
+					tempUploadDir.renameTo(uploadDir);
+
+					System.out.println("Moving upload directory: " + (System.currentTimeMillis() - time));
+					time = System.currentTimeMillis();
 					if (messageCallback != null)
 						messageCallback.setValue("Writing metadata to images on CyVerse...");
 					// Add AVU metadata to all uploaded images
@@ -818,6 +848,9 @@ public class CyVerseConnectionManager
 							e.printStackTrace();
 						}
 					});
+					System.out.println("Adding AVU: " + (System.currentTimeMillis() - time));
+					time = System.currentTimeMillis();
+
 				}
 			}
 		}
