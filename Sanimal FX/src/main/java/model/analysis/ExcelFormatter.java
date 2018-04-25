@@ -28,7 +28,7 @@ public class ExcelFormatter
 		/*
 		XSSFWorkbook workbook = new XSSFWorkbook();
 		XSSFSheet mainSheet = workbook.createSheet("Analysis");
-		DataAnalysis analysis = new DataAnalysis(images, eventInterval);
+		DataAnalyzer analysis = new DataAnalyzer(images, eventInterval);
 
 		for (ImageEntry entry : images)
 		{

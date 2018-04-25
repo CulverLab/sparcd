@@ -2,6 +2,7 @@ package model.cyverse;
 
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import controller.Sanimal;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
@@ -25,6 +26,7 @@ import org.irods.jargon.core.connection.auth.AuthResponse;
 import org.irods.jargon.core.exception.AuthenticationException;
 import org.irods.jargon.core.exception.InvalidUserException;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.exception.NoMoreRulesException;
 import org.irods.jargon.core.packinstr.IRodsPI;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.pub.CollectionAO;
@@ -1094,56 +1096,71 @@ public class CyVerseConnectionManager
 		}
 	}
 
-	public List<CyVerseQueryResult> performQuery(List<AVUQueryElement> query)
+	public List<CyVerseQueryResult> performQuery(CyVerseQuery queryBuilder)
 	{
 		List<CyVerseQueryResult> queryResult = new LinkedList<>();
 		try
 		{
-			for (MetaDataAndDomainData metaDataAndDomainData : this.accessObjects.getDataObjectAO().findMetadataValuesByMetadataQuery(query))
-			{
-				CyVerseQueryResult specificFileResult = new CyVerseQueryResult(metaDataAndDomainData.getDomainObjectUniqueName());
-				for (MetaDataAndDomainData fileDataField : this.accessObjects.getDataObjectAO().findMetadataValuesForDataObject(metaDataAndDomainData.getDomainObjectUniqueName()))
-				{
-					switch (fileDataField.getAvuAttribute())
-					{
-						case SanimalMetadataFields.A_DATE_TIME_TAKEN:
-							Long timeTaken = Long.parseLong(fileDataField.getAvuValue());
-							specificFileResult.setDateTimeTaken(LocalDateTime.ofInstant(Instant.ofEpochMilli(timeTaken), ZoneId.systemDefault()));
-							break;
-						case SanimalMetadataFields.A_LOCATION_NAME:
-							specificFileResult.setLocationName(fileDataField.getAvuValue());
-							break;
-						case SanimalMetadataFields.A_LOCATION_ID:
-							specificFileResult.setLocationID(fileDataField.getAvuValue());
-							break;
-						case SanimalMetadataFields.A_LOCATION_LATITUDE:
-							specificFileResult.setLocationLatitude(Double.parseDouble(fileDataField.getAvuValue()));
-							break;
-						case SanimalMetadataFields.A_LOCATION_LONGITUDE:
-							specificFileResult.setLocationLongitude(Double.parseDouble(fileDataField.getAvuValue()));
-							break;
-						case SanimalMetadataFields.A_LOCATION_ELEVATION:
-							specificFileResult.setLocationElevation(Double.parseDouble(fileDataField.getAvuValue()));
-							break;
-						case SanimalMetadataFields.A_SPECIES_NAME:
-							specificFileResult.setSpeciesName(fileDataField.getAvuValue());
-							break;
-						case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
-							specificFileResult.setSpeciesScientificName(fileDataField.getAvuValue());
-							break;
-						case SanimalMetadataFields.A_SPECIES_COUNT:
-							specificFileResult.setSpeciesCount(Integer.parseInt(fileDataField.getAvuValue()));
-							break;
-						default:
-							break;
-					}
-				}
-				queryResult.add(specificFileResult);
-			}
+			IRODSGenQueryFromBuilder query = queryBuilder.build().exportIRODSQueryFromBuilder(this.accessObjects.getJargonProperties().getMaxFilesAndDirsQueryMax());
+			IRODSQueryResultSet resultSet = this.accessObjects.getGenQueryExecutor().executeIRODSQuery(query, 0);
 
-			System.out.println("Query done");
+			do
+			{
+				for (IRODSQueryResultRow resultRow : resultSet.getResults())
+				{
+					String pathToImage = resultRow.getColumn(0);
+					String imageName = resultRow.getColumn(1);
+					String irodsAbsolutePath = pathToImage + "/" + imageName;
+					CyVerseQueryResult specificFileResult = new CyVerseQueryResult(irodsAbsolutePath);
+					for (MetaDataAndDomainData fileDataField : this.accessObjects.getDataObjectAO().findMetadataValuesForDataObject(irodsAbsolutePath))
+					{
+						switch (fileDataField.getAvuAttribute())
+						{
+							case SanimalMetadataFields.A_DATE_TIME_TAKEN:
+								Long timeTaken = Long.parseLong(fileDataField.getAvuValue());
+								specificFileResult.setDateTimeTaken(LocalDateTime.ofInstant(Instant.ofEpochMilli(timeTaken), ZoneId.systemDefault()));
+								break;
+							case SanimalMetadataFields.A_LOCATION_NAME:
+								specificFileResult.setLocationName(fileDataField.getAvuValue());
+								break;
+							case SanimalMetadataFields.A_LOCATION_ID:
+								specificFileResult.setLocationID(fileDataField.getAvuValue());
+								break;
+							case SanimalMetadataFields.A_LOCATION_LATITUDE:
+								specificFileResult.setLocationLatitude(Double.parseDouble(fileDataField.getAvuValue()));
+								break;
+							case SanimalMetadataFields.A_LOCATION_LONGITUDE:
+								specificFileResult.setLocationLongitude(Double.parseDouble(fileDataField.getAvuValue()));
+								break;
+							case SanimalMetadataFields.A_LOCATION_ELEVATION:
+								specificFileResult.setLocationElevation(Double.parseDouble(fileDataField.getAvuValue()));
+								break;
+							case SanimalMetadataFields.A_SPECIES_NAME:
+								specificFileResult.setSpeciesName(fileDataField.getAvuValue());
+								break;
+							case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
+								specificFileResult.setSpeciesScientificName(fileDataField.getAvuValue());
+								break;
+							case SanimalMetadataFields.A_SPECIES_COUNT:
+								specificFileResult.setSpeciesCount(Integer.parseInt(fileDataField.getAvuValue()));
+								break;
+							default:
+								break;
+						}
+					}
+					queryResult.add(specificFileResult);
+				}
+
+				// Need this test to avoid NoMoreResultsException
+				if (resultSet.isHasMoreRecords())
+				{
+					IRODSQueryResultSet nextResultSet = this.accessObjects.getGenQueryExecutor().getMoreResults(resultSet);
+					this.accessObjects.getGenQueryExecutor().closeResults(resultSet);
+					resultSet = nextResultSet;
+				}
+			} while (resultSet.isHasMoreRecords());
 		}
-		catch (JargonQueryException | JargonException | NumberFormatException e)
+		catch (JargonQueryException | JargonException | NumberFormatException | GenQueryBuilderException e)
 		{
 			e.printStackTrace();
 		}

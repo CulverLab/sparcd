@@ -1,6 +1,6 @@
 package model.analysis.textFormatters;
 
-import model.analysis.DataAnalysis;
+import model.analysis.DataAnalyzer;
 import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import model.location.Location;
@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class AllPicturesFormatter extends TextFormatter
 {
-	public AllPicturesFormatter(List<ImageEntry> images, DataAnalysis analysis)
+	public AllPicturesFormatter(List<ImageEntry> images, DataAnalyzer analysis)
 	{
 		super(images, analysis);
 	}

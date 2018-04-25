@@ -1,6 +1,6 @@
 package model.analysis.textFormatters;
 
-import model.analysis.DataAnalysis;
+import model.analysis.DataAnalyzer;
 import model.analysis.ImageQuery;
 import model.analysis.LunarActivityEntry;
 import model.image.ImageEntry;
@@ -18,7 +18,7 @@ public class LunarActivityFormatter extends TextFormatter
 {
 	private List<LunarActivityEntry> lunarActivities = null;
 
-	public LunarActivityFormatter(List<ImageEntry> images, DataAnalysis analysis)
+	public LunarActivityFormatter(List<ImageEntry> images, DataAnalyzer analysis)
 	{
 		super(images, analysis);
 	}

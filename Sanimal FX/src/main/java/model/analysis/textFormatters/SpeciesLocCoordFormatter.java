@@ -1,6 +1,6 @@
 package model.analysis.textFormatters;
 
-import model.analysis.DataAnalysis;
+import model.analysis.DataAnalyzer;
 import model.analysis.ImageQuery;
 import model.analysis.SanimalAnalysisUtils;
 import model.image.ImageEntry;
@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class SpeciesLocCoordFormatter extends TextFormatter
 {
-	public SpeciesLocCoordFormatter(List<ImageEntry> images, DataAnalysis analysis)
+	public SpeciesLocCoordFormatter(List<ImageEntry> images, DataAnalyzer analysis)
 	{
 		super(images, analysis);
 	}

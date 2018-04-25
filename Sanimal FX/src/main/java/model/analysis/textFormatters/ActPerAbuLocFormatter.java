@@ -1,6 +1,6 @@
 package model.analysis.textFormatters;
 
-import model.analysis.DataAnalysis;
+import model.analysis.DataAnalyzer;
 import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import model.location.Location;
@@ -26,7 +26,7 @@ public class ActPerAbuLocFormatter extends TextFormatter
 	// PERIOD = Consecutive images that are less than "period" apart where period comes from user input
 	// ABUNDANCE = Maximum number of animals photographed in a single image in each period
 
-	public ActPerAbuLocFormatter(List<ImageEntry> images, DataAnalysis analysis)
+	public ActPerAbuLocFormatter(List<ImageEntry> images, DataAnalyzer analysis)
 	{
 		super(images, analysis);
 	}

@@ -1,6 +1,6 @@
 package model.analysis.textFormatters;
 
-import model.analysis.DataAnalysis;
+import model.analysis.DataAnalyzer;
 import model.image.ImageEntry;
 
 import java.util.List;
@@ -13,9 +13,9 @@ import java.util.List;
 public abstract class TextFormatter
 {
 	protected final List<ImageEntry> images;
-	protected final DataAnalysis analysis;
+	protected final DataAnalyzer analysis;
 
-	public TextFormatter(List<ImageEntry> images, DataAnalysis analysis)
+	public TextFormatter(List<ImageEntry> images, DataAnalyzer analysis)
 	{
 		this.images = images;
 		this.analysis = analysis;

@@ -5,75 +5,168 @@ import model.SanimalData;
 import model.constant.SanimalMetadataFields;
 import model.location.Location;
 import model.species.Species;
-import org.irods.jargon.core.query.AVUQueryElement;
-import org.irods.jargon.core.query.AVUQueryOperatorEnum;
-import org.irods.jargon.core.query.JargonQueryException;
+import org.irods.jargon.core.query.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CyVerseQuery
 {
-	private List<AVUQueryElement> baseQuery = new LinkedList<>();
-	private List<AVUQueryElement> speciesQuery = new LinkedList<>();
-	private List<AVUQueryElement> locationQuery = new LinkedList<>();
+	private List<Species> speciesQuery = new LinkedList<>();
+	private List<Location> locationQuery = new LinkedList<>();
+
+	private IRODSGenQueryBuilder queryBuilder;
 
 	public CyVerseQuery()
 	{
-		baseQuery.add(createQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, AVUQueryOperatorEnum.EQUAL, SanimalMetadataFields.A_SANIMAL));
-		baseQuery.add(createQueryElement(AVUQueryElement.AVUQueryPart.VALUE, AVUQueryOperatorEnum.EQUAL, "true"));
+		this.queryBuilder = new IRODSGenQueryBuilder(true, false, null);
+		try
+		{
+			queryBuilder.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_COLL_NAME); // Path to the collection containing this data item
+			queryBuilder.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_DATA_NAME); // Name of this data object
+			/*
+			queryBuilder.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_D_DATA_ID); // ID of the data item
+			queryBuilder.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_META_DATA_ATTR_ID); // ID of the metadata
+			queryBuilder.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_META_DATA_ATTR_NAME); // Attribute
+			queryBuilder.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_META_DATA_ATTR_VALUE); // Value
+			queryBuilder.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_META_DATA_ATTR_UNITS); // Units
+			*/
+		}
+		catch (GenQueryBuilderException e)
+		{
+			e.printStackTrace();
+		}
+		appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_SANIMAL);
+		appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.EQUAL, "true");
 	}
 
 	public CyVerseQuery addSpecies(Species species)
 	{
-		speciesQuery.add(createQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, AVUQueryOperatorEnum.EQUAL, SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME));
-		speciesQuery.add(createQueryElement(AVUQueryElement.AVUQueryPart.VALUE, AVUQueryOperatorEnum.EQUAL, species.getScientificName()));
+		speciesQuery.add(species);
 		return this;
 	}
 
 	public CyVerseQuery setSpecies(Species species)
 	{
 		speciesQuery.clear();
-		speciesQuery.add(createQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, AVUQueryOperatorEnum.EQUAL, SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME));
-		speciesQuery.add(createQueryElement(AVUQueryElement.AVUQueryPart.VALUE, AVUQueryOperatorEnum.EQUAL, species.getScientificName()));
+		speciesQuery.add(species);
 		return this;
 	}
 
 	public CyVerseQuery addLocation(Location location)
 	{
-		createQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, AVUQueryOperatorEnum.EQUAL, SanimalMetadataFields.A_LOCATION_ID);
-		createQueryElement(AVUQueryElement.AVUQueryPart.VALUE, AVUQueryOperatorEnum.EQUAL, location.getId());
+		locationQuery.add(location);
 		return this;
 	}
 
 	public CyVerseQuery setLocation(Location location)
 	{
 		locationQuery.clear();
-		createQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, AVUQueryOperatorEnum.EQUAL, SanimalMetadataFields.A_LOCATION_ID);
-		createQueryElement(AVUQueryElement.AVUQueryPart.VALUE, AVUQueryOperatorEnum.EQUAL, location.getId());
+		locationQuery.add(location);
 		return this;
 	}
 
-	public List<AVUQueryElement> build()
+	public CyVerseQuery setStartDate(LocalDateTime startDate)
 	{
-		List<AVUQueryElement> query = new LinkedList<>();
-		query.addAll(baseQuery);
-		query.addAll(speciesQuery);
-		query.addAll(locationQuery);
-		return query;
+		appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_TIME_TAKEN);
+		appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.NUMERIC_GREATER_THAN, startDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+		return this;
 	}
 
-	private AVUQueryElement createQueryElement(AVUQueryElement.AVUQueryPart part, AVUQueryOperatorEnum operator, String value)
+	public CyVerseQuery setEndDate(LocalDateTime endDate)
 	{
-		try
+		appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_TIME_TAKEN);
+		appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.NUMERIC_LESS_THAN, endDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+		return this;
+	}
+
+	public IRODSGenQueryBuilder build()
+	{
+		String speciesInStr = "(" + this.speciesQuery.stream().map(species -> "'" + species.getScientificName() + "'").collect(Collectors.joining(",")) + ")";
+		if (!speciesQuery.isEmpty())
 		{
-			return AVUQueryElement.instanceForValueQuery(part, operator, value);
+			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, speciesInStr);
+			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME);
 		}
-		catch (JargonQueryException e)
+
+		String locationInStr = "(" + this.locationQuery.stream().map(location -> "'" + location.getId() + "'").collect(Collectors.joining(",")) + ")";
+		if (!locationQuery.isEmpty())
 		{
-			SanimalData.getInstance().getErrorDisplay().printError("Couldn't create query element?");
-			e.printStackTrace();
-			return null;
+			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_LOCATION_ID);
+			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, locationInStr);
 		}
+		return this.queryBuilder;
+	}
+
+	private void appendQueryElement(AVUQueryElement.AVUQueryPart part, QueryConditionOperators operator, String value)
+	{
+		switch(part)
+		{
+			case ATTRIBUTE:
+				appendQueryElement(RodsGenQueryEnum.COL_META_DATA_ATTR_NAME, operator, value);
+				break;
+			case VALUE:
+				appendQueryElement(RodsGenQueryEnum.COL_META_DATA_ATTR_VALUE, operator, value);
+				break;
+			case UNITS:
+				appendQueryElement(RodsGenQueryEnum.COL_META_DATA_ATTR_UNITS, operator, value);
+				break;
+			default:
+				break;
+		}
+	}
+
+	private void appendQueryElement(AVUQueryElement.AVUQueryPart part, QueryConditionOperators operator, int value)
+	{
+		switch(part)
+		{
+			case ATTRIBUTE:
+				appendQueryElement(RodsGenQueryEnum.COL_META_DATA_ATTR_NAME, operator, value);
+				break;
+			case VALUE:
+				appendQueryElement(RodsGenQueryEnum.COL_META_DATA_ATTR_VALUE, operator, value);
+				break;
+			case UNITS:
+				appendQueryElement(RodsGenQueryEnum.COL_META_DATA_ATTR_UNITS, operator, value);
+				break;
+			default:
+				break;
+		}
+	}
+
+	private void appendQueryElement(AVUQueryElement.AVUQueryPart part, QueryConditionOperators operator, long value)
+	{
+		switch(part)
+		{
+			case ATTRIBUTE:
+				appendQueryElement(RodsGenQueryEnum.COL_META_DATA_ATTR_NAME, operator, value);
+				break;
+			case VALUE:
+				appendQueryElement(RodsGenQueryEnum.COL_META_DATA_ATTR_VALUE, operator, value);
+				break;
+			case UNITS:
+				appendQueryElement(RodsGenQueryEnum.COL_META_DATA_ATTR_UNITS, operator, value);
+				break;
+			default:
+				break;
+		}
+	}
+
+	private void appendQueryElement(RodsGenQueryEnum column, QueryConditionOperators operator, String value)
+	{
+		this.queryBuilder.addConditionAsGenQueryField(column, operator, value);
+	}
+
+	private void appendQueryElement(RodsGenQueryEnum column, QueryConditionOperators operator, int value)
+	{
+		this.queryBuilder.addConditionAsGenQueryField(column, operator, value);
+	}
+
+	private void appendQueryElement(RodsGenQueryEnum column, QueryConditionOperators operator, long value)
+	{
+		this.queryBuilder.addConditionAsGenQueryField(column, operator, value);
 	}
 }

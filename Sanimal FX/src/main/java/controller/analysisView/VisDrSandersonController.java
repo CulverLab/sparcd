@@ -3,7 +3,7 @@ package controller.analysisView;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.scene.text.Font;
-import model.analysis.DataAnalysis;
+import model.analysis.CloudDataAnalysis;
 import model.analysis.SanimalTextOutputFormatter;
 
 import java.net.URL;
@@ -49,13 +49,13 @@ public class VisDrSandersonController implements VisControllerBase
 	/**
 	 * Function called whenever we're given a new pre-analyzed data set to visualize
 	 *
-	 * @param dataStatistics The data set to visualize
+	 * @param cloudDataStatistics The cloud data set to visualize
 	 */
 	@Override
-	public void visualize(DataAnalysis dataStatistics)
+	public void visualize(CloudDataAnalysis cloudDataStatistics)
 	{
 		// Have our output formatter do all the hard work and just stick the result into the two text areas
-		this.txtOutput.setText(outputFormatter.format(dataStatistics));
-		this.txtAllPictures.setText(outputFormatter.createAllPictures(dataStatistics));
+		this.txtOutput.setText(outputFormatter.format(cloudDataStatistics.getDataAnalyzer()));
+		this.txtAllPictures.setText(outputFormatter.createAllPictures(cloudDataStatistics.getDataAnalyzer()));
 	}
 }

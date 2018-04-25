@@ -3,35 +3,31 @@ package controller;
 import com.panemu.tiwulfx.control.DetachableTabPane;
 import controller.analysisView.VisCSVController;
 import controller.analysisView.VisDrSandersonController;
-import javafx.beans.binding.Bindings;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxListCell;
-import javafx.util.StringConverter;
 import jfxtras.scene.control.LocalDateTimePicker;
 import model.SanimalData;
-import model.analysis.DataAnalysis;
+import model.analysis.CloudDataAnalysis;
+import model.analysis.DataAnalyzer;
+import model.cyverse.CyVerseQuery;
+import model.cyverse.CyVerseQueryResult;
 import model.image.CloudImageEntry;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
 import org.apache.commons.lang3.StringUtils;
-import org.controlsfx.control.RangeSlider;
-import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
 import java.time.*;
-import java.time.chrono.Chronology;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -147,27 +143,22 @@ public class SanimalAnalysisController implements Initializable
 		Integer eventInterval = 60;
 
 		// Grab the start and end date
-		LocalDate startDate = this.dateTimeStart.getLocalDateTime().toLocalDate() == null ? LocalDate.MIN : this.dateTimeStart.getLocalDateTime().toLocalDate();
-		LocalDate endDate = this.dateTimeEnd.getLocalDateTime().toLocalDate() == null ? LocalDate.MAX : this.dateTimeEnd.getLocalDateTime().toLocalDate();
+		LocalDateTime startDate = this.dateTimeStart.getLocalDateTime() == null ? LocalDateTime.MIN : this.dateTimeStart.getLocalDateTime();
+		LocalDateTime endDate = this.dateTimeEnd.getLocalDateTime() == null ? LocalDateTime.MAX : this.dateTimeEnd.getLocalDateTime();
 
-		// Now process the filters
-		List<ImageEntry> imagesToAnalyze = SanimalData.getInstance().getAllImages().stream()
-				// Cloud images not allowed
-				.filter(imageEntry -> !(imageEntry instanceof CloudImageEntry))
-				// Test for checked location
-				.filter(imageEntry -> imageEntry.getLocationTaken().shouldBePartOfAnalysis())
-				// Test for checked species
-				.filter(imageEntry -> imageEntry.getSpeciesPresent().stream().map(SpeciesEntry::getSpecies).anyMatch(Species::shouldBePartOfAnalysis))
-				// Test for the date range
-				.filter(imageEntry -> imageEntry.getDateTaken().isAfter(startDate.atStartOfDay()) && imageEntry.getDateTaken().isBefore(endDate.atStartOfDay()))
-				.collect(Collectors.toList());
-
-		// Compute the analysis
-		DataAnalysis dataStatistics = new DataAnalysis(imagesToAnalyze, eventInterval);
+		CyVerseQuery query = new CyVerseQuery().setStartDate(startDate).setEndDate(endDate);
+		for (Location location : SanimalData.getInstance().getLocationList())
+			if (location.shouldBePartOfAnalysis())
+				query = query.addLocation(location);
+		for (Species species : SanimalData.getInstance().getSpeciesList())
+			if (species.shouldBePartOfAnalysis())
+				query = query.addSpecies(species);
+		List<CyVerseQueryResult> queryResult = SanimalData.getInstance().getConnectionManager().performQuery(query);
+		CloudDataAnalysis cloudDataStatistics = new CloudDataAnalysis(queryResult, eventInterval);
 
 		// Hand the analysis over to the visualizations to graph
-		visDrSandersonController.visualize(dataStatistics);
-		visCSVController.visualize(dataStatistics);
+		visDrSandersonController.visualize(cloudDataStatistics);
+		visCSVController.visualize(cloudDataStatistics);
 	}
 
 	/**

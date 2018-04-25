@@ -237,6 +237,6 @@ public class Species
     @Override
     public String toString()
     {
-        return this.getName() + " (" + this.getScientificName() + ")";
+        return this.getName();
     }
 }

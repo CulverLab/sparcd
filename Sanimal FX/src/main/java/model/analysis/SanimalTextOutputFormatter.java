@@ -19,7 +19,7 @@ public class SanimalTextOutputFormatter
 	 *            A set of statistics computed from the images
 	 * @return A formatted string
 	 */
-	public String format(DataAnalysis dataStatistics)
+	public String format(DataAnalyzer dataStatistics)
 	{
 		// The string to return
 		String toReturn = "";
@@ -268,12 +268,12 @@ public class SanimalTextOutputFormatter
 	 *            A set of statistics computed from the images
 	 * @return a formatted string
 	 */
-	public String createAllPictures(DataAnalysis dataStatistics)
+	public String createAllPictures(DataAnalyzer dataStatistics)
 	{
 		String toReturn = "";
 
 		// Create an analysis object, then create the formatter, and create the text
-		DataAnalysis analysis = new DataAnalysis(dataStatistics.getOriginalImageList(), dataStatistics.getEventInterval());
+		DataAnalyzer analysis = new DataAnalyzer(dataStatistics.getOriginalImageList(), dataStatistics.getEventInterval());
 		AllPicturesFormatter allPicturesFormatter = new AllPicturesFormatter(dataStatistics.getOriginalImageList(), analysis);
 		toReturn = toReturn + allPicturesFormatter.createAllPictures();
 
