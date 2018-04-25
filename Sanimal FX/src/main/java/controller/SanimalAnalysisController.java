@@ -13,15 +13,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxListCell;
 import jfxtras.scene.control.LocalDateTimePicker;
 import model.SanimalData;
-import model.analysis.CloudDataAnalysis;
 import model.analysis.DataAnalyzer;
 import model.cyverse.CyVerseQuery;
-import model.cyverse.CyVerseQueryResult;
-import model.image.CloudImageEntry;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
-import model.species.SpeciesEntry;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URL;
@@ -29,7 +25,6 @@ import java.time.*;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 /**
  * Controller class for the analysis page
@@ -153,12 +148,12 @@ public class SanimalAnalysisController implements Initializable
 		for (Species species : SanimalData.getInstance().getSpeciesList())
 			if (species.shouldBePartOfAnalysis())
 				query = query.addSpecies(species);
-		List<CyVerseQueryResult> queryResult = SanimalData.getInstance().getConnectionManager().performQuery(query);
-		CloudDataAnalysis cloudDataStatistics = new CloudDataAnalysis(queryResult, eventInterval);
+		List<ImageEntry> queryResult = SanimalData.getInstance().getConnectionManager().performQuery(query);
+		DataAnalyzer dataAnalyzer = new DataAnalyzer(queryResult, eventInterval);
 
 		// Hand the analysis over to the visualizations to graph
-		visDrSandersonController.visualize(cloudDataStatistics);
-		visCSVController.visualize(cloudDataStatistics);
+		visDrSandersonController.visualize(dataAnalyzer);
+		visCSVController.visualize(dataAnalyzer);
 	}
 
 	/**

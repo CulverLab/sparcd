@@ -80,10 +80,9 @@ public class ImageEntry extends ImageContainer
 	 * @param file
 	 *            The file (must be an image file)
 	 */
-	public ImageEntry(File file, List<Location> knownLocations, List<Species> knownSpecies)
+	public ImageEntry(File file)
 	{
-		this.readFileMetadataIntoImage(file, knownLocations, knownSpecies);
-		this.initIconBindings();
+		this.imageFileProperty.setValue(file);
 
 		this.locationTakenProperty.addListener((observable, oldValue, newValue) -> this.markDirty(true));
 		this.speciesPresent.addListener((ListChangeListener<SpeciesEntry>) c -> this.markDirty(true));
@@ -93,17 +92,15 @@ public class ImageEntry extends ImageContainer
 	/**
 	 * Reads the file metadata and initializes fields
 	 *
-	 * @param file The file to initialize this image entry with
 	 */
-	void readFileMetadataIntoImage(File file, List<Location> knownLocations, List<Species> knownSpecies)
+	public void readFileMetadataIntoImage(List<Location> knownLocations, List<Species> knownSpecies)
 	{
-		this.imageFileProperty.setValue(file);
 		try
 		{
 			// Set the date to a default
 			this.dateTakenProperty.setValue(LocalDateTime.now());
 			//Read the metadata off of the image
-			TiffImageMetadata tiffImageMetadata = MetadataUtils.readImageMetadata(file);
+			TiffImageMetadata tiffImageMetadata = MetadataUtils.readImageMetadata(this.getFile());
 
 			this.readDateFromMetadata(tiffImageMetadata);
 			this.readLocationFromMetadata(tiffImageMetadata, knownLocations);
@@ -118,7 +115,7 @@ public class ImageEntry extends ImageContainer
 					null,
 					"Error",
 					"Metadata error",
-					"Error reading image metadata for file " + file.getName() + "!\n" + ExceptionUtils.getStackTrace(e),
+					"Error reading image metadata for file " + this.getFile().getName() + "!\n" + ExceptionUtils.getStackTrace(e),
 					false);
 		}
 	}
@@ -268,7 +265,7 @@ public class ImageEntry extends ImageContainer
 		}
 	}
 
-	void initIconBindings()
+	public void initIconBindings()
 	{
 		// Bind the image property to a conditional expression.
 		// The image is checked if the location is valid and the species present list is not empty

@@ -84,7 +84,10 @@ public class DirectoryManager
 		{
 			// If it's not a directory, then just add the image
 			toReturn = new ImageDirectory(imageOrLocation.getParentFile());
-			toReturn.addImage(new ImageEntry(imageOrLocation, knownLocations, knownSpecies));
+			ImageEntry imageEntry = new ImageEntry(imageOrLocation);
+			imageEntry.readFileMetadataIntoImage(knownLocations, knownSpecies);
+			imageEntry.initIconBindings();
+			toReturn.addImage(imageEntry);
 		}
 		else
 		{
@@ -113,7 +116,10 @@ public class DirectoryManager
 				// Add all image files to the directory
 				if (SanimalAnalysisUtils.fileIsImage(file))
 				{
-					current.addImage(new ImageEntry(file, knownLocations, knownSpecies));
+					ImageEntry imageEntry = new ImageEntry(file);
+					imageEntry.readFileMetadataIntoImage(knownLocations, knownSpecies);
+					imageEntry.initIconBindings();
+					current.addImage(imageEntry);
 				}
 				// Add all subdirectories to the directory
 				else if (file.isDirectory())

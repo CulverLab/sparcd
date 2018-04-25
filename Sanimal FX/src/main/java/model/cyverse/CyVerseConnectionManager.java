@@ -1096,9 +1096,11 @@ public class CyVerseConnectionManager
 		}
 	}
 
-	public List<CyVerseQueryResult> performQuery(CyVerseQuery queryBuilder)
+	public List<ImageEntry> performQuery(CyVerseQuery queryBuilder)
 	{
-		List<CyVerseQueryResult> queryResult = new LinkedList<>();
+		List<Location> uniqueLocations = new LinkedList<>();
+		List<Species> uniqueSpecies = new LinkedList<>();
+		List<ImageEntry> queryResult = new LinkedList<>();
 		try
 		{
 			IRODSGenQueryFromBuilder query = queryBuilder.build().exportIRODSQueryFromBuilder(this.accessObjects.getJargonProperties().getMaxFilesAndDirsQueryMax());
@@ -1111,44 +1113,70 @@ public class CyVerseConnectionManager
 					String pathToImage = resultRow.getColumn(0);
 					String imageName = resultRow.getColumn(1);
 					String irodsAbsolutePath = pathToImage + "/" + imageName;
-					CyVerseQueryResult specificFileResult = new CyVerseQueryResult(irodsAbsolutePath);
+
+					LocalDateTime localDateTime = LocalDateTime.MIN;
+					String locationName = "";
+					String locationID = "";
+					Double locationLatitude = 0D;
+					Double locationLongitude = 0D;
+					Double locationElevation = 0D;
+					String speciesName = "";
+					String speciesScientificName = "";
+					Integer speciesCount = 0;
+
 					for (MetaDataAndDomainData fileDataField : this.accessObjects.getDataObjectAO().findMetadataValuesForDataObject(irodsAbsolutePath))
 					{
 						switch (fileDataField.getAvuAttribute())
 						{
 							case SanimalMetadataFields.A_DATE_TIME_TAKEN:
 								Long timeTaken = Long.parseLong(fileDataField.getAvuValue());
-								specificFileResult.setDateTimeTaken(LocalDateTime.ofInstant(Instant.ofEpochMilli(timeTaken), ZoneId.systemDefault()));
+								localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timeTaken), ZoneId.systemDefault());
 								break;
 							case SanimalMetadataFields.A_LOCATION_NAME:
-								specificFileResult.setLocationName(fileDataField.getAvuValue());
+								locationName = fileDataField.getAvuValue();
 								break;
 							case SanimalMetadataFields.A_LOCATION_ID:
-								specificFileResult.setLocationID(fileDataField.getAvuValue());
+								locationID = fileDataField.getAvuValue();
 								break;
 							case SanimalMetadataFields.A_LOCATION_LATITUDE:
-								specificFileResult.setLocationLatitude(Double.parseDouble(fileDataField.getAvuValue()));
+								locationLatitude = Double.parseDouble(fileDataField.getAvuValue());
 								break;
 							case SanimalMetadataFields.A_LOCATION_LONGITUDE:
-								specificFileResult.setLocationLongitude(Double.parseDouble(fileDataField.getAvuValue()));
+								locationLongitude = Double.parseDouble(fileDataField.getAvuValue());
 								break;
 							case SanimalMetadataFields.A_LOCATION_ELEVATION:
-								specificFileResult.setLocationElevation(Double.parseDouble(fileDataField.getAvuValue()));
+								locationElevation = Double.parseDouble(fileDataField.getAvuValue());
 								break;
 							case SanimalMetadataFields.A_SPECIES_NAME:
-								specificFileResult.setSpeciesName(fileDataField.getAvuValue());
+								speciesName = fileDataField.getAvuValue();
 								break;
 							case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
-								specificFileResult.setSpeciesScientificName(fileDataField.getAvuValue());
+								speciesScientificName = fileDataField.getAvuValue();
 								break;
 							case SanimalMetadataFields.A_SPECIES_COUNT:
-								specificFileResult.setSpeciesCount(Integer.parseInt(fileDataField.getAvuValue()));
+								speciesCount = Integer.parseInt(fileDataField.getAvuValue());
 								break;
 							default:
 								break;
 						}
 					}
-					queryResult.add(specificFileResult);
+
+					String finalLocationID = locationID;
+					Boolean locationForImagePresent = uniqueLocations.stream().anyMatch(location -> location.getId().equals(finalLocationID));
+					if (!locationForImagePresent)
+						uniqueLocations.add(new Location(locationName, locationID, locationLatitude, locationLongitude, locationElevation));
+					String finalSpeciesScientificName = speciesScientificName;
+					Boolean speciesForImagePresent = uniqueSpecies.stream().anyMatch(species -> species.getScientificName().equalsIgnoreCase(finalSpeciesScientificName));
+					if (!speciesForImagePresent)
+						uniqueSpecies.add(new Species(speciesName, speciesScientificName, ""));
+
+					Location correctLocation = uniqueLocations.stream().filter(location -> location.getId().equals(finalLocationID)).findFirst().get();
+					Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(finalSpeciesScientificName)).findFirst().get();
+					ImageEntry entry = new ImageEntry(new File(irodsAbsolutePath));
+					entry.setLocationTaken(correctLocation);
+					entry.setDateTaken(localDateTime);
+					entry.addSpecies(correctSpecies, speciesCount);
+					queryResult.add(entry);
 				}
 
 				// Need this test to avoid NoMoreResultsException

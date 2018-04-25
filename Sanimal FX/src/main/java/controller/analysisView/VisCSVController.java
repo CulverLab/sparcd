@@ -7,7 +7,8 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.text.Font;
 import model.SanimalData;
-import model.analysis.CloudDataAnalysis;
+import model.analysis.DataAnalyzer;
+import model.location.Location;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -54,27 +55,28 @@ public class VisCSVController implements VisControllerBase
 	/**
 	 * Function called whenever we're given a new pre-analyzed data set to visualize
 	 *
-	 * @param cloudDataStatistics The cloud data set to visualize
+	 * @param dataAnalyzer The cloud data set to visualize
 	 */
 	@Override
-	public void visualize(CloudDataAnalysis cloudDataStatistics)
+	public void visualize(DataAnalyzer dataAnalyzer)
 	{
-
 		// The raw CSV for each image is made up of 1 line per image in the format of:
 		// File Name,Date Taken, Species in image, Species count, Location name, Location ID, Location latitude, Location longitude, Location elevation
 		// If multiple species are in each image, the single entry is broken into multiple lines, one per species
-		String rawCSV = cloudDataStatistics.getRawCloudQueryResult().stream().map(cyVerseQueryResult ->
+		String rawCSV = dataAnalyzer.getImagesSortedByDate().stream().map(imageEntry ->
 		{
-			return cyVerseQueryResult.getIrodsFileAbsolutePath() + "," +
-					SanimalData.getInstance().getSettings().formatDateTime(cyVerseQueryResult.getDateTimeTaken(), " ") + "," +
-					cyVerseQueryResult.getSpeciesName() + "," +
-					cyVerseQueryResult.getSpeciesScientificName() + "," +
-					cyVerseQueryResult.getSpeciesCount().toString() + "," +
-					cyVerseQueryResult.getLocationName() + "," +
-					cyVerseQueryResult.getLocationID() + "," +
-					cyVerseQueryResult.getLocationLatitude().toString() + "," +
-					cyVerseQueryResult.getLocationLongitude().toString() + "," +
-					cyVerseQueryResult.getLocationElevation().toString();
+			Location locationTaken = imageEntry.getLocationTaken();
+			return imageEntry.getSpeciesPresent().stream().map(speciesEntry ->
+					imageEntry.getFile().getName() + "," +
+							imageEntry.getDateTaken().toString() + "," +
+							speciesEntry.getSpecies() + "," +
+							speciesEntry.getAmount().toString() + "," +
+							locationTaken.getName() + "," +
+							locationTaken.getId() + "," +
+							locationTaken.getLat() + "," +
+							locationTaken.getLng() + "," +
+							locationTaken.getElevation().toString())
+					.collect(Collectors.joining("\n"));
 		}).collect(Collectors.joining("\n"));
 		if (rawCSV.isEmpty())
 			rawCSV = "No query results found.";
@@ -82,7 +84,7 @@ public class VisCSVController implements VisControllerBase
 
 		// The location CSV contains each location, one per line, in the form:
 		// Name, ID, Latitude, Longitude, Elevation
-		String locationCSV = cloudDataStatistics.getDataAnalyzer().getAllImageLocations().stream().map(location ->
+		String locationCSV = dataAnalyzer.getAllImageLocations().stream().map(location ->
 			location.getName() + "," +
 			location.getId() + "," +
 			location.getLat() + "," +
@@ -93,7 +95,7 @@ public class VisCSVController implements VisControllerBase
 
 		// The species CSV contains each species, one per line, in the form:
 		// Name, Scientific Name, Key bound (or null if none)
-		String speciesCSV = cloudDataStatistics.getDataAnalyzer().getAllImageSpecies().stream().map(species ->
+		String speciesCSV = dataAnalyzer.getAllImageSpecies().stream().map(species ->
 			species.getName() + "," +
 			species.getScientificName()
 		).collect(Collectors.joining("\n"));

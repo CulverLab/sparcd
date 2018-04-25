@@ -58,7 +58,7 @@ public class CloudImageEntry extends ImageEntry
 	 */
 	public CloudImageEntry(IRODSFile cloudFile)
 	{
-		super(null, null, null);
+		super(null);
 
 		// Make sure that the placeholder image has been initialized. If not initialize it
 		if (PLACEHOLDER_FILE == null)
@@ -101,24 +101,6 @@ public class CloudImageEntry extends ImageEntry
 
 		this.getFileProperty().setValue(PLACEHOLDER_FILE);
 		this.setCyverseFile(cloudFile);
-	}
-
-	/**
-	 * We don't initialize our default bindings the way an ImageEntry does it
-	 */
-	@Override
-	void initIconBindings()
-	{
-	}
-
-	/**
-	 * We don't do anything because a cloud image does not get loaded right away.
-	 *
-	 * @param file ignored
-	 */
-	@Override
-	void readFileMetadataIntoImage(File file, List<Location> knownLocations, List<Species> knownSpecies)
-	{
 	}
 
 	/**
@@ -262,7 +244,8 @@ public class CloudImageEntry extends ImageEntry
 		pullTask.setOnSucceeded(event ->
 		{
 			File localFile = pullTask.getValue();
-			super.readFileMetadataIntoImage(localFile, SanimalData.getInstance().getLocationList(), SanimalData.getInstance().getSpeciesList());
+			this.getFileProperty().setValue(localFile);
+			super.readFileMetadataIntoImage(SanimalData.getInstance().getLocationList(), SanimalData.getInstance().getSpeciesList());
 			if (!this.getSpeciesPresent().isEmpty())
 				wasTaggedWithSpecies.set(true);
 			this.hasBeenPulledFromCloud.setValue(true);
