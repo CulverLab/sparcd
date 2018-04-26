@@ -9,6 +9,7 @@
 <?import com.panemu.tiwulfx.control.DetachableTab?>
 <?import org.controlsfx.control.RangeSlider?>
 <?import jfxtras.scene.control.LocalDateTimePicker?>
+<?import javafx.scene.text.Font?>
 <SplitPane dividerPositions="0.3" orientation="VERTICAL" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalAnalysisController">
     <stylesheets>
         <URL value="@SanimalAnalysis.css"/>
@@ -17,117 +18,32 @@
         <Insets bottom="5" left="5" right="5" top="5"/>
     </padding>
     <items>
-        <SplitPane dividerPositions="0.15, 0.3">
-            <items>
-                <BorderPane>
-                    <GridPane.margin>
-                        <Insets left="5" right="5"/>
-                    </GridPane.margin>
-                    <top>
-                        <Label text="Species Filter" BorderPane.alignment="TOP_CENTER">
-                            <BorderPane.margin>
-                                <Insets top="5" bottom="5"/>
-                            </BorderPane.margin>
-                        </Label>
-                    </top>
-                    <center>
-                        <ListView fx:id="speciesFilterListView"/>
-                    </center>
-                    <bottom>
-                        <VBox>
-                            <children>
-                                <HBox spacing="5">
-                                    <VBox.margin>
-                                        <Insets left="5" right="5" top="10"/>
-                                    </VBox.margin>
-                                    <children>
-                                        <TextField fx:id="txtSpeciesSearch" promptText="Search Species" HBox.hgrow="ALWAYS"/>
-                                        <Button onAction="#clearSpeciesSearch" styleClass="resetSearchBtn" HBox.hgrow="NEVER"/>
-                                    </children>
-                                </HBox>
-                                <FlowPane alignment="CENTER" hgap="5" vgap="10">
-                                    <padding>
-                                        <Insets bottom="10" left="5" right="5" top="10"/>
-                                    </padding>
-                                    <children>
-                                        <Button onAction="#selectAllSpecies" mnemonicParsing="false" text="Select All"/>
-                                        <Button onAction="#selectNoSpecies" mnemonicParsing="false" text="Select None"/>
-                                    </children>
-                                </FlowPane>
-                            </children>
-                        </VBox>
-                    </bottom>
-                </BorderPane>
-                <BorderPane>
-                    <GridPane.margin>
-                        <Insets left="5" right="5"/>
-                    </GridPane.margin>
-                    <top>
-                        <Label text="Location Filter" BorderPane.alignment="CENTER">
-                            <BorderPane.margin>
-                                <Insets top="5" bottom="5"/>
-                            </BorderPane.margin>
-                        </Label>
-                    </top>
-                    <center>
-                        <ListView fx:id="locationFilterListView"/>
-                    </center>
-                    <bottom>
-                        <VBox>
-                            <children>
-                                <HBox spacing="5">
-                                    <VBox.margin>
-                                        <Insets left="5" right="5" top="10"/>
-                                    </VBox.margin>
-                                    <children>
-                                        <TextField fx:id="txtLocationSearch" promptText="Search Locations" HBox.hgrow="ALWAYS"/>
-                                        <Button onAction="#clearLocationSearch" styleClass="resetSearchBtn" HBox.hgrow="NEVER"/>
-                                    </children>
-                                </HBox>
-                                <FlowPane alignment="CENTER" hgap="5" vgap="10">
-                                    <padding>
-                                        <Insets bottom="10" left="5" right="5" top="10"/>
-                                    </padding>
-                                    <children>
-                                        <Button onAction="#selectAllLocations" mnemonicParsing="false" text="Select All"/>
-                                        <Button onAction="#selectNoLocations" mnemonicParsing="false" text="Select None"/>
-                                    </children>
-                                </FlowPane>
-                            </children>
-                        </VBox>
-                    </bottom>
-                </BorderPane>
-                <GridPane hgap="15">
-                    <padding>
-                        <Insets left="5" right="5"/>
-                    </padding>
-                    <rowConstraints>
-                        <RowConstraints/>
-                        <RowConstraints/>
-                        <RowConstraints/>
-                        <RowConstraints/>
-                        <RowConstraints/>
-                    </rowConstraints>
-                    <columnConstraints>
-                        <ColumnConstraints hgrow="SOMETIMES"/>
-                        <ColumnConstraints hgrow="SOMETIMES"/>
-                    </columnConstraints>
-                    <children>
-                        <Label text="Date/Time Filter" GridPane.columnSpan="2" GridPane.halignment="CENTER">
-                            <GridPane.margin>
-                                <Insets top="5" bottom="5"/>
-                            </GridPane.margin>
-                        </Label>
-                        <Label text="Start Date and Time" GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.valignment="CENTER"/>
-                        <Label text="End Date and Time" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER"/>
-                        <LocalDateTimePicker fx:id="dateTimeStart" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                        <LocalDateTimePicker fx:id="dateTimeEnd" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-                        <Button text="Query" onAction="#query" GridPane.rowIndex="3" GridPane.columnSpan="2" GridPane.halignment="CENTER"/>
-                    </children>
-                </GridPane>
-            </items>
-        </SplitPane>
-        <DetachableTabPane fx:id="tbnVisualizations">
+        <VBox spacing="5">
+            <HBox alignment="CENTER_LEFT">
+                <Label text="Create query for images with the following event interval ">
+                    <font>
+                        <Font size="14"/>
+                    </font>
+                </Label>
+                <TextField fx:id="txtEventInterval" promptText="Interval in min">
+                    <font>
+                        <Font size="14"/>
+                    </font>
+                </TextField>
+                <Label text=" and the specified parameters: ">
+                    <font>
+                        <Font size="14"/>
+                    </font>
+                </Label>
+                <Button onAction="#query" text="Perform Query">
+                    <font>
+                        <Font size="14"/>
+                    </font>
+                </Button>
+            </HBox>
+            <ListView styleClass="queryConditionsLvw" VBox.vgrow="ALWAYS" fx:id="lvwQueryConditions" orientation="HORIZONTAL"/>
+        </VBox>
+        <DetachableTabPane>
             <DetachableTab detachable="false" text="Dr. Sanderson's Output" closable="false">
                 <fx:include fx:id="visDrSanderson" source="analysisView/VisDrSanderson.fxml"/>
             </DetachableTab>

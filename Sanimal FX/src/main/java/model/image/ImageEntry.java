@@ -91,7 +91,6 @@ public class ImageEntry extends ImageContainer
 
 	/**
 	 * Reads the file metadata and initializes fields
-	 *
 	 */
 	public void readFileMetadataIntoImage(List<Location> knownLocations, List<Species> knownSpecies)
 	{

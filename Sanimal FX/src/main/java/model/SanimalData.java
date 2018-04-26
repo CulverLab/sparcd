@@ -16,6 +16,7 @@ import model.image.ImageContainer;
 import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.location.Location;
+import model.query.QueryEngine;
 import model.species.Species;
 import model.threading.ErrorService;
 import model.threading.ErrorTask;
@@ -89,6 +90,9 @@ public class SanimalData
 	private final SettingsData settings = new SettingsData();
 	private AtomicBoolean needSettingsSync = new AtomicBoolean(false);
 	private AtomicBoolean settingsSyncInProgress = new AtomicBoolean(false);
+
+	// Query engine used in storing the current query setup
+	private QueryEngine queryEngine = new QueryEngine();
 
 	/**
 	 * Private constructor since we're using the singleton design pattern
@@ -478,4 +482,6 @@ public class SanimalData
 	{
 		return this.settings;
 	}
+
+	public QueryEngine getQueryEngine() { return this.queryEngine; }
 }

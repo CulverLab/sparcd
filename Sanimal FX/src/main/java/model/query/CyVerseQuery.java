@@ -1,7 +1,6 @@
-package model.cyverse;
+package model.query;
 
 
-import model.SanimalData;
 import model.constant.SanimalMetadataFields;
 import model.location.Location;
 import model.species.Species;

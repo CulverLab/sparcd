@@ -68,7 +68,7 @@ public class VisCSVController implements VisControllerBase
 			Location locationTaken = imageEntry.getLocationTaken();
 			return imageEntry.getSpeciesPresent().stream().map(speciesEntry ->
 					imageEntry.getFile().getName() + "," +
-							imageEntry.getDateTaken().toString() + "," +
+							SanimalData.getInstance().getSettings().formatDateTime(imageEntry.getDateTaken(), " ") + "," +
 							speciesEntry.getSpecies() + "," +
 							speciesEntry.getAmount().toString() + "," +
 							locationTaken.getName() + "," +
