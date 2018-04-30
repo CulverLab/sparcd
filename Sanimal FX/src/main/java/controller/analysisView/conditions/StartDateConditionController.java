@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import jfxtras.scene.control.LocalDateTimePicker;
 import jfxtras.scene.control.LocalDateTimeTextField;
+import model.query.IQueryCondition;
 import model.query.conditions.StartDateCondition;
 
 import java.net.URL;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ResourceBundle;
 
-public class StartDateConditionController implements Initializable
+public class StartDateConditionController implements IConditionController
 {
 	///
 	/// FXML Bound Fields Start
@@ -29,8 +30,11 @@ public class StartDateConditionController implements Initializable
 	{
 	}
 
-	public void initializeData(StartDateCondition startDateCondition)
+	public void initializeData(IQueryCondition startDateCondition)
 	{
-		this.dtpDateTime.localDateTimeProperty().bindBidirectional(startDateCondition.startDateProperty());
+		if (startDateCondition instanceof StartDateCondition)
+		{
+			this.dtpDateTime.localDateTimeProperty().bindBidirectional(((StartDateCondition) startDateCondition).startDateProperty());
+		}
 	}
 }

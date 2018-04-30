@@ -3,10 +3,11 @@ package model.query;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import model.query.conditions.AddQueryCondition;
+import model.query.conditions.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class QueryEngine
 {
@@ -30,16 +31,24 @@ public class QueryEngine
 
 	public enum QueryFilters
 	{
-		SPECIES_FILTER("Species Filter"),
-		LOCATION_FILTER("Location Filter"),
-		START_TIME_FILTER("Start Date Filter"),
-		END_TIME_FILTER("End Date Filter");
+		SPECIES_FILTER("Species Filter", SpeciesFilterCondition::new),
+		LOCATION_FILTER("Location Filter", LocationFilterCondition::new),
+		START_TIME_FILTER("Start Date Filter", StartDateCondition::new),
+		END_TIME_FILTER("End Date Filter", EndDateCondition::new),
+		COLLECTION_FILTER("Collection Filter", CollectionCondition::new);
 
 		private String displayName;
+		private Supplier<IQueryCondition> instanceCreator;
 
-		QueryFilters(String displayName)
+		QueryFilters(String displayName, Supplier<IQueryCondition> instanceCreator)
 		{
 			this.displayName = displayName;
+			this.instanceCreator = instanceCreator;
+		}
+
+		public IQueryCondition createInstance()
+		{
+			return instanceCreator.get();
 		}
 
 		@Override

@@ -395,26 +395,33 @@ public class SanimalUploadController implements Initializable
 	{
 		if (this.selectedCollection.getValue() != null)
 		{
-			Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-			alert.initOwner(this.imageTree.getScene().getWindow());
-			alert.setTitle("Changes lost");
-			alert.setHeaderText("Unsaved changes may be lost");
-			alert.setContentText("Any unsaved changes to uploads will be lost, continue?");
-			Optional<ButtonType> responseOptional = alert.showAndWait();
-			responseOptional.ifPresent(response ->
+			if (selectedCollection.getValue().getUploads().stream().anyMatch(CloudUploadEntry::hasBeenDownloaded))
 			{
-				// If they clicked OK
-				if (response.getButtonData() == ButtonBar.ButtonData.OK_DONE)
+				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+				alert.initOwner(this.imageTree.getScene().getWindow());
+				alert.setTitle("Changes lost");
+				alert.setHeaderText("Unsaved changes may be lost");
+				alert.setContentText("Any unsaved changes to uploads will be lost, continue?");
+				Optional<ButtonType> responseOptional = alert.showAndWait();
+				responseOptional.ifPresent(response ->
 				{
-					// Clear any known uploads
-					for (CloudUploadEntry cloudUploadEntry : this.selectedCollection.getValue().getUploads())
-						if (cloudUploadEntry.hasBeenDownloaded())
-							SanimalData.getInstance().getImageTree().removeChildRecursive(cloudUploadEntry.getCloudImageDirectory());
+					// If they clicked OK
+					if (response.getButtonData() == ButtonBar.ButtonData.OK_DONE)
+					{
+						// Clear any known uploads
+						for (CloudUploadEntry cloudUploadEntry : this.selectedCollection.getValue().getUploads())
+							if (cloudUploadEntry.hasBeenDownloaded())
+								SanimalData.getInstance().getImageTree().removeChildRecursive(cloudUploadEntry.getCloudImageDirectory());
 
-					this.selectedCollection.getValue().getUploads().clear();
-					this.syncUploadsForCollection(this.selectedCollection.getValue());
-				}
-			});
+						this.selectedCollection.getValue().getUploads().clear();
+						this.syncUploadsForCollection(this.selectedCollection.getValue());
+					}
+				});
+			}
+			else
+			{
+				this.syncUploadsForCollection(this.selectedCollection.getValue());
+			}
 		}
 	}
 }

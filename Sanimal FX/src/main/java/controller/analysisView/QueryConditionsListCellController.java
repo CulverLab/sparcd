@@ -1,8 +1,6 @@
 package controller.analysisView;
 
-import controller.analysisView.conditions.EndDateConditionController;
-import controller.analysisView.conditions.SpeciesFilterConditionController;
-import controller.analysisView.conditions.StartDateConditionController;
+import controller.analysisView.conditions.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -58,31 +56,14 @@ public class QueryConditionsListCellController extends ListCell<IQueryCondition>
 		else
 		{
 			if (queryCondition instanceof AddQueryCondition)
-			{
-				contentPane.setCenter(FXMLLoaderUtils.loadFXML("analysisView/conditions/AddQueryCondition.fxml").getRoot());
 				this.btnRemoveCondition.setVisible(false);
-			}
 			else
-			{
 				this.btnRemoveCondition.setVisible(true);
-			}
 
-			if (queryCondition instanceof SpeciesFilterCondition)
-				contentPane.setCenter(FXMLLoaderUtils.loadFXML("analysisView/conditions/SpeciesFilterCondition.fxml").getRoot());
-			else if (queryCondition instanceof LocationFilterCondition)
-				contentPane.setCenter(FXMLLoaderUtils.loadFXML("analysisView/conditions/LocationFilterCondition.fxml").getRoot());
-			else if (queryCondition instanceof StartDateCondition)
-			{
-				FXMLLoader fxml = FXMLLoaderUtils.loadFXML("analysisView/conditions/StartDateCondition.fxml");
-				fxml.<StartDateConditionController> getController().initializeData((StartDateCondition) queryCondition);
-				contentPane.setCenter(fxml.getRoot());
-			}
-			else if (queryCondition instanceof EndDateCondition)
-			{
-				FXMLLoader fxml = FXMLLoaderUtils.loadFXML("analysisView/conditions/EndDateCondition.fxml");
-				fxml.<EndDateConditionController> getController().initializeData((EndDateCondition) queryCondition);
-				contentPane.setCenter(fxml.getRoot());
-			}
+			FXMLLoader fxml = FXMLLoaderUtils.loadFXML("analysisView/conditions/" + queryCondition.getFXMLConditionEditor());
+			fxml.<IConditionController> getController().initializeData(queryCondition);
+			contentPane.setCenter(fxml.getRoot());
+
 			this.setGraphic(mainPane);
 		}
 	}

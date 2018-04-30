@@ -1,5 +1,6 @@
 package model.query.conditions;
 
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -15,6 +16,17 @@ public class SpeciesFilterCondition implements IQueryCondition
 	{
 		for (Species species : SanimalData.getInstance().getSpeciesList())
 			if (species.shouldBePartOfAnalysis())
-				query = query.addSpecies(species);
+				query.addSpecies(species);
+	}
+
+	@Override
+	public String getFXMLConditionEditor()
+	{
+		return "SpeciesFilterCondition.fxml";
+	}
+
+	public ObservableList<Species> speciesListProperty()
+	{
+		return SanimalData.getInstance().getSpeciesList();
 	}
 }

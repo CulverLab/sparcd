@@ -9,4 +9,10 @@ public class AddQueryCondition implements IQueryCondition
 	public void appendConditionToQuery(CyVerseQuery query)
 	{
 	}
+
+	@Override
+	public String getFXMLConditionEditor()
+	{
+		return "AddQueryCondition.fxml";
+	}
 }

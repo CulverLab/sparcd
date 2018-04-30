@@ -30,7 +30,6 @@ import org.irods.jargon.core.pub.domain.AvuData;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -296,11 +295,13 @@ public class ImageEntry extends ImageContainer
 		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, locationTaken.getLng().toString(), ""));
 		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_ELEVATION, locationTaken.getElevation().toString(), "meters"));
 
+		Integer entryID = 0;
 		for (SpeciesEntry speciesEntry : this.getSpeciesPresent())
 		{
-			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_NAME, speciesEntry.getSpecies().getName(), ""));
-			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, speciesEntry.getSpecies().getScientificName(), ""));
-			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_COUNT, speciesEntry.getAmount().toString(), ""));
+			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, speciesEntry.getSpecies().getScientificName(), entryID.toString()));
+			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_COMMON_NAME, speciesEntry.getSpecies().getName(), entryID.toString()));
+			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_COUNT, speciesEntry.getAmount().toString(), entryID.toString()));
+			entryID++;
 		}
 		return metadata;
 	}

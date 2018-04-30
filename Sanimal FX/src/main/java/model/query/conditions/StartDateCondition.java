@@ -18,6 +18,12 @@ public class StartDateCondition implements IQueryCondition
 		query.setStartDate(startDate.getValue());
 	}
 
+	@Override
+	public String getFXMLConditionEditor()
+	{
+		return "StartDateCondition.fxml";
+	}
+
 	public ObjectProperty<LocalDateTime> startDateProperty()
 	{
 		return this.startDate;

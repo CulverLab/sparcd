@@ -26,10 +26,8 @@ import org.irods.jargon.core.exception.AuthenticationException;
 import org.irods.jargon.core.exception.InvalidUserException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
-import org.irods.jargon.core.pub.CollectionAO;
-import org.irods.jargon.core.pub.DataObjectAO;
-import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
-import org.irods.jargon.core.pub.IRODSAccessObjectFactoryImpl;
+import org.irods.jargon.core.pub.*;
+import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.query.*;
@@ -794,12 +792,14 @@ public class CyVerseConnectionManager
 					// Uplaod the tar
 					this.accessObjects.getDataTransferOperations().putOperation(toWrite, tempUploadDir, transferCallback, null);
 					System.out.println("Uploading tar: " + (System.currentTimeMillis() - time));
+
 					time = System.currentTimeMillis();
 					if (messageCallback != null)
 						messageCallback.setValue("Extracting TAR file on CyVerse into a directory...");
 					// Extract the tar
 					this.accessObjects.getBulkFileOperationsAO().extractABundleIntoAnIrodsCollectionWithBulkOperationOptimization(tarFile.getAbsolutePath(), tempUploadDir.getAbsolutePath(), "");
 					System.out.println("Extracting tar: " + (System.currentTimeMillis() - time));
+
 					time = System.currentTimeMillis();
 					if (messageCallback != null)
 						messageCallback.setValue("Removing temporary TAR file...");
@@ -808,6 +808,7 @@ public class CyVerseConnectionManager
 						tarFile.delete();
 					System.out.println("Removing tar: " + (System.currentTimeMillis() - time));
 					time = System.currentTimeMillis();
+
 					// Upload the JSON file representing the upload
 					Integer imageCount = Math.toIntExact(directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count());
 					Integer imagesWithSpecies = Math.toIntExact(directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry && !((ImageEntry) imageContainer).getSpeciesPresent().isEmpty()).count());
@@ -822,14 +823,15 @@ public class CyVerseConnectionManager
 					if (messageCallback != null)
 						messageCallback.setValue("Moving upload into correct directory...");
 					tempUploadDir.renameTo(uploadDir);
-
 					System.out.println("Moving upload directory: " + (System.currentTimeMillis() - time));
 					time = System.currentTimeMillis();
+
 					if (messageCallback != null)
 						messageCallback.setValue("Writing metadata to images on CyVerse...");
 					// Add AVU metadata to all uploaded images
 					String localDirAbsolutePath = directoryToWrite.getFile().getAbsolutePath();
 					String localDirName = directoryToWrite.getFile().getName();
+					AvuData collectionIDTag = new AvuData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
 					directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).forEach(imageEntry ->
 					{
 						try
@@ -837,7 +839,9 @@ public class CyVerseConnectionManager
 							// Compute the image's "cyverse" path
 							String fileAbsolutePath = uploadDirName + "/" + localDirName + StringUtils.substringAfter(imageEntry.getFile().getAbsolutePath(), localDirAbsolutePath);
 							fileAbsolutePath = fileAbsolutePath.replace('\\', '/');
-							this.accessObjects.getDataObjectAO().addBulkAVUMetadataToDataObject(fileAbsolutePath, imageEntry.convertToAVUMetadata());
+							List<AvuData> imageMetadata = imageEntry.convertToAVUMetadata();
+							imageMetadata.add(collectionIDTag);
+							this.accessObjects.getDataObjectAO().addBulkAVUMetadataToDataObject(fileAbsolutePath, imageMetadata);
 						}
 						catch (JargonException e)
 						{
@@ -847,7 +851,6 @@ public class CyVerseConnectionManager
 					});
 					System.out.println("Adding AVU: " + (System.currentTimeMillis() - time));
 					time = System.currentTimeMillis();
-
 				}
 			}
 		}
@@ -913,7 +916,10 @@ public class CyVerseConnectionManager
 						}, null);
 
 						String fileAbsoluteCyVersePath = cloudImageEntry.getCyverseFile().getAbsolutePath();
-						cloudImageEntry.convertToAVUMetadata().forEach(avuData ->
+						AvuData collectionIDTag = new AvuData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
+						List<AvuData> imageMetadata = cloudImageEntry.convertToAVUMetadata();
+						imageMetadata.add(collectionIDTag);
+						imageMetadata.forEach(avuData ->
 						{
 							try
 							{
@@ -1115,9 +1121,9 @@ public class CyVerseConnectionManager
 					Double locationLatitude = 0D;
 					Double locationLongitude = 0D;
 					Double locationElevation = 0D;
-					String speciesName = "";
-					String speciesScientificName = "";
-					Integer speciesCount = 0;
+					Map<Integer, String> speciesIDToCommonName = new HashMap<>();
+					Map<Integer, String> speciesIDToScientificName = new HashMap<>();
+					Map<Integer, Integer> speciesIDToCount = new HashMap<>();
 
 					for (MetaDataAndDomainData fileDataField : this.accessObjects.getDataObjectAO().findMetadataValuesForDataObject(irodsAbsolutePath))
 					{
@@ -1142,14 +1148,14 @@ public class CyVerseConnectionManager
 							case SanimalMetadataFields.A_LOCATION_ELEVATION:
 								locationElevation = Double.parseDouble(fileDataField.getAvuValue());
 								break;
-							case SanimalMetadataFields.A_SPECIES_NAME:
-								speciesName = fileDataField.getAvuValue();
+							case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
+								speciesIDToCommonName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getAvuValue());
 								break;
 							case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
-								speciesScientificName = fileDataField.getAvuValue();
+								speciesIDToScientificName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getAvuValue());
 								break;
 							case SanimalMetadataFields.A_SPECIES_COUNT:
-								speciesCount = Integer.parseInt(fileDataField.getAvuValue());
+								speciesIDToCount.put(Integer.parseInt(fileDataField.getAvuUnit()), Integer.parseInt(fileDataField.getAvuValue()));
 								break;
 							default:
 								break;
@@ -1160,18 +1166,27 @@ public class CyVerseConnectionManager
 					Boolean locationForImagePresent = uniqueLocations.stream().anyMatch(location -> location.getId().equals(finalLocationID));
 					if (!locationForImagePresent)
 						uniqueLocations.add(new Location(locationName, locationID, locationLatitude, locationLongitude, locationElevation));
-					String finalSpeciesScientificName = speciesScientificName;
-					Boolean speciesForImagePresent = uniqueSpecies.stream().anyMatch(species -> species.getScientificName().equalsIgnoreCase(finalSpeciesScientificName));
-					if (!speciesForImagePresent)
-						uniqueSpecies.add(new Species(speciesName, speciesScientificName, ""));
+					for (Integer key : speciesIDToScientificName.keySet())
+					{
+						String speciesScientificName = speciesIDToScientificName.get(key);
+						String speciesName = speciesIDToCommonName.get(key);
+						Boolean speciesForImagePresent = uniqueSpecies.stream().anyMatch(species -> species.getScientificName().equalsIgnoreCase(speciesScientificName));
+						if (!speciesForImagePresent)
+							uniqueSpecies.add(new Species(speciesName, speciesScientificName, ""));
+					}
 
 					Location correctLocation = uniqueLocations.stream().filter(location -> location.getId().equals(finalLocationID)).findFirst().get();
-					Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(finalSpeciesScientificName)).findFirst().get();
-					ImageEntry entry = new ImageEntry(new File(irodsAbsolutePath));
-					entry.setLocationTaken(correctLocation);
-					entry.setDateTaken(localDateTime);
-					entry.addSpecies(correctSpecies, speciesCount);
-					queryResult.add(entry);
+					for (Integer key : speciesIDToScientificName.keySet())
+					{
+						String speciesScientificName = speciesIDToScientificName.get(key);
+						Integer speciesCount = speciesIDToCount.get(key);
+						Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(speciesScientificName)).findFirst().get();
+						ImageEntry entry = new ImageEntry(new File(irodsAbsolutePath));
+						entry.setLocationTaken(correctLocation);
+						entry.setDateTaken(localDateTime);
+						entry.addSpecies(correctSpecies, speciesCount);
+						queryResult.add(entry);
+					}
 				}
 
 				// Need this test to avoid NoMoreResultsException

@@ -17,6 +17,12 @@ public class EndDateCondition implements IQueryCondition
 		query.setEndDate(endDate.getValue());
 	}
 
+	@Override
+	public String getFXMLConditionEditor()
+	{
+		return "EndDateCondition.fxml";
+	}
+
 	public ObjectProperty<LocalDateTime> endDateProperty()
 	{
 		return this.endDate;

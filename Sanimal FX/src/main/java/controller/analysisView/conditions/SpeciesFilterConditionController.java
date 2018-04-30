@@ -9,6 +9,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxListCell;
 import model.SanimalData;
+import model.query.IQueryCondition;
 import model.query.conditions.SpeciesFilterCondition;
 import model.species.Species;
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +18,7 @@ import java.net.URL;
 import java.util.Comparator;
 import java.util.ResourceBundle;
 
-public class SpeciesFilterConditionController implements Initializable
+public class SpeciesFilterConditionController implements IConditionController
 {
 	///
 	/// FXML Bound Fields Start
@@ -37,25 +38,30 @@ public class SpeciesFilterConditionController implements Initializable
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
-		// First we setup the species list
+	}
 
-		// Grab the global species list
-		SortedList<Species> species = new SortedList<>(SanimalData.getInstance().getSpeciesList());
-		// We set the comparator to be the name of the species
-		species.setComparator(Comparator.comparing(Species::getName));
-		// We create a local wrapper of the species list to filter
-		FilteredList<Species> speciesFilteredList = new FilteredList<>(species);
-		// Set the filter to update whenever the species search text changes
-		this.txtSpeciesSearch.textProperty().addListener(observable -> {
-			speciesFilteredList.setPredicate(speciesToFilter ->
-					// Allow any species with a name or scientific name containing the species search text
-					(StringUtils.containsIgnoreCase(speciesToFilter.getName(), this.txtSpeciesSearch.getCharacters()) ||
-							StringUtils.containsIgnoreCase(speciesToFilter.getScientificName(), this.txtSpeciesSearch.getCharacters())));
-		});
-		// Set the items of the species list view to the newly sorted list
-		this.speciesFilterListView.setItems(speciesFilteredList);
-		this.speciesFilterListView.setCellFactory(CheckBoxListCell.forListView(Species::shouldBePartOfAnalysisProperty));
-		this.speciesFilterListView.setEditable(true);
+	public void initializeData(IQueryCondition queryCondition)
+	{
+		if (queryCondition instanceof SpeciesFilterCondition)
+		{
+			// Grab the global species list
+			SortedList<Species> species = new SortedList<>(((SpeciesFilterCondition) queryCondition).speciesListProperty());
+			// We set the comparator to be the name of the species
+			species.setComparator(Comparator.comparing(Species::getName));
+			// We create a local wrapper of the species list to filter
+			FilteredList<Species> speciesFilteredList = new FilteredList<>(species);
+			// Set the filter to update whenever the species search text changes
+			this.txtSpeciesSearch.textProperty().addListener(observable -> {
+				speciesFilteredList.setPredicate(speciesToFilter ->
+						// Allow any species with a name or scientific name containing the species search text
+						(StringUtils.containsIgnoreCase(speciesToFilter.getName(), this.txtSpeciesSearch.getCharacters()) ||
+								StringUtils.containsIgnoreCase(speciesToFilter.getScientificName(), this.txtSpeciesSearch.getCharacters())));
+			});
+			// Set the items of the species list view to the newly sorted list
+			this.speciesFilterListView.setItems(speciesFilteredList);
+			this.speciesFilterListView.setCellFactory(CheckBoxListCell.forListView(Species::shouldBePartOfAnalysisProperty));
+			this.speciesFilterListView.setEditable(true);
+		}
 	}
 
 	/**

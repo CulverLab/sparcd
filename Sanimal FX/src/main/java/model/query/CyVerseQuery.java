@@ -2,8 +2,10 @@ package model.query;
 
 
 import model.constant.SanimalMetadataFields;
+import model.cyverse.ImageCollection;
 import model.location.Location;
 import model.species.Species;
+import org.irods.jargon.core.pub.DataAOHelper;
 import org.irods.jargon.core.query.*;
 
 import java.time.LocalDateTime;
@@ -16,6 +18,7 @@ public class CyVerseQuery
 {
 	private List<Species> speciesQuery = new LinkedList<>();
 	private List<Location> locationQuery = new LinkedList<>();
+	private List<ImageCollection> collectionQuery = new LinkedList<>();
 
 	private IRODSGenQueryBuilder queryBuilder;
 
@@ -42,44 +45,49 @@ public class CyVerseQuery
 		appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.EQUAL, "true");
 	}
 
-	public CyVerseQuery addSpecies(Species species)
+	public void addSpecies(Species species)
 	{
 		speciesQuery.add(species);
-		return this;
 	}
 
-	public CyVerseQuery setSpecies(Species species)
+	public void setSpecies(Species species)
 	{
 		speciesQuery.clear();
 		speciesQuery.add(species);
-		return this;
 	}
 
-	public CyVerseQuery addLocation(Location location)
+	public void addLocation(Location location)
 	{
 		locationQuery.add(location);
-		return this;
 	}
 
-	public CyVerseQuery setLocation(Location location)
+	public void setLocation(Location location)
 	{
 		locationQuery.clear();
 		locationQuery.add(location);
-		return this;
 	}
 
-	public CyVerseQuery setStartDate(LocalDateTime startDate)
+	public void setStartDate(LocalDateTime startDate)
 	{
 		appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_TIME_TAKEN);
 		appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.NUMERIC_GREATER_THAN, startDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-		return this;
 	}
 
-	public CyVerseQuery setEndDate(LocalDateTime endDate)
+	public void setEndDate(LocalDateTime endDate)
 	{
 		appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_TIME_TAKEN);
 		appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.NUMERIC_LESS_THAN, endDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-		return this;
+	}
+
+	public void addImageCollection(ImageCollection imageCollection)
+	{
+		collectionQuery.add(imageCollection);
+	}
+
+	public void setImageCollection(ImageCollection imageCollection)
+	{
+		collectionQuery.clear();
+		collectionQuery.add(imageCollection);
 	}
 
 	public IRODSGenQueryBuilder build()
@@ -87,8 +95,8 @@ public class CyVerseQuery
 		String speciesInStr = "(" + this.speciesQuery.stream().map(species -> "'" + species.getScientificName() + "'").collect(Collectors.joining(",")) + ")";
 		if (!speciesQuery.isEmpty())
 		{
-			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, speciesInStr);
 			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME);
+			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, speciesInStr);
 		}
 
 		String locationInStr = "(" + this.locationQuery.stream().map(location -> "'" + location.getId() + "'").collect(Collectors.joining(",")) + ")";
@@ -97,6 +105,14 @@ public class CyVerseQuery
 			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_LOCATION_ID);
 			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, locationInStr);
 		}
+
+		String imageCollectionInStr = "(" + this.collectionQuery.stream().map(imageCollection -> "'" + imageCollection.getID().toString() + "'").collect(Collectors.joining(",")) + ")";
+		if (!collectionQuery.isEmpty())
+		{
+			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_COLLECTION_ID);
+			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, imageCollectionInStr);
+		}
+
 		return this.queryBuilder;
 	}
 

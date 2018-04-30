@@ -1,5 +1,6 @@
 package model.query.conditions;
 
+import javafx.collections.ObservableList;
 import model.SanimalData;
 import model.location.Location;
 import model.query.CyVerseQuery;
@@ -13,6 +14,17 @@ public class LocationFilterCondition implements IQueryCondition
 	{
 		for (Location location : SanimalData.getInstance().getLocationList())
 			if (location.shouldBePartOfAnalysis())
-				query = query.addLocation(location);
+				query.addLocation(location);
+	}
+
+	@Override
+	public String getFXMLConditionEditor()
+	{
+		return "LocationFilterCondition.fxml";
+	}
+
+	public ObservableList<Location> locationListProperty()
+	{
+		return SanimalData.getInstance().getLocationList();
 	}
 }

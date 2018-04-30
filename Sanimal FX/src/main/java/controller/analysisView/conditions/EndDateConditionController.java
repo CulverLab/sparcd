@@ -3,6 +3,7 @@ package controller.analysisView.conditions;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import jfxtras.scene.control.LocalDateTimePicker;
+import model.query.IQueryCondition;
 import model.query.conditions.EndDateCondition;
 import model.query.conditions.StartDateCondition;
 
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ResourceBundle;
 
-public class EndDateConditionController implements Initializable
+public class EndDateConditionController implements IConditionController
 {
 	///
 	/// FXML Bound Fields Start
@@ -29,8 +30,10 @@ public class EndDateConditionController implements Initializable
 	{
 	}
 
-	public void initializeData(EndDateCondition endDateCondition)
+	@Override
+	public void initializeData(IQueryCondition endDateCondition)
 	{
-		this.dtpDateTime.localDateTimeProperty().bindBidirectional(endDateCondition.endDateProperty());
+		if (endDateCondition instanceof EndDateCondition)
+			this.dtpDateTime.localDateTimeProperty().bindBidirectional(((EndDateCondition) endDateCondition).endDateProperty());
 	}
 }

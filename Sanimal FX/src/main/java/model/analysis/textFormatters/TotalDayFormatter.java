@@ -97,10 +97,10 @@ public class TotalDayFormatter extends TextFormatter
 					LocalDateTime firstCal = first.getDateTaken();
 					LocalDateTime lastCal = last.getDateTaken();
 					Integer firstDaysInMonth = 31;
-					Integer firstDay = firstCal.getDayOfMonth();
-					Integer lastDay = lastCal.getDayOfMonth();
-					Integer firstMonth = firstCal.getMonthValue();
-					Integer lastMonth = lastCal.getMonthValue();
+					Integer firstDay = firstCal.getDayOfMonth() - 1;
+					Integer lastDay = lastCal.getDayOfMonth() - 1;
+					Integer firstMonth = firstCal.getMonthValue() - 1;
+					Integer lastMonth = lastCal.getMonthValue() - 1;
 					if (firstMonth == lastMonth)
 						daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 					else
@@ -217,10 +217,10 @@ public class TotalDayFormatter extends TextFormatter
 					LocalDateTime firstCal = first.getDateTaken();
 					LocalDateTime lastCal = last.getDateTaken();
 					Integer firstDaysInMonth = 31;
-					Integer firstDay = firstCal.getDayOfMonth();
-					Integer lastDay = lastCal.getDayOfMonth();
-					Integer firstMonth = firstCal.getMonthValue();
-					Integer lastMonth = lastCal.getMonthValue();
+					Integer firstDay = firstCal.getDayOfMonth() - 1;
+					Integer lastDay = lastCal.getDayOfMonth() - 1;
+					Integer firstMonth = firstCal.getMonthValue() - 1;
+					Integer lastMonth = lastCal.getMonthValue() - 1;
 					if (firstMonth == lastMonth)
 						daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 					else
@@ -337,10 +337,10 @@ public class TotalDayFormatter extends TextFormatter
 					LocalDateTime firstCal = first.getDateTaken();
 					LocalDateTime lastCal = last.getDateTaken();
 					Integer firstDaysInMonth = 31;
-					Integer firstDay = firstCal.getDayOfMonth();
-					Integer lastDay = lastCal.getDayOfMonth();
-					Integer firstMonth = firstCal.getMonthValue();
-					Integer lastMonth = lastCal.getMonthValue();
+					Integer firstDay = firstCal.getDayOfMonth() - 1;
+					Integer lastDay = lastCal.getDayOfMonth() - 1;
+					Integer firstMonth = firstCal.getMonthValue() - 1;
+					Integer lastMonth = lastCal.getMonthValue() - 1;
 					if (firstMonth == lastMonth)
 						daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 					else
@@ -465,10 +465,10 @@ public class TotalDayFormatter extends TextFormatter
 					LocalDateTime firstCal = first.getDateTaken();
 					LocalDateTime lastCal = last.getDateTaken();
 					Integer firstDaysInMonth = 31;
-					Integer firstDay = firstCal.getDayOfMonth();
-					Integer lastDay = lastCal.getDayOfMonth();
-					Integer firstMonth = firstCal.getMonthValue();
-					Integer lastMonth = lastCal.getMonthValue();
+					Integer firstDay = firstCal.getDayOfMonth() - 1;
+					Integer lastDay = lastCal.getDayOfMonth() - 1;
+					Integer firstMonth = firstCal.getMonthValue() - 1;
+					Integer lastMonth = lastCal.getMonthValue() - 1;
 					if (firstMonth == lastMonth)
 						daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 					else
@@ -601,10 +601,10 @@ public class TotalDayFormatter extends TextFormatter
 							LocalDateTime firstCal = first.getDateTaken();
 							LocalDateTime lastCal = last.getDateTaken();
 							Integer firstDaysInMonth = 31;
-							Integer firstDay = firstCal.getDayOfMonth();
-							Integer lastDay = lastCal.getDayOfMonth();
-							Integer firstMonth = firstCal.getMonthValue();
-							Integer lastMonth = lastCal.getMonthValue();
+							Integer firstDay = firstCal.getDayOfMonth() - 1;
+							Integer lastDay = lastCal.getDayOfMonth() - 1;
+							Integer firstMonth = firstCal.getMonthValue() - 1;
+							Integer lastMonth = lastCal.getMonthValue() - 1;
 							if (firstMonth == lastMonth)
 								daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 							else
@@ -716,10 +716,10 @@ public class TotalDayFormatter extends TextFormatter
 						LocalDateTime firstCal = first.getDateTaken();
 						LocalDateTime lastCal = last.getDateTaken();
 						Integer firstDaysInMonth = 31;
-						Integer firstDay = firstCal.getDayOfMonth();
-						Integer lastDay = lastCal.getDayOfMonth();
-						Integer firstMonth = firstCal.getMonthValue();
-						Integer lastMonth = lastCal.getMonthValue();
+						Integer firstDay = firstCal.getDayOfMonth() - 1;
+						Integer lastDay = lastCal.getDayOfMonth() - 1;
+						Integer firstMonth = firstCal.getMonthValue() - 1;
+						Integer lastMonth = lastCal.getMonthValue() - 1;
 						if (firstMonth == lastMonth)
 							daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 						else
@@ -877,10 +877,10 @@ public class TotalDayFormatter extends TextFormatter
 							LocalDateTime firstCal = first.getDateTaken();
 							LocalDateTime lastCal = last.getDateTaken();
 							Integer firstDaysInMonth = 31;
-							Integer firstDay = firstCal.getDayOfMonth();
-							Integer lastDay = lastCal.getDayOfMonth();
-							Integer firstMonth = firstCal.getMonthValue();
-							Integer lastMonth = lastCal.getMonthValue();
+							Integer firstDay = firstCal.getDayOfMonth() - 1;
+							Integer lastDay = lastCal.getDayOfMonth() - 1;
+							Integer firstMonth = firstCal.getMonthValue() - 1;
+							Integer lastMonth = lastCal.getMonthValue() - 1;
 							if (firstMonth == lastMonth)
 								daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 							else
@@ -1017,10 +1017,10 @@ public class TotalDayFormatter extends TextFormatter
 						LocalDateTime firstCal = first.getDateTaken();
 						LocalDateTime lastCal = last.getDateTaken();
 						Integer firstDaysInMonth = 31;
-						Integer firstDay = firstCal.getDayOfMonth();
-						Integer lastDay = lastCal.getDayOfMonth();
-						Integer firstMonth = firstCal.getMonthValue();
-						Integer lastMonth = lastCal.getMonthValue();
+						Integer firstDay = firstCal.getDayOfMonth() - 1;
+						Integer lastDay = lastCal.getDayOfMonth() - 1;
+						Integer firstMonth = firstCal.getMonthValue() - 1;
+						Integer lastMonth = lastCal.getMonthValue() - 1;
 						if (firstMonth == lastMonth)
 							daysUsed[firstMonth] = daysUsed[firstMonth] + (lastDay - firstDay + 1);
 						else

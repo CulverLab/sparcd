@@ -20,7 +20,7 @@ import model.query.conditions.StartDateCondition;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class AddQueryConditionController implements Initializable
+public class AddQueryConditionController implements IConditionController
 {
 	///
 	/// FXML Bound Fields Start
@@ -45,27 +45,16 @@ public class AddQueryConditionController implements Initializable
 		{
 			ObservableList<IQueryCondition> queryConditions = SanimalData.getInstance().getQueryEngine().getQueryConditions();
 			if (newValue != null)
-				switch (newValue)
-				{
-					case SPECIES_FILTER:
-						queryConditions.add(queryConditions.size() - 1, new SpeciesFilterCondition());
-						break;
-					case LOCATION_FILTER:
-						queryConditions.add(queryConditions.size() - 1, new LocationFilterCondition());
-						break;
-					case START_TIME_FILTER:
-						queryConditions.add(queryConditions.size() - 1, new StartDateCondition());
-						break;
-					case END_TIME_FILTER:
-						queryConditions.add(queryConditions.size() - 1, new EndDateCondition());
-						break;
-					default:
-						break;
-				}
+				queryConditions.add(queryConditions.size() - 1, newValue.createInstance());
 			this.btnAdd.setVisible(true);
 			this.btnReset.setVisible(false);
 			this.lvwConditions.setVisible(false);
 		});
+	}
+
+	@Override
+	public void initializeData(IQueryCondition queryCondition)
+	{
 	}
 
 	public void addNewCondition(ActionEvent actionEvent)

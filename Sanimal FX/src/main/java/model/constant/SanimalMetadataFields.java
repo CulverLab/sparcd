@@ -30,10 +30,13 @@ public class SanimalMetadataFields
 	// The AVU meta key for location elevation
 	public static final String A_LOCATION_ELEVATION = "locationElevation";
 
-	// The AVU meta key for species name
-	public static final String A_SPECIES_NAME = "speciesName";
 	// The AVU meta key for species scientific name
 	public static final String A_SPECIES_SCIENTIFIC_NAME = "speciesScientificName";
+	// The AVU meta key for species name
+	public static final String A_SPECIES_COMMON_NAME = "metaSpeciesCommonName";
 	// The AVU meta key for species count
-	public static final String A_SPECIES_COUNT = "speciesCount";
+	public static final String A_SPECIES_COUNT = "metaSpeciesCount";
+
+	// The AVU meta key for collection id
+	public static final String A_COLLECTION_ID = "collectionID";
 }
