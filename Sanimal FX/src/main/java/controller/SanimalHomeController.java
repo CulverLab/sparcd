@@ -95,7 +95,7 @@ public class SanimalHomeController implements Initializable
 	/**
 	 * When the user clicks the cyverse logo
 	 *
-	 * @param mouseEvent ignored
+	 * @param mouseEvent consumed
 	 */
 	public void showCyverseWebsite(MouseEvent mouseEvent)
 	{
@@ -106,12 +106,13 @@ public class SanimalHomeController implements Initializable
 		catch (IOException | URISyntaxException ignored)
 		{
 		}
+		mouseEvent.consume();
 	}
 
 	/**
 	 * When the user clicks the UA CS logo
 	 *
-	 * @param mouseEvent ignored
+	 * @param mouseEvent consumed
 	 */
 	public void showCSWebsite(MouseEvent mouseEvent)
 	{
@@ -122,12 +123,13 @@ public class SanimalHomeController implements Initializable
 		catch (IOException | URISyntaxException ignored)
 		{
 		}
+		mouseEvent.consume();
 	}
 
 	/**
 	 * When the user clicks the UA SNRE logo
 	 *
-	 * @param mouseEvent ignored
+	 * @param mouseEvent consumed
 	 */
 	public void showSNREWebsite(MouseEvent mouseEvent)
 	{
@@ -138,5 +140,6 @@ public class SanimalHomeController implements Initializable
 		catch (IOException | URISyntaxException ignored)
 		{
 		}
+		mouseEvent.consume();
 	}
 }

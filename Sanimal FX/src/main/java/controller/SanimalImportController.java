@@ -191,8 +191,10 @@ public class SanimalImportController implements Initializable
 	// A property used to process the image scrolling
 	private ObjectProperty<Point2D> mouseDown = new SimpleObjectProperty<>();
 
+	// The current image being previewed
 	private ObjectProperty<Image> speciesPreviewImage = new SimpleObjectProperty<>(null);
 
+	// The stage containing the time shift controller used to shift dates around
 	private Stage timeShiftStage;
 	private TimeShiftController timeShiftController;
 
@@ -772,33 +774,44 @@ public class SanimalImportController implements Initializable
 	 */
 	public void importImages(ActionEvent actionEvent)
 	{
+		// Test if the images should be read as legacy
 		Boolean readAsLegacy = false;
+		// If Dr. Sanderson's compatibility is enabled, ask
 		if (SanimalData.getInstance().getSettings().getDrSandersonCompatibility())
 		{
+			// Ask if the data is legacy
 			Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
 			alert.setTitle("Legacy Data?");
 			alert.setHeaderText("Are you importing legacy data?");
 			alert.setContentText("Would you like the directory to be read as legacy data used by Dr. Sanderson's 'Data Analyze' program?");
 
+			// 4 buttons, Yes, No, No don't ask again, Cancel
 			ButtonType yes = new ButtonType("Yes, Auto-Tag it");
 			ButtonType no = new ButtonType("No");
 			ButtonType noDontAsk = new ButtonType("No, don't ask again");
 
+			// Set the button types
 			alert.getButtonTypes().setAll(yes, no, noDontAsk, ButtonType.CANCEL);
 
+			// Test for the result of the alert shown
 			Optional<ButtonType> result = alert.showAndWait();
+
+			// If cancel is pressed, return
 			if (!result.isPresent() || result.get() == ButtonType.CANCEL)
 			{
 				return;
 			}
+			// If no is pressed, we are not reading as legacy
 			else if (result.get() == no)
 			{
 				readAsLegacy = false;
 			}
+			// If yes is pressed, read the data as legacy
 			else if (result.get() == yes)
 			{
 				readAsLegacy = true;
 			}
+			// If no is pressed, we are not reading as legacy, and update the setting
 			else if (result.get() == noDontAsk)
 			{
 				readAsLegacy = false;
@@ -919,6 +932,7 @@ public class SanimalImportController implements Initializable
 							this.updateProgress(1, 2);
 							this.updateMessage("Reading Dr. Sanderson's Legacy Format");
 
+							// parse dr. sanderson's format
 							DirectoryManager.parseLegacyDirectory(directory, currentLocations, currentSpecies);
 
 							this.updateProgress(2, 2);
@@ -936,6 +950,7 @@ public class SanimalImportController implements Initializable
 						List<Species> newSpecies = ListUtils.subtract(legacySyncTask.getValue().getKey(), SanimalData.getInstance().getSpeciesList());
 						List<Location> newLocations = ListUtils.subtract(legacySyncTask.getValue().getValue(), SanimalData.getInstance().getLocationList());
 
+						// If the species list is not empty, show a popup
 						if (!newSpecies.isEmpty())
 						{
 							SanimalData.getInstance().getErrorDisplay().showPopup(
@@ -946,12 +961,15 @@ public class SanimalImportController implements Initializable
 									newSpecies.size() + " new species were found on the images that were not registered yet. Add any additional species information now.",
 									true);
 
+							// Request the edit of each species, because they may not be valid yet
 							for (Species species : newSpecies)
 								requestEdit(species);
 
+							// Add all new species
 							SanimalData.getInstance().getSpeciesList().addAll(newSpecies);
 						}
 
+						// If the locations list is not empty, show a popup
 						if (!newLocations.isEmpty())
 						{
 							SanimalData.getInstance().getErrorDisplay().showPopup(
@@ -962,9 +980,11 @@ public class SanimalImportController implements Initializable
 									newLocations.size() + " new locations were found on the images that were not registered yet. Please add location latitude/longitude/elevation.",
 									true);
 
+							// Request the edit of each locations, because they may not be valid yet
 							for (Location location : newLocations)
 								requestEdit(location);
 
+							// Add all new locations
 							SanimalData.getInstance().getLocationList().addAll(newLocations);
 						}
 
@@ -978,8 +998,6 @@ public class SanimalImportController implements Initializable
 			});
 
 			SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(importTask);
-
-			// If the data is in Dr. Sanderson's format, then read that format
 		}
 		// Consume the event
 		actionEvent.consume();

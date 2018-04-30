@@ -40,6 +40,11 @@ public class SettingsData
 		this.setupPropertyPageItems();
 	}
 
+	/**
+	 * Called if settings are pulled from the cloud and need to be copied into the singleton settings class
+	 *
+	 * @param otherSettings The settings to copy from
+	 */
 	public void loadFromOther(SettingsData otherSettings)
 	{
 		this.dateFormat.setValue(otherSettings.getDateFormat());
@@ -51,6 +56,9 @@ public class SettingsData
 		this.backgroundImageLoading.setValue(otherSettings.getBackgroundImageLoading());
 	}
 
+	/**
+	 * Initializes the settings available
+	 */
 	private void setupPropertyPageItems()
 	{
 		settingList.add(new CustomPropertyItem<>("Date Format: ", "DateTime", "The date format to be used when displaying dates", dateFormat, DateFormat.class));
@@ -96,6 +104,9 @@ public class SettingsData
 		return this.dateFormat.getValue().format(dateTime.toLocalDate()) + delimeter + this.timeFormat.getValue().format(dateTime.toLocalTime());
 	}
 
+	/**
+	 * Date format specifies the possible date formats to be used
+	 */
 	public enum DateFormat
 	{
 		MonthDayYear("Month Day, Year -- January 3, 2011",        "MMMM dd',' yyyy"),
@@ -106,35 +117,61 @@ public class SettingsData
 		NumericDayMonthYear("Numeric Day/Month/Year -- 3/1/2011", "d'/'M'/'yyyy"),
 		ISO("ISO Local Date -- 2011-1-3",                         DateTimeFormatter.ISO_LOCAL_DATE);
 
+		// The string value is used for displaying purposes
 		private String stringValue;
+		// The date format actually formats the date
 		private DateTimeFormatter formatter;
 
+		/**
+		 * Given a display value and a format as a strng, this constructor initializes all fields
+		 *
+		 * @param stringValue The string display value
+		 * @param format The string format
+		 */
 		DateFormat(String stringValue, String format)
 		{
 			this.stringValue = stringValue;
 			this.formatter = DateTimeFormatter.ofPattern(format);
 		}
 
+		/**
+		 * Given a display value and a format as a DateTimeFormatter, this constructor initializes all fields
+		 *
+		 * @param stringValue The string display value
+		 * @param formater The date time formatter
+		 */
 		DateFormat(String stringValue, DateTimeFormatter formater)
 		{
 			this.stringValue = stringValue;
 			this.formatter = formater;
 		}
 
+		/**
+		 * Returns the name of the setting as a string
+		 *
+		 * @return The display name of the date
+		 */
 		@Override
 		public String toString()
 		{
 			return this.stringValue;
 		}
 
+		/**
+		 * Formats a given date
+		 *
+		 * @param date The date to format
+		 * @return The string representing the formatted date
+		 */
 		public String format(LocalDate date)
 		{
 			return date.format(formatter);
 		}
-
-		public DateTimeFormatter getFormatter() { return this.formatter; }
 	}
 
+	/**
+	 * Time format specifies the possible time formats to be used
+	 */
 	public enum TimeFormat
 	{
 		Time24Hour("24 hour -- 14:36",                                        "H:mm"),
@@ -142,41 +179,72 @@ public class SettingsData
 		Time12HourAMPM("12 hour with AM/PM -- 2:36 pm",                       "h:mm a"),
 		Time12HourSecondsAMPM("12 hour with AM/PM and seconds -- 2:36:52 pm", "h:mm:ss a");
 
+		// The display name of the time format
 		private String stringValue;
+		// The actual formatter that formats times into strings
 		private DateTimeFormatter formatter;
 
+		/**
+		 * Constructor takes a string representation and a time format
+		 *
+		 * @param stringValue The string representation of the time
+		 * @param format The format pattern to be used
+		 */
 		TimeFormat(String stringValue, String format)
 		{
 			this.stringValue = stringValue;
 			this.formatter = DateTimeFormatter.ofPattern(format);
 		}
 
+		/**
+		 * Returns the string sample of the time
+		 *
+		 * @return A string showing what the time format looks like
+		 */
 		@Override
 		public String toString()
 		{
 			return this.stringValue;
 		}
 
+		/**
+		 * Formats a time with the formatter
+		 *
+		 * @param time The time to format
+		 * @return The string formatted based on time format
+		 */
 		public String format(LocalTime time)
 		{
 			return time.format(formatter);
 		}
-
-		public DateTimeFormatter getFormatter() { return this.formatter; }
 	}
 
+	/**
+	 * Location format used to specify UTM or Lat/Lng
+	 */
 	public enum LocationFormat
 	{
 		LatLong("Latitude & Longitude"),
 		UTM("UTM");
 
+		// The display name of the format
 		private String stringValue;
 
+		/**
+		 * Constructor just needs the display name of the location format
+		 *
+		 * @param stringValue The display name
+		 */
 		LocationFormat(String stringValue)
 		{
 			this.stringValue = stringValue;
 		}
 
+		/**
+		 * Returns the string representation of the location format
+		 *
+		 * @return The display name of the location
+		 */
 		@Override
 		public String toString()
 		{
@@ -184,11 +252,18 @@ public class SettingsData
 		}
 	}
 
+	/**
+	 * Two different distance units are feet and meters
+	 */
 	public enum DistanceUnits
 	{
 		Feet,
 		Meters;
 	}
+
+	///
+	/// Getters/Setters
+	///
 
 	public ObservableList<CustomPropertyItem<?>> getSettingList()
 	{

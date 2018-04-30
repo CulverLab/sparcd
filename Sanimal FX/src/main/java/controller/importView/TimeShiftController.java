@@ -149,20 +149,23 @@ public class TimeShiftController implements Initializable
 	/**
 	 * When confirm is pressed, we close the window
 	 *
-	 * @param mouseEvent
+	 * @param mouseEvent consumed
 	 */
 	public void confirmPressed(MouseEvent mouseEvent)
 	{
 		dateConfirmed = true;
 		((Stage) this.spnDay.getScene().getWindow()).close();
+		mouseEvent.consume();
 	}
 
 	/**
 	 * When cancel is pressed, we set the new date to be the original date, and then close the window
-	 * @param mouseEvent
+	 *
+	 * @param mouseEvent consumed
 	 */
 	public void cancelPressed(MouseEvent mouseEvent)
 	{
 		((Stage) this.spnDay.getScene().getWindow()).close();
+		mouseEvent.consume();
 	}
 }

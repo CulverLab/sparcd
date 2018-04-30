@@ -17,14 +17,19 @@ import java.net.URL;
 import java.util.Comparator;
 import java.util.ResourceBundle;
 
+/**
+ * Class used as a controller for the "Collection filter" UI component
+ */
 public class CollectionConditionController implements IConditionController
 {
 	///
 	/// FXML Bound Fields Start
 	///
 
+	// The listview of collections to filter
 	@FXML
 	public ListView<ImageCollection> collectionFilterListView;
+	// The search bar for the collections
 	@FXML
 	public TextField txtCollectionSearch;
 
@@ -32,18 +37,30 @@ public class CollectionConditionController implements IConditionController
 	/// FXML Bound Fields End
 	///
 
+	// The data model reference
+	private CollectionCondition collectionCondition;
+
+	/**
+	 * Initializes the UI, does nothing
+	 *
+	 * @param location ignored
+	 * @param resources ignored
+	 */
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
 	}
 
 	@Override
-	public void initializeData(IQueryCondition queryCondition)
+	public void initializeData(IQueryCondition iQueryCondition)
 	{
-		if (queryCondition instanceof CollectionCondition)
+		// Make sure the data model we received matches our type
+		if (iQueryCondition instanceof CollectionCondition)
 		{
-			// Grab the global image collection list
-			SortedList<ImageCollection> imageCollections = new SortedList<>(((CollectionCondition) queryCondition).imageCollectionListProperty());
+			this.collectionCondition = (CollectionCondition) iQueryCondition;
+
+			// Grab the image collection list from our data model item
+			SortedList<ImageCollection> imageCollections = new SortedList<>(this.collectionCondition.imageCollectionListProperty());
 			// We set the comparator to be the name of the collection
 			imageCollections.setComparator(Comparator.comparing(ImageCollection::getName));
 			// We create a local wrapper of the imageCollections list to filter
@@ -51,28 +68,49 @@ public class CollectionConditionController implements IConditionController
 			// Set the filter to update whenever the imageCollections search text changes
 			this.txtCollectionSearch.textProperty().addListener(observable -> {
 				imageCollectionFilteredList.setPredicate(imageCollection ->
-						// Allow any imageCollections with a name or scientific name containing the imageCollections search text
+						// Allow any imageCollections with a name containing the imageCollections search text
 						(StringUtils.containsIgnoreCase(imageCollection.getName(), this.txtCollectionSearch.getCharacters())));
 			});
 			// Set the items of the imageCollections list view to the newly sorted list
 			this.collectionFilterListView.setItems(imageCollectionFilteredList);
+			// Each collection gets a checkbox
 			this.collectionFilterListView.setCellFactory(CheckBoxListCell.forListView(ImageCollection::shouldBePartOfAnalysisProperty));
 			this.collectionFilterListView.setEditable(true);
 		}
 	}
 
+	/**
+	 * Clear the search bar when we click the clear search button
+	 *
+	 * @param actionEvent consumed
+	 */
 	public void clearCollectionSearch(ActionEvent actionEvent)
 	{
 		this.txtCollectionSearch.clear();
+		actionEvent.consume();
 	}
 
+	/**
+	 * Selects all collections for the given data model
+	 *
+	 * @param actionEvent consumed
+	 */
 	public void selectAllCollections(ActionEvent actionEvent)
 	{
-		SanimalData.getInstance().getCollectionList().forEach(imageCollection -> imageCollection.setShouldBePartOfAnalysis(true));
+		if (collectionCondition != null)
+			collectionCondition.imageCollectionListProperty().forEach(imageCollection -> imageCollection.setShouldBePartOfAnalysis(true));
+		actionEvent.consume();
 	}
 
+	/**
+	 * Selects no collections for the given data model
+	 *
+	 * @param actionEvent consumed
+	 */
 	public void selectNoCollections(ActionEvent actionEvent)
 	{
-		SanimalData.getInstance().getCollectionList().forEach(imageCollection -> imageCollection.setShouldBePartOfAnalysis(false));
+		if (collectionCondition != null)
+			collectionCondition.imageCollectionListProperty().forEach(imageCollection -> imageCollection.setShouldBePartOfAnalysis(false));
+		actionEvent.consume();
 	}
 }

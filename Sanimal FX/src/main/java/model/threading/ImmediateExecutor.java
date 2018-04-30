@@ -14,17 +14,29 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * Class that takes a task and IMMEDIATELY begins exeuction without queuing
+ */
 public class ImmediateExecutor extends BaseSanimalExecutor
 {
+	// A list of active tasks being processed
 	private final ObservableList<Task<?>> activeTasks = FXCollections.observableArrayList(task -> new Observable[] { task.progressProperty(), task.messageProperty() });
 	// The number of tasks currently running
 	private final ReadOnlyIntegerWrapper tasksRunning = new ReadOnlyIntegerWrapper();
 
+	/**
+	 * Constructor specifies a cached thread pool which can grow infinitely
+	 */
 	public ImmediateExecutor()
 	{
 		super(Executors.newCachedThreadPool());
 	}
 
+	/**
+	 * When a task finishes, just remove it from the list of running tasks
+	 *
+	 * @param worker The worker that finished
+	 */
 	@Override
 	protected void onSucceeded(Worker<?> worker)
 	{
@@ -33,6 +45,11 @@ public class ImmediateExecutor extends BaseSanimalExecutor
 			this.activeTasks.remove(worker);
 	}
 
+	/**
+	 * When a task starts, just add it from the list of running tasks
+	 *
+	 * @param worker The worker that began
+	 */
 	@Override
 	protected void onRunning(Worker<?> worker)
 	{

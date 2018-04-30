@@ -44,26 +44,38 @@ public class ImageTreeCellController extends TreeCell<ImageContainer>
 	/// FXML Bound Fields end
 	///
 
-	private ChangeListener<Number> expandedListener = (observable, oldValue, newValue) ->
+	// Expanded listener is used to test: if a node is expanded, and the node is being uploaded, collapse the node again
+	private ChangeListener<Number> expandedListener = (ignored, oldValue, newValue) ->
 	{
 		if (newValue.doubleValue() != -1)
 			if (this.getTreeItem() != null)
 				this.getTreeItem().setExpanded(false);
 	};
 
+	private ChangeListener<Boolean> tempListenerRef;
+
+	/**
+	 * Initializes the cell with listeners
+	 */
 	@FXML
 	public void initialize()
 	{
+		// If a new tree item is expanded that is also disabled, hide it
 		this.treeItemProperty().addListener((observable, oldValue, newValue) ->
 		{
-			if (oldValue != null)
-				oldValue.expandedProperty().unbind();
+			// Unbind any old values since we don't need them to be listened too anymore
+			if (oldValue != null && tempListenerRef != null)
+				oldValue.expandedProperty().removeListener(tempListenerRef);
+			// Bind the new value
 			if (newValue != null)
-				newValue.expandedProperty().addListener((ignored, oldExpanded, newExpanded) ->
+			{
+				tempListenerRef = (ignored, oldExpanded, newExpanded) ->
 				{
 					if (ImageTreeCellController.this.isDisabled() && newExpanded)
 						newValue.setExpanded(false);
-				});
+				};
+				newValue.expandedProperty().addListener(tempListenerRef);
+			}
 		});
 	}
 
@@ -84,6 +96,7 @@ public class ImageTreeCellController extends TreeCell<ImageContainer>
 			this.setDisable(false);
 		}
 
+		// Call the internal item update
 		super.updateItem(item, empty);
 
 		// Set the text to null
@@ -97,10 +110,12 @@ public class ImageTreeCellController extends TreeCell<ImageContainer>
 		// if the cell is not empty, set the field's values and set the graphic
 		else
 		{
+			// Unbind the existing image and bind it to the new image icon
 			this.imgIcon.imageProperty().unbind();
 			this.imgIcon.imageProperty().bind(item.getTreeIconProperty());
 			this.lblText.setText(item.toString());
 
+			// If the item is a directory, we disable the node if it is being uploaded
 			if (item instanceof ImageDirectory)
 			{
 				ImageDirectory imageDirectory = (ImageDirectory) item;
@@ -108,6 +123,7 @@ public class ImageTreeCellController extends TreeCell<ImageContainer>
 				imageDirectory.uploadProgressProperty().addListener(expandedListener);
 			}
 
+			// Show the UI
 			this.setGraphic(mainPane);
 		}
 	}

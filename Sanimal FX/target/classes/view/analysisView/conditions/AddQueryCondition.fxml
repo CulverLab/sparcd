@@ -11,6 +11,9 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.geometry.Insets?>
 <StackPane prefHeight="-Infinity" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.analysisView.conditions.AddQueryConditionController">
+    <stylesheets>
+        <URL value="@AddQueryCondition.css"/>
+    </stylesheets>
     <children>
         <Label text="Add a new filter" StackPane.alignment="TOP_CENTER">
             <StackPane.margin>
@@ -24,10 +27,10 @@
                 </ImageView>
             </graphic>
         </Button>
-        <ListView fx:id="lvwConditions" visible="false" prefHeight="-Infinity"/>
-        <Button fx:id="btnReset" visible="false" text="Back" StackPane.alignment="BOTTOM_CENTER" onAction="#resetToAdd">
+        <ListView fx:id="lvwFilters" visible="false" prefHeight="-Infinity"/>
+        <Button fx:id="btnReset" visible="false" styleClass="backBtn" StackPane.alignment="CENTER_RIGHT" onAction="#resetToAdd">
             <StackPane.margin>
-                <Insets bottom="5"/>
+                <Insets right="5"/>
             </StackPane.margin>
         </Button>
     </children>

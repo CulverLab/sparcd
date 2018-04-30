@@ -46,9 +46,12 @@ public class CloudImageEntry extends ImageEntry
 	private ObjectProperty<IRODSFile> cyverseFileProperty = new SimpleObjectProperty<>();
 
 	// Transient because we don't want these to be written to disk
-	private transient final BooleanProperty hasBeenPulledFromCloud = new SimpleBooleanProperty(false);
-	private transient final BooleanProperty isBeingPulledFromCloud = new SimpleBooleanProperty(false);
 
+	// If the image entry has been downloaded from CyVerse
+	private transient final BooleanProperty hasBeenPulledFromCloud = new SimpleBooleanProperty(false);
+	// If the image entry is currently being downloaded from CyVerse
+	private transient final BooleanProperty isBeingPulledFromCloud = new SimpleBooleanProperty(false);
+	// If the image entry was tagged with species on CyVerse
 	private transient final AtomicBoolean wasTaggedWithSpecies = new AtomicBoolean(false);
 
 	/**
@@ -58,12 +61,14 @@ public class CloudImageEntry extends ImageEntry
 	 */
 	public CloudImageEntry(IRODSFile cloudFile)
 	{
+		// No local file
 		super(null);
 
 		// Make sure that the placeholder image has been initialized. If not initialize it
 		if (PLACEHOLDER_FILE == null)
 		{
 			// For some reason we can't just do new File(getResource("/files/placeholderImage.jpg")) because we're working with resources inside JAR files
+			// This is a work around
 			InputStream inputStream = ImageEntry.class.getResourceAsStream("/files/placeholderImage.jpg");
 			PLACEHOLDER_FILE = SanimalData.getInstance().getTempDirectoryManager().createTempFile("placeholderImage.jpg");
 			try
@@ -245,7 +250,9 @@ public class CloudImageEntry extends ImageEntry
 		{
 			File localFile = pullTask.getValue();
 			this.getFileProperty().setValue(localFile);
+			// Read the metadata into the image file
 			super.readFileMetadataIntoImage(SanimalData.getInstance().getLocationList(), SanimalData.getInstance().getSpeciesList());
+			// Update flags
 			if (!this.getSpeciesPresent().isEmpty())
 				wasTaggedWithSpecies.set(true);
 			this.hasBeenPulledFromCloud.setValue(true);

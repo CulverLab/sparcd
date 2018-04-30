@@ -139,6 +139,7 @@ public class SanimalUploadController implements Initializable
 		// Setup the image tree cells so that when they get drag & dropped the species & locations can be tagged
 		this.imageTree.setCellFactory(x -> FXMLLoaderUtils.loadFXML("uploadView/UploadTreeCell.fxml").getController());
 
+		// Custom cell factory used to show upload downloads
 		this.uploadListDownloadListView.setCellFactory(list ->
 		{
 			ImageUploadDownloadListEntryController controller = FXMLLoaderUtils.loadFXML("uploadView/ImageUploadDownloadListEntry.fxml").getController();
@@ -146,8 +147,10 @@ public class SanimalUploadController implements Initializable
 			controller.setOnUpload(() -> this.saveImages(controller.getItem()));
 			return controller;
 		});
+		// Bind the upload download to the current selection's uploads
 		this.uploadListDownloadListView.itemsProperty().bind(EasyBind.monadic(this.selectedCollection).map(ImageCollection::getUploads));
 
+		// Hide the maskerpane since we're not retrieving downloads
 		this.mpnDownloadUploads.setVisible(false);
 		// When we select a new collection download the list of uploads to display
 		this.selectedCollection.addListener((observable, oldValue, newValue) ->
@@ -231,7 +234,7 @@ public class SanimalUploadController implements Initializable
 	/**
 	 * When we click the delete collection button
 	 *
-	 * @param actionEvent
+	 * @param actionEvent consumed
 	 */
 	public void deleteCollectionPressed(ActionEvent actionEvent)
 	{
@@ -268,6 +271,7 @@ public class SanimalUploadController implements Initializable
 			alert.setContentText("Please select a collection from the collection list to remove.");
 			alert.showAndWait();
 		}
+		actionEvent.consume();
 	}
 
 	/**
@@ -391,12 +395,20 @@ public class SanimalUploadController implements Initializable
 		}
 	}
 
+	/**
+	 * Called when the refresh uploads button is clicked, downloads all uploads to a collection
+	 *
+	 * @param actionEvent consumed
+	 */
 	public void refreshUploads(ActionEvent actionEvent)
 	{
+		// Make sure we have a selected collection
 		if (this.selectedCollection.getValue() != null)
 		{
+			// If some collection has been downloaded, show a warning that all unsaved changes will be lost
 			if (selectedCollection.getValue().getUploads().stream().anyMatch(CloudUploadEntry::hasBeenDownloaded))
 			{
+				// Create the alert
 				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
 				alert.initOwner(this.imageTree.getScene().getWindow());
 				alert.setTitle("Changes lost");
@@ -405,7 +417,7 @@ public class SanimalUploadController implements Initializable
 				Optional<ButtonType> responseOptional = alert.showAndWait();
 				responseOptional.ifPresent(response ->
 				{
-					// If they clicked OK
+					// If they clicked OK, clear known uploads and resync
 					if (response.getButtonData() == ButtonBar.ButtonData.OK_DONE)
 					{
 						// Clear any known uploads
@@ -413,6 +425,7 @@ public class SanimalUploadController implements Initializable
 							if (cloudUploadEntry.hasBeenDownloaded())
 								SanimalData.getInstance().getImageTree().removeChildRecursive(cloudUploadEntry.getCloudImageDirectory());
 
+						// Clear the uploads and resync
 						this.selectedCollection.getValue().getUploads().clear();
 						this.syncUploadsForCollection(this.selectedCollection.getValue());
 					}
@@ -420,8 +433,10 @@ public class SanimalUploadController implements Initializable
 			}
 			else
 			{
+				// Just resync
 				this.syncUploadsForCollection(this.selectedCollection.getValue());
 			}
 		}
+		actionEvent.consume();
 	}
 }

@@ -100,6 +100,7 @@ public class ImageEntry extends ImageContainer
 			//Read the metadata off of the image
 			TiffImageMetadata tiffImageMetadata = MetadataUtils.readImageMetadata(this.getFile());
 
+			// Read date, location, and species
 			this.readDateFromMetadata(tiffImageMetadata);
 			this.readLocationFromMetadata(tiffImageMetadata, knownLocations);
 			this.readSpeciesFroMetadata(tiffImageMetadata, knownSpecies);
@@ -118,6 +119,12 @@ public class ImageEntry extends ImageContainer
 		}
 	}
 
+	/**
+	 * Reads the date off of an image given metadata
+	 *
+	 * @param tiffImageMetadata The image metadata
+	 * @throws ImageReadException If the image read fails
+	 */
 	private void readDateFromMetadata(TiffImageMetadata tiffImageMetadata) throws ImageReadException
 	{
 		if (tiffImageMetadata != null)
@@ -129,6 +136,13 @@ public class ImageEntry extends ImageContainer
 		}
 	}
 
+	/**
+	 * Reads the location off of an image given metadata
+	 *
+	 * @param tiffImageMetadata The image metadata
+	 * @param knownLocations The current list of known locations
+	 * @throws ImageReadException If the image read fails
+	 */
 	private void readLocationFromMetadata(TiffImageMetadata tiffImageMetadata, List<Location> knownLocations) throws ImageReadException
 	{
 		// Make sure it actually has metadata to read...
@@ -192,14 +206,18 @@ public class ImageEntry extends ImageContainer
 		}
 	}
 
+	/**
+	 * Reads the species off of an image given metadata
+	 *
+	 * @param tiffImageMetadata The image metadata
+	 * @param knownSpecies The current list of known species
+	 * @throws ImageReadException If the image read fails
+	 */
 	private void readSpeciesFroMetadata(TiffImageMetadata tiffImageMetadata, List<Species> knownSpecies) throws ImageReadException
 	{
 		// Make sure it actually has metadata to read...
 		if (tiffImageMetadata != null)
 		{
-			String[] fieldValue = tiffImageMetadata.getFieldValue(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
-			// 2015:07:21 02:02:44
-
 			// Grab the species field from the metadata
 			String[] speciesField = tiffImageMetadata.getFieldValue(SanimalMetadataFields.SPECIES_ENTRY);
 			// Ensure that the field does actually exist...
@@ -263,6 +281,9 @@ public class ImageEntry extends ImageContainer
 		}
 	}
 
+	/**
+	 * Used to initialize icon bindings to their default
+	 */
 	public void initIconBindings()
 	{
 		// Bind the image property to a conditional expression.
@@ -280,21 +301,34 @@ public class ImageEntry extends ImageContainer
 		selectedImageProperty.bind(imageBinding);
 	}
 
+	/**
+	 * Writes the image entry's metadata to CyVerse's AVU format
+	 *
+	 * @return A list of AVU entries representing the metadata
+	 * @throws JargonException If anything goes wrong
+	 */
 	public List<AvuData> convertToAVUMetadata() throws JargonException
 	{
+		// Create a list to return
 		List<AvuData> metadata = new LinkedList<>();
 
+		// Grab the location taken
 		Location locationTaken = this.getLocationTaken();
+
+		// Flag saying this image was tagged by sanimal
 		metadata.add(AvuData.instance(SanimalMetadataFields.A_SANIMAL, "true", ""));
 
+		// Metadata of the image's date taken
 		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_TIME_TAKEN, Long.toString(this.getDateTaken().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()), ""));
 
+		// Location metadata
 		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_NAME, locationTaken.getName(), ""));
 		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_ID, locationTaken.getId(), ""));
 		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LATITUDE, locationTaken.getLat().toString(), ""));
 		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, locationTaken.getLng().toString(), ""));
 		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_ELEVATION, locationTaken.getElevation().toString(), "meters"));
 
+		// Species metadata uses the AVU Unit as a foreign key to link a list of entries together
 		Integer entryID = 0;
 		for (SpeciesEntry speciesEntry : this.getSpeciesPresent())
 		{

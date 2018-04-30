@@ -19,6 +19,9 @@ import java.net.URL;
 import java.util.Comparator;
 import java.util.ResourceBundle;
 
+/**
+ * Class used as a controller for the "Location filter" UI component
+ */
 public class LocationFilterConditionController implements IConditionController
 {
 	///
@@ -36,17 +39,34 @@ public class LocationFilterConditionController implements IConditionController
 	/// FXML Bound Fields End
 	///
 
+	// The data model reference
+	private LocationFilterCondition locationFilterCondition;
+
+	/**
+	 * Initialize does nothing for this specific filter
+	 *
+	 * @param location ignored
+	 * @param resources ignored
+	 */
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
 	}
 
-	public void initializeData(IQueryCondition locationFilterCondition)
+	/**
+	 * Initializes the controller with a data model to bind to
+	 *
+	 * @param iQueryCondition The data model which should be a location filter condition
+	 */
+	public void initializeData(IQueryCondition iQueryCondition)
 	{
-		if (locationFilterCondition instanceof LocationFilterCondition)
+		// We must get a location filter condition for the location filter
+		if (iQueryCondition instanceof LocationFilterCondition)
 		{
+			this.locationFilterCondition = (LocationFilterCondition) iQueryCondition;
+
 			// Grab the global location list
-			SortedList<Location> locations = new SortedList<>(((LocationFilterCondition) locationFilterCondition).locationListProperty());
+			SortedList<Location> locations = new SortedList<>(this.locationFilterCondition.locationListProperty());
 			// We set the comparator to be the name of the location
 			locations.setComparator(Comparator.comparing(Location::getName));
 			// We create a local wrapper of the location list to filter
@@ -68,30 +88,35 @@ public class LocationFilterConditionController implements IConditionController
 	/**
 	 * Button used to select all locations for analysis use
 	 *
-	 * @param actionEvent ignored
+	 * @param actionEvent consumed
 	 */
 	public void selectAllLocations(ActionEvent actionEvent)
 	{
-		SanimalData.getInstance().getLocationList().forEach(location -> location.setShouldBePartOfAnalysis(true));
+		if (this.locationFilterCondition != null)
+			this.locationFilterCondition.locationListProperty().forEach(location -> location.setShouldBePartOfAnalysis(true));
+		actionEvent.consume();
 	}
 
 	/**
 	 * Button used to select no locations to be part of the analysis
 	 *
-	 * @param actionEvent ignored
+	 * @param actionEvent consumed
 	 */
 	public void selectNoLocations(ActionEvent actionEvent)
 	{
-		SanimalData.getInstance().getLocationList().forEach(location -> location.setShouldBePartOfAnalysis(false));
+		if (this.locationFilterCondition != null)
+			this.locationFilterCondition.locationListProperty().forEach(location -> location.setShouldBePartOfAnalysis(false));
+		actionEvent.consume();
 	}
 
 	/**
 	 * Button used to clear the location search box
 	 *
-	 * @param actionEvent ignored
+	 * @param actionEvent consumed
 	 */
 	public void clearLocationSearch(ActionEvent actionEvent)
 	{
 		this.txtLocationSearch.clear();
+		actionEvent.consume();
 	}
 }

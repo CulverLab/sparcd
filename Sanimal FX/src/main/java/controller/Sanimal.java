@@ -44,13 +44,15 @@ public class Sanimal extends Application
         primaryStage.setScene(scene);
         primaryStage.getIcons().add(new Image("images/mainMenu/paw.png"));
         primaryStage.setTitle("Scientific Animal Image Analysis (SANIMAL)");
-        // When we click
+        // When we click exit...
         primaryStage.setOnCloseRequest(event ->
         {
             // If a task is still running ask for confirmation to exit
             if (SanimalData.getInstance().getSanimalExecutor().anyTaskRunning())
             {
                 // Code examples from here: https://stackoverflow.com/questions/31540500/alert-box-for-when-user-attempts-to-close-application-using-setoncloserequest-in
+
+                // Show an alert notifying that exiting now may cause problems
                 Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
                 Button btnExit = (Button) confirmation.getDialogPane().lookupButton(ButtonType.OK);
                 Button btnWait = (Button) confirmation.getDialogPane().lookupButton(ButtonType.CANCEL);
@@ -62,6 +64,7 @@ public class Sanimal extends Application
                 confirmation.initOwner(primaryStage);
 
                 Optional<ButtonType> buttonType = confirmation.showAndWait();
+                // Exit if everything's ok, otherwise continue
                 if (buttonType.isPresent() && buttonType.get() == ButtonType.OK)
                     System.exit(0);
                 else

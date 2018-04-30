@@ -555,6 +555,7 @@ public class CyVerseConnectionManager
 				if (!collectionDirUploads.exists())
 					collectionDirUploads.mkdir();
 				this.setFilePermissions(collectionDirUploads.getAbsolutePath(), collection.getPermissions(), false);
+				// The upload directory forces inheritance of permissions to children
 				this.accessObjects.getCollectionAO().setAccessPermissionInherit(ZONE, collectionDirUploads.getAbsolutePath(), false);
 			}
 			catch (JargonException e)
@@ -884,7 +885,9 @@ public class CyVerseConnectionManager
 			// If the save directory exists and we can write to it, save
 			if (collectionSaveDir.exists() && collectionSaveDir.canWrite())
 			{
+				// Grab the image directory to save
 				ImageDirectory imageDirectory = uploadEntryToSave.getCloudImageDirectory();
+				// Grab the list of images to upload
 				List<CloudImageEntry> toUpload = imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof CloudImageEntry).map(imageContainer -> (CloudImageEntry) imageContainer).collect(Collectors.toList());
 				Platform.runLater(() -> imageDirectory.setUploadProgress(0.0));
 
@@ -896,7 +899,9 @@ public class CyVerseConnectionManager
 				// Begin saving
 				for (int i = 0; i < toUpload.size(); i++)
 				{
+					// Grab the cloud image entry to upload
 					CloudImageEntry cloudImageEntry = toUpload.get(i);
+					// If it has been pulled save it
 					if (cloudImageEntry.hasBeenPulledFromCloud())
 					{
 						if (cloudImageEntry.getSpeciesPresent().isEmpty() && cloudImageEntry.wasTaggedWithSpecies())
@@ -915,14 +920,18 @@ public class CyVerseConnectionManager
 							public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection) { return CallbackResponse.YES_FOR_ALL; }
 						}, null);
 
+						// Get the absolute path of the uploaded file
 						String fileAbsoluteCyVersePath = cloudImageEntry.getCyverseFile().getAbsolutePath();
+						// Update the collection tag
 						AvuData collectionIDTag = new AvuData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
+						// Write image metadata to the file
 						List<AvuData> imageMetadata = cloudImageEntry.convertToAVUMetadata();
 						imageMetadata.add(collectionIDTag);
 						imageMetadata.forEach(avuData ->
 						{
 							try
 							{
+								// Set the file AVU data
 								this.accessObjects.getDataObjectAO().setAVUMetadata(fileAbsoluteCyVersePath, avuData);
 							}
 							catch (JargonException e)
@@ -941,6 +950,7 @@ public class CyVerseConnectionManager
 					}
 				}
 
+				// Add an edit comment so users know the file was edited
 				uploadEntryToSave.getEditComments().add("Edited by " + SanimalData.getInstance().getUsername() + " on " + FOLDER_FORMAT.format(Calendar.getInstance().getTime()));
 				Integer imagesWithSpecies = uploadEntryToSave.getImagesWithSpecies() - numberOfDetaggedImages + numberOfRetaggedImages;
 				uploadEntryToSave.setImagesWithSpecies(imagesWithSpecies);
@@ -1044,8 +1054,6 @@ public class CyVerseConnectionManager
 			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
 			IRODSFile cloudDirectory = fileFactory.instanceIRODSFile(cloudDirectoryStr);
 			CloudImageDirectory cloudImageDirectory = new CloudImageDirectory(cloudDirectory);
-			// The head directory gets the parent collection assigned to it
-			cloudImageDirectory.setParentCollection(collection);
 			this.createDirectoryAndImageTree(cloudImageDirectory);
 			// We need to make sure we remove the UploadMeta.json "image entry"
 			cloudImageDirectory.getChildren().removeIf(imageContainer -> imageContainer instanceof CloudImageEntry && ((CloudImageEntry) imageContainer).getCyverseFile().getAbsolutePath().contains("UploadMeta.json"));
@@ -1097,36 +1105,53 @@ public class CyVerseConnectionManager
 		}
 	}
 
+	/**
+	 * Performs a query given a cyverseQuery object and returns a list of images that correspond with the query
+	 *
+	 * @param queryBuilder The query builder with all specified options
+	 * @return A list of image entries that have CyVerse paths instead of local paths
+	 */
 	public List<ImageEntry> performQuery(CyVerseQuery queryBuilder)
 	{
+		// A unique list of species and locations is used to ensure images with identical locations don't create two locations
 		List<Location> uniqueLocations = new LinkedList<>();
 		List<Species> uniqueSpecies = new LinkedList<>();
+		// A list to return
 		List<ImageEntry> queryResult = new LinkedList<>();
 		try
 		{
+			// Convert the query builder to a query generator
 			IRODSGenQueryFromBuilder query = queryBuilder.build().exportIRODSQueryFromBuilder(this.accessObjects.getJargonProperties().getMaxFilesAndDirsQueryMax());
+			// Perform the query, and get a set of results
 			IRODSQueryResultSet resultSet = this.accessObjects.getGenQueryExecutor().executeIRODSQuery(query, 0);
 
+			// Iterate while more results exist
 			do
 			{
+				// Grab each row
 				for (IRODSQueryResultRow resultRow : resultSet.getResults())
 				{
+					// Get the path to the image and the image name, create an absolute path with the info
 					String pathToImage = resultRow.getColumn(0);
 					String imageName = resultRow.getColumn(1);
 					String irodsAbsolutePath = pathToImage + "/" + imageName;
 
+					// We will fill in these various fields from the image metadata
 					LocalDateTime localDateTime = LocalDateTime.MIN;
 					String locationName = "";
 					String locationID = "";
 					Double locationLatitude = 0D;
 					Double locationLongitude = 0D;
 					Double locationElevation = 0D;
+					// Map species IDs to metadata entries
 					Map<Integer, String> speciesIDToCommonName = new HashMap<>();
 					Map<Integer, String> speciesIDToScientificName = new HashMap<>();
 					Map<Integer, Integer> speciesIDToCount = new HashMap<>();
 
+					// Perform a second query that returns ALL metadata from a given image
 					for (MetaDataAndDomainData fileDataField : this.accessObjects.getDataObjectAO().findMetadataValuesForDataObject(irodsAbsolutePath))
 					{
+						// Test what type of attribute we got, if it's important store the result for later
 						switch (fileDataField.getAvuAttribute())
 						{
 							case SanimalMetadataFields.A_DATE_TIME_TAKEN:
@@ -1162,38 +1187,52 @@ public class CyVerseConnectionManager
 						}
 					}
 
+					// Compute a new location if we need to
 					String finalLocationID = locationID;
 					Boolean locationForImagePresent = uniqueLocations.stream().anyMatch(location -> location.getId().equals(finalLocationID));
+					// Do we have the location?
 					if (!locationForImagePresent)
 						uniqueLocations.add(new Location(locationName, locationID, locationLatitude, locationLongitude, locationElevation));
+					// Compute a new species (s) if we need to
 					for (Integer key : speciesIDToScientificName.keySet())
 					{
+						// Grab the scientific name of the species
 						String speciesScientificName = speciesIDToScientificName.get(key);
+						// Grab the common name of the species
 						String speciesName = speciesIDToCommonName.get(key);
+						// Test if the species is present, if not add it
 						Boolean speciesForImagePresent = uniqueSpecies.stream().anyMatch(species -> species.getScientificName().equalsIgnoreCase(speciesScientificName));
 						if (!speciesForImagePresent)
-							uniqueSpecies.add(new Species(speciesName, speciesScientificName, ""));
+							uniqueSpecies.add(new Species(speciesName, speciesScientificName, Species.DEFAULT_ICON));
 					}
 
+					// Grab the correct location for the image entry
 					Location correctLocation = uniqueLocations.stream().filter(location -> location.getId().equals(finalLocationID)).findFirst().get();
+					// Create the image entry
+					ImageEntry entry = new ImageEntry(new File(irodsAbsolutePath));
+					// Set the location and date taken
+					entry.setLocationTaken(correctLocation);
+					entry.setDateTaken(localDateTime);
+					// Add the species to the image entries
 					for (Integer key : speciesIDToScientificName.keySet())
 					{
 						String speciesScientificName = speciesIDToScientificName.get(key);
 						Integer speciesCount = speciesIDToCount.get(key);
+						// Grab the species based on ID
 						Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(speciesScientificName)).findFirst().get();
-						ImageEntry entry = new ImageEntry(new File(irodsAbsolutePath));
-						entry.setLocationTaken(correctLocation);
-						entry.setDateTaken(localDateTime);
 						entry.addSpecies(correctSpecies, speciesCount);
-						queryResult.add(entry);
 					}
+					queryResult.add(entry);
 				}
 
 				// Need this test to avoid NoMoreResultsException
 				if (resultSet.isHasMoreRecords())
 				{
+					// Move the result set on if there's more records
 					IRODSQueryResultSet nextResultSet = this.accessObjects.getGenQueryExecutor().getMoreResults(resultSet);
+					// Close the current result set
 					this.accessObjects.getGenQueryExecutor().closeResults(resultSet);
+					// Advance the "pointer" to the next result set
 					resultSet = nextResultSet;
 				}
 			} while (resultSet.isHasMoreRecords());
@@ -1201,6 +1240,13 @@ public class CyVerseConnectionManager
 		catch (JargonQueryException | JargonException | NumberFormatException | GenQueryBuilderException e)
 		{
 			e.printStackTrace();
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"Query failed",
+					"Query caused an exception!",
+					false);
 		}
 		return queryResult;
 	}

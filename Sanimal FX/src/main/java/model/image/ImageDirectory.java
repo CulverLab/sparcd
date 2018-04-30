@@ -72,12 +72,22 @@ public class ImageDirectory extends ImageContainer
 		}
 	}
 
+	/**
+	 * Returns the image to represent this image directory
+	 *
+	 * @return An image representing this image directory
+	 */
 	@Override
 	public ObjectProperty<Image> getTreeIconProperty()
 	{
 		return DEFAULT_DIRECTORY_ICON;
 	}
 
+	/**
+	 * Returns a list of children of this directory
+	 *
+	 * @return List of sub images and directories
+	 */
 	@Override
 	public ObservableList<ImageContainer> getChildren()
 	{
@@ -174,16 +184,31 @@ public class ImageDirectory extends ImageContainer
 		return this.directoryProperty;
 	}
 
+	/**
+	 * Set the current progress from 0-1 of the upload, -1 meaning not uploading
+	 *
+	 * @param uploadProgress The new upload progress
+	 */
 	public void setUploadProgress(double uploadProgress)
 	{
 		this.uploadProgress.setValue(uploadProgress);
 	}
 
+	/**
+	 * Get the current progress from 0-1 of the upload, -1 meaning not uploading
+	 *
+	 * @return The upload progress
+	 */
 	public double getUploadProgress()
 	{
 		return this.uploadProgress.getValue();
 	}
 
+	/**
+	 * Get the current progress property
+	 *
+	 * @return The upload progress property
+	 */
 	public DoubleProperty uploadProgressProperty()
 	{
 		return this.uploadProgress;

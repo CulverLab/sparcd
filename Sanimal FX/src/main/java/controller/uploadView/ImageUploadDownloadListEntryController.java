@@ -54,6 +54,9 @@ public class ImageUploadDownloadListEntryController extends ListCell<CloudUpload
 	private Runnable onDownload;
 	private Runnable onUpload;
 
+	/**
+	 * Nothing needs to be done to initialize this cell
+	 */
 	@FXML
 	public void initialize()
 	{
@@ -125,23 +128,25 @@ public class ImageUploadDownloadListEntryController extends ListCell<CloudUpload
 	/**
 	 * Action listener when we click download
 	 *
-	 * @param actionEvent ignored
+	 * @param actionEvent consumed
 	 */
 	public void downloadPressed(ActionEvent actionEvent)
 	{
 		// If we have an action listener, call it
 		if (onDownload != null)
 			onDownload.run();
+		actionEvent.consume();
 	}
 
 	/**
 	 * Action listener when we click upload
 	 *
-	 * @param actionEvent ignored
+	 * @param actionEvent consumed
 	 */
 	public void uploadPressed(ActionEvent actionEvent)
 	{
 		if (onUpload != null)
 			onUpload.run();
+		actionEvent.consume();
 	}
 }

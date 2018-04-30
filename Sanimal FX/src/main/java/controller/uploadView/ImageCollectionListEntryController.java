@@ -128,6 +128,11 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 		}
 	}
 
+	/**
+	 * Called when the settings button is selected
+	 *
+	 * @param actionEvent consumed
+	 */
 	public void settingsClicked(ActionEvent actionEvent)
 	{
 		// Load the FXML file of the editor window
@@ -148,6 +153,7 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 		// Set the scene of the stage, and show it!
 		dialogStage.setScene(scene);
 		dialogStage.showAndWait();
+		actionEvent.consume();
 	}
 
 	/**
@@ -189,8 +195,7 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 		Dragboard dragboard = dragEvent.getDragboard();
 		// If we started dragging at the image directory and the dragboard has a string we update the CSS and consume the event
 		if (dragboard.hasContent(IMAGE_DIRECTORY_FILE_FORMAT))
-			if (this.mainPane.getStyleClass().contains("draggedOver"))
-				this.mainPane.getStyleClass().remove("draggedOver");
+			this.mainPane.getStyleClass().remove("draggedOver");
 		dragEvent.consume();
 	}
 
@@ -230,6 +235,7 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 				// If we have a valid directory, perform the upload
 				if (validDirectory)
 				{
+					// Show an alert to tell the user that they are uploading images at this point
 					Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
 					confirmation.initOwner(this.mainPane.getScene().getWindow());
 					confirmation.setTitle("Upload Images");
@@ -237,8 +243,10 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 					confirmation.setContentText("Are you sure you want to upload these " + imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count() + " images to the collection " + this.getItem().getName() + "?");
 					Optional<ButtonType> result = confirmation.showAndWait();
 
+					// Test the result...
 					result.ifPresent(buttonType ->
 					{
+						// OK means upload
 						if (buttonType == ButtonType.OK)
 						{
 							// Set the upload to 0% so that we don't edit it anymore
@@ -289,6 +297,7 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 							uploadTask.setOnSucceeded(event ->
 							{
 								imageDirectory.setUploadProgress(-1);
+								// Remove the directory because it's uploaded now
 								SanimalData.getInstance().getImageTree().removeChildRecursive(imageDirectory);
 							});
 							uploadTask.setOnCancelled(event -> imageDirectory.setUploadProgress(-1));

@@ -42,11 +42,21 @@ public class ImageCollection
 		this.setOrganization("None");
 	}
 
+	/**
+	 * Returns the name of the owner as a string
+	 *
+	 * @return The owner's name, or null if no owner is present
+	 */
 	public String getOwner()
 	{
 		return permissions.stream().filter(Permission::isOwner).map(Permission::getUsername).findFirst().orElse(null);
 	}
 
+	/**
+	 * Returns the name of the collection with the organization too
+	 *
+	 * @return CollectionName (OrganizationName)
+	 */
 	@Override
 	public String toString()
 	{

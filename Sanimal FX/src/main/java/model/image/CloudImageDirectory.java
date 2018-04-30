@@ -17,8 +17,6 @@ public class CloudImageDirectory extends ImageDirectory
 	// The file representing the directory
 	private ObjectProperty<IRODSFile> cyverseDirectoryProperty = new SimpleObjectProperty<>();
 
-	private ObjectProperty<ImageCollection> parentCollectionProperty = new SimpleObjectProperty<>();
-
 	/**
 	 * Construct a cyverse Directory
 	 *
@@ -26,12 +24,19 @@ public class CloudImageDirectory extends ImageDirectory
 	 */
 	public CloudImageDirectory(IRODSFile cyverseDirectory)
 	{
+		// No local file
 		super(null);
 
+		// Initialize values
 		DEFAULT_DIRECTORY_ICON.setValue(DEFAULT_CLOUD_DIR_IMAGE);
 		this.cyverseDirectoryProperty.setValue(cyverseDirectory);
 	}
 
+	/**
+	 * String representation is just the directory name
+	 *
+	 * @return The directory name
+	 */
 	@Override
 	public String toString()
 	{
@@ -55,20 +60,5 @@ public class CloudImageDirectory extends ImageDirectory
 	public ObjectProperty<IRODSFile> getCyverseDirectoryProperty()
 	{
 		return this.cyverseDirectoryProperty;
-	}
-
-	public ImageCollection getParentCollection()
-	{
-		return parentCollectionProperty.getValue();
-	}
-
-	public void setParentCollection(ImageCollection parentCollection)
-	{
-		this.parentCollectionProperty.setValue(parentCollection);
-	}
-
-	public ObjectProperty<ImageCollection> parentCollectionProperty()
-	{
-		return this.parentCollectionProperty;
 	}
 }

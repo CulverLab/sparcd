@@ -11,10 +11,19 @@ import javafx.event.EventHandler;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+/**
+ * Class used as a base for all thread executors
+ */
 public abstract class BaseSanimalExecutor
 {
-	ExecutorService taskPerformer;
+	// The task performer that does the thread execution
+	private ExecutorService taskPerformer;
 
+	/**
+	 * Constructor initializes fields
+	 *
+	 * @param taskPerformer The task performer to do the threading
+	 */
 	public BaseSanimalExecutor(ExecutorService taskPerformer)
 	{
 		this.taskPerformer = taskPerformer;
@@ -76,6 +85,17 @@ public abstract class BaseSanimalExecutor
 		return this.taskPerformer.submit(task);
 	}
 
+	/**
+	 * Called when a task finishes
+	 *
+	 * @param worker The worker that finished
+	 */
 	protected abstract void onSucceeded(Worker<?> worker);
+
+	/**
+	 * Called when a task begins
+	 *
+	 * @param worker The worker that began
+	 */
 	protected abstract void onRunning(Worker<?> worker);
 }

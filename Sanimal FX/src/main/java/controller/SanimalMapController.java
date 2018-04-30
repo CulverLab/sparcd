@@ -34,6 +34,7 @@ public class SanimalMapController implements Initializable
 	// The map data which will be bound to the google map view
 	private GoogleMap googleMap;
 
+	// A map of location to the marker representing that location
 	private Map<Location, Marker> locationMarkers = new HashMap<>();
 
 	/**

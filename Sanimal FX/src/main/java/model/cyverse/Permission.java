@@ -15,6 +15,9 @@ public class Permission implements Cloneable
 	private BooleanProperty uploadProperty = new SimpleBooleanProperty(false);
 	private BooleanProperty ownerProperty = new SimpleBooleanProperty(false);
 
+	/**
+	 * Just initializes listeners
+	 */
 	public Permission()
 	{
 		this.initListeners();
@@ -40,6 +43,36 @@ public class Permission implements Cloneable
 				this.setRead(true);
 		});
 	}
+
+	/**
+	 * Return a string representation of the permission
+	 *
+	 * @return A string of the permission
+	 */
+	@Override
+	public String toString()
+	{
+		return "Permission for " + this.getUsername() + ", Owner: " + this.isOwner() + ", Can upload: " + this.canUpload() + ", Can Read: " + this.canRead();
+	}
+
+	/**
+	 * Used to clone the permission
+	 * @return A clone of the current permission
+	 */
+	@Override
+	public Permission clone()
+	{
+		Permission clone = new Permission();
+		clone.setRead(this.canRead());
+		clone.setUpload(this.canUpload());
+		clone.setOwner(this.isOwner());
+		clone.setUsername(this.getUsername());
+		return clone;
+	}
+
+	///
+	/// Getters & Setters
+	///
 
 	public void setUsername(String username)
 	{
@@ -99,26 +132,5 @@ public class Permission implements Cloneable
 	public BooleanProperty ownerProperty()
 	{
 		return this.ownerProperty;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "Permission for " + this.getUsername() + ", Owner: " + this.isOwner() + ", Can upload: " + this.canUpload() + ", Can Read: " + this.canRead();
-	}
-
-	/**
-	 * Used to clone the permission
-	 * @return A clone of the current permission
-	 */
-	@Override
-	public Permission clone()
-	{
-		Permission clone = new Permission();
-		clone.setRead(this.canRead());
-		clone.setUpload(this.canUpload());
-		clone.setOwner(this.isOwner());
-		clone.setUsername(this.getUsername());
-		return clone;
 	}
 }

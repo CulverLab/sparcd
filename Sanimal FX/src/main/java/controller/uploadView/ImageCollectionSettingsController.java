@@ -182,7 +182,7 @@ public class ImageCollectionSettingsController implements Initializable
 	/**
 	 * When we click the add new user button
 	 *
-	 * @param actionEvent
+	 * @param actionEvent consumed
 	 */
 	public void addNewUser(ActionEvent actionEvent)
 	{
@@ -206,7 +206,7 @@ public class ImageCollectionSettingsController implements Initializable
 	/**
 	 * Revokes permission from a given user
 	 *
-	 * @param actionEvent
+	 * @param actionEvent consumed
 	 */
 	public void removeCurrentUser(ActionEvent actionEvent)
 	{
@@ -233,7 +233,8 @@ public class ImageCollectionSettingsController implements Initializable
 
 	/**
 	 * Updates the current collection settings on CyVerse and the internal program
-	 * @param actionEvent
+	 *
+	 * @param actionEvent consumed
 	 */
 	public void saveCollection(ActionEvent actionEvent)
 	{
@@ -291,12 +292,14 @@ public class ImageCollectionSettingsController implements Initializable
 
 		// Close the edit window, since we're done with the edit
 		((Stage) this.tvwPermissions.getScene().getWindow()).close();
+
+		actionEvent.consume();
 	}
 
 	/**
 	 * Transfers ownership from one user to another
 	 *
-	 * @param actionEvent
+	 * @param actionEvent consumed
 	 */
 	public void transferOwnership(ActionEvent actionEvent)
 	{
@@ -345,5 +348,7 @@ public class ImageCollectionSettingsController implements Initializable
 				// For now, this is not supported
 			}
 		});
+
+		actionEvent.consume();
 	}
 }

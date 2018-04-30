@@ -8,6 +8,9 @@ import javafx.concurrent.Worker;
 
 import java.util.concurrent.Executors;
 
+/**
+ * Executor that queues all tasks and performs them one by one
+ */
 public class QueuedExecutor extends BaseSanimalExecutor
 {
 	// The current message to be displayed
@@ -19,11 +22,19 @@ public class QueuedExecutor extends BaseSanimalExecutor
 	// The task that is currently running
 	private final ObservableList<Task<?>> tasks = FXCollections.observableArrayList();
 
+	/**
+	 * Constructor specifies a single thread which can do one task at a time
+	 */
 	public QueuedExecutor()
 	{
 		super(Executors.newSingleThreadExecutor());
 	}
 
+	/**
+	 * When a task finishes, remove it from the list of running tasks and update the various string properties
+	 *
+	 * @param worker The worker that finished
+	 */
 	@Override
 	protected void onSucceeded(Worker<?> worker)
 	{
@@ -34,6 +45,11 @@ public class QueuedExecutor extends BaseSanimalExecutor
 		this.taskRunning.setValue(false);
 	}
 
+	/**
+	 * When a task begins, add it from the list of running tasks and update the various string properties
+	 *
+	 * @param worker The worker that started
+	 */
 	@Override
 	protected void onRunning(Worker<?> worker)
 	{

@@ -64,6 +64,7 @@ public class SpeciesListEntryController extends ListCell<Species>
     // Used to cache species icons to avoid reloading them over and over again
     private static final Map<String, Image> IMAGE_CACHE = new HashMap<>();
 
+    // Used to create a fade animation for the loop image
     private FadeTransition previewFadeIn;
     private FadeTransition previewFadeOut;
 
@@ -169,6 +170,7 @@ public class SpeciesListEntryController extends ListCell<Species>
 
     /**
      * Used to set the ImageView that the preview button should write the image to
+     *
      * @param currentImagePreview The window to write the image to
      */
     public void setCurrentImagePreview(ObjectProperty<Image> currentImagePreview)
@@ -178,22 +180,36 @@ public class SpeciesListEntryController extends ListCell<Species>
 
     /**
      * When the user clicks the preview button show a preview of the image
-     * @param mouseEvent ignored
+     *
+     * @param mouseEvent consumed
      */
     public void previewImage(MouseEvent mouseEvent)
     {
         // When we click preview, set the image preview
         if (this.currentImagePreview != null)
             this.currentImagePreview.setValue(IMAGE_CACHE.get(this.getItem().getSpeciesIcon()));
+        mouseEvent.consume();
     }
 
+    /**
+     * When the mouse enters the preview, play the fade in animation
+     *
+     * @param mouseEvent consumed
+     */
     public void mouseEnteredPreview(MouseEvent mouseEvent)
     {
         this.previewFadeIn.play();
+        mouseEvent.consume();
     }
 
+    /**
+     * When the mouse exits the preview, play the fade out animation
+     *
+     * @param mouseEvent consumed
+     */
     public void mouseExitedPreview(MouseEvent mouseEvent)
     {
         this.previewFadeOut.play();
+        mouseEvent.consume();
     }
 }

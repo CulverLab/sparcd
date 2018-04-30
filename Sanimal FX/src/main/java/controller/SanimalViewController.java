@@ -149,7 +149,7 @@ public class SanimalViewController implements Initializable
 	/**
 	 * When the login button is pressed
 	 *
-	 * @param actionEvent ignored
+	 * @param actionEvent consumed
 	 */
 	@FXML
 	public void loginPressed(ActionEvent actionEvent)

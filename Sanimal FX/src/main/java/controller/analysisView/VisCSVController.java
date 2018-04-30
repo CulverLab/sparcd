@@ -102,24 +102,42 @@ public class VisCSVController implements VisControllerBase
 		this.txtSpeciesCSV.setText(speciesCSV);
 	}
 
+	/**
+	 * If copy CSV is pressed, we copy the content of the CSV clipboard
+	 *
+	 * @param actionEvent consumed
+	 */
 	public void copyCSV(ActionEvent actionEvent)
 	{
 		ClipboardContent content = new ClipboardContent();
 		content.putString(this.txtRawCSV.getText());
 		Clipboard.getSystemClipboard().setContent(content);
+		actionEvent.consume();
 	}
 
+	/**
+	 * If copy Locations CSV is pressed, we copy the content of the CSV clipboard
+	 *
+	 * @param actionEvent consumed
+	 */
 	public void copyLocations(ActionEvent actionEvent)
 	{
 		ClipboardContent content = new ClipboardContent();
 		content.putString(this.txtLocationCSV.getText());
 		Clipboard.getSystemClipboard().setContent(content);
+		actionEvent.consume();
 	}
 
+	/**
+	 * If copy Species CSV is pressed, we copy the content of the CSV clipboard
+	 *
+	 * @param actionEvent consumed
+	 */
 	public void copySpecies(ActionEvent actionEvent)
 	{
 		ClipboardContent content = new ClipboardContent();
 		content.putString(this.txtSpeciesCSV.getText());
 		Clipboard.getSystemClipboard().setContent(content);
+		actionEvent.consume();
 	}
 }

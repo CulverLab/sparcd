@@ -153,17 +153,22 @@ public class LocationCreatorController implements Initializable
 		// Elevation must be a double
 		this.fieldValidator.registerValidator(this.txtElevation, true, Validator.createPredicateValidator(this::isValidDouble, "Elevation must be a number!"));
 
+		// Boolean property which is true if we have latlng selected
 		BooleanProperty showingLatLng = this.rbnLatLng.selectedProperty();
+		// The first text field is either lat or zone, and the second is either long or letter
 		this.lblZoneOrLat.textProperty().bind(EasyBind.map(showingLatLng, showingLL -> showingLL ? "Latitude (+/-85): " : "Zone (1-60): "));
 		this.lblLetterOrLng.textProperty().bind(EasyBind.map(showingLatLng, showingLL -> showingLL ? "Longitude (+/-180): " : "Letter (C-X excluding I and O): "));
+		// Hide the other fields if we're showing lat/lng
 		this.lblEasting.visibleProperty().bind(showingLatLng.not());
 		this.txtEasting.visibleProperty().bind(showingLatLng.not());
 		this.lblNorthing.visibleProperty().bind(showingLatLng.not());
 		this.txtNorthing.visibleProperty().bind(showingLatLng.not());
 
+		// UTM is valid if the following is true:
 		utmValid.bind(EasyBind.combine(this.txtZoneOrLat.textProperty(), this.txtLetterOrLng.textProperty(), this.txtEasting.textProperty(), this.txtNorthing.textProperty(), (zone, letter, easting, northing) ->
 				this.zoneValid(zone) && this.letterValid(letter) && this.eastingValid(easting) && this.northingValid(northing)));
 
+		// Lat/lng is valid if the following is true:
 		latLngValid.bind(EasyBind.combine(this.txtZoneOrLat.textProperty(), this.txtLetterOrLng.textProperty(), (latitude, longitude) ->
 			this.latitudeValid(latitude) && this.longutudeValid(longitude)));
 
@@ -251,12 +256,14 @@ public class LocationCreatorController implements Initializable
 		// Set the location's fields, and close the editor window
 		locationToEdit.setName(newName.getValue());
 		locationToEdit.setId(newId.getValue());
+		// Round latitude/longitude
 		locationToEdit.setLat(RoundingUtils.roundLat(Double.parseDouble(newZoneOrLat.getValue())));
 		locationToEdit.setLng(RoundingUtils.roundLng(Double.parseDouble(newLetterOrLng.getValue())));
+		// If feet is selected, convert meters to feet
 		if (this.tbnMeters.isSelected())
 			locationToEdit.setElevation((double) Math.round(Double.parseDouble(newElevation.getValue())));
 		else if (this.tbnFeet.isSelected())
-			locationToEdit.setElevation((double) Math.round(Double.parseDouble(newElevation.getValue()) * METERS_TO_FEET));
+			locationToEdit.setElevation((double) Math.round(Double.parseDouble(newElevation.getValue()) * FEET_TO_METERS));
 		((Stage) this.txtName.getScene().getWindow()).close();
 	}
 
