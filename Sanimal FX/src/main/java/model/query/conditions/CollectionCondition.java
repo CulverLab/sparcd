@@ -1,17 +1,40 @@
 package model.query.conditions;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.query.CyVerseQuery;
 import model.query.IQueryCondition;
-import model.species.Species;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Data model used by the "Collection filter" query condition
  */
 public class CollectionCondition implements IQueryCondition
 {
+	// A map of collection -> if the collection is selected to be filtered
+	private Map<ImageCollection, BooleanProperty> imageCollectionToSelected = new HashMap<>();
+
+	public CollectionCondition()
+	{
+		for (ImageCollection imageCollection : this.getImageCollections())
+			if (!this.imageCollectionToSelected.containsKey(imageCollection))
+				this.imageCollectionToSelected.put(imageCollection, new SimpleBooleanProperty(true));
+		this.getImageCollections().addListener((ListChangeListener<ImageCollection>) c ->
+		{
+			while (c.next())
+				if (c.wasAdded())
+					for (ImageCollection imageCollection : c.getAddedSubList())
+						if (!this.imageCollectionToSelected.containsKey(imageCollection))
+							this.imageCollectionToSelected.put(imageCollection, new SimpleBooleanProperty(true));
+		});
+	}
+
 	/**
 	 * This query condition ensures only selected collections are queried for
 	 *
@@ -20,8 +43,8 @@ public class CollectionCondition implements IQueryCondition
 	@Override
 	public void appendConditionToQuery(CyVerseQuery query)
 	{
-		for (ImageCollection imageCollection : this.imageCollectionListProperty())
-			if (imageCollection.shouldBePartOfAnalysis())
+		for (ImageCollection imageCollection : this.getImageCollections())
+			if (imageCollectionToSelected.containsKey(imageCollection) && imageCollectionToSelected.get(imageCollection).getValue())
 				query.addImageCollection(imageCollection);
 	}
 
@@ -41,8 +64,39 @@ public class CollectionCondition implements IQueryCondition
 	 *
 	 * @return A list of image collections to filter
 	 */
-	public ObservableList<ImageCollection> imageCollectionListProperty()
+	public ObservableList<ImageCollection> getImageCollections()
 	{
 		return SanimalData.getInstance().getCollectionList();
+	}
+
+	/**
+	 * Gets the property defining if a image collection is selected
+	 *
+	 * @param imageCollection The image collection to test if it's selected
+	 * @return The property representing if the image collection is selected
+	 */
+	public BooleanProperty imageCollectionSelectedProperty(ImageCollection imageCollection)
+	{
+		if (!this.imageCollectionToSelected.containsKey(imageCollection))
+			this.imageCollectionToSelected.put(imageCollection, new SimpleBooleanProperty(true));
+		return this.imageCollectionToSelected.get(imageCollection);
+	}
+
+	/**
+	 * Selects all image collections
+	 */
+	public void selectAll()
+	{
+		for (BooleanProperty selected : this.imageCollectionToSelected.values())
+			selected.set(true);
+	}
+
+	/**
+	 * De-selects all image collections
+	 */
+	public void selectNone()
+	{
+		for (BooleanProperty selected : this.imageCollectionToSelected.values())
+			selected.set(false);
 	}
 }

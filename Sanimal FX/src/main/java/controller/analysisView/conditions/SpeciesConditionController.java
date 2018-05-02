@@ -1,14 +1,13 @@
 package controller.analysisView.conditions;
 
+import controller.analysisView.IConditionController;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxListCell;
-import model.SanimalData;
 import model.query.IQueryCondition;
 import model.query.conditions.SpeciesFilterCondition;
 import model.species.Species;
@@ -21,7 +20,7 @@ import java.util.ResourceBundle;
 /**
  * Class used as a controller for the "Species filter" UI component
  */
-public class SpeciesFilterConditionController implements IConditionController
+public class SpeciesConditionController implements IConditionController
 {
 	///
 	/// FXML Bound Fields Start
@@ -65,11 +64,11 @@ public class SpeciesFilterConditionController implements IConditionController
 			this.speciesFilterCondition = (SpeciesFilterCondition) iQueryCondition;
 
 			// Grab the global species list
-			SortedList<Species> species = new SortedList<>(this.speciesFilterCondition.speciesListProperty());
+			SortedList<Species> speciesSorted = new SortedList<>(this.speciesFilterCondition.getSpeciesList());
 			// We set the comparator to be the name of the species
-			species.setComparator(Comparator.comparing(Species::getName));
+			speciesSorted.setComparator(Comparator.comparing(Species::getName));
 			// We create a local wrapper of the species list to filter
-			FilteredList<Species> speciesFilteredList = new FilteredList<>(species);
+			FilteredList<Species> speciesFilteredList = new FilteredList<>(speciesSorted);
 			// Set the filter to update whenever the species search text changes
 			this.txtSpeciesSearch.textProperty().addListener(observable -> {
 				speciesFilteredList.setPredicate(speciesToFilter ->
@@ -79,7 +78,7 @@ public class SpeciesFilterConditionController implements IConditionController
 			});
 			// Set the items of the species list view to the newly sorted list
 			this.speciesFilterListView.setItems(speciesFilteredList);
-			this.speciesFilterListView.setCellFactory(CheckBoxListCell.forListView(Species::shouldBePartOfAnalysisProperty));
+			this.speciesFilterListView.setCellFactory(CheckBoxListCell.forListView(species -> speciesFilterCondition.speciesSelectedProperty(species)));
 			this.speciesFilterListView.setEditable(true);
 		}
 	}
@@ -91,7 +90,8 @@ public class SpeciesFilterConditionController implements IConditionController
 	 */
 	public void selectAllSpecies(ActionEvent actionEvent)
 	{
-		this.speciesFilterCondition.speciesListProperty().forEach(species -> species.setShouldBePartOfAnalysis(true));
+		if (this.speciesFilterCondition != null)
+			this.speciesFilterCondition.selectAll();
 		actionEvent.consume();
 	}
 
@@ -102,7 +102,8 @@ public class SpeciesFilterConditionController implements IConditionController
 	 */
 	public void selectNoSpecies(ActionEvent actionEvent)
 	{
-		this.speciesFilterCondition.speciesListProperty().forEach(species -> species.setShouldBePartOfAnalysis(false));
+		if (this.speciesFilterCondition != null)
+			this.speciesFilterCondition.selectNone();
 		actionEvent.consume();
 	}
 

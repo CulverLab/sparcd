@@ -1,17 +1,26 @@
 package controller;
 
+import com.panemu.tiwulfx.control.DetachableTab;
+import com.panemu.tiwulfx.control.DetachableTabPane;
 import controller.analysisView.VisCSVController;
 import controller.analysisView.VisDrSandersonController;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseDragEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
 import model.SanimalData;
 import model.analysis.DataAnalyzer;
 import model.image.ImageEntry;
 import model.query.CyVerseQuery;
 import model.query.IQueryCondition;
+import model.query.QueryEngine;
 import model.util.FXMLLoaderUtils;
 
 import java.net.URL;
@@ -40,9 +49,34 @@ public class SanimalAnalysisController implements Initializable
 	@FXML
 	public TextField txtEventInterval;
 
+	// The detachable tab containing the Dr. Sanderson output
+	@FXML
+	public DetachableTab dtbDrSanderson;
+
+	// Tab pane full of visualizations
+	@FXML
+	public DetachableTabPane tpnVisualizations;
+
+	// The list of possible filters
+	@FXML
+	public ListView<QueryEngine.QueryFilters> lvwFilters;
+
+	// The Vbox with the query parameters, used to hide the event interval
+	@FXML
+	public VBox vbxQuery;
+
+	// The imageview with the arrow divider
+	@FXML
+	public ImageView imgArrow;
+
 	///
 	/// FXML bound fields end
 	///
+
+	private Integer eventIntervalIndex = 0;
+
+	private Image standardArrow = new Image("/images/analysisWindow/arrowDivider.png");
+	private Image highlightedArrow = new Image("/images/analysisWindow/arrowDividerSelected.png");
 
 	/**
 	 * Initialize sets up the analysis window and bindings
@@ -57,6 +91,35 @@ public class SanimalAnalysisController implements Initializable
 		this.lvwQueryConditions.setItems(SanimalData.getInstance().getQueryEngine().getQueryConditions());
 		// Set the cell factory to be our custom query condition cell which adapts itself to the specific condition
 		this.lvwQueryConditions.setCellFactory(x -> FXMLLoaderUtils.loadFXML("analysisView/QueryConditionsListCell.fxml").getController());
+
+		// Hide the Dr. Sanderson tab and the event interval if we don't have Dr. Sanderson's compatibility
+		if (!SanimalData.getInstance().getSettings().getDrSandersonOutput())
+		{
+			this.tpnVisualizations.getTabs().remove(this.dtbDrSanderson);
+			this.eventIntervalIndex = this.vbxQuery.getChildren().indexOf(this.txtEventInterval);
+			this.vbxQuery.getChildren().remove(this.txtEventInterval);
+		}
+
+		// Hide the Dr. Sanderson tab if compatibility is not enabled
+		SanimalData.getInstance().getSettings().drSandersonOutputProperty().addListener((observable, oldValue, newValue) ->
+		{
+			if (newValue)
+			{
+				if (!this.tpnVisualizations.getTabs().contains(this.dtbDrSanderson))
+					this.tpnVisualizations.getTabs().add(0, this.dtbDrSanderson);
+				if (!this.vbxQuery.getChildren().contains(this.txtEventInterval))
+					this.vbxQuery.getChildren().add(this.eventIntervalIndex, this.txtEventInterval);
+			}
+			else
+			{
+				this.tpnVisualizations.getTabs().remove(this.dtbDrSanderson);
+				this.eventIntervalIndex = this.vbxQuery.getChildren().indexOf(this.txtEventInterval);
+				this.vbxQuery.getChildren().remove(this.txtEventInterval);
+			}
+		});
+
+		// Set the items in the list to be the list of possible query filters
+		this.lvwFilters.setItems(SanimalData.getInstance().getQueryEngine().getQueryFilters());
 	}
 
 	/**
@@ -92,5 +155,53 @@ public class SanimalAnalysisController implements Initializable
 		visCSVController.visualize(dataAnalyzer);
 
 		actionEvent.consume();
+	}
+
+	/**
+	 * Called to add athe current filter to the analysis
+	 *
+	 * @param mouseEvent consumed
+	 */
+	public void clickedAdd(MouseEvent mouseEvent)
+	{
+		// If a filter was clicked, we instantiate it and append it to the end of the list (-1 so that the + is at the end)
+		ObservableList<IQueryCondition> queryConditions = SanimalData.getInstance().getQueryEngine().getQueryConditions();
+		if (this.lvwFilters.getSelectionModel().selectedItemProperty().getValue() != null)
+			queryConditions.add(this.lvwFilters.getSelectionModel().selectedItemProperty().getValue().createInstance());
+		mouseEvent.consume();
+	}
+
+	/**
+	 * Called when the mouse enters the arrow image
+	 *
+	 * @param mouseEvent consumed
+	 */
+	public void mouseEnteredArrow(MouseEvent mouseEvent)
+	{
+		imgArrow.setImage(highlightedArrow);
+		mouseEvent.consume();
+	}
+
+	/**
+	 * Called when the mouse exits the arrow image
+	 *
+	 * @param mouseEvent consumed
+	 */
+	public void mouseExitedArrow(MouseEvent mouseEvent)
+	{
+		imgArrow.setImage(standardArrow);
+		mouseEvent.consume();
+	}
+
+	/**
+	 * Called whenever a filter is clicked on the filters list view
+	 *
+	 * @param mouseEvent consumed
+	 */
+	public void clickedFilters(MouseEvent mouseEvent)
+	{
+		if (mouseEvent.getClickCount() == 2)
+			this.clickedAdd(mouseEvent);
+		mouseEvent.consume();
 	}
 }

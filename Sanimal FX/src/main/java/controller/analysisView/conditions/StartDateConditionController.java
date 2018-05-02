@@ -1,15 +1,12 @@
 package controller.analysisView.conditions;
 
+import controller.analysisView.IConditionController;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import jfxtras.scene.control.LocalDateTimePicker;
-import jfxtras.scene.control.LocalDateTimeTextField;
 import model.query.IQueryCondition;
 import model.query.conditions.StartDateCondition;
 
 import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ResourceBundle;
 
 /**

@@ -1,5 +1,6 @@
 package controller.analysisView.conditions;
 
+import controller.analysisView.IConditionController;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
@@ -7,7 +8,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxListCell;
-import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.query.IQueryCondition;
 import model.query.conditions.CollectionCondition;
@@ -60,7 +60,7 @@ public class CollectionConditionController implements IConditionController
 			this.collectionCondition = (CollectionCondition) iQueryCondition;
 
 			// Grab the image collection list from our data model item
-			SortedList<ImageCollection> imageCollections = new SortedList<>(this.collectionCondition.imageCollectionListProperty());
+			SortedList<ImageCollection> imageCollections = new SortedList<>(this.collectionCondition.getImageCollections());
 			// We set the comparator to be the name of the collection
 			imageCollections.setComparator(Comparator.comparing(ImageCollection::getName));
 			// We create a local wrapper of the imageCollections list to filter
@@ -74,7 +74,7 @@ public class CollectionConditionController implements IConditionController
 			// Set the items of the imageCollections list view to the newly sorted list
 			this.collectionFilterListView.setItems(imageCollectionFilteredList);
 			// Each collection gets a checkbox
-			this.collectionFilterListView.setCellFactory(CheckBoxListCell.forListView(ImageCollection::shouldBePartOfAnalysisProperty));
+			this.collectionFilterListView.setCellFactory(CheckBoxListCell.forListView(imageCollection -> this.collectionCondition.imageCollectionSelectedProperty(imageCollection)));
 			this.collectionFilterListView.setEditable(true);
 		}
 	}
@@ -98,7 +98,7 @@ public class CollectionConditionController implements IConditionController
 	public void selectAllCollections(ActionEvent actionEvent)
 	{
 		if (collectionCondition != null)
-			collectionCondition.imageCollectionListProperty().forEach(imageCollection -> imageCollection.setShouldBePartOfAnalysis(true));
+			collectionCondition.selectAll();
 		actionEvent.consume();
 	}
 
@@ -110,7 +110,7 @@ public class CollectionConditionController implements IConditionController
 	public void selectNoCollections(ActionEvent actionEvent)
 	{
 		if (collectionCondition != null)
-			collectionCondition.imageCollectionListProperty().forEach(imageCollection -> imageCollection.setShouldBePartOfAnalysis(false));
+			collectionCondition.selectNone();
 		actionEvent.consume();
 	}
 }

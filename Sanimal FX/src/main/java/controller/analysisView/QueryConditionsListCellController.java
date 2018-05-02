@@ -1,18 +1,13 @@
 package controller.analysisView;
 
-import controller.analysisView.conditions.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
-import model.SanimalData;
-import model.location.Location;
 import model.query.IQueryCondition;
-import model.query.conditions.*;
 import model.util.FXMLLoaderUtils;
 
 /**
@@ -69,12 +64,6 @@ public class QueryConditionsListCellController extends ListCell<IQueryCondition>
 		// if the cell is not empty, set the field's values and set the graphic
 		else
 		{
-			// If the query condition is an add condition, we hide the remove button, otherwise we show the remove button
-			if (iQueryCondition instanceof AddQueryCondition)
-				this.btnRemoveCondition.setVisible(false);
-			else
-				this.btnRemoveCondition.setVisible(true);
-
 			// Load the FXML of the given data model UI
 			FXMLLoader fxml = FXMLLoaderUtils.loadFXML("analysisView/conditions/" + iQueryCondition.getFXMLConditionEditor());
 			// Initialize the IQueryConditionController that controls the UI for the data

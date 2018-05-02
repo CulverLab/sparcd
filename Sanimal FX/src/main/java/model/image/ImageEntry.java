@@ -320,6 +320,11 @@ public class ImageEntry extends ImageContainer
 
 		// Metadata of the image's date taken
 		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_TIME_TAKEN, Long.toString(this.getDateTaken().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()), ""));
+		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_YEAR_TAKEN, Integer.toString(this.getDateTaken().getYear()), ""));
+		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_MONTH_TAKEN, Integer.toString(this.getDateTaken().getMonthValue()), ""));
+		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_HOUR_TAKEN, Integer.toString(this.getDateTaken().getHour()), ""));
+		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_DAY_OF_YEAR_TAKEN, Integer.toString(this.getDateTaken().getDayOfYear()), ""));
+		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN, Integer.toString(this.getDateTaken().getDayOfWeek().getValue()), ""));
 
 		// Location metadata
 		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_NAME, locationTaken.getName(), ""));

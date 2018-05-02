@@ -16,9 +16,6 @@ public class Location
 	private final DoubleProperty lngProperty = new SimpleDoubleProperty();
 	private final DoubleProperty elevationProperty = new SimpleDoubleProperty();
 
-	// This field is purely used by the analysis page to test if this location should be used when running analysis
-	private transient final BooleanProperty shouldBePartOfAnalysis = new SimpleBooleanProperty(true);
-
 	/**
 	 * Location constructor
 	 * 
@@ -232,30 +229,6 @@ public class Location
 	public DoubleProperty getElevationProperty()
 	{
 		return elevationProperty;
-	}
-
-	/**
-	 * @param should True if this location should be used in analysis, false otherwise
-	 */
-	public void setShouldBePartOfAnalysis(boolean should)
-	{
-		this.shouldBePartOfAnalysis.setValue(should);
-	}
-
-	/**
-	 * @return True if this location should be used in analysis, false otherwise
-	 */
-	public boolean shouldBePartOfAnalysis()
-	{
-		return this.shouldBePartOfAnalysis.getValue();
-	}
-
-	/**
-	 * @return The property representing if this location should be included in analysis
-	 */
-	public BooleanProperty shouldBePartOfAnalysisProperty()
-	{
-		return this.shouldBePartOfAnalysis;
 	}
 
 	/**

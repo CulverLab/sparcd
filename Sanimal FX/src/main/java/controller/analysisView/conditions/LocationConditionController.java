@@ -1,18 +1,16 @@
 package controller.analysisView.conditions;
 
+import controller.analysisView.IConditionController;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxListCell;
-import model.SanimalData;
 import model.location.Location;
 import model.query.IQueryCondition;
 import model.query.conditions.LocationFilterCondition;
-import model.query.conditions.StartDateCondition;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URL;
@@ -22,7 +20,7 @@ import java.util.ResourceBundle;
 /**
  * Class used as a controller for the "Location filter" UI component
  */
-public class LocationFilterConditionController implements IConditionController
+public class LocationConditionController implements IConditionController
 {
 	///
 	/// FXML Bound Fields Start
@@ -66,7 +64,7 @@ public class LocationFilterConditionController implements IConditionController
 			this.locationFilterCondition = (LocationFilterCondition) iQueryCondition;
 
 			// Grab the global location list
-			SortedList<Location> locations = new SortedList<>(this.locationFilterCondition.locationListProperty());
+			SortedList<Location> locations = new SortedList<>(this.locationFilterCondition.getLocationList());
 			// We set the comparator to be the name of the location
 			locations.setComparator(Comparator.comparing(Location::getName));
 			// We create a local wrapper of the location list to filter
@@ -80,7 +78,7 @@ public class LocationFilterConditionController implements IConditionController
 			});
 			// Set the items of the location list view to the newly sorted list
 			this.locationFilterListView.setItems(locationsFilteredList);
-			this.locationFilterListView.setCellFactory(CheckBoxListCell.forListView(Location::shouldBePartOfAnalysisProperty));
+			this.locationFilterListView.setCellFactory(CheckBoxListCell.forListView(location -> this.locationFilterCondition.locationSelectedProperty(location)));
 			this.locationFilterListView.setEditable(true);
 		}
 	}
@@ -93,7 +91,7 @@ public class LocationFilterConditionController implements IConditionController
 	public void selectAllLocations(ActionEvent actionEvent)
 	{
 		if (this.locationFilterCondition != null)
-			this.locationFilterCondition.locationListProperty().forEach(location -> location.setShouldBePartOfAnalysis(true));
+			this.locationFilterCondition.selectAll();
 		actionEvent.consume();
 	}
 
@@ -105,7 +103,7 @@ public class LocationFilterConditionController implements IConditionController
 	public void selectNoLocations(ActionEvent actionEvent)
 	{
 		if (this.locationFilterCondition != null)
-			this.locationFilterCondition.locationListProperty().forEach(location -> location.setShouldBePartOfAnalysis(false));
+			this.locationFilterCondition.selectNone();
 		actionEvent.consume();
 	}
 

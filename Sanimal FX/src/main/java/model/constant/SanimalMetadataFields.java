@@ -18,6 +18,16 @@ public class SanimalMetadataFields
 
 	// The AVU meta key for date taken
 	public static final String A_DATE_TIME_TAKEN = "dateTimeTaken";
+	// The AVU meta key for year taken
+	public static final String A_DATE_YEAR_TAKEN = "dateYearTaken";
+	// The AVU meta key for month taken
+	public static final String A_DATE_MONTH_TAKEN = "dateMonthTaken";
+	// The AVU meta key for hour taken
+	public static final String A_DATE_HOUR_TAKEN = "dateHourTaken";
+	// The AVU meta key for day of year taken
+	public static final String A_DATE_DAY_OF_YEAR_TAKEN = "dateDayOfYearTaken";
+	// The AVU meta key for day of week taken
+	public static final String A_DATE_DAY_OF_WEEK_TAKEN = "dateDayOfWeekTaken";
 
 	// The AVU meta key for Location name
 	public static final String A_LOCATION_NAME = "locationName";

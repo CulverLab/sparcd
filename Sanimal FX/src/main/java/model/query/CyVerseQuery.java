@@ -8,10 +8,14 @@ import model.species.Species;
 import org.irods.jargon.core.pub.DataAOHelper;
 import org.irods.jargon.core.query.*;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZoneId;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -20,11 +24,19 @@ import java.util.stream.Collectors;
 public class CyVerseQuery
 {
 	// A list of species to query for
-	private List<Species> speciesQuery = new LinkedList<>();
+	private Set<Species> speciesQuery = new HashSet<>();
 	// A list of locations to query for
-	private List<Location> locationQuery = new LinkedList<>();
+	private Set<Location> locationQuery = new HashSet<>();
 	// A list of collections to query for
-	private List<ImageCollection> collectionQuery = new LinkedList<>();
+	private Set<ImageCollection> collectionQuery = new HashSet<>();
+	// A list of years to query for
+	private Set<Integer> yearQuery = new HashSet<>();
+	// A list of months to query for
+	private Set<Integer> monthQuery = new HashSet<>();
+	// A list of hours to query for
+	private Set<Integer> hourQuery = new HashSet<>();
+	// A list of days of week to query for
+	private Set<Integer> dayOfWeekQuery = new HashSet<>();
 
 	// The IRODS query builder to append to
 	private IRODSGenQueryBuilder queryBuilder;
@@ -66,18 +78,7 @@ public class CyVerseQuery
 	 */
 	public void addSpecies(Species species)
 	{
-		speciesQuery.add(species);
-	}
-
-	/**
-	 * Sets a given species to search for in the query
-	 *
-	 * @param species The only species to search for in the query
-	 */
-	public void setSpecies(Species species)
-	{
-		speciesQuery.clear();
-		speciesQuery.add(species);
+		this.speciesQuery.add(species);
 	}
 
 	/**
@@ -87,18 +88,37 @@ public class CyVerseQuery
 	 */
 	public void addLocation(Location location)
 	{
-		locationQuery.add(location);
+		this.locationQuery.add(location);
 	}
 
 	/**
-	 * Sets a given location to search for in the query
+	 * Adds a given image collection to the query
 	 *
-	 * @param location The only species to search for in the query
+	 * @param imageCollection The image collection to 'and' into the query
 	 */
-	public void setLocation(Location location)
+	public void addImageCollection(ImageCollection imageCollection)
 	{
-		locationQuery.clear();
-		locationQuery.add(location);
+		this.collectionQuery.add(imageCollection);
+	}
+
+	public void addYear(Integer year)
+	{
+		this.yearQuery.add(year);
+	}
+
+	public void addMonth(Integer month)
+	{
+		this.monthQuery.add(month);
+	}
+
+	public void addHour(Integer hour)
+	{
+		this.hourQuery.add(hour);
+	}
+
+	public void addDayOfWeek(Integer dayOfWeek)
+	{
+		this.dayOfWeekQuery.add(dayOfWeek);
 	}
 
 	/**
@@ -121,27 +141,6 @@ public class CyVerseQuery
 	{
 		appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_TIME_TAKEN);
 		appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.NUMERIC_LESS_THAN, endDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-	}
-
-	/**
-	 * Adds a given image collection to the query
-	 *
-	 * @param imageCollection The image collection to 'and' into the query
-	 */
-	public void addImageCollection(ImageCollection imageCollection)
-	{
-		collectionQuery.add(imageCollection);
-	}
-
-	/**
-	 * Sets a given image collection to search for in the query
-	 *
-	 * @param imageCollection The only image collection to search for in the query
-	 */
-	public void setImageCollection(ImageCollection imageCollection)
-	{
-		collectionQuery.clear();
-		collectionQuery.add(imageCollection);
 	}
 
 	/**
@@ -173,6 +172,34 @@ public class CyVerseQuery
 		{
 			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_COLLECTION_ID);
 			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, imageCollectionInStr);
+		}
+
+		String yearInStr = "(" + this.yearQuery.stream().map(year -> "'" + year.toString() + "'").collect(Collectors.joining(",")) + ")";
+		if (!yearQuery.isEmpty())
+		{
+			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_YEAR_TAKEN);
+			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, yearInStr);
+		}
+
+		String monthInStr = "(" + this.monthQuery.stream().map(month -> "'" + month.toString() + "'").collect(Collectors.joining(",")) + ")";
+		if (!monthQuery.isEmpty())
+		{
+			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_MONTH_TAKEN);
+			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, monthInStr);
+		}
+
+		String hourInStr = "(" + this.hourQuery.stream().map(hour -> "'" + hour.toString() + "'").collect(Collectors.joining(",")) + ")";
+		if (!hourQuery.isEmpty())
+		{
+			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_HOUR_TAKEN);
+			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, hourInStr);
+		}
+
+		String dayOfWeekInStr = "(" + this.dayOfWeekQuery.stream().map(dayOfWeek -> "'" + dayOfWeek.toString() + "'").collect(Collectors.joining(",")) + ")";
+		if (!dayOfWeekQuery.isEmpty())
+		{
+			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN);
+			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, dayOfWeekInStr);
 		}
 
 		return this.queryBuilder;

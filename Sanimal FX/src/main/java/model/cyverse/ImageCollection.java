@@ -30,9 +30,6 @@ public class ImageCollection
 	private transient ObservableList<CloudUploadEntry> uploads = FXCollections.observableArrayList(upload -> new Observable[] {});
 	private transient Boolean uploadsWereSynced = false;
 
-	// This field is purely used by the analysis page to test if this species should be used when running analysis
-	private transient final BooleanProperty shouldBePartOfAnalysis = new SimpleBooleanProperty(true);
-
 	/**
 	 * Constructs a new image collection with a default name
 	 */
@@ -157,29 +154,5 @@ public class ImageCollection
 	public Boolean uploadsWereSynced()
 	{
 		return uploadsWereSynced;
-	}
-
-	/**
-	 * @param should True if this collection should be used in analysis, false otherwise
-	 */
-	public void setShouldBePartOfAnalysis(boolean should)
-	{
-		this.shouldBePartOfAnalysis.setValue(should);
-	}
-
-	/**
-	 * @return True if this collection should be used in analysis, false otherwise
-	 */
-	public boolean shouldBePartOfAnalysis()
-	{
-		return this.shouldBePartOfAnalysis.getValue();
-	}
-
-	/**
-	 * @return The property representing if this collection should be included in analysis
-	 */
-	public BooleanProperty shouldBePartOfAnalysisProperty()
-	{
-		return this.shouldBePartOfAnalysis;
 	}
 }

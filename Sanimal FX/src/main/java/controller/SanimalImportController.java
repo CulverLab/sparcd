@@ -9,7 +9,6 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableBooleanValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -56,8 +55,6 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -777,7 +774,7 @@ public class SanimalImportController implements Initializable
 		// Test if the images should be read as legacy
 		Boolean readAsLegacy = false;
 		// If Dr. Sanderson's compatibility is enabled, ask
-		if (SanimalData.getInstance().getSettings().getDrSandersonCompatibility())
+		if (SanimalData.getInstance().getSettings().getDrSandersonDirectoryCompatibility())
 		{
 			// Ask if the data is legacy
 			Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -815,7 +812,7 @@ public class SanimalImportController implements Initializable
 			else if (result.get() == noDontAsk)
 			{
 				readAsLegacy = false;
-				SanimalData.getInstance().getSettings().setDrSandersonCompatibility(false);
+				SanimalData.getInstance().getSettings().setDrSandersonDirectoryCompatibility(false);
 			}
 		}
 

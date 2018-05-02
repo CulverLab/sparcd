@@ -1,4 +1,4 @@
-package controller.analysisView.conditions;
+package controller.analysisView;
 
 import javafx.fxml.Initializable;
 import model.query.IQueryCondition;

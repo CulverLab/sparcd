@@ -8,7 +8,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import jfxtras.scene.control.LocalDateTimePicker?>
-<BorderPane prefHeight="-Infinity" prefWidth="250" fx:controller="controller.analysisView.conditions.EndDateConditionController" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+<BorderPane prefHeight="-Infinity" prefWidth="300" fx:controller="controller.analysisView.conditions.EndDateConditionController" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
     <top>
         <Label text="End Date Filter" BorderPane.alignment="CENTER">
             <BorderPane.margin>

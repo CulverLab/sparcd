@@ -9,7 +9,7 @@
 <?import javafx.geometry.Insets?>
 <?import jfxtras.scene.control.LocalDateTimeTextField?>
 <?import jfxtras.scene.control.LocalDateTimePicker?>
-<BorderPane prefHeight="-Infinity" prefWidth="250" fx:controller="controller.analysisView.conditions.StartDateConditionController" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+<BorderPane prefHeight="-Infinity" prefWidth="300" fx:controller="controller.analysisView.conditions.StartDateConditionController" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
     <top>
         <Label text="Start Date Filter" BorderPane.alignment="CENTER">
             <BorderPane.margin>

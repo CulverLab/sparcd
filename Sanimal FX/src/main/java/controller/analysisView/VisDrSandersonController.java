@@ -1,7 +1,10 @@
 package controller.analysisView;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.text.Font;
 import model.analysis.DataAnalyzer;
 import model.analysis.SanimalTextOutputFormatter;
@@ -57,5 +60,31 @@ public class VisDrSandersonController implements VisControllerBase
 		// Have our output formatter do all the hard work and just stick the result into the two text areas
 		this.txtOutput.setText(outputFormatter.format(dataAnalyzer));
 		this.txtAllPictures.setText(outputFormatter.createAllPictures(dataAnalyzer));
+	}
+
+	/**
+	 * If copy output text CSV is pressed, we copy the content of the CSV clipboard
+	 *
+	 * @param actionEvent consumed
+	 */
+	public void copyOutputText(ActionEvent actionEvent)
+	{
+		ClipboardContent content = new ClipboardContent();
+		content.putString(this.txtOutput.getText());
+		Clipboard.getSystemClipboard().setContent(content);
+		actionEvent.consume();
+	}
+
+	/**
+	 * If copy all pictures CSV is pressed, we copy the content of the CSV clipboard
+	 *
+	 * @param actionEvent consumed
+	 */
+	public void copyAllPictures(ActionEvent actionEvent)
+	{
+		ClipboardContent content = new ClipboardContent();
+		content.putString(this.txtAllPictures.getText());
+		Clipboard.getSystemClipboard().setContent(content);
+		actionEvent.consume();
 	}
 }

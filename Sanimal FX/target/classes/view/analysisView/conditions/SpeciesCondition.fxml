@@ -8,12 +8,12 @@
 
 <?import javafx.geometry.Insets?>
 <?import java.net.URL?>
-<BorderPane prefHeight="-Infinity" fx:controller="controller.analysisView.conditions.SpeciesFilterConditionController" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+<BorderPane prefHeight="-Infinity" fx:controller="controller.analysisView.conditions.SpeciesConditionController" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
     <GridPane.margin>
         <Insets left="5" right="5"/>
     </GridPane.margin>
     <stylesheets>
-        <URL value="@SpeciesFilterCondition.css"/>
+        <URL value="@SpeciesCondition.css"/>
     </stylesheets>
     <top>
         <Label text="Species Filter" BorderPane.alignment="TOP_CENTER">

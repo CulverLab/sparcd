@@ -16,7 +16,6 @@ public class QueryEngine
 
 	public QueryEngine()
 	{
-		queryConditions.add(new AddQueryCondition());
 	}
 
 	public ObservableList<IQueryCondition> getQueryConditions()
@@ -33,6 +32,10 @@ public class QueryEngine
 	{
 		SPECIES_FILTER("Species Filter", SpeciesFilterCondition::new),
 		LOCATION_FILTER("Location Filter", LocationFilterCondition::new),
+		YEAR_FILTER("Year Filter", YearCondition::new),
+		MONTH_FILTER("Month Filter", MonthCondition::new),
+		HOUR_FILTER("Hour Filter", HourCondition::new),
+		DAY_OF_WEEK_FILTER("Day of Week Filter", DayOfWeekCondition::new),
 		START_TIME_FILTER("Start Date Filter", StartDateCondition::new),
 		END_TIME_FILTER("End Date Filter", EndDateCondition::new),
 		COLLECTION_FILTER("Collection Filter", CollectionCondition::new);

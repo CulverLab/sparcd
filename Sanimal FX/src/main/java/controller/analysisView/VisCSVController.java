@@ -69,7 +69,8 @@ public class VisCSVController implements VisControllerBase
 			return imageEntry.getSpeciesPresent().stream().map(speciesEntry ->
 					imageEntry.getFile().getName() + "," +
 							SanimalData.getInstance().getSettings().formatDateTime(imageEntry.getDateTaken(), " ") + "," +
-							speciesEntry.getSpecies() + "," +
+							speciesEntry.getSpecies().getName() + "," +
+							speciesEntry.getSpecies().getScientificName() + "," +
 							speciesEntry.getAmount().toString() + "," +
 							locationTaken.getName() + "," +
 							locationTaken.getId() + "," +
@@ -107,7 +108,7 @@ public class VisCSVController implements VisControllerBase
 	 *
 	 * @param actionEvent consumed
 	 */
-	public void copyCSV(ActionEvent actionEvent)
+	public void copyRawCSV(ActionEvent actionEvent)
 	{
 		ClipboardContent content = new ClipboardContent();
 		content.putString(this.txtRawCSV.getText());
@@ -120,7 +121,7 @@ public class VisCSVController implements VisControllerBase
 	 *
 	 * @param actionEvent consumed
 	 */
-	public void copyLocations(ActionEvent actionEvent)
+	public void copyLocationsCSV(ActionEvent actionEvent)
 	{
 		ClipboardContent content = new ClipboardContent();
 		content.putString(this.txtLocationCSV.getText());
@@ -133,7 +134,7 @@ public class VisCSVController implements VisControllerBase
 	 *
 	 * @param actionEvent consumed
 	 */
-	public void copySpecies(ActionEvent actionEvent)
+	public void copySpeciesCSV(ActionEvent actionEvent)
 	{
 		ClipboardContent content = new ClipboardContent();
 		content.putString(this.txtSpeciesCSV.getText());

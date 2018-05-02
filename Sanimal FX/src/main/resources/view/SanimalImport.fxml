@@ -46,7 +46,6 @@
                                 <ImageView fx:id="imagePreview" onMouseClicked="#onImageClicked" onMouseDragged="#onImageDragged" onMousePressed="#onImagePressed" onScroll="#onImageScroll" preserveRatio="true" styleClass="imageView" />
                             </imageView>
                         </ImageViewPane>
-                        <ListView fx:id="speciesEntryListView" maxHeight="0" maxWidth="390" minWidth="390" prefWidth="390" onMouseEntered="#onMouseEnteredSpeciesEntryList" onMouseExited="#onMouseExitedSpeciesEntryList" pickOnBounds="false" styleClass="transparentListView" StackPane.alignment="TOP_LEFT" />
                         <HBox onMouseEntered="#onMouseEnteredLocation" onMouseExited="#onMouseExitedLocation" pickOnBounds="false" fx:id="hbxLocation" minHeight="80" maxHeight="80" alignment="CENTER_RIGHT" StackPane.alignment="TOP_RIGHT">
                             <StackPane.margin>
                                 <Insets right="5" top="5"/>
@@ -58,6 +57,7 @@
                                 </ImageView>
                             </children>
                         </HBox>
+                        <ListView fx:id="speciesEntryListView" maxHeight="0" maxWidth="390" minWidth="390" prefWidth="390" onMouseEntered="#onMouseEnteredSpeciesEntryList" onMouseExited="#onMouseExitedSpeciesEntryList" pickOnBounds="false" styleClass="transparentListView" StackPane.alignment="TOP_LEFT" />
                         <BorderPane pickOnBounds="false">
                             <left>
                                 <Button fx:id="btnLeftArrow" mnemonicParsing="false" onAction="#onLeftArrowClicked" pickOnBounds="false" styleClass="leftBtn" BorderPane.alignment="CENTER" />

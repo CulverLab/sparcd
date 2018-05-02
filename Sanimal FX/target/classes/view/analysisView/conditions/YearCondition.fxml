@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<BorderPane prefHeight="-Infinity" fx:controller="controller.analysisView.conditions.YearConditionController" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+    <top>
+        <Label text="Year Filter" BorderPane.alignment="CENTER">
+            <BorderPane.margin>
+                <Insets top="5" bottom="5"/>
+            </BorderPane.margin>
+        </Label>
+    </top>
+    <center>
+        <VBox spacing="5" alignment="TOP_CENTER">
+            <TextField fx:id="txtStartYear" promptText="Start Year" />
+            <Label text="up to, and including"/>
+            <TextField fx:id="txtEndYear" promptText="End Year"/>
+        </VBox>
+    </center>
+</BorderPane>
