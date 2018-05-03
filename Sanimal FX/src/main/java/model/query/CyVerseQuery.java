@@ -101,21 +101,41 @@ public class CyVerseQuery
 		this.collectionQuery.add(imageCollection);
 	}
 
+	/**
+	 * Adds a given year to the query
+	 *
+	 * @param year The year to 'and' into the query
+	 */
 	public void addYear(Integer year)
 	{
 		this.yearQuery.add(year);
 	}
 
+	/**
+	 * Adds a given month to the query
+	 *
+	 * @param month The month to 'and' into the query
+	 */
 	public void addMonth(Integer month)
 	{
 		this.monthQuery.add(month);
 	}
 
+	/**
+	 * Adds a given hour to the query
+	 *
+	 * @param hour The hour to 'and' into the query
+	 */
 	public void addHour(Integer hour)
 	{
 		this.hourQuery.add(hour);
 	}
 
+	/**
+	 * Adds a given day of week to the query
+	 *
+	 * @param dayOfWeek The day of week to 'and' into the query
+	 */
 	public void addDayOfWeek(Integer dayOfWeek)
 	{
 		this.dayOfWeekQuery.add(dayOfWeek);
@@ -174,6 +194,7 @@ public class CyVerseQuery
 			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, imageCollectionInStr);
 		}
 
+		// To test if a year is in a list, we is the "IN" operator. We need to create a formatted string like: ('y1','y2')
 		String yearInStr = "(" + this.yearQuery.stream().map(year -> "'" + year.toString() + "'").collect(Collectors.joining(",")) + ")";
 		if (!yearQuery.isEmpty())
 		{
@@ -181,6 +202,7 @@ public class CyVerseQuery
 			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, yearInStr);
 		}
 
+		// To test if a month is in a list, we is the "IN" operator. We need to create a formatted string like: ('mon1','mon2')
 		String monthInStr = "(" + this.monthQuery.stream().map(month -> "'" + month.toString() + "'").collect(Collectors.joining(",")) + ")";
 		if (!monthQuery.isEmpty())
 		{
@@ -188,6 +210,7 @@ public class CyVerseQuery
 			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, monthInStr);
 		}
 
+		// To test if a hour is in a list, we is the "IN" operator. We need to create a formatted string like: ('hr1','hr2')
 		String hourInStr = "(" + this.hourQuery.stream().map(hour -> "'" + hour.toString() + "'").collect(Collectors.joining(",")) + ")";
 		if (!hourQuery.isEmpty())
 		{
@@ -195,6 +218,7 @@ public class CyVerseQuery
 			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, hourInStr);
 		}
 
+		// To test if a day of week is in a list, we is the "IN" operator. We need to create a formatted string like: ('doy1','doy2')
 		String dayOfWeekInStr = "(" + this.dayOfWeekQuery.stream().map(dayOfWeek -> "'" + dayOfWeek.toString() + "'").collect(Collectors.joining(",")) + ")";
 		if (!dayOfWeekQuery.isEmpty())
 		{

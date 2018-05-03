@@ -20,11 +20,16 @@ public class CollectionCondition implements IQueryCondition
 	// A map of collection -> if the collection is selected to be filtered
 	private Map<ImageCollection, BooleanProperty> imageCollectionToSelected = new HashMap<>();
 
+	/**
+	 * Constructor ensures that each collection maps to a boolean property
+	 */
 	public CollectionCondition()
 	{
+		// Make sure each hour maps to a boolean property, this is important for later, since our view will use this to populate checkboxes
 		for (ImageCollection imageCollection : this.getImageCollections())
 			if (!this.imageCollectionToSelected.containsKey(imageCollection))
 				this.imageCollectionToSelected.put(imageCollection, new SimpleBooleanProperty(true));
+		// If the collections list changes, we add a boolean property for the new added image collection
 		this.getImageCollections().addListener((ListChangeListener<ImageCollection>) c ->
 		{
 			while (c.next())

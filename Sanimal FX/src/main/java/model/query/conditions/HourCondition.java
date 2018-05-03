@@ -23,10 +23,15 @@ public class HourCondition implements IQueryCondition
 {
 	// A map of hour -> if the hour is selected to be filtered
 	private Map<Integer, BooleanProperty> hourToSelected = new HashMap<>();
+	// A list of possible hours, in this case 0-23
 	private ObservableList<Integer> hourList = FXCollections.observableArrayList(IntStream.range(0, 24).boxed().collect(Collectors.toList()));
 
+	/**
+	 * Constructor ensures that each hour maps to a boolean property
+	 */
 	public HourCondition()
 	{
+		// Make sure each hour maps to a boolean property, this is important for later, since our view will use this to populate checkboxes
 		for (Integer hour : hourList)
 			if (!this.hourToSelected.containsKey(hour))
 				this.hourToSelected.put(hour, new SimpleBooleanProperty(true));
@@ -40,11 +45,17 @@ public class HourCondition implements IQueryCondition
 	@Override
 	public void appendConditionToQuery(CyVerseQuery query)
 	{
+		// Iterate over all hours, if we know of the hour and it's checked, add it to the query
 		for (Integer hour : this.getHourList())
 			if (hourToSelected.containsKey(hour) && hourToSelected.get(hour).getValue())
 				query.addHour(hour);
 	}
 
+	/**
+	 * Returns a string representing the FXML document to visualize this model file
+	 *
+	 * @return A string to a FXML document in view/analysisView/conditions
+	 */
 	@Override
 	public String getFXMLConditionEditor()
 	{
@@ -62,6 +73,11 @@ public class HourCondition implements IQueryCondition
 		return this.hourToSelected.get(hour);
 	}
 
+	/**
+	 * Returns a list of possible hours
+	 *
+	 * @return A list of hours 0 - 23
+	 */
 	public ObservableList<Integer> getHourList()
 	{
 		return hourList;

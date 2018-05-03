@@ -12,19 +12,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Data model used by the "Day of Week filter" query condition
+ */
 public class DayOfWeekCondition implements IQueryCondition
 {
 	// A map of day of week -> if the day of week is selected to be filtered
 	private Map<DayOfWeek, BooleanProperty> dayOfWeekToSelected = new HashMap<>();
+	// A list of possible days of week (monday - sunday)
 	private ObservableList<DayOfWeek> dayOfWeekList = FXCollections.observableArrayList(DayOfWeek.values());
 
+	/**
+	 * Constructor ensures that each day of the week maps to a boolean property
+	 */
 	public DayOfWeekCondition()
 	{
+		// Make sure each day of the week maps to a boolean property, this is important for later, since our view will use this to populate checkboxes
 		for (DayOfWeek dayOfWeek : dayOfWeekList)
 			if (!this.dayOfWeekToSelected.containsKey(dayOfWeek))
 				this.dayOfWeekToSelected.put(dayOfWeek, new SimpleBooleanProperty(true));
 	}
 
+	/**
+	 * This query condition ensures only selected days of the week are queried for
+	 *
+	 * @param query The current state of the query before the appending
+	 */
 	@Override
 	public void appendConditionToQuery(CyVerseQuery query)
 	{
@@ -33,6 +46,11 @@ public class DayOfWeekCondition implements IQueryCondition
 				query.addDayOfWeek(dayOfWeek.getValue());
 	}
 
+	/**
+	 * Returns the FXML document that can edit this data model
+	 *
+	 * @return An FXML UI document to edit this data model
+	 */
 	@Override
 	public String getFXMLConditionEditor()
 	{
@@ -50,6 +68,11 @@ public class DayOfWeekCondition implements IQueryCondition
 		return this.dayOfWeekToSelected.get(dayOfWeek);
 	}
 
+	/**
+	 * Returns the list of possible days of the week
+	 *
+	 * @return A list of days of the week to filter
+	 */
 	public ObservableList<DayOfWeek> getDayOfWeekList()
 	{
 		return dayOfWeekList;

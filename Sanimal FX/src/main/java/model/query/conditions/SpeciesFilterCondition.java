@@ -24,11 +24,16 @@ public class SpeciesFilterCondition implements IQueryCondition
 	// A map of species -> if the species is selected to be filtered
 	private Map<Species, BooleanProperty> speciesToSelected = new HashMap<>();
 
+	/**
+	 * Constructor ensures that each species maps to a boolean property
+	 */
 	public SpeciesFilterCondition()
 	{
+		// Make sure each species maps to a boolean property, this is important for later, since our view will use this to populate checkboxes
 		for (Species species : this.getSpeciesList())
 			if (!this.speciesToSelected.containsKey(species))
 				this.speciesToSelected.put(species, new SimpleBooleanProperty(true));
+		// If the species list changes, we add a boolean property for the new added species
 		this.getSpeciesList().addListener((ListChangeListener<Species>) c ->
 		{
 			while (c.next())

@@ -15,14 +15,19 @@ import java.time.Year;
 import java.util.ResourceBundle;
 import java.util.function.Predicate;
 
+/**
+ * Class used as a controller for the "Year filter" UI component
+ */
 public class YearConditionController implements IConditionController
 {
 	///
 	/// FXML Bound Fields Start
 	///
 
+	// The text field with the starting year
 	@FXML
 	public TextField txtStartYear;
+	// The text field with the end year
 	@FXML
 	public TextField txtEndYear;
 
@@ -30,6 +35,12 @@ public class YearConditionController implements IConditionController
 	/// FXML Bound Fields End
 	///
 
+	/**
+	 * Initialize sets up validators to ensure that start and end year are valid numbers
+	 *
+	 * @param location ignored
+	 * @param resources ignored
+	 */
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
@@ -38,6 +49,11 @@ public class YearConditionController implements IConditionController
 		fieldValidator.registerValidator(this.txtEndYear,   true, Validator.createPredicateValidator(this::validInteger, "End year must be an integer!"));
 	}
 
+	/**
+	 * Initializes the controller with a data model to bind to
+	 *
+	 * @param iQueryCondition The data model which should be a year filter condition
+	 */
 	@Override
 	public void initializeData(IQueryCondition iQueryCondition)
 	{
@@ -46,23 +62,33 @@ public class YearConditionController implements IConditionController
 			YearCondition yearCondition = (YearCondition) iQueryCondition;
 			this.txtStartYear.setText(yearCondition.startYearProperty().getValue().toString());
 			this.txtEndYear.setText(yearCondition.endYearProperty().getValue().toString());
+			// Bind the year start and end properties to the text parsed to an integer
 			yearCondition.startYearProperty().bind(EasyBind.map(this.txtStartYear.textProperty(), year -> parseOrDefault(year, LocalDateTime.MIN.getYear())));
 			yearCondition.endYearProperty().bind(EasyBind.map(this.txtEndYear.textProperty(), year -> parseOrDefault(year, LocalDateTime.MAX.getYear())));
 		}
 	}
 
+	/**
+	 * Parses the string number into an integer, or returns the default number if the parse fails
+	 *
+	 * @param number The number to parse as a string
+	 * @param defaultNumber The default return value
+	 * @return The string as a number or the default number if the parse fails
+	 */
 	private Integer parseOrDefault(String number, Integer defaultNumber)
 	{
-		try
-		{
+		if (this.validInteger(number))
 			return Integer.parseInt(number);
-		}
-		catch (NumberFormatException ignored)
-		{
+		else
 			return defaultNumber;
-		}
 	}
 
+	/**
+	 * Tests if a string is a valid integer
+	 *
+	 * @param number The number to test
+	 * @return True if the number is a valid integer, false otherwise
+	 */
 	private Boolean validInteger(String number)
 	{
 		try

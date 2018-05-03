@@ -5,6 +5,7 @@ import com.panemu.tiwulfx.control.DetachableTabPane;
 import controller.analysisView.VisCSVController;
 import controller.analysisView.VisDrSandersonController;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -21,7 +22,9 @@ import model.image.ImageEntry;
 import model.query.CyVerseQuery;
 import model.query.IQueryCondition;
 import model.query.QueryEngine;
+import model.threading.ErrorTask;
 import model.util.FXMLLoaderUtils;
+import org.controlsfx.control.MaskerPane;
 
 import java.net.URL;
 import java.util.List;
@@ -68,6 +71,10 @@ public class SanimalAnalysisController implements Initializable
 	// The imageview with the arrow divider
 	@FXML
 	public ImageView imgArrow;
+
+	// If the query is happening
+	@FXML
+	public MaskerPane mpnQuerying;
 
 	///
 	/// FXML bound fields end
@@ -120,6 +127,8 @@ public class SanimalAnalysisController implements Initializable
 
 		// Set the items in the list to be the list of possible query filters
 		this.lvwFilters.setItems(SanimalData.getInstance().getQueryEngine().getQueryFilters());
+
+		this.mpnQuerying.setVisible(false);
 	}
 
 	/**
@@ -129,6 +138,8 @@ public class SanimalAnalysisController implements Initializable
 	 */
 	public void query(ActionEvent actionEvent)
 	{
+		this.mpnQuerying.setVisible(true);
+
 		// Default 60s event interval
 		Integer eventInterval = 60;
 		try
@@ -144,15 +155,28 @@ public class SanimalAnalysisController implements Initializable
 		for (IQueryCondition queryCondition : SanimalData.getInstance().getQueryEngine().getQueryConditions())
 			queryCondition.appendConditionToQuery(query);
 
-		// Grab the result of the query
-		List<ImageEntry> queryResult = SanimalData.getInstance().getConnectionManager().performQuery(query);
+		Task<List<ImageEntry>> queryTask = new ErrorTask<List<ImageEntry>>()
+		{
+			@Override
+			protected List<ImageEntry> call()
+			{
+				this.updateMessage("Performing query...");
+				// Grab the result of the query
+				return SanimalData.getInstance().getConnectionManager().performQuery(query);
+			}
+		};
+		Integer finalEventInterval = eventInterval;
+		queryTask.setOnSucceeded(event ->
+		{
+			// Analyze the result of the query
+			DataAnalyzer dataAnalyzer = new DataAnalyzer(queryTask.getValue(), finalEventInterval);
 
-		// Analyze the result of the query
-		DataAnalyzer dataAnalyzer = new DataAnalyzer(queryResult, eventInterval);
-
-		// Hand the analysis over to the visualizations to graph
-		visDrSandersonController.visualize(dataAnalyzer);
-		visCSVController.visualize(dataAnalyzer);
+			// Hand the analysis over to the visualizations to graph
+			visDrSandersonController.visualize(dataAnalyzer);
+			visCSVController.visualize(dataAnalyzer);
+			this.mpnQuerying.setVisible(false);
+		});
+		SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(queryTask);
 
 		actionEvent.consume();
 	}

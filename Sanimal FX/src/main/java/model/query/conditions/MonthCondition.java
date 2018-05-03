@@ -21,8 +21,12 @@ public class MonthCondition implements IQueryCondition
 {
 	// A map of month -> if the month is selected to be filtered
 	private Map<Month, BooleanProperty> monthToSelected = new HashMap<>();
+	// A list of possible months to filter
 	private ObservableList<Month> monthList = FXCollections.observableArrayList(Month.values());
 
+	/**
+	 * Constructor ensures that each month maps to a boolean property
+	 */
 	public MonthCondition()
 	{
 		for (Month month : monthList)
@@ -38,11 +42,17 @@ public class MonthCondition implements IQueryCondition
 	@Override
 	public void appendConditionToQuery(CyVerseQuery query)
 	{
+		// Make sure each month maps to a boolean property, this is important for later, since our view will use this to populate checkboxes
 		for (Month month : Month.values())
 			if (monthToSelected.containsKey(month) && monthToSelected.get(month).getValue())
 				query.addMonth(month.getValue());
 	}
 
+	/**
+	 * Returns the FXML document that can edit this data model
+	 *
+	 * @return An FXML UI document to edit this data model
+	 */
 	@Override
 	public String getFXMLConditionEditor()
 	{
@@ -60,6 +70,11 @@ public class MonthCondition implements IQueryCondition
 		return this.monthToSelected.get(month);
 	}
 
+	/**
+	 * Returns a list of possible months to filter
+	 *
+	 * @return A list of months jan-dec
+	 */
 	public ObservableList<Month> getMonthList()
 	{
 		return monthList;

@@ -13,12 +13,16 @@ import java.net.URL;
 import java.time.DayOfWeek;
 import java.util.ResourceBundle;
 
+/**
+ * Class used as a controller for the "Day of Week filter" UI component
+ */
 public class DayOfWeekConditionController implements IConditionController
 {
 	///
 	/// FXML Bound Fields Start
 	///
 
+	// The list of possible days of week to check
 	@FXML
 	public ListView<DayOfWeek> dayOfWeekFilterListView;
 
@@ -26,18 +30,31 @@ public class DayOfWeekConditionController implements IConditionController
 	/// FXML Bound Fields End
 	///
 
+	/**
+	 * Initializes the controller, does nothing in this specific controller
+	 *
+	 * @param location ignored
+	 * @param resources ignored
+	 */
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
 	}
 
+	/**
+	 * Initializes the data model for this given condition
+	 *
+	 * @param iQueryCondition The data model which should be a day of week condition
+	 */
 	@Override
 	public void initializeData(IQueryCondition iQueryCondition)
 	{
 		if (iQueryCondition instanceof DayOfWeekCondition)
 		{
 			DayOfWeekCondition dayOfWeekCondition = (DayOfWeekCondition) iQueryCondition;
+			// Set the items to be the list specified in the controller
 			this.dayOfWeekFilterListView.setItems(dayOfWeekCondition.getDayOfWeekList());
+			// Use checkbox cells to hold the data
 			this.dayOfWeekFilterListView.setCellFactory(CheckBoxListCell.forListView(dayOfWeekCondition::dayOfWeekSelectedProperty));
 			this.dayOfWeekFilterListView.setEditable(true);
 		}
