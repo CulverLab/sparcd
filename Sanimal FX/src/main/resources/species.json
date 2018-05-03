@@ -61,7 +61,7 @@
   },
   {
     "name": "Fox",
-    "scientificName": "many spp.",
+    "scientificName": "Urocyon spp. Vulpes spp.",
     "speciesIconURL": "https://arizona.box.com/shared/static/hjjb6d6ysl6ufksfjtvjvyebysm1bvr9.jpg",
     "keyBinding": null
   },
@@ -219,6 +219,12 @@
     "name": "Turkey",
     "scientificName": "Meleagris gallopavo",
     "speciesIconURL": "https://arizona.box.com/shared/static/1xt2pasyyzjkqiirc5pz87uye3duklvy.jpg",
+    "keyBinding": null
+  },
+   {
+    "name": "Test",
+    "scientificName": "Test",
+    "speciesIconURL": "replace",
     "keyBinding": null
   }
 ]
