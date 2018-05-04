@@ -79,4 +79,22 @@ public class MonthCondition implements IQueryCondition
 	{
 		return monthList;
 	}
+
+	/**
+	 * Selects all months
+	 */
+	public void selectAll()
+	{
+		for (BooleanProperty selected : this.monthToSelected.values())
+			selected.set(true);
+	}
+
+	/**
+	 * De-selects all months
+	 */
+	public void selectNone()
+	{
+		for (BooleanProperty selected : this.monthToSelected.values())
+			selected.set(false);
+	}
 }

@@ -29,8 +29,6 @@ public class CyVerseQuery
 	private Set<Location> locationQuery = new HashSet<>();
 	// A list of collections to query for
 	private Set<ImageCollection> collectionQuery = new HashSet<>();
-	// A list of years to query for
-	private Set<Integer> yearQuery = new HashSet<>();
 	// A list of months to query for
 	private Set<Integer> monthQuery = new HashSet<>();
 	// A list of hours to query for
@@ -102,13 +100,17 @@ public class CyVerseQuery
 	}
 
 	/**
-	 * Adds a given year to the query
+	 * Adds a given startYear to the query
 	 *
-	 * @param year The year to 'and' into the query
+	 * @param startYear The start year to 'and' into the query
+	 * @param startYear The end year to 'and' into the query
 	 */
-	public void addYear(Integer year)
+	public void setStartAndEndYear(Integer startYear, Integer endYear)
 	{
-		this.yearQuery.add(year);
+		appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_YEAR_TAKEN);
+		appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.NUMERIC_GREATER_THAN_OR_EQUAL_TO, startYear);
+		appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_YEAR_TAKEN);
+		appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.NUMERIC_LESS_THAN_OR_EQUAL_TO, endYear);
 	}
 
 	/**
@@ -192,14 +194,6 @@ public class CyVerseQuery
 		{
 			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_COLLECTION_ID);
 			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, imageCollectionInStr);
-		}
-
-		// To test if a year is in a list, we is the "IN" operator. We need to create a formatted string like: ('y1','y2')
-		String yearInStr = "(" + this.yearQuery.stream().map(year -> "'" + year.toString() + "'").collect(Collectors.joining(",")) + ")";
-		if (!yearQuery.isEmpty())
-		{
-			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_YEAR_TAKEN);
-			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, yearInStr);
 		}
 
 		// To test if a month is in a list, we is the "IN" operator. We need to create a formatted string like: ('mon1','mon2')

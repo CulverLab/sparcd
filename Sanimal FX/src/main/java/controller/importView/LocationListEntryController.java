@@ -10,6 +10,7 @@ import model.SanimalData;
 import model.analysis.SanimalAnalysisUtils;
 import model.location.Location;
 import model.location.UTMCoord;
+import model.util.RoundingUtils;
 import model.util.SettingsData;
 
 /**
@@ -57,7 +58,13 @@ public class LocationListEntryController extends ListCell<Location>
         SanimalData.getInstance().getSettings().locationFormatProperty().addListener((observable, oldValue, newValue) ->
         {
             if (this.getItem() != null)
-                this.refreshLabels(this.getItem(), newValue);
+                this.refreshLabels(this.getItem(), newValue, SanimalData.getInstance().getSettings().getDistanceUnits());
+        });
+        // When we change the distance unit format refresh the labels
+        SanimalData.getInstance().getSettings().distanceUnitsProperty().addListener((observable, oldValue, newValue) ->
+        {
+            if (this.getItem() != null)
+                this.refreshLabels(this.getItem(), SanimalData.getInstance().getSettings().getLocationFormat(), newValue);
         });
     }
 
@@ -86,7 +93,7 @@ public class LocationListEntryController extends ListCell<Location>
         {
             this.lblName.setText(location.getName());
             this.lblId.setText(location.getId());
-            this.refreshLabels(location, SanimalData.getInstance().getSettings().getLocationFormat());
+            this.refreshLabels(location, SanimalData.getInstance().getSettings().getLocationFormat(), SanimalData.getInstance().getSettings().getDistanceUnits());
             this.setGraphic(mainPane);
         }
     }
@@ -96,8 +103,9 @@ public class LocationListEntryController extends ListCell<Location>
      *
      * @param location The new location
      * @param format The format of the location
+     * @param distanceUnits The units to be used when creating distance labels
      */
-    private void refreshLabels(Location location, SettingsData.LocationFormat format)
+    private void refreshLabels(Location location, SettingsData.LocationFormat format, SettingsData.DistanceUnits distanceUnits)
     {
         // If we are using latitude & longitude
         if (format == SettingsData.LocationFormat.LatLong)
@@ -105,7 +113,7 @@ public class LocationListEntryController extends ListCell<Location>
             // Locations are stored in lat/lng so we can just use the value
             this.lblLocationFirst.setText(location.getLat().toString());
             this.lblLocationSecond.setText(location.getLng().toString());
-            this.lblLocationThird.setText(location.getElevation().intValue() + "m");
+            this.lblLocationThird.setText(Math.round(distanceUnits.formatMeters(location.getElevation())) + distanceUnits.getSymbol());
         }
         // If we are using UTM
         else if (format == SettingsData.LocationFormat.UTM)
@@ -113,9 +121,9 @@ public class LocationListEntryController extends ListCell<Location>
             // Convert to UTM
             UTMCoord utmEquiv = SanimalAnalysisUtils.Deg2UTM(location.getLat(), location.getLng());
             // Update the labels
-            this.lblLocationFirst.setText(utmEquiv.getEasting().intValue() + "e");
-            this.lblLocationSecond.setText(utmEquiv.getNorthing().intValue() + "n");
-            this.lblLocationThird.setText("Zone " + utmEquiv.getZone().toString() + utmEquiv.getLetter().toString() + " at " + location.getElevation().intValue() + "m");
+            this.lblLocationFirst.setText(utmEquiv.getEasting().intValue() + "E");
+            this.lblLocationSecond.setText(utmEquiv.getNorthing().intValue() + "N");
+            this.lblLocationThird.setText("Zone " + utmEquiv.getZone().toString() + utmEquiv.getLetter().toString() + " at " + Math.round(distanceUnits.formatMeters(location.getElevation())) + distanceUnits.getSymbol());
         }
     }
 }

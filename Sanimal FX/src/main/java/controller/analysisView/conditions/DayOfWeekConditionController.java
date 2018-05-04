@@ -2,6 +2,7 @@ package controller.analysisView.conditions;
 
 import controller.analysisView.IConditionController;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
@@ -30,6 +31,9 @@ public class DayOfWeekConditionController implements IConditionController
 	/// FXML Bound Fields End
 	///
 
+	// Data model containing day of week information
+	private DayOfWeekCondition dayOfWeekCondition;
+
 	/**
 	 * Initializes the controller, does nothing in this specific controller
 	 *
@@ -51,12 +55,36 @@ public class DayOfWeekConditionController implements IConditionController
 	{
 		if (iQueryCondition instanceof DayOfWeekCondition)
 		{
-			DayOfWeekCondition dayOfWeekCondition = (DayOfWeekCondition) iQueryCondition;
+			this.dayOfWeekCondition = (DayOfWeekCondition) iQueryCondition;
 			// Set the items to be the list specified in the controller
-			this.dayOfWeekFilterListView.setItems(dayOfWeekCondition.getDayOfWeekList());
+			this.dayOfWeekFilterListView.setItems(this.dayOfWeekCondition.getDayOfWeekList());
 			// Use checkbox cells to hold the data
-			this.dayOfWeekFilterListView.setCellFactory(CheckBoxListCell.forListView(dayOfWeekCondition::dayOfWeekSelectedProperty));
+			this.dayOfWeekFilterListView.setCellFactory(CheckBoxListCell.forListView(this.dayOfWeekCondition::dayOfWeekSelectedProperty));
 			this.dayOfWeekFilterListView.setEditable(true);
 		}
+	}
+
+	/**
+	 * Selects all days for the given data model
+	 *
+	 * @param actionEvent consumed
+	 */
+	public void selectAllDays(ActionEvent actionEvent)
+	{
+		if (this.dayOfWeekCondition != null)
+			this.dayOfWeekCondition.selectAll();
+		actionEvent.consume();
+	}
+
+	/**
+	 * Selects no days for the given data model
+	 *
+	 * @param actionEvent consumed
+	 */
+	public void selectNoDays(ActionEvent actionEvent)
+	{
+		if (this.dayOfWeekCondition != null)
+			this.dayOfWeekCondition.selectNone();
+		actionEvent.consume();
 	}
 }

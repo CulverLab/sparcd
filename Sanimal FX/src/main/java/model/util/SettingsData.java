@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.function.Function;
 
 /**
  * Class containing sanimal settings
@@ -255,8 +256,58 @@ public class SettingsData
 	 */
 	public enum DistanceUnits
 	{
-		Feet,
-		Meters;
+		Feet(1 / 0.3048, 1D, "ft"),
+		Meters(1D, 0.3048D, "m");
+
+		private Double toMeters;
+		private Double toFeet;
+		private String symbol;
+
+		/**
+		 * Constructor takes in 3 parameters, X->meters, X->feet, and a symbol
+		 *
+		 * @param toMeters The conversion constant from X -> meters
+		 * @param toFeet The conversion constant from X -> feet
+		 * @param symbol The symbol of the distance unit
+		 */
+		DistanceUnits(Double toMeters, Double toFeet, String symbol)
+		{
+			this.toMeters = toMeters;
+			this.toFeet = toFeet;
+			this.symbol = symbol;
+		}
+
+		/**
+		 * Formats feet into the given type
+		 *
+		 * @param value The value in feet to format
+		 * @return The formatted value
+		 */
+		public Double formatFeet(Double value)
+		{
+			return this.toFeet * value;
+		}
+
+		/**
+		 * Formats meters into the given type
+		 *
+		 * @param value The value in meters to format
+		 * @return The formatted value
+		 */
+		public Double formatMeters(Double value)
+		{
+			return this.toMeters * value;
+		}
+
+		/**
+		 * Gets the symbol for the distance units
+		 *
+		 * @return The symbol for the unit type
+		 */
+		public String getSymbol()
+		{
+			return this.symbol;
+		}
 	}
 
 	///

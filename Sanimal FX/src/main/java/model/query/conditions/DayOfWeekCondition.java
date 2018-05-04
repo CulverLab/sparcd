@@ -77,4 +77,22 @@ public class DayOfWeekCondition implements IQueryCondition
 	{
 		return dayOfWeekList;
 	}
+
+	/**
+	 * Selects all days in the week
+	 */
+	public void selectAll()
+	{
+		for (BooleanProperty selected : this.dayOfWeekToSelected.values())
+			selected.set(true);
+	}
+
+	/**
+	 * De-selects all days in the week
+	 */
+	public void selectNone()
+	{
+		for (BooleanProperty selected : this.dayOfWeekToSelected.values())
+			selected.set(false);
+	}
 }

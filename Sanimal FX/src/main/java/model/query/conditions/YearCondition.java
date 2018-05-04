@@ -25,10 +25,7 @@ public class YearCondition implements IQueryCondition
 	@Override
 	public void appendConditionToQuery(CyVerseQuery query)
 	{
-		for (Integer year = startYear.getValue(); year <= endYear.getValue(); year++)
-		{
-			query.addYear(year);
-		}
+		query.setStartAndEndYear(startYear.getValue(), endYear.getValue());
 	}
 
 	/**

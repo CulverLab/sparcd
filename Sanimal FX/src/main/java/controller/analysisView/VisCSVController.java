@@ -8,7 +8,11 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.text.Font;
 import model.SanimalData;
 import model.analysis.DataAnalyzer;
+import model.analysis.SanimalAnalysisUtils;
 import model.location.Location;
+import model.location.UTMCoord;
+import model.util.RoundingUtils;
+import model.util.SettingsData;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -65,32 +69,77 @@ public class VisCSVController implements VisControllerBase
 		// If multiple species are in each image, the single entry is broken into multiple lines, one per species
 		String rawCSV = dataAnalyzer.getImagesSortedByDate().stream().map(imageEntry ->
 		{
-			Location locationTaken = imageEntry.getLocationTaken();
-			return imageEntry.getSpeciesPresent().stream().map(speciesEntry ->
-					imageEntry.getFile().getName() + "," +
-							SanimalData.getInstance().getSettings().formatDateTime(imageEntry.getDateTaken(), " ") + "," +
-							speciesEntry.getSpecies().getName() + "," +
-							speciesEntry.getSpecies().getScientificName() + "," +
-							speciesEntry.getAmount().toString() + "," +
-							locationTaken.getName() + "," +
-							locationTaken.getId() + "," +
-							locationTaken.getLat() + "," +
-							locationTaken.getLng() + "," +
-							locationTaken.getElevation().toString())
-					.collect(Collectors.joining("\n"));
+			Location location = imageEntry.getLocationTaken();
+			// Start with location name and id
+			String locationString =
+					location.getName() + "," +
+					location.getId() + ",";
+
+			// If we're using Lat/Lng
+			if (SanimalData.getInstance().getSettings().getLocationFormat() == SettingsData.LocationFormat.LatLong)
+			{
+				// Add lat/lng
+				locationString = locationString +
+					location.getLat() + "," +
+					location.getLng() + ",";
+			}
+			// If we're using UTM
+			else if (SanimalData.getInstance().getSettings().getLocationFormat() == SettingsData.LocationFormat.UTM)
+			{
+				// Convert to UTM, and print it
+				UTMCoord utmCoord = SanimalAnalysisUtils.Deg2UTM(location.getLat(), location.getLng());
+				locationString = locationString +
+					utmCoord.getZone().toString() + utmCoord.getLetter().toString() + "," +
+					utmCoord.getEasting() + "E," +
+					utmCoord.getNorthing() + "N,";
+			}
+			// Add elevation
+			SettingsData.DistanceUnits distanceUnits = SanimalData.getInstance().getSettings().getDistanceUnits();
+			locationString = locationString + RoundingUtils.round(distanceUnits.formatMeters(location.getElevation()), 2) + distanceUnits.getSymbol();
+			return imageEntry.getFile().getName() + "," +
+				SanimalData.getInstance().getSettings().formatDateTime(imageEntry.getDateTaken(), " ") + "," +
+				imageEntry.getSpeciesPresent().stream().map(speciesEntry ->
+					speciesEntry.getSpecies().getName() + ";" +
+					speciesEntry.getSpecies().getScientificName() + ";" +
+					speciesEntry.getAmount().toString()
+				).collect(Collectors.joining(";")) + "," +
+				locationString;
 		}).collect(Collectors.joining("\n"));
 		if (rawCSV.isEmpty())
 			rawCSV = "No query results found.";
 		this.txtRawCSV.setText(rawCSV);
 
 		// The location CSV contains each location, one per line, in the form:
-		// Name, ID, Latitude, Longitude, Elevation
+		// Name, ID, Position, Elevation
 		String locationCSV = dataAnalyzer.getAllImageLocations().stream().map(location ->
-			location.getName() + "," +
-			location.getId() + "," +
-			location.getLat() + "," +
-			location.getLng() + "," +
-			location.getElevation())
+		{
+			// Location name and ID
+			String locationString =
+					location.getName() + "," +
+					location.getId() + ",";
+
+			// If we're using lat long
+			if (SanimalData.getInstance().getSettings().getLocationFormat() == SettingsData.LocationFormat.LatLong)
+			{
+				// Use lat,lng
+				locationString = locationString +
+					location.getLat() + "," +
+					location.getLng() + ",";
+			}
+			// If we're using UTM
+			else
+			{
+				UTMCoord utmCoord = SanimalAnalysisUtils.Deg2UTM(location.getLat(), location.getLng());
+				locationString = locationString +
+					utmCoord.getZone().toString() + utmCoord.getLetter().toString() + "," +
+					utmCoord.getEasting() + "E," +
+					utmCoord.getNorthing() + "N,";
+			}
+			// Distance units depend on feet or meters
+			SettingsData.DistanceUnits distanceUnits = SanimalData.getInstance().getSettings().getDistanceUnits();
+			locationString = locationString + RoundingUtils.round(distanceUnits.formatMeters(location.getElevation()), 2) + distanceUnits.getSymbol();
+			return locationString;
+		})
 		.collect(Collectors.joining("\n"));
 		this.txtLocationCSV.setText(locationCSV);
 

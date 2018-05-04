@@ -89,7 +89,7 @@
                 <SplitPane dividerPositions="0.5" SplitPane.resizableWithParent="false">
                     <VBox styleClass="lightBorder" GridPane.columnSpan="1" GridPane.rowSpan="6">
                         <children>
-                            <ListView fx:id="locationListView" onDragDetected="#locationListDrag" orientation="HORIZONTAL" styleClass="locationList" />
+                            <ListView fx:id="locationListView" onDragDetected="#locationListDrag" VBox.vgrow="ALWAYS" orientation="HORIZONTAL" styleClass="locationList" maxHeight="Infinity" />
                             <FlowPane alignment="CENTER" hgap="5" vgap="10">
                                 <padding>
                                     <Insets bottom="20" left="5" right="5" top="20" />

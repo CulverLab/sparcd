@@ -2,6 +2,7 @@ package controller.analysisView.conditions;
 
 import controller.analysisView.IConditionController;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
@@ -30,6 +31,9 @@ public class MonthConditionController implements IConditionController
 	/// FXML Bound Fields End
 	///
 
+	// The data modle associated with this controller
+	private MonthCondition monthCondition;
+
 	/**
 	 * Initialize does nothing for this specific filter
 	 *
@@ -51,11 +55,35 @@ public class MonthConditionController implements IConditionController
 	{
 		if (iQueryCondition instanceof MonthCondition)
 		{
-			MonthCondition monthCondition = (MonthCondition) iQueryCondition;
+			this.monthCondition = (MonthCondition) iQueryCondition;
 			// Set the items of the hour list view to the months specified by the condition
-			this.monthFilterListView.setItems(monthCondition.getMonthList());
-			this.monthFilterListView.setCellFactory(CheckBoxListCell.forListView(monthCondition::monthSelectedProperty));
+			this.monthFilterListView.setItems(this.monthCondition.getMonthList());
+			this.monthFilterListView.setCellFactory(CheckBoxListCell.forListView(this.monthCondition::monthSelectedProperty));
 			this.monthFilterListView.setEditable(true);
 		}
+	}
+
+	/**
+	 * Selects all collections for the given data model
+	 *
+	 * @param actionEvent consumed
+	 */
+	public void selectAllMonths(ActionEvent actionEvent)
+	{
+		if (monthCondition != null)
+			monthCondition.selectAll();
+		actionEvent.consume();
+	}
+
+	/**
+	 * Selects no collections for the given data model
+	 *
+	 * @param actionEvent consumed
+	 */
+	public void selectNoMonths(ActionEvent actionEvent)
+	{
+		if (monthCondition != null)
+			monthCondition.selectNone();
+		actionEvent.consume();
 	}
 }

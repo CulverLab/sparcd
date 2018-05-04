@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 
 <?import javafx.geometry.Insets?>
-<BorderPane prefHeight="-Infinity" prefWidth="150" fx:controller="controller.analysisView.conditions.MonthConditionController" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+<BorderPane prefHeight="-Infinity" prefWidth="190" fx:controller="controller.analysisView.conditions.MonthConditionController" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
     <top>
         <Label text="Month Filter" BorderPane.alignment="CENTER">
             <BorderPane.margin>
@@ -18,4 +18,15 @@
     <center>
         <ListView fx:id="monthFilterListView"/>
     </center>
+    <bottom>
+        <FlowPane alignment="CENTER" hgap="5" vgap="10">
+            <padding>
+                <Insets bottom="10" left="5" right="5" top="10"/>
+            </padding>
+            <children>
+                <Button onAction="#selectAllMonths" mnemonicParsing="false" text="Select All"/>
+                <Button onAction="#selectNoMonths" mnemonicParsing="false" text="Select None"/>
+            </children>
+        </FlowPane>
+    </bottom>
 </BorderPane>

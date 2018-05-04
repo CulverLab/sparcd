@@ -33,6 +33,14 @@
                     </graphic>
                     <fx:include source="SanimalImport.fxml"/>
                 </DetachableTab>
+                <DetachableTab detachable="false" text="Collections" closable="false">
+                    <graphic>
+                        <ImageView fitWidth="25" fitHeight="25">
+                            <Image url="@../images/mainMenu/upload.png"/>
+                        </ImageView>
+                    </graphic>
+                    <fx:include source="SanimalUpload.fxml"/>
+                </DetachableTab>
                 <DetachableTab detachable="false" text="Analyze/Query" closable="false">
                     <graphic>
                         <ImageView fitWidth="25" fitHeight="25">
@@ -48,14 +56,6 @@
                         </ImageView>
                     </graphic>
                     <fx:include source="SanimalMap.fxml"/>
-                </DetachableTab>
-                <DetachableTab detachable="false" text="Collections" closable="false">
-                    <graphic>
-                        <ImageView fitWidth="25" fitHeight="25">
-                            <Image url="@../images/mainMenu/upload.png"/>
-                        </ImageView>
-                    </graphic>
-                    <fx:include source="SanimalUpload.fxml"/>
                 </DetachableTab>
                 <DetachableTab detachable="false" text="Settings" closable="false">
                     <graphic>

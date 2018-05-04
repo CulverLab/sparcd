@@ -9,6 +9,8 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -304,6 +306,9 @@ public class SanimalImportController implements Initializable
 
 		// When a new image is selected... we perform a bunch of actions below
 		MonadicBinding<ImageContainer> selectedImage = EasyBind.monadic(this.imageTree.getSelectionModel().selectedItemProperty()).map(TreeItem::getValue);
+		// Clear the preview pane if there is a preview'd image
+		selectedImage.addListener((observable, oldValue, newValue) -> this.speciesPreviewImage.setValue(null));
+		// Update the currently selected image and directory
 		currentlySelectedImage.bind(selectedImage.map(imageContainer -> (imageContainer instanceof ImageEntry) ? (ImageEntry) imageContainer : null));
 		currentlySelectedDirectory.bind(selectedImage.map(imageContainer -> (imageContainer instanceof ImageDirectory) ? (ImageDirectory) imageContainer : null));
 
@@ -1339,7 +1344,7 @@ public class SanimalImportController implements Initializable
 	}
 
 	/**
-	 * When we click the species clear preview button in the top left
+	 * When we click the species clear preview button in the top right
 	 *
 	 * @param actionEvent ignored
 	 */
