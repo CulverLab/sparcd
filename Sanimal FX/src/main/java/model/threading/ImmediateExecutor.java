@@ -29,7 +29,7 @@ public class ImmediateExecutor extends BaseSanimalExecutor
 	 */
 	public ImmediateExecutor()
 	{
-		super(Executors.newCachedThreadPool());
+		super(Executors.newFixedThreadPool(50));
 	}
 
 	/**
