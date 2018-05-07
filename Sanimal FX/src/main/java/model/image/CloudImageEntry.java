@@ -259,7 +259,7 @@ public class CloudImageEntry extends ImageEntry
 			this.isBeingPulledFromCloud.setValue(false);
 		});
 
-		SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(pullTask);
+		SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().addTask(pullTask);
 	}
 
 	/**

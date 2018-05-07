@@ -377,7 +377,7 @@ public class SanimalImportController implements Initializable
 		// The listener we will apply to each species entry list
 		// Here we use a magic number of 75. This is the height of a list cell. Unfortunately I have no other way of getting the cell height.
 		// Possibly this.speciesEntryListView.lookup(".list-cell")? Or new ListCell().getHeight()? These don't seem to work right now.
-		final ListChangeListener<SpeciesEntry> listener = change -> this.speciesEntryListView.setMaxHeight(this.speciesEntryListView.getItems().size() * 75);
+		final ListChangeListener<SpeciesEntry> listener = change -> this.speciesEntryListView.setMaxHeight(this.speciesEntryListView.getItems() == null ? 0 : this.speciesEntryListView.getItems().size() * 75);
 
 		// Make the species entry list view dynamically resize using the above listener
 		this.speciesEntryListView.itemsProperty().addListener((observable, oldValue, newValue) ->
