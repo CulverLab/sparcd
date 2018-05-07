@@ -136,10 +136,11 @@ public class DirectoryManager
 	 * Given an image directory, this will create a TAR file out of the directory
 	 *
 	 * @param directory The image directory to TAR
-	 *
+	 * @param directoryMetaJSON The JSON file representing this image directory
+	 * @param metaCSV The CSV file representing each image's metadata
 	 * @return The TAR file
 	 */
-	public static File directoryToTar(ImageDirectory directory)
+	public static File directoryToTar(ImageDirectory directory, File directoryMetaJSON, File metaCSV)
 	{
 		try
 		{
@@ -150,6 +151,24 @@ public class DirectoryManager
 
 			// Write the directory to the TAR file
 			writeSpecificDirectoryToTar(tarOut, directory, "/");
+
+			// Create an archive entry for the upload meta file
+			ArchiveEntry archiveEntry = tarOut.createArchiveEntry(directoryMetaJSON, "/UploadMeta.json");
+			// Put the archive entry into the TAR file
+			tarOut.putArchiveEntry(archiveEntry);
+			// Write all the bytes in the file into the TAR file
+			tarOut.write(Files.readAllBytes(directoryMetaJSON.toPath()));
+			// Finish writing the TAR entry
+			tarOut.closeArchiveEntry();
+
+			// Create an archive entry for the metaCSV file
+			archiveEntry = tarOut.createArchiveEntry(metaCSV, "/meta.csv");
+			// Put the archive entry into the TAR file
+			tarOut.putArchiveEntry(archiveEntry);
+			// Write all the bytes in the file into the TAR file
+			tarOut.write(Files.readAllBytes(metaCSV.toPath()));
+			// Finish writing the TAR entry
+			tarOut.closeArchiveEntry();
 
 			// Flush the file and close it. We delete the TAR after the program closes
 			tarOut.flush();

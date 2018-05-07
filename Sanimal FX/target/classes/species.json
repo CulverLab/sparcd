@@ -170,7 +170,7 @@
   {
     "name": "Skunk (Hog-Nosed)",
     "scientificName": "Conepatus leuconotus",
-    "speciesIconURL": "https://arizona.box.com/shared/static/bvq8n8fw3zqc4j67r9o8mwvdy64i0p0e.jpg",
+    "speciesIconURL": "https://arizona.box.com/shared/static/hpay9f13riudz1bcgvel54xs7i8jlkpg.jpg",
     "keyBinding": null
   },
   {
@@ -224,7 +224,13 @@
    {
     "name": "Test",
     "scientificName": "Test",
-    "speciesIconURL": "replace",
+    "speciesIconURL": "https://arizona.box.com/s/9505fzv7yd0vj8dhhwu9p662emmq1fj5",
+    "keyBinding": null
+  },
+   {
+    "name": "Frogs",
+    "scientificName": "Rana Temporaria",
+    "speciesIconURL": "https://arizona.box.com/s/y2ebc37cpx31imfvo3buiss632aper59",
     "keyBinding": null
   }
 ]

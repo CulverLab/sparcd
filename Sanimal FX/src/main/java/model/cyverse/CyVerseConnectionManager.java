@@ -17,10 +17,7 @@ import model.util.SettingsData;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.irods.jargon.core.connection.AuthScheme;
-import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.core.connection.IRODSSession;
-import org.irods.jargon.core.connection.IRODSSimpleProtocolManager;
+import org.irods.jargon.core.connection.*;
 import org.irods.jargon.core.connection.auth.AuthResponse;
 import org.irods.jargon.core.exception.AuthenticationException;
 import org.irods.jargon.core.exception.InvalidUserException;
@@ -50,7 +47,7 @@ import java.util.stream.Collectors;
 public class CyVerseConnectionManager
 {
 	// The string containing the host address that we connect to
-	private static final String CYVERSE_HOST = "data.cyverse.org";
+	private static final String CYVERSE_HOST = "data.cyverse.org"; // diana.cyverse.org
 	// The directory that each user has as their home directory
 	private static final String HOME_DIRECTORY = "/iplant/home/";
 	// The directory that collections are stored in
@@ -71,8 +68,8 @@ public class CyVerseConnectionManager
 	}.getType();
 	private static final SimpleDateFormat FOLDER_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss") ;
 
-	// Start all the Access Objects we use to accesss the user's account
-	private CyVerseAOs accessObjects;
+	private IRODSAccount authenticatedAccount;
+	private CyVerseSessionManager sessionManager;
 
 	/**
 	 * Given a username and password, this method logs a cyverse user in
@@ -97,10 +94,10 @@ public class CyVerseConnectionManager
 			if (authResponse.isSuccessful())
 			{
 				// Cache the authenticated IRODS account
-				account = authResponse.getAuthenticatedIRODSAccount();
+				this.authenticatedAccount = authResponse.getAuthenticatedIRODSAccount();
 
-				// Setup all access objects to the account (Represented by the AO at the end of the class name)
-				this.accessObjects = new CyVerseAOs(irodsAO, account);
+				// Store a session manager
+				this.sessionManager = new CyVerseSessionManager(this.authenticatedAccount);
 
 				// We're good, return true
 				return true;
@@ -110,6 +107,7 @@ public class CyVerseConnectionManager
 				// If the authentication failed, print a message, and logout in case the login partially completed
 				SanimalData.getInstance().getErrorDisplay().printError("Authentication failed. Response was: " + authResponse.getAuthMessage());
 			}
+			session.closeSession(account);
 		}
 		// If the authentication failed, print a message, and logout in case the login partially completed
 		catch (InvalidUserException | AuthenticationException e)
@@ -137,109 +135,113 @@ public class CyVerseConnectionManager
 	 */
 	public void initSanimalRemoteDirectory()
 	{
-		try
+		if (this.sessionManager.openSession())
 		{
-			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
-
-			// If the main Sanimal directory does not exist yet, create it
-			IRODSFile sanimalDirectory = fileFactory.instanceIRODSFile("./Sanimal");
-			if (!sanimalDirectory.exists())
-				sanimalDirectory.mkdir();
-
-			// Create a subfolder containing all settings that the sanimal program stores
-			IRODSFile sanimalSettings = fileFactory.instanceIRODSFile("./Sanimal/Settings");
-			if (!sanimalSettings.exists())
-				sanimalSettings.mkdir();
-
-			// Create a subfolder for temporary image uploads
-			IRODSFile sanimalTempUploads = fileFactory.instanceIRODSFile("./Sanimal/TempUploads");
-			if (!sanimalTempUploads.exists())
-				sanimalTempUploads.mkdir();
-
-			// If we don't have a default species.json file, put a default one onto the storage location
-			IRODSFile sanimalSpeciesFile = fileFactory.instanceIRODSFile("./Sanimal/Settings/species.json");
-			if (!sanimalSpeciesFile.exists())
+			try
 			{
-				// Pull the default species.json file
-				try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/species.json"));
-					 BufferedReader fileReader = new BufferedReader(inputStreamReader))
+				IRODSFileFactory fileFactory = sessionManager.getCurrentAO().getIRODSFileFactory(this.authenticatedAccount);
+
+				// If the main Sanimal directory does not exist yet, create it
+				IRODSFile sanimalDirectory = fileFactory.instanceIRODSFile("./Sanimal");
+				if (!sanimalDirectory.exists())
+					sanimalDirectory.mkdir();
+
+				// Create a subfolder containing all settings that the sanimal program stores
+				IRODSFile sanimalSettings = fileFactory.instanceIRODSFile("./Sanimal/Settings");
+				if (!sanimalSettings.exists())
+					sanimalSettings.mkdir();
+
+				// Create a subfolder for temporary image uploads
+				IRODSFile sanimalTempUploads = fileFactory.instanceIRODSFile("./Sanimal/TempUploads");
+				if (!sanimalTempUploads.exists())
+					sanimalTempUploads.mkdir();
+
+				// If we don't have a default species.json file, put a default one onto the storage location
+				IRODSFile sanimalSpeciesFile = fileFactory.instanceIRODSFile("./Sanimal/Settings/species.json");
+				if (!sanimalSpeciesFile.exists())
 				{
-					// Read the Json file
-					String json = fileReader.lines().collect(Collectors.joining("\n"));
-					// Write it to the directory
-					this.writeRemoteFile("./Sanimal/Settings/species.json", json);
+					// Pull the default species.json file
+					try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/species.json"));
+						 BufferedReader fileReader = new BufferedReader(inputStreamReader))
+					{
+						// Read the Json file
+						String json = fileReader.lines().collect(Collectors.joining("\n"));
+						// Write it to the directory
+						this.writeRemoteFile("./Sanimal/Settings/species.json", json);
+					}
+					catch (IOException e)
+					{
+						SanimalData.getInstance().getErrorDisplay().showPopup(
+								Alert.AlertType.ERROR,
+								null,
+								"Error",
+								"JSON error",
+								"Could not read the local species.json file!\n" + ExceptionUtils.getStackTrace(e),
+								false);
+					}
 				}
-				catch (IOException e)
+
+				// If we don't have a default locations.json file, put a default one onto the storage location
+				IRODSFile sanimalLocationsFile = fileFactory.instanceIRODSFile("./Sanimal/Settings/locations.json");
+				if (!sanimalLocationsFile.exists())
 				{
-					SanimalData.getInstance().getErrorDisplay().showPopup(
-							Alert.AlertType.ERROR,
-							null,
-							"Error",
-							"JSON error",
-							"Could not read the local species.json file!\n" + ExceptionUtils.getStackTrace(e),
-							false);
+					// Pull the default locations.json file
+					try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/locations.json"));
+						 BufferedReader fileReader = new BufferedReader(inputStreamReader))
+					{
+						// Read the Json file
+						String json = fileReader.lines().collect(Collectors.joining("\n"));
+						// Write it to the directory
+						this.writeRemoteFile("./Sanimal/Settings/locations.json", json);
+					}
+					catch (IOException e)
+					{
+						SanimalData.getInstance().getErrorDisplay().showPopup(
+								Alert.AlertType.ERROR,
+								null,
+								"Error",
+								"JSON error",
+								"Could not read the local locations.json file!\n" + ExceptionUtils.getStackTrace(e),
+								false);
+					}
+				}
+
+				// If we don't have a default settings.json file, put a default one onto the storage location
+				IRODSFile sanimalSettingsFile = fileFactory.instanceIRODSFile("./Sanimal/Settings/settings.json");
+				if (!sanimalSettingsFile.exists())
+				{
+					// Pull the default settings.json file
+					try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/settings.json"));
+						 BufferedReader fileReader = new BufferedReader(inputStreamReader))
+					{
+						// Read the Json file
+						String json = fileReader.lines().collect(Collectors.joining("\n"));
+						// Write it to the directory
+						this.writeRemoteFile("./Sanimal/Settings/settings.json", json);
+					}
+					catch (IOException e)
+					{
+						SanimalData.getInstance().getErrorDisplay().showPopup(
+								Alert.AlertType.ERROR,
+								null,
+								"Error",
+								"JSON error",
+								"Could not read the local settings.json file!\n" + ExceptionUtils.getStackTrace(e),
+								false);
+					}
 				}
 			}
-
-			// If we don't have a default locations.json file, put a default one onto the storage location
-			IRODSFile sanimalLocationsFile = fileFactory.instanceIRODSFile("./Sanimal/Settings/locations.json");
-			if (!sanimalLocationsFile.exists())
+			catch (JargonException e)
 			{
-				// Pull the default locations.json file
-				try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/locations.json"));
-					 BufferedReader fileReader = new BufferedReader(inputStreamReader))
-				{
-					// Read the Json file
-					String json = fileReader.lines().collect(Collectors.joining("\n"));
-					// Write it to the directory
-					this.writeRemoteFile("./Sanimal/Settings/locations.json", json);
-				}
-				catch (IOException e)
-				{
-					SanimalData.getInstance().getErrorDisplay().showPopup(
-							Alert.AlertType.ERROR,
-							null,
-							"Error",
-							"JSON error",
-							"Could not read the local locations.json file!\n" + ExceptionUtils.getStackTrace(e),
-							false);
-				}
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"Initialization error",
+						"Could not initialize the CyVerse directories!\n" + ExceptionUtils.getStackTrace(e),
+						false);
 			}
-
-			// If we don't have a default settings.json file, put a default one onto the storage location
-			IRODSFile sanimalSettingsFile = fileFactory.instanceIRODSFile("./Sanimal/Settings/settings.json");
-			if (!sanimalSettingsFile.exists())
-			{
-				// Pull the default settings.json file
-				try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/settings.json"));
-					 BufferedReader fileReader = new BufferedReader(inputStreamReader))
-				{
-					// Read the Json file
-					String json = fileReader.lines().collect(Collectors.joining("\n"));
-					// Write it to the directory
-					this.writeRemoteFile("./Sanimal/Settings/settings.json", json);
-				}
-				catch (IOException e)
-				{
-					SanimalData.getInstance().getErrorDisplay().showPopup(
-							Alert.AlertType.ERROR,
-							null,
-							"Error",
-							"JSON error",
-							"Could not read the local settings.json file!\n" + ExceptionUtils.getStackTrace(e),
-							false);
-				}
-			}
-		}
-		catch (JargonException e)
-		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"Initialization error",
-					"Could not initialize the CyVerse directories!\n" + ExceptionUtils.getStackTrace(e),
-					false);
+			sessionManager.closeSession();
 		}
 	}
 
@@ -250,10 +252,14 @@ public class CyVerseConnectionManager
 	 */
 	public void pushLocalSettings(SettingsData settingsData)
 	{
-		// Convert the settings to JSON format
-		String json = SanimalData.getInstance().getGson().toJson(settingsData);
-		// Write the settings.json file to the server
-		this.writeRemoteFile("./Sanimal/Settings/settings.json", json);
+		if (this.sessionManager.openSession())
+		{
+			// Convert the settings to JSON format
+			String json = SanimalData.getInstance().getGson().toJson(settingsData);
+			// Write the settings.json file to the server
+			this.writeRemoteFile("./Sanimal/Settings/settings.json", json);
+			this.sessionManager.closeSession();
+		}
 	}
 
 	/**
@@ -263,30 +269,35 @@ public class CyVerseConnectionManager
 	 */
 	public SettingsData pullRemoteSettings()
 	{
-		// Path to the file on the CyVerse server should be named settings.json
-		String fileName = "./Sanimal/Settings/settings.json";
-		// Read the contents of the file into a string
-		String fileContents = this.readRemoteFile(fileName);
-		// Ensure that we in fact got data back
-		if (fileContents != null)
+		if (this.sessionManager.openSession())
 		{
-			// Try to parse the JSON string into a settings data
-			try
+			// Path to the file on the CyVerse server should be named settings.json
+			String fileName = "./Sanimal/Settings/settings.json";
+			// Read the contents of the file into a string
+			String fileContents = this.readRemoteFile(fileName);
+			// Ensure that we in fact got data back
+			if (fileContents != null)
 			{
-				// Get the GSON object to parse the JSON. Return the list of new locations
-				return SanimalData.getInstance().getGson().fromJson(fileContents, SettingsData.class);
+				// Try to parse the JSON string into a settings data
+				try
+				{
+					this.sessionManager.closeSession();
+					// Get the GSON object to parse the JSON. Return the list of new locations
+					return SanimalData.getInstance().getGson().fromJson(fileContents, SettingsData.class);
+				}
+				catch (JsonSyntaxException e)
+				{
+					// If the JSON file is incorrectly formatted, throw an error and return null
+					SanimalData.getInstance().getErrorDisplay().showPopup(
+							Alert.AlertType.ERROR,
+							null,
+							"Error",
+							"JSON error",
+							"Could not pull the settings from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+							false);
+				}
 			}
-			catch (JsonSyntaxException e)
-			{
-				// If the JSON file is incorrectly formatted, throw an error and return null
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"JSON error",
-						"Could not pull the settings from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-						false);
-			}
+			this.sessionManager.closeSession();
 		}
 
 		return null;
@@ -299,30 +310,35 @@ public class CyVerseConnectionManager
 	 */
 	public List<Location> pullRemoteLocations()
 	{
-		// Path to the file on the CyVerse server should be named locations.json
-		String fileName = "./Sanimal/Settings/locations.json";
-		// Read the contents of the file into a string
-		String fileContents = this.readRemoteFile(fileName);
-		// Ensure that we in fact got data back
-		if (fileContents != null)
+		if (this.sessionManager.openSession())
 		{
-			// Try to parse the JSON string into a list of locations
-			try
+			// Path to the file on the CyVerse server should be named locations.json
+			String fileName = "./Sanimal/Settings/locations.json";
+			// Read the contents of the file into a string
+			String fileContents = this.readRemoteFile(fileName);
+			// Ensure that we in fact got data back
+			if (fileContents != null)
 			{
-				// Get the GSON object to parse the JSON. Return the list of new locations
-				return SanimalData.getInstance().getGson().fromJson(fileContents, LOCATION_LIST_TYPE);
+				// Try to parse the JSON string into a list of locations
+				try
+				{
+					this.sessionManager.closeSession();
+					// Get the GSON object to parse the JSON. Return the list of new locations
+					return SanimalData.getInstance().getGson().fromJson(fileContents, LOCATION_LIST_TYPE);
+				}
+				catch (JsonSyntaxException e)
+				{
+					// If the JSON file is incorrectly formatted, throw an error and return an empty list
+					SanimalData.getInstance().getErrorDisplay().showPopup(
+							Alert.AlertType.ERROR,
+							null,
+							"Error",
+							"JSON error",
+							"Could not pull the location list from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+							false);
+				}
 			}
-			catch (JsonSyntaxException e)
-			{
-				// If the JSON file is incorrectly formatted, throw an error and return an empty list
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"JSON error",
-						"Could not pull the location list from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-						false);
-			}
+			this.sessionManager.closeSession();
 		}
 
 		return Collections.emptyList();
@@ -335,10 +351,14 @@ public class CyVerseConnectionManager
 	 */
 	public void pushLocalLocations(List<Location> newLocations)
 	{
-		// Convert the location list to JSON format
-		String json = SanimalData.getInstance().getGson().toJson(newLocations);
-		// Write the locations.json file to the server
-		this.writeRemoteFile("./Sanimal/Settings/locations.json", json);
+		if (this.sessionManager.openSession())
+		{
+			// Convert the location list to JSON format
+			String json = SanimalData.getInstance().getGson().toJson(newLocations);
+			// Write the locations.json file to the server
+			this.writeRemoteFile("./Sanimal/Settings/locations.json", json);
+			this.sessionManager.closeSession();
+		}
 	}
 
 	/**
@@ -348,30 +368,35 @@ public class CyVerseConnectionManager
 	 */
 	public List<Species> pullRemoteSpecies()
 	{
-		// Path to the file on the CyVerse server should be named species.json
-		String fileName = "./Sanimal/Settings/species.json";
-		// Read the contents of the file into a string
-		String fileContents = this.readRemoteFile(fileName);
-		// Ensure that we in fact got data back
-		if (fileContents != null)
+		if (this.sessionManager.openSession())
 		{
-			// Try to parse the JSON string into a list of species
-			try
+			// Path to the file on the CyVerse server should be named species.json
+			String fileName = "./Sanimal/Settings/species.json";
+			// Read the contents of the file into a string
+			String fileContents = this.readRemoteFile(fileName);
+			// Ensure that we in fact got data back
+			if (fileContents != null)
 			{
-				// Get the GSON object to parse the JSON. Return the list of new locations
-				return SanimalData.getInstance().getGson().fromJson(fileContents, SPECIES_LIST_TYPE);
+				// Try to parse the JSON string into a list of species
+				try
+				{
+					this.sessionManager.closeSession();
+					// Get the GSON object to parse the JSON. Return the list of new locations
+					return SanimalData.getInstance().getGson().fromJson(fileContents, SPECIES_LIST_TYPE);
+				}
+				catch (JsonSyntaxException e)
+				{
+					// If the JSON file is incorrectly formatted, throw an error and return an empty list
+					SanimalData.getInstance().getErrorDisplay().showPopup(
+							Alert.AlertType.ERROR,
+							null,
+							"Error",
+							"JSON error",
+							"Could not pull the species list from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+							false);
+				}
 			}
-			catch (JsonSyntaxException e)
-			{
-				// If the JSON file is incorrectly formatted, throw an error and return an empty list
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"JSON error",
-						"Could not pull the species list from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-						false);
-			}
+			this.sessionManager.closeSession();
 		}
 
 		return Collections.emptyList();
@@ -384,10 +409,14 @@ public class CyVerseConnectionManager
 	 */
 	public void pushLocalSpecies(List<Species> newSpecies)
 	{
-		// Convert the species list to JSON format
-		String json = SanimalData.getInstance().getGson().toJson(newSpecies);
-		// Write the species.json file to the server
-		this.writeRemoteFile("./Sanimal/Settings/species.json", json);
+		if (this.sessionManager.openSession())
+		{
+			// Convert the species list to JSON format
+			String json = SanimalData.getInstance().getGson().toJson(newSpecies);
+			// Write the species.json file to the server
+			this.writeRemoteFile("./Sanimal/Settings/species.json", json);
+			this.sessionManager.closeSession();
+		}
 	}
 
 	/**
@@ -399,108 +428,112 @@ public class CyVerseConnectionManager
 	{
 		// Create a list of collections
 		List<ImageCollection> imageCollections = new ArrayList<>();
-		try
+		if (this.sessionManager.openSession())
 		{
-			// Grab the collections folder and make sure it exists
-			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
-			IRODSFile collectionsFolder = fileFactory.instanceIRODSFile(COLLECTIONS_DIRECTORY);
-			if (collectionsFolder.exists())
+			try
 			{
-				// Grab a list of files in the collections directory
-				File[] files = collectionsFolder.listFiles();
-				if (files instanceof IRODSFile[])
+				// Grab the collections folder and make sure it exists
+				IRODSFileFactory fileFactory = this.sessionManager.getCurrentAO().getIRODSFileFactory(this.authenticatedAccount);
+				IRODSFile collectionsFolder = fileFactory.instanceIRODSFile(COLLECTIONS_DIRECTORY);
+				if (collectionsFolder.exists())
 				{
-					// List of collection folders
-					IRODSFile[] collections = (IRODSFile[]) files;
-					// Iterate over all collections
-					for (IRODSFile collectionDir : collections)
+					// Grab a list of files in the collections directory
+					File[] files = collectionsFolder.listFiles();
+					if (files instanceof IRODSFile[])
 					{
-						// Make sure we can read the collections directory
-						if (collectionDir.canRead() && collectionDir.isDirectory())
+						// List of collection folders
+						IRODSFile[] collections = (IRODSFile[]) files;
+						// Iterate over all collections
+						for (IRODSFile collectionDir : collections)
 						{
-							// Read the collection JSON file to get the collection properties
-							String collectionJSONFile = collectionDir.getAbsolutePath() + "/collection.json";
-							String collectionJSON = this.readRemoteFile(collectionJSONFile);
-							if (collectionJSON != null)
+							// Make sure we can read the collections directory
+							if (collectionDir.isDirectory())
 							{
-								// Try to parse the JSON string into collection
-								try
+								// Read the collection JSON file to get the collection properties
+								String collectionJSONFile = collectionDir.getAbsolutePath() + "/collection.json";
+								String collectionJSON = this.readRemoteFile(collectionJSONFile);
+								if (collectionJSON != null)
 								{
-									// Get the GSON object to parse the JSON.
-									ImageCollection imageCollection = SanimalData.getInstance().getGson().fromJson(collectionJSON, ImageCollection.class);
-									if (imageCollection != null)
+									// Try to parse the JSON string into collection
+									try
 									{
-										imageCollections.add(imageCollection);
-
-										String permissionsJSONFile = collectionDir.getAbsolutePath() + "/permissions.json";
-										String permissionsJSON = this.readRemoteFile(permissionsJSONFile);
-
-										// This will be null if we can't see the upload directory
-										if (permissionsJSON != null)
+										// Get the GSON object to parse the JSON.
+										ImageCollection imageCollection = SanimalData.getInstance().getGson().fromJson(collectionJSON, ImageCollection.class);
+										if (imageCollection != null)
 										{
-											// Get the GSON object to parse the JSON.
-											List<Permission> permissions = SanimalData.getInstance().getGson().fromJson(permissionsJSON, PERMISSION_LIST_TYPE);
-											if (permissions != null)
+											imageCollections.add(imageCollection);
+
+											String permissionsJSONFile = collectionDir.getAbsolutePath() + "/permissions.json";
+											String permissionsJSON = this.readRemoteFile(permissionsJSONFile);
+
+											// This will be null if we can't see the upload directory
+											if (permissionsJSON != null)
 											{
-												// We need to initialize the internal listeners because the deserialization process causes the fields to get wiped and reset
-												permissions.forEach(Permission::initListeners);
-												imageCollection.getPermissions().addAll(permissions);
+												// Get the GSON object to parse the JSON.
+												List<Permission> permissions = SanimalData.getInstance().getGson().fromJson(permissionsJSON, PERMISSION_LIST_TYPE);
+												if (permissions != null)
+												{
+													// We need to initialize the internal listeners because the deserialization process causes the fields to get wiped and reset
+													permissions.forEach(Permission::initListeners);
+													imageCollection.getPermissions().addAll(permissions);
+												}
 											}
-										}
-										else
-										{
-											// Grab the uploads directory
-											IRODSFile collectionDirUploads = fileFactory.instanceIRODSFile(collectionDir.getAbsolutePath() + "/Uploads");
-											// If we got a null permissions JSON, we check if we can see the uploads folder. If so, we have upload permissions!
-											if (collectionDirUploads.exists())
+											else
 											{
-												// Add a permission for my own permissions
-												Permission myPermission = new Permission();
-												myPermission.setOwner(false);
-												myPermission.setUsername(SanimalData.getInstance().getUsername());
-												myPermission.setUpload(collectionDirUploads.canWrite());
-												myPermission.setRead(collectionDirUploads.canRead());
-												imageCollection.getPermissions().add(myPermission);
+												// Grab the uploads directory
+												IRODSFile collectionDirUploads = fileFactory.instanceIRODSFile(collectionDir.getAbsolutePath() + "/Uploads");
+												// If we got a null permissions JSON, we check if we can see the uploads folder. If so, we have upload permissions!
+												if (collectionDirUploads.exists())
+												{
+													// Add a permission for my own permissions
+													Permission myPermission = new Permission();
+													myPermission.setOwner(false);
+													myPermission.setUsername(SanimalData.getInstance().getUsername());
+													myPermission.setUpload(collectionDirUploads.canWrite());
+													myPermission.setRead(collectionDirUploads.canRead());
+													imageCollection.getPermissions().add(myPermission);
+												}
 											}
 										}
 									}
-								}
-								catch (JsonSyntaxException e)
-								{
-									// If the JSON file is incorrectly formatted, throw an error and return an empty list
-									SanimalData.getInstance().getErrorDisplay().showPopup(
-											Alert.AlertType.ERROR,
-											null,
-											"Error",
-											"JSON collection error",
-											"Could not read the collection " + collectionJSONFile + "!\n" + ExceptionUtils.getStackTrace(e),
-											false);
+									catch (JsonSyntaxException e)
+									{
+										// If the JSON file is incorrectly formatted, throw an error and return an empty list
+										SanimalData.getInstance().getErrorDisplay().showPopup(
+												Alert.AlertType.ERROR,
+												null,
+												"Error",
+												"JSON collection error",
+												"Could not read the collection " + collectionJSONFile + "!\n" + ExceptionUtils.getStackTrace(e),
+												false);
+									}
 								}
 							}
 						}
 					}
 				}
+				else
+				{
+					SanimalData.getInstance().getErrorDisplay().showPopup(
+							Alert.AlertType.ERROR,
+							null,
+							"Error",
+							"Collection error",
+							"Collections folder not found on CyVerse!\n",
+							false);
+				}
 			}
-			else
+			catch (JargonException e)
 			{
 				SanimalData.getInstance().getErrorDisplay().showPopup(
 						Alert.AlertType.ERROR,
 						null,
 						"Error",
-						"Collection error",
-						"Collections folder not found on CyVerse!\n",
+						"JSON collection download error",
+						"Could not pull the collection list from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
 						false);
 			}
-		}
-		catch (JargonException e)
-		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"JSON collection download error",
-					"Could not pull the collection list from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-					false);
+			this.sessionManager.closeSession();
 		}
 
 		return imageCollections;
@@ -513,55 +546,59 @@ public class CyVerseConnectionManager
 	 */
 	public void pushLocalCollection(ImageCollection collection, StringProperty messageCallback)
 	{
-		IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
-		// Check if we are the owner of the collection
-		String ownerUsername = collection.getOwner();
-		if (ownerUsername != null && ownerUsername.equals(SanimalData.getInstance().getUsername()))
+		if (this.sessionManager.openSession())
 		{
-			try
+			// Check if we are the owner of the collection
+			String ownerUsername = collection.getOwner();
+			if (ownerUsername != null && ownerUsername.equals(SanimalData.getInstance().getUsername()))
 			{
-				// The name of the collection directory is the UUID of the collection
-				String collectionDirName = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString();
+				try
+				{
+					IRODSFileFactory fileFactory = this.sessionManager.getCurrentAO().getIRODSFileFactory(this.authenticatedAccount);
 
-				// Create the directory, and set the permissions appropriately
-				IRODSFile collectionDir = fileFactory.instanceIRODSFile(collectionDirName);
-				if (!collectionDir.exists())
-					collectionDir.mkdir();
-				this.setFilePermissions(collectionDirName, collection.getPermissions(), false);
+					// The name of the collection directory is the UUID of the collection
+					String collectionDirName = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString();
 
-				if (messageCallback != null)
-					messageCallback.setValue("Writing collection JSON file...");
+					// Create the directory, and set the permissions appropriately
+					IRODSFile collectionDir = fileFactory.instanceIRODSFile(collectionDirName);
+					if (!collectionDir.exists())
+						collectionDir.mkdir();
+					this.setFilePermissions(collectionDirName, collection.getPermissions(), false, false);
 
-				// Create a collections JSON file to hold the settings
-				String collectionJSONFile = collectionDirName + "/collection.json";
-				String json = SanimalData.getInstance().getGson().toJson(collection);
-				this.writeRemoteFile(collectionJSONFile, json);
-				// Set the file's permissions. We force read only so that even users with write permissions cannot change this file
-				this.setFilePermissions(collectionJSONFile, collection.getPermissions(), true);
+					if (messageCallback != null)
+						messageCallback.setValue("Writing collection JSON file...");
 
-				if (messageCallback != null)
-					messageCallback.setValue("Writing permissions JSON file...");
+					// Create a collections JSON file to hold the settings
+					String collectionJSONFile = collectionDirName + "/collection.json";
+					String json = SanimalData.getInstance().getGson().toJson(collection);
+					this.writeRemoteFile(collectionJSONFile, json);
+					// Set the file's permissions. We force read only so that even users with write permissions cannot change this file
+					this.setFilePermissions(collectionJSONFile, collection.getPermissions(), true, false);
 
-				// Create a permissions JSON file to hold the permissions
-				String collectionPermissionFile = collectionDirName + "/permissions.json";
-				json = SanimalData.getInstance().getGson().toJson(collection.getPermissions());
-				this.writeRemoteFile(collectionPermissionFile, json);
+					if (messageCallback != null)
+						messageCallback.setValue("Writing permissions JSON file...");
 
-				if (messageCallback != null)
-					messageCallback.setValue("Creating collection Uploads directory...");
+					// Create a permissions JSON file to hold the permissions
+					String collectionPermissionFile = collectionDirName + "/permissions.json";
+					json = SanimalData.getInstance().getGson().toJson(collection.getPermissions());
+					this.writeRemoteFile(collectionPermissionFile, json);
 
-				// Create the folder containing uploads, and set its permissions
-				IRODSFile collectionDirUploads = fileFactory.instanceIRODSFile(collectionDirName + "/Uploads");
-				if (!collectionDirUploads.exists())
-					collectionDirUploads.mkdir();
-				this.setFilePermissions(collectionDirUploads.getAbsolutePath(), collection.getPermissions(), false);
-				// The upload directory forces inheritance of permissions to children
-				this.accessObjects.getCollectionAO().setAccessPermissionInherit(ZONE, collectionDirUploads.getAbsolutePath(), false);
+					if (messageCallback != null)
+						messageCallback.setValue("Writing collection Uploads directory...");
+
+					// Create the folder containing uploads, and set its permissions
+					IRODSFile collectionDirUploads = fileFactory.instanceIRODSFile(collectionDirName + "/Uploads");
+					if (!collectionDirUploads.exists())
+						collectionDirUploads.mkdir();
+					this.setFilePermissions(collectionDirUploads.getAbsolutePath(), collection.getPermissions(), false, true);
+				}
+				catch (JargonException e)
+				{
+					e.printStackTrace();
+				}
 			}
-			catch (JargonException e)
-			{
-				e.printStackTrace();
-			}
+
+			this.sessionManager.closeSession();
 		}
 	}
 
@@ -572,24 +609,28 @@ public class CyVerseConnectionManager
 	 */
 	public void removeCollection(ImageCollection collection)
 	{
-		// The name of the collection to remove
-		String collectionsDirName = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString();
-		try
+		if (this.sessionManager.openSession())
 		{
-			// If it exists, delete it
-			IRODSFile collectionDir = this.accessObjects.getFileFactory().instanceIRODSFile(collectionsDirName);
-			if (collectionDir.exists())
-				collectionDir.delete();
-		}
-		catch (JargonException e)
-		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"Deletion error",
-					"Could not delete the collection from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-					false);
+			// The name of the collection to remove
+			String collectionsDirName = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString();
+			try
+			{
+				// If it exists, delete it
+				IRODSFile collectionDir = this.sessionManager.getCurrentAO().getIRODSFileFactory(this.authenticatedAccount).instanceIRODSFile(collectionsDirName);
+				if (collectionDir.exists())
+					collectionDir.delete();
+			}
+			catch (JargonException e)
+			{
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"Deletion error",
+						"Could not delete the collection from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+						false);
+			}
+			this.sessionManager.closeSession();
 		}
 	}
 
@@ -599,27 +640,28 @@ public class CyVerseConnectionManager
 	 * @param fileName The name of the file to update permissions of
 	 * @param permissions The list of permissions to set
 	 * @param forceReadOnly If the highest level of permission should be READ not WRITE
+	 * @param recursive If the permissions are to be recursive
 	 * @throws JargonException Thrown if something goes wrong in the Jargon library
 	 */
-	private void setFilePermissions(String fileName, ObservableList<Permission> permissions, boolean forceReadOnly) throws JargonException
+	private void setFilePermissions(String fileName, ObservableList<Permission> permissions, boolean forceReadOnly, boolean recursive) throws JargonException
 	{
 		// Create the file, and remove all permissions from it
-		IRODSFile file = this.accessObjects.getFileFactory().instanceIRODSFile(fileName);
+		IRODSFile file = this.sessionManager.getCurrentAO().getIRODSFileFactory(this.authenticatedAccount).instanceIRODSFile(fileName);
 		this.removeAllFilePermissions(file);
 		// If the file is a directory, set the directory permissions
 		if (file.isDirectory())
 		{
 			// Go through each non-owner permission
-			CollectionAO collectionAO = this.accessObjects.getCollectionAO();
+			CollectionAO collectionAO = this.sessionManager.getCurrentAO().getCollectionAO(this.authenticatedAccount);
 			permissions.filtered(permission -> !permission.isOwner()).forEach(permission -> {
 				try
 				{
 					// If the user can upload, and we're not forcing read only, set the permission to write
 					if (permission.canUpload() && !forceReadOnly)
-						collectionAO.setAccessPermissionWrite(ZONE, file.getAbsolutePath(), permission.getUsername(), false);
+						collectionAO.setAccessPermissionWrite(ZONE, file.getAbsolutePath(), permission.getUsername(), recursive);
 					// If the user can read set the permission to write
 					else if (permission.canRead())
-						collectionAO.setAccessPermissionRead(ZONE, file.getAbsolutePath(), permission.getUsername(), false);
+						collectionAO.setAccessPermissionRead(ZONE, file.getAbsolutePath(), permission.getUsername(), recursive);
 				}
 				catch (JargonException e)
 				{
@@ -636,7 +678,7 @@ public class CyVerseConnectionManager
 		// File permissions are done differently, so do that here
 		else if (file.isFile())
 		{
-			DataObjectAO dataObjectAO = this.accessObjects.getDataObjectAO();
+			DataObjectAO dataObjectAO = this.sessionManager.getCurrentAO().getDataObjectAO(this.authenticatedAccount);
 			// Go through each permission and set the file permissions
 			permissions.filtered(permission -> !permission.isOwner()).forEach(permission -> {
 				try
@@ -674,8 +716,8 @@ public class CyVerseConnectionManager
 		if (file.isDirectory())
 		{
 			// If it's a collection, we list all permission for the folder
-			CollectionAndDataObjectListingEntry collectionPermissions = this.accessObjects.getCollectionAndDataObjectListAndSearchAO().getCollectionAndDataObjectListingEntryAtGivenAbsolutePath(file.getAbsolutePath());
-			CollectionAO collectionAO = this.accessObjects.getCollectionAO();
+			CollectionAndDataObjectListingEntry collectionPermissions = this.sessionManager.getCurrentAO().getCollectionAndDataObjectListAndSearchAO(this.authenticatedAccount).getCollectionAndDataObjectListingEntryAtGivenAbsolutePath(file.getAbsolutePath());
+			CollectionAO collectionAO = this.sessionManager.getCurrentAO().getCollectionAO(this.authenticatedAccount);
 			// We go through each permission, and remove all access permissions from that user
 			collectionPermissions.getUserFilePermission().forEach(userFilePermission -> {
 				if (userFilePermission.getFilePermissionEnum() != FilePermissionEnum.OWN)
@@ -698,7 +740,7 @@ public class CyVerseConnectionManager
 		else if (file.isFile())
 		{
 			// If it's a file, we list all permission for the file
-			DataObjectAO dataObjectAO = this.accessObjects.getDataObjectAO();
+			DataObjectAO dataObjectAO = this.sessionManager.getCurrentAO().getDataObjectAO(this.authenticatedAccount);
 			// We go through each permission, and remove all access permissions from that user
 			dataObjectAO.listPermissionsForDataObject(file.getAbsolutePath()).forEach(userFilePermission -> {
 				if (userFilePermission.getFilePermissionEnum() != FilePermissionEnum.OWN)
@@ -728,13 +770,18 @@ public class CyVerseConnectionManager
 	 */
 	public Boolean isValidUsername(String username)
 	{
-		try
+		if (this.sessionManager.openSession())
 		{
-			// Grab the user object for a given name, if it's null, it doesn't exist!
-			return this.accessObjects.getUserAO().findByName(username) != null;
-		}
-		catch (JargonException ignored)
-		{
+			try
+			{
+				this.sessionManager.closeSession();
+				// Grab the user object for a given name, if it's null, it doesn't exist!
+				return this.sessionManager.getCurrentAO().getUserAO(this.authenticatedAccount).findByName(username) != null;
+			}
+			catch (JargonException ignored)
+			{
+			}
+			this.sessionManager.closeSession();
 		}
 		return false;
 	}
@@ -749,91 +796,51 @@ public class CyVerseConnectionManager
 	 */
 	public void uploadImages(ImageCollection collection, ImageDirectory directoryToWrite, TransferStatusCallbackListener transferCallback, StringProperty messageCallback)
 	{
-		try
+		if (this.sessionManager.openSession())
 		{
-			// Grab the uploads folder for a given collection
-			String collectionUploadDirStr = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString() + "/Uploads";
-			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
-			IRODSFile collectionUploadDir = fileFactory.instanceIRODSFile(collectionUploadDirStr);
-			// If the uploads directory exists and we can write to it, upload
-			if (collectionUploadDir.exists() && collectionUploadDir.canWrite())
+			try
 			{
-				if (messageCallback != null)
-					messageCallback.setValue("Creating upload folder on CyVerse...");
-
-				// Create a new folder for the upload, we will use the current date as the name plus our username
-				String uploadFolderName = FOLDER_FORMAT.format(new Date(this.accessObjects.getEnvironmentalInfoAO().getIRODSServerCurrentTime())) + " " + SanimalData.getInstance().getUsername();
-				String uploadDirName = collectionUploadDirStr + "/" + uploadFolderName;
-				String tempUploadDirName = "./Sanimal/TempUploads/" + uploadFolderName;
-
-				// Make the directory to upload to
-				IRODSFile uploadDir = fileFactory.instanceIRODSFile(uploadDirName);
-
-				// Make the temporary directory to upload to
-				IRODSFile tempUploadDir = fileFactory.instanceIRODSFile(tempUploadDirName);
-				tempUploadDir.mkdir();
-
-				if (messageCallback != null)
-					messageCallback.setValue("Creating TAR file out of the directory before uploading...");
-
-				long time = System.currentTimeMillis();
-				// Make a tar file from the image files
-				File toWrite = DirectoryManager.directoryToTar(directoryToWrite);
-				System.out.println("Creating tar: " + (System.currentTimeMillis() - time));
-				time = System.currentTimeMillis();
-
-				// If the tar was created, upload it
-				if (toWrite != null)
+				// Grab the uploads folder for a given collection
+				String collectionUploadDirStr = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString() + "/Uploads";
+				IRODSFileFactory fileFactory = this.sessionManager.getCurrentAO().getIRODSFileFactory(this.authenticatedAccount);
+				IRODSFile collectionUploadDir = fileFactory.instanceIRODSFile(collectionUploadDirStr);
+				// If the uploads directory exists and we can write to it, upload
+				if (collectionUploadDir.exists() && collectionUploadDir.canWrite())
 				{
-					String tarFilePath = tempUploadDirName + "/" + toWrite.getName();
-					IRODSFile tarFile = fileFactory.instanceIRODSFile(tarFilePath);
+					if (messageCallback != null)
+						messageCallback.setValue("Creating upload folder on CyVerse...");
+
+					// Create a new folder for the upload, we will use the current date as the name plus our username
+					String uploadFolderName = FOLDER_FORMAT.format(new Date(this.sessionManager.getCurrentAO().getEnvironmentalInfoAO(this.authenticatedAccount).getIRODSServerCurrentTime())) + " " + SanimalData.getInstance().getUsername();
+					String uploadDirName = collectionUploadDirStr + "/" + uploadFolderName;
+					String tempUploadDirName = "./Sanimal/TempUploads/" + uploadFolderName;
+
+					// Make the temporary directory to upload to
+					IRODSFile tempUploadDir = fileFactory.instanceIRODSFile(tempUploadDirName);
+					tempUploadDir.mkdir();
 
 					if (messageCallback != null)
-						messageCallback.setValue("Uploading TAR file to CyVerse...");
-					// Uplaod the tar
-					this.accessObjects.getDataTransferOperations().putOperation(toWrite, tempUploadDir, transferCallback, null);
-					System.out.println("Uploading tar: " + (System.currentTimeMillis() - time));
+						messageCallback.setValue("Creating TAR file out of the directory before uploading...");
 
-					time = System.currentTimeMillis();
-					if (messageCallback != null)
-						messageCallback.setValue("Extracting TAR file on CyVerse into a directory...");
-					// Extract the tar
-					this.accessObjects.getBulkFileOperationsAO().extractABundleIntoAnIrodsCollectionWithBulkOperationOptimization(tarFile.getAbsolutePath(), tempUploadDir.getAbsolutePath(), "");
-					System.out.println("Extracting tar: " + (System.currentTimeMillis() - time));
-
-					time = System.currentTimeMillis();
-					if (messageCallback != null)
-						messageCallback.setValue("Removing temporary TAR file...");
-					// Remove the tar, since it was extracted by now
-					if (tarFile.exists())
-						tarFile.delete();
-					System.out.println("Removing tar: " + (System.currentTimeMillis() - time));
-					time = System.currentTimeMillis();
-
-					// Upload the JSON file representing the upload
+					// Create the JSON file representing the upload
 					Integer imageCount = Math.toIntExact(directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count());
 					Integer imagesWithSpecies = Math.toIntExact(directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry && !((ImageEntry) imageContainer).getSpeciesPresent().isEmpty()).count());
 					CloudUploadEntry uploadEntry = new CloudUploadEntry(SanimalData.getInstance().getUsername(), LocalDateTime.now(), imagesWithSpecies, imageCount, uploadDirName);
 					// Convert the upload entry to JSON format
 					String json = SanimalData.getInstance().getGson().toJson(uploadEntry);
-					// Write the UploadMeta.json file to the server
-					this.writeRemoteFile(tempUploadDirName + "/UploadMeta.json", json);
-					System.out.println("Creating UploadMeta.json: " + (System.currentTimeMillis() - time));
-					time = System.currentTimeMillis();
+					// Create the UploadMeta.json
+					File directoryMetaJSON = SanimalData.getInstance().getTempDirectoryManager().createTempFile("UploadMeta.json");
+					directoryMetaJSON.createNewFile();
+					try (PrintWriter out = new PrintWriter(directoryMetaJSON))
+					{
+						out.println(json);
+					}
 
-					if (messageCallback != null)
-						messageCallback.setValue("Moving upload into correct directory...");
-					tempUploadDir.renameTo(uploadDir);
-					System.out.println("Moving upload directory: " + (System.currentTimeMillis() - time));
-					time = System.currentTimeMillis();
-
-					if (messageCallback != null)
-						messageCallback.setValue("Writing metadata to images on CyVerse...");
-					// Add AVU metadata to all uploaded images
+					// Create the meta.csv representing the metadata for all images in the tar file
 					String localDirAbsolutePath = directoryToWrite.getFile().getAbsolutePath();
 					String localDirName = directoryToWrite.getFile().getName();
 					AvuData collectionIDTag = new AvuData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
-					directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).forEach(imageEntry ->
+					String metaCSVContent = directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).map(imageEntry ->
 					{
 						try
 						{
@@ -842,28 +849,48 @@ public class CyVerseConnectionManager
 							fileAbsolutePath = fileAbsolutePath.replace('\\', '/');
 							List<AvuData> imageMetadata = imageEntry.convertToAVUMetadata();
 							imageMetadata.add(collectionIDTag);
-							this.accessObjects.getDataObjectAO().addBulkAVUMetadataToDataObject(fileAbsolutePath, imageMetadata);
+							return fileAbsolutePath + "," + imageMetadata.stream().map(avuData -> avuData.getAttribute() + "," + avuData.getValue() + "," + avuData.getUnit()).collect(Collectors.joining(","));
 						}
 						catch (JargonException e)
 						{
 							SanimalData.getInstance().getErrorDisplay().printError("Could not add metadata to image: " + imageEntry.getFile().getAbsolutePath() + ", error was: ");
 							e.printStackTrace();
 						}
-					});
-					System.out.println("Adding AVU: " + (System.currentTimeMillis() - time));
-					time = System.currentTimeMillis();
+						return "";
+					}).collect(Collectors.joining("\n"));
+					// Create the meta.csv
+					File metaCSV = SanimalData.getInstance().getTempDirectoryManager().createTempFile("meta.csv");
+					metaCSV.createNewFile();
+					try (PrintWriter out = new PrintWriter(metaCSV))
+					{
+						out.println(metaCSVContent);
+					}
+
+					// Make a tar file from the image files
+					File toWrite = DirectoryManager.directoryToTar(directoryToWrite, directoryMetaJSON, metaCSV);
+					// If the tar was created, upload it
+					File localToUpload = new File(FilenameUtils.getFullPath(toWrite.getAbsolutePath()) + uploadFolderName + "." + FilenameUtils.getExtension(toWrite.getAbsolutePath()));
+					toWrite.renameTo(localToUpload);
+
+					if (messageCallback != null)
+						messageCallback.setValue("Uploading TAR file to CyVerse...");
+					// Upload the tar
+					this.sessionManager.getCurrentAO().getDataTransferOperations(this.authenticatedAccount).putOperation(localToUpload, collectionUploadDir, transferCallback, null);
+
+					// Let rules do the rest!
 				}
 			}
-		}
-		catch (JargonException e)
-		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"Upload error",
-					"Could not upload the images to CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-					false);
+			catch (JargonException | IOException e)
+			{
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"Upload error",
+						"Could not upload the images to CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+						false);
+			}
+			this.sessionManager.closeSession();
 		}
 	}
 
@@ -876,99 +903,103 @@ public class CyVerseConnectionManager
 	 */
 	public void saveImages(ImageCollection collection, CloudUploadEntry uploadEntryToSave, StringProperty messageCallback)
 	{
-		try
+		if (this.sessionManager.openSession())
 		{
-			// Grab the save folder for a given collection
-			String collectionSaveDirStr = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString() + "/Uploads";
-			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
-			IRODSFile collectionSaveDir = fileFactory.instanceIRODSFile(collectionSaveDirStr);
-			// If the save directory exists and we can write to it, save
-			if (collectionSaveDir.exists() && collectionSaveDir.canWrite())
+			try
 			{
-				// Grab the image directory to save
-				ImageDirectory imageDirectory = uploadEntryToSave.getCloudImageDirectory();
-				// Grab the list of images to upload
-				List<CloudImageEntry> toUpload = imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof CloudImageEntry).map(imageContainer -> (CloudImageEntry) imageContainer).collect(Collectors.toList());
-				Platform.runLater(() -> imageDirectory.setUploadProgress(0.0));
-
-				messageCallback.setValue("Saving " + toUpload.size() + " images to CyVerse...");
-
-				Double numberOfImagesToUpload = (double) toUpload.size();
-				Integer numberOfDetaggedImages = 0;
-				Integer numberOfRetaggedImages = 0;
-				// Begin saving
-				for (int i = 0; i < toUpload.size(); i++)
+				// Grab the save folder for a given collection
+				String collectionSaveDirStr = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString() + "/Uploads";
+				IRODSFileFactory fileFactory = this.sessionManager.getCurrentAO().getIRODSFileFactory(this.authenticatedAccount);
+				IRODSFile collectionSaveDir = fileFactory.instanceIRODSFile(collectionSaveDirStr);
+				// If the save directory exists and we can write to it, save
+				if (collectionSaveDir.exists() && collectionSaveDir.canWrite())
 				{
-					// Grab the cloud image entry to upload
-					CloudImageEntry cloudImageEntry = toUpload.get(i);
-					// If it has been pulled save it
-					if (cloudImageEntry.hasBeenPulledFromCloud())
+					// Grab the image directory to save
+					ImageDirectory imageDirectory = uploadEntryToSave.getCloudImageDirectory();
+					// Grab the list of images to upload
+					List<CloudImageEntry> toUpload = imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof CloudImageEntry).map(imageContainer -> (CloudImageEntry) imageContainer).collect(Collectors.toList());
+					Platform.runLater(() -> imageDirectory.setUploadProgress(0.0));
+
+					messageCallback.setValue("Saving " + toUpload.size() + " images to CyVerse...");
+
+					Double numberOfImagesToUpload = (double) toUpload.size();
+					Integer numberOfDetaggedImages = 0;
+					Integer numberOfRetaggedImages = 0;
+					// Begin saving
+					for (int i = 0; i < toUpload.size(); i++)
 					{
-						if (cloudImageEntry.getSpeciesPresent().isEmpty() && cloudImageEntry.wasTaggedWithSpecies())
-							numberOfDetaggedImages++;
-						else if (!cloudImageEntry.getSpeciesPresent().isEmpty() && !cloudImageEntry.wasTaggedWithSpecies())
-							numberOfRetaggedImages++;
-
-						// Save that specific cloud image
-						this.accessObjects.getDataTransferOperations().putOperation(cloudImageEntry.getFile(), cloudImageEntry.getCyverseFile(), new TransferStatusCallbackListener()
+						// Grab the cloud image entry to upload
+						CloudImageEntry cloudImageEntry = toUpload.get(i);
+						// If it has been pulled save it
+						if (cloudImageEntry.hasBeenPulledFromCloud())
 						{
-							@Override
-							public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) { return FileStatusCallbackResponse.CONTINUE; }
-							@Override
-							public void overallStatusCallback(TransferStatus transferStatus) {}
-							@Override
-							public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection) { return CallbackResponse.YES_FOR_ALL; }
-						}, null);
+							if (cloudImageEntry.getSpeciesPresent().isEmpty() && cloudImageEntry.wasTaggedWithSpecies())
+								numberOfDetaggedImages++;
+							else if (!cloudImageEntry.getSpeciesPresent().isEmpty() && !cloudImageEntry.wasTaggedWithSpecies())
+								numberOfRetaggedImages++;
 
-						// Get the absolute path of the uploaded file
-						String fileAbsoluteCyVersePath = cloudImageEntry.getCyverseFile().getAbsolutePath();
-						// Update the collection tag
-						AvuData collectionIDTag = new AvuData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
-						// Write image metadata to the file
-						List<AvuData> imageMetadata = cloudImageEntry.convertToAVUMetadata();
-						imageMetadata.add(collectionIDTag);
-						imageMetadata.forEach(avuData ->
-						{
-							try
+							// Save that specific cloud image
+							this.sessionManager.getCurrentAO().getDataTransferOperations(this.authenticatedAccount).putOperation(cloudImageEntry.getFile(), cloudImageEntry.getCyverseFile(), new TransferStatusCallbackListener()
 							{
-								// Set the file AVU data
-								this.accessObjects.getDataObjectAO().setAVUMetadata(fileAbsoluteCyVersePath, avuData);
-							}
-							catch (JargonException e)
-							{
-								SanimalData.getInstance().getErrorDisplay().printError("Could not add metadata to image: " + cloudImageEntry.getCyverseFile().getAbsolutePath() + ", error was: ");
-								e.printStackTrace();
-							}
-						});
+								@Override
+								public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) { return FileStatusCallbackResponse.CONTINUE; }
+								@Override
+								public void overallStatusCallback(TransferStatus transferStatus) {}
+								@Override
+								public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection) { return CallbackResponse.YES_FOR_ALL; }
+							}, null);
 
-						// Update the progress every 20 uploads
-						if (i % 20 == 0)
-						{
-							int finalI = i;
-							Platform.runLater(() -> imageDirectory.setUploadProgress(finalI / numberOfImagesToUpload));
+							// Get the absolute path of the uploaded file
+							String fileAbsoluteCyVersePath = cloudImageEntry.getCyverseFile().getAbsolutePath();
+							// Update the collection tag
+							AvuData collectionIDTag = new AvuData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
+							// Write image metadata to the file
+							List<AvuData> imageMetadata = cloudImageEntry.convertToAVUMetadata();
+							imageMetadata.add(collectionIDTag);
+							imageMetadata.forEach(avuData ->
+							{
+								try
+								{
+									// Set the file AVU data
+									this.sessionManager.getCurrentAO().getDataObjectAO(this.authenticatedAccount).setAVUMetadata(fileAbsoluteCyVersePath, avuData);
+								}
+								catch (JargonException e)
+								{
+									SanimalData.getInstance().getErrorDisplay().printError("Could not add metadata to image: " + cloudImageEntry.getCyverseFile().getAbsolutePath() + ", error was: ");
+									e.printStackTrace();
+								}
+							});
+
+							// Update the progress every 20 uploads
+							if (i % 20 == 0)
+							{
+								int finalI = i;
+								Platform.runLater(() -> imageDirectory.setUploadProgress(finalI / numberOfImagesToUpload));
+							}
 						}
 					}
-				}
 
-				// Add an edit comment so users know the file was edited
-				uploadEntryToSave.getEditComments().add("Edited by " + SanimalData.getInstance().getUsername() + " on " + FOLDER_FORMAT.format(Calendar.getInstance().getTime()));
-				Integer imagesWithSpecies = uploadEntryToSave.getImagesWithSpecies() - numberOfDetaggedImages + numberOfRetaggedImages;
-				uploadEntryToSave.setImagesWithSpecies(imagesWithSpecies);
-				// Convert the upload entry to JSON format
-				String json = SanimalData.getInstance().getGson().toJson(uploadEntryToSave);
-				// Write the UploadMeta.json file to the server
-				this.writeRemoteFile(uploadEntryToSave.getUploadIRODSPath() + "/UploadMeta.json", json);
+					// Add an edit comment so users know the file was edited
+					uploadEntryToSave.getEditComments().add("Edited by " + SanimalData.getInstance().getUsername() + " on " + FOLDER_FORMAT.format(Calendar.getInstance().getTime()));
+					Integer imagesWithSpecies = uploadEntryToSave.getImagesWithSpecies() - numberOfDetaggedImages + numberOfRetaggedImages;
+					uploadEntryToSave.setImagesWithSpecies(imagesWithSpecies);
+					// Convert the upload entry to JSON format
+					String json = SanimalData.getInstance().getGson().toJson(uploadEntryToSave);
+					// Write the UploadMeta.json file to the server
+					this.writeRemoteFile(uploadEntryToSave.getUploadIRODSPath() + "/UploadMeta.json", json);
+				}
 			}
-		}
-		catch (JargonException e)
-		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"Saving error",
-					"Could not save the image list to the collection on CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-					false);
+			catch (JargonException e)
+			{
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"Saving error",
+						"Could not save the image list to the collection on CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+						false);
+			}
+			this.sessionManager.closeSession();
 		}
 	}
 
@@ -980,95 +1011,103 @@ public class CyVerseConnectionManager
 	 */
 	public void retrieveAndInsertUploadList(ImageCollection collection, DoubleProperty progressProperty)
 	{
-		try
+		if (this.sessionManager.openSession())
 		{
-			// Clear the current collection uploads
-			Platform.runLater(() -> collection.getUploads().clear());
-			// Grab the uploads folder for a given collection
-			String collectionUploadDirStr = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString() + "/Uploads";
-			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
-			IRODSFile collectionUploadDir = fileFactory.instanceIRODSFile(collectionUploadDirStr);
-			// If the uploads directory exists and we can read it, read
-			if (collectionUploadDir.exists() && collectionUploadDir.canRead())
+			try
 			{
-				File[] files = collectionUploadDir.listFiles(File::isDirectory);
-				double totalFiles = files.length;
-				int numDone = 0;
-				for (File file : files)
+				// Clear the current collection uploads
+				Platform.runLater(() -> collection.getUploads().clear());
+				// Grab the uploads folder for a given collection
+				String collectionUploadDirStr = COLLECTIONS_DIRECTORY + "/" + collection.getID().toString() + "/Uploads";
+				IRODSFileFactory fileFactory = this.sessionManager.getCurrentAO().getIRODSFileFactory(this.authenticatedAccount);
+				IRODSFile collectionUploadDir = fileFactory.instanceIRODSFile(collectionUploadDirStr);
+				// If the uploads directory exists and we can read it, read
+				if (collectionUploadDir.exists() && collectionUploadDir.canRead())
 				{
-					progressProperty.setValue(++numDone / totalFiles);
-					// We recognize uploads by their UploadMeta.json file
-					String contents = this.readRemoteFile(file.getAbsolutePath() + "/UploadMeta.json");
-					if (contents != null)
+					File[] files = collectionUploadDir.listFiles(File::isDirectory);
+					double totalFiles = files.length;
+					int numDone = 0;
+					for (File file : files)
 					{
-						try
+						progressProperty.setValue(++numDone / totalFiles);
+						// We recognize uploads by their UploadMeta.json file
+						String contents = this.readRemoteFile(file.getAbsolutePath() + "/UploadMeta.json");
+						if (contents != null)
 						{
-							// Download the cloud upload entry
-							CloudUploadEntry uploadEntry = SanimalData.getInstance().getGson().fromJson(contents, CloudUploadEntry.class);
-							if (uploadEntry != null)
+							try
 							{
-								uploadEntry.initFromJSON();
-								Platform.runLater(() -> collection.getUploads().add(uploadEntry));
+								// Download the cloud upload entry
+								CloudUploadEntry uploadEntry = SanimalData.getInstance().getGson().fromJson(contents, CloudUploadEntry.class);
+								if (uploadEntry != null)
+								{
+									uploadEntry.initFromJSON();
+									Platform.runLater(() -> collection.getUploads().add(uploadEntry));
+								}
 							}
-						}
-						catch (JsonSyntaxException e)
-						{
-							// If the JSON file is incorrectly formatted, throw an error
-							SanimalData.getInstance().getErrorDisplay().showPopup(
-									Alert.AlertType.ERROR,
-									null,
-									"Error",
-									"JSON upload error",
-									"Could not read the upload metadata for the upload " + file.getName() + "!\n" + ExceptionUtils.getStackTrace(e),
-									false);
+							catch (JsonSyntaxException e)
+							{
+								// If the JSON file is incorrectly formatted, throw an error
+								SanimalData.getInstance().getErrorDisplay().showPopup(
+										Alert.AlertType.ERROR,
+										null,
+										"Error",
+										"JSON upload error",
+										"Could not read the upload metadata for the upload " + file.getName() + "!\n" + ExceptionUtils.getStackTrace(e),
+										false);
+							}
 						}
 					}
 				}
 			}
-		}
-		catch (JargonException e)
-		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"Upload retrieval error",
-					"Could not download the list of uploads to the collection from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-					false);
+			catch (JargonException e)
+			{
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"Upload retrieval error",
+						"Could not download the list of uploads to the collection from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+						false);
+			}
+			this.sessionManager.closeSession();
 		}
 	}
 
 	/**
 	 * Given a collection and an upload to that collection this method returns the local cloud image directory
 	 *
-	 * @param collection The collection to get the upload from
 	 * @param uploadEntry The upload in the collection to download
 	 * @return A local version of the uploadEntry
 	 */
-	public CloudImageDirectory downloadUploadDirectory(ImageCollection collection, CloudUploadEntry uploadEntry)
+	public CloudImageDirectory downloadUploadDirectory(CloudUploadEntry uploadEntry)
 	{
-		try
+		if (this.sessionManager.openSession())
 		{
-			// Grab the uploads folder for a given collection
-			String cloudDirectoryStr = uploadEntry.getUploadIRODSPath();
-			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
-			IRODSFile cloudDirectory = fileFactory.instanceIRODSFile(cloudDirectoryStr);
-			CloudImageDirectory cloudImageDirectory = new CloudImageDirectory(cloudDirectory);
-			this.createDirectoryAndImageTree(cloudImageDirectory);
-			// We need to make sure we remove the UploadMeta.json "image entry"
-			cloudImageDirectory.getChildren().removeIf(imageContainer -> imageContainer instanceof CloudImageEntry && ((CloudImageEntry) imageContainer).getCyverseFile().getAbsolutePath().contains("UploadMeta.json"));
-			return cloudImageDirectory;
-		}
-		catch (JargonException e)
-		{
-			e.printStackTrace();
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"Download failed",
-					"Downloading uploaded collection failed!",
-					false);
+			try
+			{
+				// Grab the uploads folder for a given collection
+				String cloudDirectoryStr = uploadEntry.getUploadIRODSPath();
+				IRODSFileFactory fileFactory = this.sessionManager.getCurrentAO().getIRODSFileFactory(this.authenticatedAccount);
+				IRODSFile cloudDirectory = fileFactory.instanceIRODSFile(cloudDirectoryStr);
+				CloudImageDirectory cloudImageDirectory = new CloudImageDirectory(cloudDirectory);
+				this.createDirectoryAndImageTree(cloudImageDirectory);
+				// We need to make sure we remove the UploadMeta.json "image entry"
+				cloudImageDirectory.getChildren().removeIf(imageContainer -> imageContainer instanceof CloudImageEntry && ((CloudImageEntry) imageContainer).getCyverseFile().getAbsolutePath().contains("UploadMeta.json"));
+				this.sessionManager.closeSession();
+				return cloudImageDirectory;
+			}
+			catch (JargonException e)
+			{
+				e.printStackTrace();
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"Download failed",
+						"Downloading uploaded collection failed!",
+						false);
+			}
+			this.sessionManager.closeSession();
 		}
 
 		return null;
@@ -1113,141 +1152,147 @@ public class CyVerseConnectionManager
 	 */
 	public List<ImageEntry> performQuery(CyVerseQuery queryBuilder)
 	{
-		// A unique list of species and locations is used to ensure images with identical locations don't create two locations
-		List<Location> uniqueLocations = new LinkedList<>();
-		List<Species> uniqueSpecies = new LinkedList<>();
 		// A list to return
 		List<ImageEntry> queryResult = new LinkedList<>();
-		try
+		if (this.sessionManager.openSession())
 		{
-			// Convert the query builder to a query generator
-			IRODSGenQueryFromBuilder query = queryBuilder.build().exportIRODSQueryFromBuilder(this.accessObjects.getJargonProperties().getMaxFilesAndDirsQueryMax());
-			// Perform the query, and get a set of results
-			IRODSQueryResultSet resultSet = this.accessObjects.getGenQueryExecutor().executeIRODSQuery(query, 0);
-
-			// Iterate while more results exist
-			do
+			// A unique list of species and locations is used to ensure images with identical locations don't create two locations
+			List<Location> uniqueLocations = new LinkedList<>();
+			List<Species> uniqueSpecies = new LinkedList<>();
+			try
 			{
-				// Grab each row
-				for (IRODSQueryResultRow resultRow : resultSet.getResults())
+				// Convert the query builder to a query generator
+				IRODSGenQueryFromBuilder query = queryBuilder.build().exportIRODSQueryFromBuilder(this.sessionManager.getCurrentAO().getJargonProperties().getMaxFilesAndDirsQueryMax());
+				// Perform the query, and get a set of results
+				IRODSGenQueryExecutor irodsGenQueryExecutor = this.sessionManager.getCurrentAO().getIRODSGenQueryExecutor(this.authenticatedAccount);
+				IRODSQueryResultSet resultSet = irodsGenQueryExecutor.executeIRODSQuery(query, 0);
+
+				// Iterate while more results exist
+				do
 				{
-					// Get the path to the image and the image name, create an absolute path with the info
-					String pathToImage = resultRow.getColumn(0);
-					String imageName = resultRow.getColumn(1);
-					String irodsAbsolutePath = pathToImage + "/" + imageName;
-
-					// We will fill in these various fields from the image metadata
-					LocalDateTime localDateTime = LocalDateTime.MIN;
-					String locationName = "";
-					String locationID = "";
-					Double locationLatitude = 0D;
-					Double locationLongitude = 0D;
-					Double locationElevation = 0D;
-					// Map species IDs to metadata entries
-					Map<Integer, String> speciesIDToCommonName = new HashMap<>();
-					Map<Integer, String> speciesIDToScientificName = new HashMap<>();
-					Map<Integer, Integer> speciesIDToCount = new HashMap<>();
-
-					// Perform a second query that returns ALL metadata from a given image
-					for (MetaDataAndDomainData fileDataField : this.accessObjects.getDataObjectAO().findMetadataValuesForDataObject(irodsAbsolutePath))
+					// Grab each row
+					for (IRODSQueryResultRow resultRow : resultSet.getResults())
 					{
-						// Test what type of attribute we got, if it's important store the result for later
-						switch (fileDataField.getAvuAttribute())
+						// Get the path to the image and the image name, create an absolute path with the info
+						String pathToImage = resultRow.getColumn(0);
+						String imageName = resultRow.getColumn(1);
+						String irodsAbsolutePath = pathToImage + "/" + imageName;
+
+						// We will fill in these various fields from the image metadata
+						LocalDateTime localDateTime = LocalDateTime.MIN;
+						String locationName = "";
+						String locationID = "";
+						Double locationLatitude = 0D;
+						Double locationLongitude = 0D;
+						Double locationElevation = 0D;
+						// Map species IDs to metadata entries
+						Map<Integer, String> speciesIDToCommonName = new HashMap<>();
+						Map<Integer, String> speciesIDToScientificName = new HashMap<>();
+						Map<Integer, Integer> speciesIDToCount = new HashMap<>();
+
+						// Perform a second query that returns ALL metadata from a given image
+						for (MetaDataAndDomainData fileDataField : this.sessionManager.getCurrentAO().getDataObjectAO(this.authenticatedAccount).findMetadataValuesForDataObject(irodsAbsolutePath))
 						{
-							case SanimalMetadataFields.A_DATE_TIME_TAKEN:
-								Long timeTaken = Long.parseLong(fileDataField.getAvuValue());
-								localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timeTaken), ZoneId.systemDefault());
-								break;
-							case SanimalMetadataFields.A_LOCATION_NAME:
-								locationName = fileDataField.getAvuValue();
-								break;
-							case SanimalMetadataFields.A_LOCATION_ID:
-								locationID = fileDataField.getAvuValue();
-								break;
-							case SanimalMetadataFields.A_LOCATION_LATITUDE:
-								locationLatitude = Double.parseDouble(fileDataField.getAvuValue());
-								break;
-							case SanimalMetadataFields.A_LOCATION_LONGITUDE:
-								locationLongitude = Double.parseDouble(fileDataField.getAvuValue());
-								break;
-							case SanimalMetadataFields.A_LOCATION_ELEVATION:
-								locationElevation = Double.parseDouble(fileDataField.getAvuValue());
-								break;
-							case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
-								speciesIDToCommonName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getAvuValue());
-								break;
-							case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
-								speciesIDToScientificName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getAvuValue());
-								break;
-							case SanimalMetadataFields.A_SPECIES_COUNT:
-								speciesIDToCount.put(Integer.parseInt(fileDataField.getAvuUnit()), Integer.parseInt(fileDataField.getAvuValue()));
-								break;
-							default:
-								break;
+							// Test what type of attribute we got, if it's important store the result for later
+							switch (fileDataField.getAvuAttribute())
+							{
+								case SanimalMetadataFields.A_DATE_TIME_TAKEN:
+									Long timeTaken = Long.parseLong(fileDataField.getAvuValue());
+									localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timeTaken), ZoneId.systemDefault());
+									break;
+								case SanimalMetadataFields.A_LOCATION_NAME:
+									locationName = fileDataField.getAvuValue();
+									break;
+								case SanimalMetadataFields.A_LOCATION_ID:
+									locationID = fileDataField.getAvuValue();
+									break;
+								case SanimalMetadataFields.A_LOCATION_LATITUDE:
+									locationLatitude = Double.parseDouble(fileDataField.getAvuValue());
+									break;
+								case SanimalMetadataFields.A_LOCATION_LONGITUDE:
+									locationLongitude = Double.parseDouble(fileDataField.getAvuValue());
+									break;
+								case SanimalMetadataFields.A_LOCATION_ELEVATION:
+									locationElevation = Double.parseDouble(fileDataField.getAvuValue());
+									break;
+								case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
+									speciesIDToCommonName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getAvuValue());
+									break;
+								case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
+									speciesIDToScientificName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getAvuValue());
+									break;
+								case SanimalMetadataFields.A_SPECIES_COUNT:
+									speciesIDToCount.put(Integer.parseInt(fileDataField.getAvuUnit()), Integer.parseInt(fileDataField.getAvuValue()));
+									break;
+								default:
+									break;
+							}
 						}
+
+						// Compute a new location if we need to
+						String finalLocationID = locationID;
+						Boolean locationForImagePresent = uniqueLocations.stream().anyMatch(location -> location.getId().equals(finalLocationID));
+						// Do we have the location?
+						if (!locationForImagePresent)
+							uniqueLocations.add(new Location(locationName, locationID, locationLatitude, locationLongitude, locationElevation));
+						// Compute a new species (s) if we need to
+						for (Integer key : speciesIDToScientificName.keySet())
+						{
+							// Grab the scientific name of the species
+							String speciesScientificName = speciesIDToScientificName.get(key);
+							// Grab the common name of the species
+							String speciesName = speciesIDToCommonName.get(key);
+							// Test if the species is present, if not add it
+							Boolean speciesForImagePresent = uniqueSpecies.stream().anyMatch(species -> species.getScientificName().equalsIgnoreCase(speciesScientificName));
+							if (!speciesForImagePresent)
+								uniqueSpecies.add(new Species(speciesName, speciesScientificName, Species.DEFAULT_ICON));
+						}
+
+						// Grab the correct location for the image entry
+						Location correctLocation = uniqueLocations.stream().filter(location -> location.getId().equals(finalLocationID)).findFirst().get();
+						// Create the image entry
+						ImageEntry entry = new ImageEntry(new File(irodsAbsolutePath));
+						// Set the location and date taken
+						entry.setLocationTaken(correctLocation);
+						entry.setDateTaken(localDateTime);
+						// Add the species to the image entries
+						for (Integer key : speciesIDToScientificName.keySet())
+						{
+							String speciesScientificName = speciesIDToScientificName.get(key);
+							Integer speciesCount = speciesIDToCount.get(key);
+							// Grab the species based on ID
+							Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(speciesScientificName)).findFirst().get();
+							entry.addSpecies(correctSpecies, speciesCount);
+						}
+						queryResult.add(entry);
 					}
 
-					// Compute a new location if we need to
-					String finalLocationID = locationID;
-					Boolean locationForImagePresent = uniqueLocations.stream().anyMatch(location -> location.getId().equals(finalLocationID));
-					// Do we have the location?
-					if (!locationForImagePresent)
-						uniqueLocations.add(new Location(locationName, locationID, locationLatitude, locationLongitude, locationElevation));
-					// Compute a new species (s) if we need to
-					for (Integer key : speciesIDToScientificName.keySet())
+					// Need this test to avoid NoMoreResultsException
+					if (resultSet.isHasMoreRecords())
 					{
-						// Grab the scientific name of the species
-						String speciesScientificName = speciesIDToScientificName.get(key);
-						// Grab the common name of the species
-						String speciesName = speciesIDToCommonName.get(key);
-						// Test if the species is present, if not add it
-						Boolean speciesForImagePresent = uniqueSpecies.stream().anyMatch(species -> species.getScientificName().equalsIgnoreCase(speciesScientificName));
-						if (!speciesForImagePresent)
-							uniqueSpecies.add(new Species(speciesName, speciesScientificName, Species.DEFAULT_ICON));
+						// Move the result set on if there's more records
+						IRODSQueryResultSet nextResultSet = irodsGenQueryExecutor.getMoreResults(resultSet);
+						// Close the current result set
+						irodsGenQueryExecutor.closeResults(resultSet);
+						// Advance the "pointer" to the next result set
+						resultSet = nextResultSet;
 					}
-
-					// Grab the correct location for the image entry
-					Location correctLocation = uniqueLocations.stream().filter(location -> location.getId().equals(finalLocationID)).findFirst().get();
-					// Create the image entry
-					ImageEntry entry = new ImageEntry(new File(irodsAbsolutePath));
-					// Set the location and date taken
-					entry.setLocationTaken(correctLocation);
-					entry.setDateTaken(localDateTime);
-					// Add the species to the image entries
-					for (Integer key : speciesIDToScientificName.keySet())
-					{
-						String speciesScientificName = speciesIDToScientificName.get(key);
-						Integer speciesCount = speciesIDToCount.get(key);
-						// Grab the species based on ID
-						Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(speciesScientificName)).findFirst().get();
-						entry.addSpecies(correctSpecies, speciesCount);
-					}
-					queryResult.add(entry);
-				}
-
-				// Need this test to avoid NoMoreResultsException
-				if (resultSet.isHasMoreRecords())
-				{
-					// Move the result set on if there's more records
-					IRODSQueryResultSet nextResultSet = this.accessObjects.getGenQueryExecutor().getMoreResults(resultSet);
-					// Close the current result set
-					this.accessObjects.getGenQueryExecutor().closeResults(resultSet);
-					// Advance the "pointer" to the next result set
-					resultSet = nextResultSet;
-				}
-			} while (resultSet.isHasMoreRecords());
+				} while (resultSet.isHasMoreRecords());
+			}
+			catch (JargonQueryException | JargonException | NumberFormatException | GenQueryBuilderException e)
+			{
+				e.printStackTrace();
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"Query failed",
+						"Query caused an exception!",
+						false);
+			}
+			this.sessionManager.closeSession();
 		}
-		catch (JargonQueryException | JargonException | NumberFormatException | GenQueryBuilderException e)
-		{
-			e.printStackTrace();
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"Query failed",
-					"Query caused an exception!",
-					false);
-		}
+
 		return queryResult;
 	}
 
@@ -1259,36 +1304,42 @@ public class CyVerseConnectionManager
 	 */
 	public File remoteToLocalImageFile(IRODSFile cyverseFile)
 	{
-		try
+		if (this.sessionManager.openSession())
 		{
-			// Grab the name of the CyVerse file
-			String fileName = cyverseFile.getName();
-			// Create a temporary file to write to with the same name
-			File localImageFile = SanimalData.getInstance().getTempDirectoryManager().createTempFile(fileName);
-
-			// Download the file locally
-			this.accessObjects.getDataTransferOperations().getOperation(cyverseFile, localImageFile, new TransferStatusCallbackListener()
+			try
 			{
-				@Override
-				public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) { return FileStatusCallbackResponse.CONTINUE; }
-				@Override
-				public void overallStatusCallback(TransferStatus transferStatus) {}
-				@Override
-				public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection) { return CallbackResponse.YES_FOR_ALL; }
-			}, null);
+				// Grab the name of the CyVerse file
+				String fileName = cyverseFile.getName();
+				// Create a temporary file to write to with the same name
+				File localImageFile = SanimalData.getInstance().getTempDirectoryManager().createTempFile(fileName);
 
-			return localImageFile;
+				// Download the file locally
+				this.sessionManager.getCurrentAO().getDataTransferOperations(this.authenticatedAccount).getOperation(cyverseFile, localImageFile, new TransferStatusCallbackListener()
+				{
+					@Override
+					public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) { return FileStatusCallbackResponse.CONTINUE; }
+					@Override
+					public void overallStatusCallback(TransferStatus transferStatus) {}
+					@Override
+					public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection) { return CallbackResponse.YES_FOR_ALL; }
+				}, null);
+
+				this.sessionManager.closeSession();
+				return localImageFile;
+			}
+			catch (JargonException e)
+			{
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"JSON error",
+						"Could not pull the remote file (" + cyverseFile.getName() + ")!\n" + ExceptionUtils.getStackTrace(e),
+						false);
+			}
+			this.sessionManager.closeSession();
 		}
-		catch (JargonException e)
-		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"JSON error",
-					"Could not pull the remote file (" + cyverseFile.getName() + ")!\n" + ExceptionUtils.getStackTrace(e),
-					false);
-		}
+
 		return null;
 	}
 
@@ -1302,7 +1353,7 @@ public class CyVerseConnectionManager
 	{
 		try
 		{
-			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
+			IRODSFileFactory fileFactory = this.sessionManager.getCurrentAO().getIRODSFileFactory(this.authenticatedAccount);
 			// Create a temporary file to write to
 			File localFile = SanimalData.getInstance().getTempDirectoryManager().createTempFile("sanimalTemp." + FilenameUtils.getExtension(file));
 			// Delete the temporary file before copying so that we don't need to specify overwriting
@@ -1315,7 +1366,7 @@ public class CyVerseConnectionManager
 				// Ensure it can be read
 				if (remoteFile.canRead())
 				{
-					this.accessObjects.getDataTransferOperations().getOperation(remoteFile, localFile, null, null);
+					this.sessionManager.getCurrentAO().getDataTransferOperations(this.authenticatedAccount).getOperation(remoteFile, localFile, null, null);
 					// Ensure that the file exists and transfered
 					if (localFile.exists())
 					{
@@ -1361,7 +1412,7 @@ public class CyVerseConnectionManager
 		// Create a temporary file to write each location to before uploading
 		try
 		{
-			IRODSFileFactory fileFactory = this.accessObjects.getFileFactory();
+			IRODSFileFactory fileFactory = this.sessionManager.getCurrentAO().getIRODSFileFactory(this.authenticatedAccount);
 			// Create a local file to write to
 			File localFile = SanimalData.getInstance().getTempDirectoryManager().createTempFile("sanimalTemp." + FilenameUtils.getExtension(file));
 			localFile.createNewFile();
@@ -1377,7 +1428,7 @@ public class CyVerseConnectionManager
 					fileWriter.write(value);
 				}
 				// Perform a put operation to write the local file to the CyVerse server
-				this.accessObjects.getDataTransferOperations().putOperation(localFile, remoteLocationFile, new TransferStatusCallbackListener()
+				this.sessionManager.getCurrentAO().getDataTransferOperations(this.authenticatedAccount).putOperation(localFile, remoteLocationFile, new TransferStatusCallbackListener()
 				{
 					@Override
 					public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) { return FileStatusCallbackResponse.CONTINUE; }

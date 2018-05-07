@@ -298,7 +298,7 @@ public class SanimalUploadController implements Initializable
 				{
 					this.updateMessage("Downloading directory for editing...");
 					// Download the directory and add it to our tree structure
-					CloudImageDirectory cloudDirectory = SanimalData.getInstance().getConnectionManager().downloadUploadDirectory(selectedCollection.getValue(), uploadEntry);
+					CloudImageDirectory cloudDirectory = SanimalData.getInstance().getConnectionManager().downloadUploadDirectory(uploadEntry);
 					Platform.runLater(() ->
 					{
 						uploadEntry.setCloudImageDirectory(cloudDirectory);
