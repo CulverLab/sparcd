@@ -25,6 +25,7 @@ import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.pub.*;
 import org.irods.jargon.core.pub.domain.AvuData;
+import org.irods.jargon.core.pub.domain.User;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.query.*;
@@ -774,9 +775,10 @@ public class CyVerseConnectionManager
 		{
 			try
 			{
-				this.sessionManager.closeSession();
+				User byName = this.sessionManager.getCurrentAO().getUserAO(this.authenticatedAccount).findByName(username);
 				// Grab the user object for a given name, if it's null, it doesn't exist!
-				return this.sessionManager.getCurrentAO().getUserAO(this.authenticatedAccount).findByName(username) != null;
+				this.sessionManager.closeSession();
+				return byName != null;
 			}
 			catch (JargonException ignored)
 			{
