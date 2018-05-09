@@ -861,7 +861,7 @@ public class CyVerseConnectionManager
 							e.printStackTrace();
 						}
 						return "";
-					}, 5);
+					}, 900);
 
 					// For each tar part, upload
 					for (Integer tarPart = 0; tarPart < tarsToWrite.length; tarPart++)
