@@ -849,11 +849,11 @@ public class CyVerseConnectionManager
 						try
 						{
 							// Compute the image's "cyverse" path
-							String fileAbsolutePath = uploadDirName + "/" + localDirName + StringUtils.substringAfter(imageEntry.getFile().getAbsolutePath(), localDirAbsolutePath);
-							fileAbsolutePath = fileAbsolutePath.replace('\\', '/');
+							String fileRelativePath = localDirName + StringUtils.substringAfter(imageEntry.getFile().getAbsolutePath(), localDirAbsolutePath);
+							fileRelativePath = fileRelativePath.replace('\\', '/');
 							List<AvuData> imageMetadata = imageEntry.convertToAVUMetadata();
 							imageMetadata.add(collectionIDTag);
-							return fileAbsolutePath + "," + imageMetadata.stream().map(avuData -> avuData.getAttribute() + "," + avuData.getValue() + "," + avuData.getUnit()).collect(Collectors.joining(",")) + "\n";
+							return fileRelativePath + "," + imageMetadata.stream().map(avuData -> avuData.getAttribute() + "," + avuData.getValue() + "," + avuData.getUnit()).collect(Collectors.joining(",")) + "\n";
 						}
 						catch (JargonException e)
 						{
