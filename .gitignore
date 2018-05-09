@@ -1,7 +1,4 @@
-/Sanimal/bin/*
-/Sanimal/.classpath
-/Sanimal/.project
-/Sanimal/.settings/*
+/Sanimal/*
 /Sanimal FX/.idea/*
 /Sanimal FX/Sanimal FX.iml
 /Sanimal FX/out/*
