@@ -1,14 +1,11 @@
 /Sanimal/bin/
-/.metadata/
-/RemoteSystemsTempFiles/
 /Sanimal/.classpath
 /Sanimal/.project
 /Sanimal/.settings/
-/.recommenders/
 /Sanimal FX/.idea/
 /Sanimal FX/Sanimal FX.iml
 /Sanimal FX/out/
-/.idea/*
+/.idea/
 Sanimal.iml
 Independent Study Document.docx
-/screenshots/*
+/screenshots/
