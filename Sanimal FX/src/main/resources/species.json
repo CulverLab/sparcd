@@ -7,7 +7,7 @@
   },
   {
     "name": "Bats",
-    "scientificName": "many ssp.",
+    "scientificName": "Chiroptera",
     "speciesIconURL": "https://arizona.box.com/shared/static/d74v48s0g71u990ak3usvc9tm24zadqt.jpg",
     "keyBinding": null
   },
@@ -25,7 +25,7 @@
   },
   {
     "name": "Birds",
-    "scientificName": "many ssp.",
+    "scientificName": "Aves spp.",
     "speciesIconURL": "https://arizona.box.com/shared/static/qd83ui65xvepqjfhkaxfyvh51w7s2dpd.jpg",
     "keyBinding": null
   },
@@ -61,13 +61,13 @@
   },
   {
     "name": "Fox",
-    "scientificName": "Urocyon spp. Vulpes spp.",
+    "scientificName": "Urocyon sp. Vulpes spp.",
     "speciesIconURL": "https://arizona.box.com/shared/static/hjjb6d6ysl6ufksfjtvjvyebysm1bvr9.jpg",
     "keyBinding": null
   },
   {
     "name": "Ghost",
-    "scientificName": "na",
+    "scientificName": "Casper",
     "speciesIconURL": "https://arizona.box.com/shared/static/b68jxx9b364ccklcy3qss5b3eur2imwh.jpg",
     "keyBinding": null
   },
@@ -103,7 +103,7 @@
   },
   {
     "name": "Lizards",
-    "scientificName": "many ssp.",
+    "scientificName": "Squmata",
     "speciesIconURL": "https://arizona.box.com/shared/static/81ilzi7f26lsmzrq0atb2aojl7uzw40e.jpg",
     "keyBinding": null
   },
@@ -157,13 +157,13 @@
   },
   {
     "name": "Rodent",
-    "scientificName": "many ssp.",
+    "scientificName": "Rodentia spp.",
     "speciesIconURL": "https://arizona.box.com/shared/static/qek2tp6hz88x4l3cmqhy7k8pwu7qwptn.jpg",
     "keyBinding": null
   },
   {
     "name": "Skunk (Other)",
-    "scientificName": "many spp.",
+    "scientificName": "Mephitis spp. Spilogale spp. Conepatus spp.",
     "speciesIconURL": "https://arizona.box.com/shared/static/v4nj85hg51uoc3keizu28rvzh8xqwmeu.jpg",
     "keyBinding": null
   },
@@ -205,7 +205,7 @@
   },
   {
     "name": "Squirrel",
-    "scientificName": "many spp.",
+    "scientificName": "Sciurus spp.",
     "speciesIconURL": "https://arizona.box.com/shared/static/w4437lx1wpsgzb55r95e1vajpro5pvsl.jpg",
     "keyBinding": null
   },
