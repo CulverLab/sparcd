@@ -842,7 +842,9 @@ public class CyVerseConnectionManager
 					String localDirAbsolutePath = directoryToWrite.getFile().getAbsolutePath();
 					String localDirName = directoryToWrite.getFile().getName();
 					AvuData collectionIDTag = new AvuData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
-					String metaCSVContent = directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).map(imageEntry ->
+
+					// Make a set of tar files from the image files. Don't use a single tar file because we may have > 1000 images in each
+					File[] tarsToWrite = DirectoryManager.directoryToTars(directoryToWrite, directoryMetaJSON, imageEntry ->
 					{
 						try
 						{
@@ -851,7 +853,7 @@ public class CyVerseConnectionManager
 							fileAbsolutePath = fileAbsolutePath.replace('\\', '/');
 							List<AvuData> imageMetadata = imageEntry.convertToAVUMetadata();
 							imageMetadata.add(collectionIDTag);
-							return fileAbsolutePath + "," + imageMetadata.stream().map(avuData -> avuData.getAttribute() + "," + avuData.getValue() + "," + avuData.getUnit()).collect(Collectors.joining(","));
+							return fileAbsolutePath + "," + imageMetadata.stream().map(avuData -> avuData.getAttribute() + "," + avuData.getValue() + "," + avuData.getUnit()).collect(Collectors.joining(",")) + "\n";
 						}
 						catch (JargonException e)
 						{
@@ -859,26 +861,20 @@ public class CyVerseConnectionManager
 							e.printStackTrace();
 						}
 						return "";
-					}).collect(Collectors.joining("\n"));
-					// Create the meta.csv
-					File metaCSV = SanimalData.getInstance().getTempDirectoryManager().createTempFile("meta.csv");
-					metaCSV.createNewFile();
-					try (PrintWriter out = new PrintWriter(metaCSV))
+					}, 5);
+
+					// For each tar part, upload
+					for (Integer tarPart = 0; tarPart < tarsToWrite.length; tarPart++)
 					{
-						out.println(metaCSVContent);
+						if (messageCallback != null)
+							messageCallback.setValue("Uploading TAR file part (" + (tarPart + 1) + " / " + tarsToWrite.length + ") to CyVerse...");
+
+						File toWrite = tarsToWrite[tarPart];
+						File localToUpload = new File(FilenameUtils.getFullPath(toWrite.getAbsolutePath()) + uploadFolderName + "-" + tarPart.toString() + "." + FilenameUtils.getExtension(toWrite.getAbsolutePath()));
+						toWrite.renameTo(localToUpload);
+						// Upload the tar
+						this.sessionManager.getCurrentAO().getDataTransferOperations(this.authenticatedAccount).putOperation(localToUpload, collectionUploadDir, transferCallback, null);
 					}
-
-					// Make a tar file from the image files
-					File toWrite = DirectoryManager.directoryToTar(directoryToWrite, directoryMetaJSON, metaCSV);
-					// If the tar was created, upload it
-					File localToUpload = new File(FilenameUtils.getFullPath(toWrite.getAbsolutePath()) + uploadFolderName + "." + FilenameUtils.getExtension(toWrite.getAbsolutePath()));
-					toWrite.renameTo(localToUpload);
-
-					if (messageCallback != null)
-						messageCallback.setValue("Uploading TAR file to CyVerse...");
-					// Upload the tar
-					this.sessionManager.getCurrentAO().getDataTransferOperations(this.authenticatedAccount).putOperation(localToUpload, collectionUploadDir, transferCallback, null);
-
 					// Let rules do the rest!
 				}
 			}
@@ -933,7 +929,7 @@ public class CyVerseConnectionManager
 						// Grab the cloud image entry to upload
 						CloudImageEntry cloudImageEntry = toUpload.get(i);
 						// If it has been pulled save it
-						if (cloudImageEntry.hasBeenPulledFromCloud())
+						if (cloudImageEntry.hasBeenPulledFromCloud() && cloudImageEntry.isCloudDirty())
 						{
 							if (cloudImageEntry.getSpeciesPresent().isEmpty() && cloudImageEntry.wasTaggedWithSpecies())
 								numberOfDetaggedImages++;
@@ -1147,20 +1143,15 @@ public class CyVerseConnectionManager
 	}
 
 	/**
-	 * Performs a query given a cyverseQuery object and returns a list of images that correspond with the query
+	 * Performs a query given a cyverseQuery object and returns a list of image paths that correspond with the query
 	 *
 	 * @param queryBuilder The query builder with all specified options
-	 * @return A list of image entries that have CyVerse paths instead of local paths
+	 * @return A list of image CyVerse paths instead of local paths
 	 */
-	public List<ImageEntry> performQuery(CyVerseQuery queryBuilder)
+	public List<String> performQuery(CyVerseQuery queryBuilder)
 	{
-		// A list to return
-		List<ImageEntry> queryResult = new LinkedList<>();
 		if (this.sessionManager.openSession())
 		{
-			// A unique list of species and locations is used to ensure images with identical locations don't create two locations
-			List<Location> uniqueLocations = new LinkedList<>();
-			List<Species> uniqueSpecies = new LinkedList<>();
 			try
 			{
 				// Convert the query builder to a query generator
@@ -1168,6 +1159,8 @@ public class CyVerseConnectionManager
 				// Perform the query, and get a set of results
 				IRODSGenQueryExecutor irodsGenQueryExecutor = this.sessionManager.getCurrentAO().getIRODSGenQueryExecutor(this.authenticatedAccount);
 				IRODSQueryResultSet resultSet = irodsGenQueryExecutor.executeIRODSQuery(query, 0);
+
+				List<String> matchingFilePaths = new ArrayList<>();
 
 				// Iterate while more results exist
 				do
@@ -1178,95 +1171,7 @@ public class CyVerseConnectionManager
 						// Get the path to the image and the image name, create an absolute path with the info
 						String pathToImage = resultRow.getColumn(0);
 						String imageName = resultRow.getColumn(1);
-						String irodsAbsolutePath = pathToImage + "/" + imageName;
-
-						// We will fill in these various fields from the image metadata
-						LocalDateTime localDateTime = LocalDateTime.MIN;
-						String locationName = "";
-						String locationID = "";
-						Double locationLatitude = 0D;
-						Double locationLongitude = 0D;
-						Double locationElevation = 0D;
-						// Map species IDs to metadata entries
-						Map<Integer, String> speciesIDToCommonName = new HashMap<>();
-						Map<Integer, String> speciesIDToScientificName = new HashMap<>();
-						Map<Integer, Integer> speciesIDToCount = new HashMap<>();
-
-						// Perform a second query that returns ALL metadata from a given image
-						for (MetaDataAndDomainData fileDataField : this.sessionManager.getCurrentAO().getDataObjectAO(this.authenticatedAccount).findMetadataValuesForDataObject(irodsAbsolutePath))
-						{
-							// Test what type of attribute we got, if it's important store the result for later
-							switch (fileDataField.getAvuAttribute())
-							{
-								case SanimalMetadataFields.A_DATE_TIME_TAKEN:
-									Long timeTaken = Long.parseLong(fileDataField.getAvuValue());
-									localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timeTaken), ZoneId.systemDefault());
-									break;
-								case SanimalMetadataFields.A_LOCATION_NAME:
-									locationName = fileDataField.getAvuValue();
-									break;
-								case SanimalMetadataFields.A_LOCATION_ID:
-									locationID = fileDataField.getAvuValue();
-									break;
-								case SanimalMetadataFields.A_LOCATION_LATITUDE:
-									locationLatitude = Double.parseDouble(fileDataField.getAvuValue());
-									break;
-								case SanimalMetadataFields.A_LOCATION_LONGITUDE:
-									locationLongitude = Double.parseDouble(fileDataField.getAvuValue());
-									break;
-								case SanimalMetadataFields.A_LOCATION_ELEVATION:
-									locationElevation = Double.parseDouble(fileDataField.getAvuValue());
-									break;
-								case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
-									speciesIDToCommonName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getAvuValue());
-									break;
-								case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
-									speciesIDToScientificName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getAvuValue());
-									break;
-								case SanimalMetadataFields.A_SPECIES_COUNT:
-									speciesIDToCount.put(Integer.parseInt(fileDataField.getAvuUnit()), Integer.parseInt(fileDataField.getAvuValue()));
-									break;
-								default:
-									break;
-							}
-						}
-
-						// Compute a new location if we need to
-						String finalLocationID = locationID;
-						Boolean locationForImagePresent = uniqueLocations.stream().anyMatch(location -> location.getId().equals(finalLocationID));
-						// Do we have the location?
-						if (!locationForImagePresent)
-							uniqueLocations.add(new Location(locationName, locationID, locationLatitude, locationLongitude, locationElevation));
-						// Compute a new species (s) if we need to
-						for (Integer key : speciesIDToScientificName.keySet())
-						{
-							// Grab the scientific name of the species
-							String speciesScientificName = speciesIDToScientificName.get(key);
-							// Grab the common name of the species
-							String speciesName = speciesIDToCommonName.get(key);
-							// Test if the species is present, if not add it
-							Boolean speciesForImagePresent = uniqueSpecies.stream().anyMatch(species -> species.getScientificName().equalsIgnoreCase(speciesScientificName));
-							if (!speciesForImagePresent)
-								uniqueSpecies.add(new Species(speciesName, speciesScientificName, Species.DEFAULT_ICON));
-						}
-
-						// Grab the correct location for the image entry
-						Location correctLocation = uniqueLocations.stream().filter(location -> location.getId().equals(finalLocationID)).findFirst().get();
-						// Create the image entry
-						ImageEntry entry = new ImageEntry(new File(irodsAbsolutePath));
-						// Set the location and date taken
-						entry.setLocationTaken(correctLocation);
-						entry.setDateTaken(localDateTime);
-						// Add the species to the image entries
-						for (Integer key : speciesIDToScientificName.keySet())
-						{
-							String speciesScientificName = speciesIDToScientificName.get(key);
-							Integer speciesCount = speciesIDToCount.get(key);
-							// Grab the species based on ID
-							Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(speciesScientificName)).findFirst().get();
-							entry.addSpecies(correctSpecies, speciesCount);
-						}
-						queryResult.add(entry);
+						matchingFilePaths.add(pathToImage + "/" + imageName);
 					}
 
 					// Need this test to avoid NoMoreResultsException
@@ -1280,6 +1185,8 @@ public class CyVerseConnectionManager
 						resultSet = nextResultSet;
 					}
 				} while (resultSet.isHasMoreRecords());
+				this.sessionManager.closeSession();
+				return matchingFilePaths;
 			}
 			catch (JargonQueryException | JargonException | NumberFormatException | GenQueryBuilderException e)
 			{
@@ -1295,7 +1202,142 @@ public class CyVerseConnectionManager
 			this.sessionManager.closeSession();
 		}
 
-		return queryResult;
+		return Collections.emptyList();
+	}
+
+	/**
+	 * Given a list of CyVerse absolute paths, this fetches the metadata for each image and returns it as an image entry
+	 *
+	 * @param absoluteIRODSPaths The list of absolute iRODS paths on CyVerse
+	 * @return A list of images with metadata on CyVerse
+	 */
+	public List<ImageEntry> fetchMetadataFor(List<String> absoluteIRODSPaths)
+	{
+		List<ImageEntry> toReturn = new ArrayList<>();
+
+		if (this.sessionManager.openSession())
+		{
+			// A unique list of species and locations is used to ensure images with identical locations don't create two locations
+			List<Location> uniqueLocations = new LinkedList<>();
+			List<Species> uniqueSpecies = new LinkedList<>();
+			try
+			{
+				// We will fill in these various fields from the image metadata
+				LocalDateTime localDateTime;
+				String locationName;
+				String locationID;
+				Double locationLatitude;
+				Double locationLongitude;
+				Double locationElevation;
+				// Map species IDs to metadata entries
+				Map<Integer, String> speciesIDToCommonName = new HashMap<>();
+				Map<Integer, String> speciesIDToScientificName = new HashMap<>();
+				Map<Integer, Integer> speciesIDToCount = new HashMap<>();
+
+				for (String irodsAbsolutePath : absoluteIRODSPaths)
+				{
+					localDateTime = LocalDateTime.MIN;
+					locationName = "";
+					locationID = "";
+					locationLatitude = 0D;
+					locationLongitude = 0D;
+					locationElevation = 0D;
+					speciesIDToCommonName.clear();
+					speciesIDToScientificName.clear();
+					speciesIDToCount.clear();
+
+					// Perform a second query that returns ALL metadata from a given image
+					for (MetaDataAndDomainData fileDataField : this.sessionManager.getCurrentAO().getDataObjectAO(this.authenticatedAccount).findMetadataValuesForDataObject(irodsAbsolutePath))
+					{
+						// Test what type of attribute we got, if it's important store the result for later
+						switch (fileDataField.getAvuAttribute())
+						{
+							case SanimalMetadataFields.A_DATE_TIME_TAKEN:
+								Long timeTaken = Long.parseLong(fileDataField.getAvuValue());
+								localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timeTaken), ZoneId.systemDefault());
+								break;
+							case SanimalMetadataFields.A_LOCATION_NAME:
+								locationName = fileDataField.getAvuValue();
+								break;
+							case SanimalMetadataFields.A_LOCATION_ID:
+								locationID = fileDataField.getAvuValue();
+								break;
+							case SanimalMetadataFields.A_LOCATION_LATITUDE:
+								locationLatitude = Double.parseDouble(fileDataField.getAvuValue());
+								break;
+							case SanimalMetadataFields.A_LOCATION_LONGITUDE:
+								locationLongitude = Double.parseDouble(fileDataField.getAvuValue());
+								break;
+							case SanimalMetadataFields.A_LOCATION_ELEVATION:
+								locationElevation = Double.parseDouble(fileDataField.getAvuValue());
+								break;
+							case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
+								speciesIDToCommonName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getAvuValue());
+								break;
+							case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
+								speciesIDToScientificName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getAvuValue());
+								break;
+							case SanimalMetadataFields.A_SPECIES_COUNT:
+								speciesIDToCount.put(Integer.parseInt(fileDataField.getAvuUnit()), Integer.parseInt(fileDataField.getAvuValue()));
+								break;
+							default:
+								break;
+						}
+					}
+
+					// Compute a new location if we need to
+					String finalLocationID = locationID;
+					Boolean locationForImagePresent = uniqueLocations.stream().anyMatch(location -> location.getId().equals(finalLocationID));
+					// Do we have the location?
+					if (!locationForImagePresent)
+						uniqueLocations.add(new Location(locationName, locationID, locationLatitude, locationLongitude, locationElevation));
+					// Compute a new species (s) if we need to
+					for (Integer key : speciesIDToScientificName.keySet())
+					{
+						// Grab the scientific name of the species
+						String speciesScientificName = speciesIDToScientificName.get(key);
+						// Grab the common name of the species
+						String speciesName = speciesIDToCommonName.get(key);
+						// Test if the species is present, if not add it
+						Boolean speciesForImagePresent = uniqueSpecies.stream().anyMatch(species -> species.getScientificName().equalsIgnoreCase(speciesScientificName));
+						if (!speciesForImagePresent)
+							uniqueSpecies.add(new Species(speciesName, speciesScientificName, Species.DEFAULT_ICON));
+					}
+
+					// Grab the correct location for the image entry
+					Location correctLocation = uniqueLocations.stream().filter(location -> location.getId().equals(finalLocationID)).findFirst().get();
+					// Create the image entry
+					ImageEntry entry = new ImageEntry(new File(irodsAbsolutePath));
+					// Set the location and date taken
+					entry.setLocationTaken(correctLocation);
+					entry.setDateTaken(localDateTime);
+					// Add the species to the image entries
+					for (Integer key : speciesIDToScientificName.keySet())
+					{
+						String speciesScientificName = speciesIDToScientificName.get(key);
+						Integer speciesCount = speciesIDToCount.get(key);
+						// Grab the species based on ID
+						Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(speciesScientificName)).findFirst().get();
+						entry.addSpecies(correctSpecies, speciesCount);
+					}
+					toReturn.add(entry);
+				}
+			}
+			catch (JargonException | NumberFormatException e)
+			{
+				e.printStackTrace();
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"Query failed",
+						"Query caused an exception!",
+						false);
+			}
+			this.sessionManager.closeSession();
+		}
+
+		return toReturn;
 	}
 
 	/**

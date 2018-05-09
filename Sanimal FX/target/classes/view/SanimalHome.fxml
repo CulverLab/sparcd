@@ -33,25 +33,30 @@
                         <Insets left="20" top="170" />
                     </StackPane.margin>
                 </Label>
-                <Button fx:id="btnLogout" minWidth="130" onAction="#logoutPressed" styleClass="logoutBtn" text="Logout" StackPane.alignment="TOP_LEFT">
+                <Button fx:id="btnCredits" minWidth="130" onAction="#creditsPressed" styleClass="creditsBtn" text="Credits" StackPane.alignment="TOP_LEFT">
                     <StackPane.margin>
                         <Insets left="20" top="220" />
                     </StackPane.margin>
                 </Button>
-                <Button fx:id="btnExit" minWidth="130" onAction="#exitPressed" styleClass="exitBtn" text="Exit" StackPane.alignment="TOP_LEFT">
+                <Button fx:id="btnLogout" minWidth="130" onAction="#logoutPressed" styleClass="logoutBtn" text="Logout" StackPane.alignment="TOP_LEFT">
                     <StackPane.margin>
                         <Insets left="20" top="270" />
                     </StackPane.margin>
                 </Button>
+                <Button fx:id="btnExit" minWidth="130" onAction="#exitPressed" styleClass="exitBtn" text="Exit" StackPane.alignment="TOP_LEFT">
+                    <StackPane.margin>
+                        <Insets left="20" top="320" />
+                    </StackPane.margin>
+                </Button>
             </children>
         </StackPane>
-        <ImageView fitHeight="100" onMouseClicked="#showCyverseWebsite" preserveRatio="true" styleClass="imgCyverse" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
+        <ImageView fitHeight="80" onMouseClicked="#showCyverseWebsite" preserveRatio="true" styleClass="imgCyverse" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
             <Image url="@../images/mainMenu/poweredByCyverse.png" />
         </ImageView>
-        <ImageView fitHeight="100" onMouseClicked="#showSNREWebsite" preserveRatio="true" styleClass="imgSNRE" AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10">
+        <ImageView fitHeight="80" onMouseClicked="#showSNREWebsite" preserveRatio="true" styleClass="imgSNRE" AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10">
             <Image url="@../images/mainMenu/snre.PNG" />
         </ImageView>
-        <ImageView fitHeight="100" onMouseClicked="#showCSWebsite" preserveRatio="true" styleClass="imgCS" AnchorPane.bottomAnchor="120" AnchorPane.leftAnchor="10">
+        <ImageView fitHeight="80" onMouseClicked="#showCSWebsite" preserveRatio="true" styleClass="imgCS" AnchorPane.bottomAnchor="100" AnchorPane.leftAnchor="10">
             <Image url="@../images/mainMenu/cs.png" />
         </ImageView>
     </children>

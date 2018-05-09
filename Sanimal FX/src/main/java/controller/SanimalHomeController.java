@@ -1,15 +1,21 @@
 package controller;
 
+import controller.importView.SpeciesCreatorController;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import model.SanimalData;
+import model.util.FXMLLoaderUtils;
 import org.fxmisc.easybind.EasyBind;
 
 import java.awt.*;
@@ -28,6 +34,9 @@ public class SanimalHomeController implements Initializable
 	/// FXML bound fields start
 	///
 
+	// The credits button
+	@FXML
+	public Button btnCredits;
 	// The logout button to disconnect from CyVerse
 	@FXML
 	public Button btnLogout;
@@ -45,6 +54,7 @@ public class SanimalHomeController implements Initializable
 	// The background image containing the camera trap image
 	@FXML
 	public ImageView backgroundImage;
+
 
 	///
 	/// FXML bound fields end
@@ -66,8 +76,9 @@ public class SanimalHomeController implements Initializable
 		ReadOnlyBooleanProperty loggedIn = SanimalData.getInstance().loggedInProperty();
 
 		// Hide the logout button and text when not logged in
-		this.btnLogout.visibleProperty().bind(loggedIn);
 		this.lblUsername.visibleProperty().bind(loggedIn);
+		this.btnCredits.visibleProperty().bind(loggedIn);
+		this.btnLogout.visibleProperty().bind(loggedIn);
 		this.btnExit.visibleProperty().bind(loggedIn);
 	}
 
@@ -141,5 +152,32 @@ public class SanimalHomeController implements Initializable
 		{
 		}
 		mouseEvent.consume();
+	}
+
+	/**
+	 * When the user clicks the credits button
+	 *
+	 * @param actionEvent consumed
+	 */
+	public void creditsPressed(ActionEvent actionEvent)
+	{
+		// Load the FXML file of the editor window
+		FXMLLoader loader = FXMLLoaderUtils.loadFXML("homeView/Credits.fxml");
+
+		// Create the stage that will have the species creator/editor
+		Stage dialogStage = new Stage();
+		// Set the title
+		dialogStage.setTitle("Credits");
+		// Set the modality and initialize the owner to be this current window
+		dialogStage.initModality(Modality.WINDOW_MODAL);
+		dialogStage.initOwner(this.mainPane.getScene().getWindow());
+		// Set the scene to the root of the FXML file
+		Scene scene = new Scene(loader.getRoot());
+		// Set the scene of the stage, and show it!
+		dialogStage.setScene(scene);
+		dialogStage.setResizable(false);
+		dialogStage.showAndWait();
+
+		actionEvent.consume();
 	}
 }

@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -53,6 +52,8 @@ public class CloudImageEntry extends ImageEntry
 	private transient final BooleanProperty isBeingPulledFromCloud = new SimpleBooleanProperty(false);
 	// If the image entry was tagged with species on CyVerse
 	private transient final AtomicBoolean wasTaggedWithSpecies = new AtomicBoolean(false);
+	// If the current version of the image is dirty compared to the one on CyVerse
+	private transient final AtomicBoolean isCloudDirty = new AtomicBoolean(false);
 
 	/**
 	 * Create a new image entry with an image file
@@ -199,9 +200,21 @@ public class CloudImageEntry extends ImageEntry
 	 * @param dirty If the image is dirty
 	 */
 	@Override
-	public void markDirty(Boolean dirty)
+	public void markDiskDirty(Boolean dirty)
 	{
-		super.markDirty(dirty);
+		super.markDiskDirty(dirty);
+		if (dirty)
+			this.markCloudDirty(true);
+	}
+
+	/**
+	 * Marks the image entry as dirty meaning it needs to be updated on CyVerse
+	 *
+	 * @param dirty If the image is dirty
+	 */
+	public void markCloudDirty(Boolean dirty)
+	{
+		this.isCloudDirty.set(dirty);
 	}
 
 	/**
@@ -210,11 +223,23 @@ public class CloudImageEntry extends ImageEntry
 	 * @return Tells us if the image is dirty
 	 */
 	@Override
-	public Boolean isDirty()
+	public Boolean isDiskDirty()
 	{
 		if (!this.hasBeenPulledFromCloud.getValue())
 			return false;
-		return super.isDirty();
+		return super.isDiskDirty();
+	}
+
+	/**
+	 * True if the image is dirty, false otherwise
+	 *
+	 * @return Tells us if the image is dirty (aka different from CyVerse)
+	 */
+	public Boolean isCloudDirty()
+	{
+		if (!this.hasBeenPulledFromCloud.getValue())
+			return false;
+		return this.isCloudDirty.get();
 	}
 
 	/**
@@ -257,6 +282,7 @@ public class CloudImageEntry extends ImageEntry
 				wasTaggedWithSpecies.set(true);
 			this.hasBeenPulledFromCloud.setValue(true);
 			this.isBeingPulledFromCloud.setValue(false);
+			this.markCloudDirty(false);
 		});
 
 		SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().addTask(pullTask);

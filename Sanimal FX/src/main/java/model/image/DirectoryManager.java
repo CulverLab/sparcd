@@ -8,14 +8,19 @@ import model.species.Species;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.irods.jargon.core.pub.domain.AvuData;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * A class that imports images into a more easily readable structure
@@ -137,99 +142,94 @@ public class DirectoryManager
 	 *
 	 * @param directory The image directory to TAR
 	 * @param directoryMetaJSON The JSON file representing this image directory
-	 * @param metaCSV The CSV file representing each image's metadata
+	 * @param imageToMetadata The CSV file representing each image's metadata
 	 * @return The TAR file
 	 */
-	public static File directoryToTar(ImageDirectory directory, File directoryMetaJSON, File metaCSV)
+	public static File[] directoryToTars(ImageDirectory directory, File directoryMetaJSON, Function<ImageEntry, String> imageToMetadata, Integer maxImagesPerTar)
 	{
+		maxImagesPerTar = maxImagesPerTar - 1;
 		try
 		{
-			// Create a temporarily TAR file to write to
-			File tempZip = SanimalData.getInstance().getTempDirectoryManager().createTempFile("tarToUpload.tar");
-			// Create a TAR output stream to write to
-			TarArchiveOutputStream tarOut = new TarArchiveOutputStream(new FileOutputStream(tempZip));
+			// List of images to be uploaded
+			List<ImageEntry> imageEntries = directory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).collect(Collectors.toList());
 
-			// Write the directory to the TAR file
-			writeSpecificDirectoryToTar(tarOut, directory, "/");
+			// Take the number of images / maximum number of images per tar to get the number of tar files we need
+			Integer numberOfTars = (int) Math.ceil((double) imageEntries.size() / (double) maxImagesPerTar);
+			Integer imagesPerTar = (int) Math.ceil((double) imageEntries.size() / (double) numberOfTars);
+			// Create an array of tars
+			File[] tars = new File[numberOfTars];
 
-			// Create an archive entry for the upload meta file
-			ArchiveEntry archiveEntry = tarOut.createArchiveEntry(directoryMetaJSON, "/UploadMeta.json");
-			// Put the archive entry into the TAR file
-			tarOut.putArchiveEntry(archiveEntry);
-			// Write all the bytes in the file into the TAR file
-			tarOut.write(Files.readAllBytes(directoryMetaJSON.toPath()));
-			// Finish writing the TAR entry
-			tarOut.closeArchiveEntry();
+			// Get the path to the top level directory
+			String topDirectory = directory.getFile().getParentFile().getAbsolutePath();
 
-			// Create an archive entry for the metaCSV file
-			archiveEntry = tarOut.createArchiveEntry(metaCSV, "/meta.csv");
-			// Put the archive entry into the TAR file
-			tarOut.putArchiveEntry(archiveEntry);
-			// Write all the bytes in the file into the TAR file
-			tarOut.write(Files.readAllBytes(metaCSV.toPath()));
-			// Finish writing the TAR entry
-			tarOut.closeArchiveEntry();
+			for (Integer tarIndex = 0; tarIndex < numberOfTars; tarIndex++)
+			{
+				// Create a temporarily TAR file to write to
+				File tempTar = SanimalData.getInstance().getTempDirectoryManager().createTempFile("tarToUpload.tar");
+				// Create a TAR output stream to write to
+				TarArchiveOutputStream tarOut = new TarArchiveOutputStream(new FileOutputStream(tempTar));
 
-			// Flush the file and close it. We delete the TAR after the program closes
-			tarOut.flush();
-			tarOut.close();
-			return tempZip;
+				File tempMetaCSV = SanimalData.getInstance().getTempDirectoryManager().createTempFile("meta.csv");
+				tempMetaCSV.createNewFile();
+
+				PrintWriter metaOut = new PrintWriter(tempMetaCSV);
+				for (Integer imageIndex = tarIndex * imagesPerTar; imageIndex < (tarIndex + 1) * imagesPerTar && imageIndex < imageEntries.size(); imageIndex++)
+				{
+					ImageEntry imageEntry = imageEntries.get(imageIndex);
+					// Create an archive entry for the image
+					String tarPath = StringUtils.substringAfter(imageEntry.getFile().getAbsolutePath(), topDirectory).replace('\\', '/');
+					ArchiveEntry archiveEntry = tarOut.createArchiveEntry(imageEntry.getFile(), tarPath);
+					// Put the archive entry into the TAR file
+					tarOut.putArchiveEntry(archiveEntry);
+					// Write all the bytes in the file into the TAR file
+					tarOut.write(Files.readAllBytes(imageEntry.getFile().toPath()));
+					// Finish writing the TAR entry
+					tarOut.closeArchiveEntry();
+
+					// Write a metadata entry into our meta-X.csv file
+					metaOut.write(imageToMetadata.apply(imageEntry));
+				}
+				// Close the writer to the metadata file
+				metaOut.close();
+
+				// If this is the first tar file, include the UploadMeta.csv file
+				if (tarIndex == 0)
+				{
+					// Create an archive entry for the upload meta file
+					ArchiveEntry archiveEntry = tarOut.createArchiveEntry(directoryMetaJSON, "/UploadMeta.json");
+					// Put the archive entry into the TAR file
+					tarOut.putArchiveEntry(archiveEntry);
+					// Write all the bytes in the file into the TAR file
+					tarOut.write(Files.readAllBytes(directoryMetaJSON.toPath()));
+					// Finish writing the TAR entry
+					tarOut.closeArchiveEntry();
+				}
+
+				// Create an archive entry for the metaCSV file
+				ArchiveEntry archiveEntry = tarOut.createArchiveEntry(tempMetaCSV, "/meta-" + tarIndex.toString() + ".csv");
+				// Put the archive entry into the TAR file
+				tarOut.putArchiveEntry(archiveEntry);
+				// Write all the bytes in the file into the TAR file
+				tarOut.write(Files.readAllBytes(tempMetaCSV.toPath()));
+				// Finish writing the TAR entry
+				tarOut.closeArchiveEntry();
+
+				// Flush the file and close it. We delete the TAR after the program closes
+				tarOut.flush();
+				tarOut.close();
+
+				// Store the tar path
+				tars[tarIndex] = tempTar;
+			}
+
+			return tars;
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		// If something goes wrong, return null
-		return null;
-	}
-
-	/**
-	 * Given an output stream and a current directory, this will recursively build the TAR file given the current directory level
-	 *
-	 * @param tarOut The tar file to write to
-	 * @param currentDir The current directory in the recursion
-	 * @param currentPath The path in the TAR file in this recursion iteration
-	 */
-	private static void writeSpecificDirectoryToTar(TarArchiveOutputStream tarOut, ImageDirectory currentDir, String currentPath)
-	{
-		// If the current directory is already being uploaded don't write it to the TAR file
-		// If the upload progress = 0 that means we're preparing to upload but haven't started yet
-		if (currentDir.getUploadProgress() != -1 && currentDir.getUploadProgress() != 0)
-			return;
-
-		// The new path to write to this iteration of the recursion
-		String newPath = currentPath + currentDir.getFile().getName() + "/";
-
-		// Go through each child, and add it to the tar
-		currentDir.getChildren().filtered(imageContainer -> imageContainer instanceof ImageEntry).forEach(imageContainer ->
-		{
-			ImageEntry imageEntry = (ImageEntry) imageContainer;
-			try
-			{
-				// Create an archive entry for the image
-				ArchiveEntry archiveEntry = tarOut.createArchiveEntry(imageEntry.getFile(), newPath + imageEntry.getFile().getName());
-				// Put the archive entry into the TAR file
-				tarOut.putArchiveEntry(archiveEntry);
-				// Write all the bytes in the file into the TAR file
-				tarOut.write(Files.readAllBytes(imageEntry.getFile().toPath()));
-				// Finish writing the TAR entry
-				tarOut.closeArchiveEntry();
-			}
-			catch (IOException e)
-			{
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"Upload error",
-						"Error creating TAR file to be uploaded!\n" + ExceptionUtils.getStackTrace(e),
-						false);
-			}
-		});
-		// After doing all the images in the directory, we recursively move down the structure and do sub-directories
-		currentDir.getChildren().filtered(imageContainer -> imageContainer instanceof ImageDirectory).forEach(imageContainer -> {
-			writeSpecificDirectoryToTar(tarOut, (ImageDirectory) imageContainer, newPath);
-		});
+		// If something goes wrong, return a blank array
+		return new File[0];
 	}
 
 	/**

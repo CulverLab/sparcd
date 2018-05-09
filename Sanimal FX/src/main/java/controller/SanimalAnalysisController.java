@@ -4,11 +4,14 @@ import com.panemu.tiwulfx.control.DetachableTab;
 import com.panemu.tiwulfx.control.DetachableTabPane;
 import controller.analysisView.VisCSVController;
 import controller.analysisView.VisDrSandersonController;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -28,6 +31,7 @@ import org.controlsfx.control.MaskerPane;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
@@ -155,10 +159,10 @@ public class SanimalAnalysisController implements Initializable
 		for (IQueryCondition queryCondition : SanimalData.getInstance().getQueryEngine().getQueryConditions())
 			queryCondition.appendConditionToQuery(query);
 
-		Task<List<ImageEntry>> queryTask = new ErrorTask<List<ImageEntry>>()
+		Task<List<String>> queryTask = new ErrorTask<List<String>>()
 		{
 			@Override
-			protected List<ImageEntry> call()
+			protected List<String> call()
 			{
 				this.updateMessage("Performing query...");
 				// Grab the result of the query
@@ -166,15 +170,56 @@ public class SanimalAnalysisController implements Initializable
 			}
 		};
 		Integer finalEventInterval = eventInterval;
+
+		// Once finished with the task, we test if the user wants to continue
 		queryTask.setOnSucceeded(event ->
 		{
-			// Analyze the result of the query
-			DataAnalyzer dataAnalyzer = new DataAnalyzer(queryTask.getValue(), finalEventInterval);
+			// Get the result of the first query
+			List<String> irodsAbsolutePaths = queryTask.getValue();
 
-			// Hand the analysis over to the visualizations to graph
-			visDrSandersonController.visualize(dataAnalyzer);
-			visCSVController.visualize(dataAnalyzer);
-			this.mpnQuerying.setVisible(false);
+			// Ask the user if they would like to continue to part 2 of the query where we retrieve metadata. This takes a while
+			Optional<ButtonType> buttonTypeOpt = SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.CONFIRMATION,
+					this.lvwFilters.getScene().getWindow(),
+					"Query Count",
+					null,
+					"This query will return " + irodsAbsolutePaths.size() + " results at approximately 6 results per second, continue?",
+					true);
+
+			// If they press OK, query, otherwise just jump out
+			if (buttonTypeOpt.isPresent() && buttonTypeOpt.get() == ButtonType.OK)
+			{
+				// Create a second task to perform the next query
+				Task<List<ImageEntry>> queryImageTask = new ErrorTask<List<ImageEntry>>()
+				{
+					@Override
+					protected List<ImageEntry> call()
+					{
+						this.updateMessage("Performing image query...");
+						// Grab the result of the image query
+						return SanimalData.getInstance().getConnectionManager().fetchMetadataFor(irodsAbsolutePaths);
+					}
+				};
+
+				queryImageTask.setOnSucceeded(event1 ->
+				{
+					// Analyze the result of the query
+					DataAnalyzer dataAnalyzer = new DataAnalyzer(queryImageTask.getValue(), finalEventInterval);
+
+					// Hand the analysis over to the visualizations to graph
+					visDrSandersonController.visualize(dataAnalyzer);
+					visCSVController.visualize(dataAnalyzer);
+					this.mpnQuerying.setVisible(false);
+				});
+
+				// Execute the second query
+				SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(queryImageTask);
+			}
+			else
+			{
+				this.mpnQuerying.setVisible(false);
+			}
+
 		});
 		SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(queryTask);
 

@@ -12,6 +12,13 @@
     -fx-font-size: 18px;
 }
 
+.creditsBtn {
+    -fx-background-image: url("../images/mainMenu/credits.png");
+    -fx-background-position: 5%;
+    -fx-background-repeat: no-repeat;
+    -fx-font-size: 18px;
+}
+
 .usernameLbl {
     -fx-text-fill: white;
     -fx-font-weight: bolder;

@@ -71,7 +71,7 @@ public class ImageEntry extends ImageContainer
 			image.getSpeciesProperty()
 	});
 	// If this image is dirty, we set a flag to write it to disk at some later point
-	private transient final AtomicBoolean isDirty = new AtomicBoolean(false);
+	private transient final AtomicBoolean isDiskDirty = new AtomicBoolean(false);
 
 	/**
 	 * Create a new image entry with an image file
@@ -83,9 +83,9 @@ public class ImageEntry extends ImageContainer
 	{
 		this.imageFileProperty.setValue(file);
 
-		this.locationTakenProperty.addListener((observable, oldValue, newValue) -> this.markDirty(true));
-		this.speciesPresent.addListener((ListChangeListener<SpeciesEntry>) c -> this.markDirty(true));
-		this.dateTakenProperty.addListener((observable, oldValue, newValue) -> this.markDirty(true));
+		this.locationTakenProperty.addListener((observable, oldValue, newValue) -> this.markDiskDirty(true));
+		this.speciesPresent.addListener((ListChangeListener<SpeciesEntry>) c -> this.markDiskDirty(true));
+		this.dateTakenProperty.addListener((observable, oldValue, newValue) -> this.markDiskDirty(true));
 	}
 
 	/**
@@ -105,7 +105,7 @@ public class ImageEntry extends ImageContainer
 			this.readLocationFromMetadata(tiffImageMetadata, knownLocations);
 			this.readSpeciesFroMetadata(tiffImageMetadata, knownSpecies);
 
-			this.markDirty(false);
+			this.markDiskDirty(false);
 		}
 		catch (ImageReadException | IOException e)
 		{
@@ -466,14 +466,14 @@ public class ImageEntry extends ImageContainer
 		return speciesPresent;
 	}
 
-	public void markDirty(Boolean dirty)
+	public void markDiskDirty(Boolean dirty)
 	{
-		this.isDirty.set(dirty);
+		this.isDiskDirty.set(dirty);
 	}
 
-	public Boolean isDirty()
+	public Boolean isDiskDirty()
 	{
-		return this.isDirty.get();
+		return this.isDiskDirty.get();
 	}
 
 	/**
@@ -515,7 +515,7 @@ public class ImageEntry extends ImageContainer
 			// Write the metadata
 			MetadataUtils.writeOutputSet(outputSet, this);
 
-			this.isDirty.set(false);
+			this.markDiskDirty(false);
 		}
 		catch (ImageReadException | IOException | ImageWriteException e)
 		{

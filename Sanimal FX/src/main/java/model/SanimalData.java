@@ -22,7 +22,6 @@ import model.threading.ErrorService;
 import model.threading.ErrorTask;
 import model.threading.SanimalExecutor;
 import model.util.*;
-import org.fxmisc.easybind.EasyBind;
 import org.hildan.fxgson.FxGson;
 
 import java.io.File;
@@ -255,12 +254,12 @@ public class SanimalData
 						long dirtyImageCount =
 								SanimalData.this.getAllImages()
 										.stream()
-										.filter(ImageEntry::isDirty)
+										.filter(ImageEntry::isDiskDirty)
 										.count();
 						List<ImageEntry> top100Dirty =
 								SanimalData.this.getAllImages()
 										.stream()
-										.filter(ImageEntry::isDirty)
+										.filter(ImageEntry::isDiskDirty)
 										.limit(NUM_IMAGES_AT_A_TIME).collect(Collectors.toList());
 						this.updateMessage("Writing updated images to disk (" + dirtyImageCount + " left, doing " + NUM_IMAGES_AT_A_TIME + " at a time)...");
 						for (int i = 0; i < top100Dirty.size(); i++)
@@ -277,7 +276,7 @@ public class SanimalData
 		// When we finish syncing...
 		syncService.setOnSucceeded(event -> {
 			// After finishing the sync, check if we need to sync again. If so set the flag to false and sync once again
-			Boolean moreImagesToWrite = this.getAllImages().stream().anyMatch(ImageEntry::isDirty);
+			Boolean moreImagesToWrite = this.getAllImages().stream().anyMatch(ImageEntry::isDiskDirty);
 			if (moreImagesToWrite)
 				syncService.restart();
 			// If we don't need to sync again set the sync in progress flag to false

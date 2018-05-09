@@ -2,6 +2,10 @@
     -fx-graphic: url("../images/uploadWindow/add16.png");
 }
 
+.resetUploadBtn {
+    -fx-graphic: url("../images/uploadWindow/delete16.png");
+}
+
 .deleteCollectionBtn {
     -fx-graphic: url("../images/uploadWindow/delete16.png");
 }

@@ -3,8 +3,11 @@ package controller;
 import controller.uploadView.ImageCollectionListEntryController;
 import controller.uploadView.ImageUploadDownloadListEntryController;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -19,6 +22,7 @@ import model.cyverse.Permission;
 import model.image.*;
 import model.threading.ErrorTask;
 import model.util.FXMLLoaderUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.MaskerPane;
 import org.controlsfx.control.TaskProgressView;
 import org.fxmisc.easybind.EasyBind;
@@ -74,8 +78,16 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public TreeViewAutomatic<ImageContainer> imageTree;
 
+	// A list of upload tasks currently running
 	@FXML
 	public TaskProgressView<Task<?>> tpvUploads;
+
+	// Search field for uploads
+	@FXML
+	public TextField txtUploadSearch;
+	// Resets the search
+	@FXML
+	public Button btnResetSearch;
 
 	///
 	/// FXML Bound Fields End
@@ -147,8 +159,17 @@ public class SanimalUploadController implements Initializable
 			controller.setOnUpload(() -> this.saveImages(controller.getItem()));
 			return controller;
 		});
-		// Bind the upload download to the current selection's uploads
-		this.uploadListDownloadListView.itemsProperty().bind(EasyBind.monadic(this.selectedCollection).map(ImageCollection::getUploads));
+		// Bind the upload download to the current selection's uploads, Sort the uploads by date taken and filter them by the query
+		this.uploadListDownloadListView.itemsProperty().bind(EasyBind.monadic(this.selectedCollection).map(imageCollection -> {
+			ObservableList<CloudUploadEntry> uploads = imageCollection.getUploads();
+			SortedList<CloudUploadEntry> sortedUploads = uploads.sorted((entry1, entry2) -> entry2.getUploadDate().compareTo(entry1.getUploadDate()));
+			FilteredList<CloudUploadEntry> filteredSortedUploads = sortedUploads.filtered(x -> true);
+			// Set the filter to update whenever the upload search text changes
+			filteredSortedUploads.predicateProperty().bind(Bindings.createObjectBinding(() -> (cloudUploadEntry ->
+					// Allow any cloud upload entry with a username cloud upload entry search text
+					StringUtils.containsIgnoreCase(cloudUploadEntry.getUploadUser(), this.txtUploadSearch.getCharacters())), this.txtUploadSearch.textProperty()));
+			return filteredSortedUploads;
+		}));
 
 		// Hide the maskerpane since we're not retrieving downloads
 		this.mpnDownloadUploads.setVisible(false);
@@ -336,7 +357,7 @@ public class SanimalUploadController implements Initializable
 			boolean validDirectory = true;
 
 			// Each image must have a location and species tagged
-			for (CloudImageEntry imageEntry : imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof CloudImageEntry && ((CloudImageEntry) imageContainer).hasBeenPulledFromCloud()).map(imageContainer -> (CloudImageEntry) imageContainer).collect(Collectors.toList()))
+			for (CloudImageEntry imageEntry : imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof CloudImageEntry).map(imageContainer -> (CloudImageEntry) imageContainer).filter(cloudImageEntry -> cloudImageEntry.hasBeenPulledFromCloud() && cloudImageEntry.isCloudDirty()).collect(Collectors.toList()))
 			{
 				if (imageEntry.getLocationTaken() == null)
 				{
@@ -437,6 +458,17 @@ public class SanimalUploadController implements Initializable
 				this.syncUploadsForCollection(this.selectedCollection.getValue());
 			}
 		}
+		actionEvent.consume();
+	}
+
+	/**
+	 * Clears the upload search box when the x button is pressed
+	 *
+	 * @param actionEvent consumed
+	 */
+	public void resetUploadSearch(ActionEvent actionEvent)
+	{
+		this.txtUploadSearch.clear();
 		actionEvent.consume();
 	}
 }
