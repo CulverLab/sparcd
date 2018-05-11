@@ -155,6 +155,23 @@ public class SanimalHomeController implements Initializable
 	}
 
 	/**
+	 * When the user clicks the UA Wildcat Research logo
+	 *
+	 * @param mouseEvent consumed
+	 */
+	public void showWildcatResearchWebsite(MouseEvent mouseEvent)
+	{
+		try
+		{
+			Desktop.getDesktop().browse(new URI("https://wildcatresearch.arizona.edu/"));
+		}
+		catch (IOException | URISyntaxException ignored)
+		{
+		}
+		mouseEvent.consume();
+	}
+
+	/**
 	 * When the user clicks the credits button
 	 *
 	 * @param actionEvent consumed

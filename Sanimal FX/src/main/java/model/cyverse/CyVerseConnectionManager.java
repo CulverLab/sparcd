@@ -13,6 +13,7 @@ import model.image.*;
 import model.location.Location;
 import model.query.CyVerseQuery;
 import model.species.Species;
+import model.util.RoundingUtils;
 import model.util.SettingsData;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -874,6 +875,8 @@ public class CyVerseConnectionManager
 						toWrite.renameTo(localToUpload);
 						// Upload the tar
 						this.sessionManager.getCurrentAO().getDataTransferOperations(this.authenticatedAccount).putOperation(localToUpload, collectionUploadDir, transferCallback, null);
+
+						localToUpload.delete();
 					}
 					// Let rules do the rest!
 				}
@@ -1233,6 +1236,7 @@ public class CyVerseConnectionManager
 				Map<Integer, String> speciesIDToCommonName = new HashMap<>();
 				Map<Integer, String> speciesIDToScientificName = new HashMap<>();
 				Map<Integer, Integer> speciesIDToCount = new HashMap<>();
+				UUID collectionID = null;
 
 				for (String irodsAbsolutePath : absoluteIRODSPaths)
 				{
@@ -1280,8 +1284,32 @@ public class CyVerseConnectionManager
 							case SanimalMetadataFields.A_SPECIES_COUNT:
 								speciesIDToCount.put(Integer.parseInt(fileDataField.getAvuUnit()), Integer.parseInt(fileDataField.getAvuValue()));
 								break;
+							case SanimalMetadataFields.A_COLLECTION_ID:
+								collectionID = UUID.fromString(fileDataField.getAvuValue());
+								break;
 							default:
 								break;
+						}
+					}
+
+					// Grab the collection that this image is a part of
+					UUID finalCollectionID = collectionID;
+					Optional<ImageCollection> correctCollection = SanimalData.getInstance().getCollectionList().stream().filter(imageCollection -> imageCollection.getID().equals(finalCollectionID)).findFirst();
+					if (correctCollection.isPresent())
+					{
+						// Grab the collection if it's present (it should never not be present)
+						ImageCollection imageCollection = correctCollection.get();
+						// Get the permission for my own account to this collection
+						Optional<Permission> myPermissions = imageCollection.getPermissions().stream().filter(permission -> permission.getUsername().equals(SanimalData.getInstance().getUsername())).findFirst();
+						if (myPermissions.isPresent())
+						{
+							// If I can't upload I must only be able to read, so round the query results as asked for by Sue, may need to change this in the future
+							Permission permission = myPermissions.get();
+							if (!permission.canUpload())
+							{
+								locationLatitude = RoundingUtils.round(locationLatitude, 2);
+								locationLongitude = RoundingUtils.round(locationLongitude, 2);
+							}
 						}
 					}
 

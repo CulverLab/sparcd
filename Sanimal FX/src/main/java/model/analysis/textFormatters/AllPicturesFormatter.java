@@ -5,7 +5,9 @@ import model.analysis.ImageQuery;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
+import org.apache.commons.io.FilenameUtils;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -30,6 +32,8 @@ public class AllPicturesFormatter extends TextFormatter
 	{
 		StringBuilder toReturn = new StringBuilder();
 
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy MM dd HH mm ss");
+
 		for (Location location : analysis.getAllImageLocations())
 		{
 			List<ImageEntry> withLocation = new ImageQuery().locationOnly(location).query(images);
@@ -38,7 +42,7 @@ public class AllPicturesFormatter extends TextFormatter
 				List<ImageEntry> withLocationSpecies = new ImageQuery().speciesOnly(species).query(withLocation);
 				for (ImageEntry imageEntry : withLocationSpecies)
 				{
-					toReturn.append(String.format("%-28s %-28s %-28s\n", location.getName(), species.getName(), imageEntry.getFile().getName()));
+					toReturn.append(String.format("%-28s %-28s %-28s\n", location.getName(), species.getName(), imageEntry.getDateTaken().format(formatter) + "." + FilenameUtils.getExtension(imageEntry.getFile().toString())));
 				}
 			}
 		}

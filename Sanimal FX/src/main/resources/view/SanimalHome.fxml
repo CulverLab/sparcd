@@ -56,7 +56,10 @@
         <ImageView fitHeight="80" onMouseClicked="#showSNREWebsite" preserveRatio="true" styleClass="imgSNRE" AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10">
             <Image url="@../images/mainMenu/snre.PNG" />
         </ImageView>
-        <ImageView fitHeight="80" onMouseClicked="#showCSWebsite" preserveRatio="true" styleClass="imgCS" AnchorPane.bottomAnchor="100" AnchorPane.leftAnchor="10">
+        <ImageView fitHeight="80" onMouseClicked="#showWildcatResearchWebsite" preserveRatio="true" styleClass="imgWildcatResearch" AnchorPane.bottomAnchor="100" AnchorPane.leftAnchor="10">
+            <Image url="@../images/mainMenu/wildcatResearch.png"/>
+        </ImageView>
+        <ImageView fitHeight="80" onMouseClicked="#showCSWebsite" preserveRatio="true" styleClass="imgCS" AnchorPane.bottomAnchor="190" AnchorPane.leftAnchor="10">
             <Image url="@../images/mainMenu/cs.png" />
         </ImageView>
     </children>
