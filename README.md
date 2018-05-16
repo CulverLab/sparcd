@@ -8,9 +8,9 @@ Clone the repository and build it using maven. All dependencies will be automati
 
 ### Prerequisites
 
-Java 8:
-http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
-Maven:
+Java 8:<br />
+http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html<br />
+Maven:<br />
 https://maven.apache.org/install.html
 
 ```
