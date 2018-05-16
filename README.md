@@ -13,13 +13,7 @@ http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.h
 Maven:<br />
 https://maven.apache.org/install.html
 
-```
-Give examples
-```
-
 ### Installing
-
-A step by step series of examples that tell you have to build the software from scratch
 
 Clone the github repository into a directory:
 
