@@ -34,6 +34,32 @@ Run the program:
 java -jar <directory>/target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
+## Sample screenshots
+
+### Login
+
+This screen is used to log into your account.
+![login screen](https://rawgit.com/DavidM1A2/Sanimal/master/screenshots/login.PNG)
+
+This tab is used to credit developers and provide an exit button.
+![home tab](https://rawgit.com/DavidM1A2/Sanimal/master/screenshots/home.PNG)
+
+This tab is used to tag images with metadata.
+![import tab](https://rawgit.com/DavidM1A2/Sanimal/master/screenshots/import.PNG)
+
+This tab is used to show collections and upload images.
+![collections tab](https://rawgit.com/DavidM1A2/Sanimal/master/screenshots/collections.PNG)
+
+This tab is used to query uploaded image data.
+![query tab](https://rawgit.com/DavidM1A2/Sanimal/master/screenshots/query.PNG)
+
+This tab is used to display all locations on an interactive map.
+![map tab](https://rawgit.com/DavidM1A2/Sanimal/master/screenshots/map.PNG)
+
+This tab is used to change program settings.
+![settings tab](https://rawgit.com/DavidM1A2/Sanimal/master/screenshots/settings.PNG)
+
+
 ## Built With
 
 * [Maven](https://maven.apache.org/) - Dependency Management
