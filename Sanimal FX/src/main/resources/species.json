@@ -6,7 +6,7 @@
     "keyBinding": null
   },
   {
-    "name": "Bats",
+    "name": "Bat",
     "scientificName": "Chiroptera",
     "speciesIconURL": "https://arizona.box.com/shared/static/d74v48s0g71u990ak3usvc9tm24zadqt.jpg",
     "keyBinding": null
@@ -24,8 +24,8 @@
     "keyBinding": null
   },
   {
-    "name": "Birds",
-    "scientificName": "Aves spp.",
+    "name": "Bird",
+    "scientificName": "Aves",
     "speciesIconURL": "https://arizona.box.com/shared/static/qd83ui65xvepqjfhkaxfyvh51w7s2dpd.jpg",
     "keyBinding": null
   },
@@ -36,7 +36,7 @@
     "keyBinding": null
   },
   {
-    "name": "Coati",
+    "name": "Coatimundi",
     "scientificName": "Nasua narica",
     "speciesIconURL": "https://arizona.box.com/shared/static/nl8gaxentgygjn5kieq86dxbcj492gry.jpg",
     "keyBinding": null
@@ -102,8 +102,8 @@
     "keyBinding": null
   },
   {
-    "name": "Lizards",
-    "scientificName": "Squmata",
+    "name": "Lizard",
+    "scientificName": "Lacertilia spp.",
     "speciesIconURL": "https://arizona.box.com/shared/static/81ilzi7f26lsmzrq0atb2aojl7uzw40e.jpg",
     "keyBinding": null
   },
@@ -157,13 +157,13 @@
   },
   {
     "name": "Rodent",
-    "scientificName": "Rodentia spp.",
+    "scientificName": "Rodentia",
     "speciesIconURL": "https://arizona.box.com/shared/static/qek2tp6hz88x4l3cmqhy7k8pwu7qwptn.jpg",
     "keyBinding": null
   },
   {
-    "name": "Skunk (Other)",
-    "scientificName": "Mephitis spp. Spilogale spp. Conepatus spp.",
+    "name": "Skunk",
+    "scientificName": "Mephitis spp. Spilogale sp. Conepatus sp.",
     "speciesIconURL": "https://arizona.box.com/shared/static/v4nj85hg51uoc3keizu28rvzh8xqwmeu.jpg",
     "keyBinding": null
   },
@@ -211,7 +211,7 @@
   },
   {
     "name": "Tortoise",
-    "scientificName": "many spp.",
+    "scientificName": "Gopherus morafkai",
     "speciesIconURL": "https://arizona.box.com/shared/static/ahx3293u8j41ejzf4vcwjjwuy7beb155.jpg",
     "keyBinding": null
   },
@@ -228,9 +228,39 @@
     "keyBinding": null
   },
    {
-    "name": "Frogs",
+    "name": "Frog",
     "scientificName": "Rana Temporaria",
     "speciesIconURL": "https://arizona.box.com/shared/static/y2ebc37cpx31imfvo3buiss632aper59.jpg",
     "keyBinding": null
-  }
+  },
+  {
+    "name": "Rabbit (Desert Cottontail)",
+    "scientificName": "Sylvilagus audubonii",
+    "speciesIconURL": "https://arizona.box.com/shared/static/eb2io77suprekh054ejso5twjifw20g7.jpg",
+    "keyBinding": null
+	},
+	{
+    "name": "Hare (Black-Tailed Jackrabbit)",
+    "scientificName": "Lepus californicus",
+    "speciesIconURL": "https://arizona.box.com/shared/static/ygqexm7urzsm1ephi3aov5u5fwx0lzbq.jpg",
+    "keyBinding": null
+	},
+	{
+    "name": "Hare (Antelope Jackrabbit)",
+    "scientificName": " Lepus alleni",
+    "speciesIconURL": "https://arizona.box.com/shared/static/oz0zgd3trb44b7n2kdng9uvq7uawrvxk.jpg",
+    "keyBinding": null
+	},
+	{
+    "name": "Hare (Jackrabbits other)",
+    "scientificName": "Lepus spp.",
+    "speciesIconURL": "https://arizona.box.com/shared/static/28jmg8n7m1uq4rdeauxdm6x05xgp5bw1.jpg",
+    "keyBinding": null
+	},
+	{
+    "name": "Unknown",
+    "scientificName": "Incognita",
+    "speciesIconURL": "https://arizona.box.com/shared/static/5i52i7uw79cydn8lrbi74qonbqgxmir3.png",
+    "keyBinding": null
+	}
 ]
