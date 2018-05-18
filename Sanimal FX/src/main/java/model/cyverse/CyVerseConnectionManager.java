@@ -153,11 +153,6 @@ public class CyVerseConnectionManager
 				if (!sanimalSettings.exists())
 					sanimalSettings.mkdir();
 
-				// Create a subfolder for temporary image uploads
-				IRODSFile sanimalTempUploads = fileFactory.instanceIRODSFile("./Sanimal/TempUploads");
-				if (!sanimalTempUploads.exists())
-					sanimalTempUploads.mkdir();
-
 				// If we don't have a default species.json file, put a default one onto the storage location
 				IRODSFile sanimalSpeciesFile = fileFactory.instanceIRODSFile("./Sanimal/Settings/species.json");
 				if (!sanimalSpeciesFile.exists())
@@ -816,11 +811,6 @@ public class CyVerseConnectionManager
 					// Create a new folder for the upload, we will use the current date as the name plus our username
 					String uploadFolderName = FOLDER_FORMAT.format(new Date(this.sessionManager.getCurrentAO().getEnvironmentalInfoAO(this.authenticatedAccount).getIRODSServerCurrentTime())) + " " + SanimalData.getInstance().getUsername();
 					String uploadDirName = collectionUploadDirStr + "/" + uploadFolderName;
-					String tempUploadDirName = "./Sanimal/TempUploads/" + uploadFolderName;
-
-					// Make the temporary directory to upload to
-					IRODSFile tempUploadDir = fileFactory.instanceIRODSFile(tempUploadDirName);
-					tempUploadDir.mkdir();
 
 					if (messageCallback != null)
 						messageCallback.setValue("Creating TAR file out of the directory before uploading...");
