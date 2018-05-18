@@ -95,7 +95,7 @@ public class VisCSVController implements VisControllerBase
 			}
 			// Add elevation
 			SettingsData.DistanceUnits distanceUnits = SanimalData.getInstance().getSettings().getDistanceUnits();
-			locationString = locationString + RoundingUtils.round(distanceUnits.formatMeters(location.getElevation()), 2) + distanceUnits.getSymbol();
+			locationString = locationString + RoundingUtils.round(distanceUnits.formatToMeters(location.getElevation()), 2) + distanceUnits.getSymbol();
 			return imageEntry.getFile().getName() + "," +
 				SanimalData.getInstance().getSettings().formatDateTime(imageEntry.getDateTaken(), " ") + "," +
 				imageEntry.getSpeciesPresent().stream().map(speciesEntry ->
@@ -137,7 +137,7 @@ public class VisCSVController implements VisControllerBase
 			}
 			// Distance units depend on feet or meters
 			SettingsData.DistanceUnits distanceUnits = SanimalData.getInstance().getSettings().getDistanceUnits();
-			locationString = locationString + RoundingUtils.round(distanceUnits.formatMeters(location.getElevation()), 2) + distanceUnits.getSymbol();
+			locationString = locationString + RoundingUtils.round(distanceUnits.formatToMeters(location.getElevation()), 2) + distanceUnits.getSymbol();
 			return locationString;
 		})
 		.collect(Collectors.joining("\n"));

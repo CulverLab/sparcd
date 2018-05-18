@@ -1,7 +1,5 @@
 package controller.importView;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -10,7 +8,6 @@ import model.SanimalData;
 import model.analysis.SanimalAnalysisUtils;
 import model.location.Location;
 import model.location.UTMCoord;
-import model.util.RoundingUtils;
 import model.util.SettingsData;
 
 /**
@@ -113,7 +110,7 @@ public class LocationListEntryController extends ListCell<Location>
             // Locations are stored in lat/lng so we can just use the value
             this.lblLocationFirst.setText(location.getLat().toString());
             this.lblLocationSecond.setText(location.getLng().toString());
-            this.lblLocationThird.setText(Math.round(distanceUnits.formatMeters(location.getElevation())) + distanceUnits.getSymbol());
+            this.lblLocationThird.setText(Math.round(distanceUnits.formatToMeters(location.getElevation())) + distanceUnits.getSymbol());
         }
         // If we are using UTM
         else if (format == SettingsData.LocationFormat.UTM)
@@ -123,7 +120,7 @@ public class LocationListEntryController extends ListCell<Location>
             // Update the labels
             this.lblLocationFirst.setText(utmEquiv.getEasting().intValue() + "E");
             this.lblLocationSecond.setText(utmEquiv.getNorthing().intValue() + "N");
-            this.lblLocationThird.setText("Zone " + utmEquiv.getZone().toString() + utmEquiv.getLetter().toString() + " at " + Math.round(distanceUnits.formatMeters(location.getElevation())) + distanceUnits.getSymbol());
+            this.lblLocationThird.setText("Zone " + utmEquiv.getZone().toString() + utmEquiv.getLetter().toString() + " at " + Math.round(distanceUnits.formatToMeters(location.getElevation())) + distanceUnits.getSymbol());
         }
     }
 }

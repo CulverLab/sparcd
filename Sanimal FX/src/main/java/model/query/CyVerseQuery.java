@@ -165,6 +165,12 @@ public class CyVerseQuery
 		appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.NUMERIC_LESS_THAN, endDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
 	}
 
+	public void addElevationCondition(Double elevation, QueryConditionOperators operator)
+	{
+		appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_LOCATION_ELEVATION);
+		appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, operator, elevation.toString());
+	}
+
 	/**
 	 * Finalizes the query and returns it as an IRODS query builder objects
 	 *

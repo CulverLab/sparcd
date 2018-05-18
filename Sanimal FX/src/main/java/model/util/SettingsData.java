@@ -283,7 +283,7 @@ public class SettingsData
 		 * @param value The value in feet to format
 		 * @return The formatted value
 		 */
-		public Double formatFeet(Double value)
+		public Double formatToFeet(Double value)
 		{
 			return this.toFeet * value;
 		}
@@ -294,7 +294,7 @@ public class SettingsData
 		 * @param value The value in meters to format
 		 * @return The formatted value
 		 */
-		public Double formatMeters(Double value)
+		public Double formatToMeters(Double value)
 		{
 			return this.toMeters * value;
 		}
