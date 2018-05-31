@@ -3,6 +3,7 @@ package model.util;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.TextArea;
 import javafx.stage.Window;
 
 import java.util.Optional;
@@ -40,6 +41,13 @@ public class ErrorDisplay
 			if (header != null)
 				alert.setHeaderText(header);
 
+			if (type == Alert.AlertType.ERROR)
+			{
+				TextArea area = new TextArea(content);
+				area.textProperty().bind(alert.contentTextProperty());
+				alert.getDialogPane().setContent(area);
+			}
+
 			if (content != null)
 				alert.setContentText(content);
 
@@ -66,6 +74,13 @@ public class ErrorDisplay
 
 				if (header != null)
 					alert.setHeaderText(header);
+
+				if (type == Alert.AlertType.ERROR)
+				{
+					TextArea area = new TextArea(content);
+					area.textProperty().bind(alert.contentTextProperty());
+					alert.getDialogPane().setContent(area);
+				}
 
 				if (content != null)
 					alert.setContentText(content);
