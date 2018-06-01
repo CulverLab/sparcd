@@ -15,7 +15,7 @@ https://maven.apache.org/install.html
 
 ### Prebuilt executable
 
-If you want to run the software without needing to build from source, prebuilt executables can be found at [/Version History/](./master/Version%20History/)<br>
+If you want to run the software without needing to build from source, prebuilt executables can be found in the [Version History directory](./Version%20History/)<br>
 
 Sanimal X.Y.Z.jar is the original legacy software written in Swing which was the predecessor to SanimalFX.<br>
 Sanimal FX X.Y.jar is the current latest build of Sanimal FX including all dependencies.<br>
