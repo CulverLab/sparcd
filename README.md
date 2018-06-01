@@ -15,11 +15,7 @@ https://maven.apache.org/install.html
 
 ### Prebuilt executable
 
-If you want to run the software without needing to build from source, prebuilt executables can be found at:
-
-```
-https://github.com/DavidM1A2/Sanimal/tree/master/Version%20History
-```
+If you want to run the software without needing to build from source, prebuilt executables can be found at [/Version History/](./master/Version%20History/)<br>
 
 Sanimal X.Y.Z.jar is the original legacy software written in Swing which was the predecessor to SanimalFX.<br>
 Sanimal FX X.Y.jar is the current latest build of Sanimal FX including all dependencies.<br>
@@ -27,7 +23,7 @@ Sanimal FX X.Y.jar is the current latest build of Sanimal FX including all depen
 Executables are executed with:
 
 ```
-java -jar Sanimal FX X.Y.jar 
+java -jar 'Sanimal FX X.Y.jar' 
 ```
 
 ### Build from Source
@@ -41,14 +37,14 @@ git clone https://github.com/DavidM1A2/Sanimal <directory>
 Build the project into an executable JAR file to run:
 
 ```
-cd <directory>
+cd '<directory>/Sanimal FX'
 mvn -U compile package
 ```
 
 Run the program:
 
 ```
-java -jar <directory>/target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar
+java -jar '<directory>/Sanimal FX/target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar'
 ```
 
 ## Sample screenshots
