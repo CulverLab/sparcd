@@ -13,7 +13,24 @@ http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.h
 Maven:<br />
 https://maven.apache.org/install.html
 
-### Installing
+### Prebuilt executable
+
+If you want to run the software without needing to build from source, prebuilt executables can be found at:
+
+```
+https://github.com/DavidM1A2/Sanimal/tree/master/Version%20History
+```
+
+Sanimal X.Y.Z.jar is the original legacy software written in Swing which was the predecessor to SanimalFX.<br>
+Sanimal FX X.Y.jar is the current latest build of Sanimal FX including all dependencies.<br>
+<br>
+Executables are executed with:
+
+```
+java -jar Sanimal FX X.Y.jar 
+```
+
+### Build from Source
 
 Clone the github repository into a directory:
 
