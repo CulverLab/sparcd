@@ -1282,27 +1282,6 @@ public class CyVerseConnectionManager
 						}
 					}
 
-					// Grab the collection that this image is a part of
-					UUID finalCollectionID = collectionID;
-					Optional<ImageCollection> correctCollection = SanimalData.getInstance().getCollectionList().stream().filter(imageCollection -> imageCollection.getID().equals(finalCollectionID)).findFirst();
-					if (correctCollection.isPresent())
-					{
-						// Grab the collection if it's present (it should never not be present)
-						ImageCollection imageCollection = correctCollection.get();
-						// Get the permission for my own account to this collection
-						Optional<Permission> myPermissions = imageCollection.getPermissions().stream().filter(permission -> permission.getUsername().equals(SanimalData.getInstance().getUsername())).findFirst();
-						if (myPermissions.isPresent())
-						{
-							// If I can't upload I must only be able to read, so round the query results as asked for by Sue, may need to change this in the future
-							Permission permission = myPermissions.get();
-							if (!permission.canUpload())
-							{
-								locationLatitude = RoundingUtils.round(locationLatitude, 2);
-								locationLongitude = RoundingUtils.round(locationLongitude, 2);
-							}
-						}
-					}
-
 					// Compute a new location if we need to
 					String finalLocationID = locationID;
 					Boolean locationForImagePresent = uniqueLocations.stream().anyMatch(location -> location.getId().equals(finalLocationID));
