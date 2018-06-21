@@ -25,18 +25,29 @@ public class ErrorDisplay
 {
 	// A reference to the notification pane used to display errors
 	private NotificationPane notificationPane = null;
+	// A reference to the information image icon used in the notification bar
 	private Node infoImage;
+	// Pause transition is used to hide the notification bar after a few seconds
 	private PauseTransition delay = new PauseTransition(Duration.seconds(5));
 
+	/**
+	 * Constructor takes in a reference to the global data model
+	 *
+	 * @param sanimalData The data model
+	 */
 	public ErrorDisplay(SanimalData sanimalData)
 	{
+		// Load in the image
 		this.infoImage = new ImageView(new Image("images/generic/info64.png"));
+		// Set the duration of the fade to be equal to what is in the settings. If the settings update, make sure to
+		// update this value too
 		this.delay.setDuration(Duration.seconds(sanimalData.getSettings().getPopupDelaySec()));
 		sanimalData.getSettings().popupDelaySecProperty().addListener((observable, oldValue, newValue) ->
 		{
 			if (newValue != null)
 				this.delay.setDelay(Duration.seconds(newValue));
 		});
+		// Once the delay is over hide the notifications pane
 		this.delay.setOnFinished(event -> this.notificationPane.hide());
 	}
 

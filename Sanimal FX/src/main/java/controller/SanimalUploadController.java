@@ -204,8 +204,10 @@ public class SanimalUploadController implements Initializable
 			@Override
 			public void onChanged(Change<? extends Task<?>> c)
 			{
+				// Grab the list view from the library control (which we dont have access to)
 				Node listView = tpvUploads.lookup(".list-view");
 				if (listView instanceof ListView)
+					// Update the cell factory to use our custom factory
 					((ListView<Task<?>>) listView).setCellFactory(param -> new TaskCell<>());
 
 				// Initialization is done, so
@@ -462,6 +464,8 @@ public class SanimalUploadController implements Initializable
 
 	/**
 	 * Class required because TaskProgressViewSkin$TaskCell has a cancel button that cannot be removed.
+	 * This class is copy + pasted from TaskProgressViewSkin$TaskCell, so see that for documentation. Only the
+	 * cancel button field was removed.
 	 *
 	 * @param <T> Should just be Task<?>
 	 */

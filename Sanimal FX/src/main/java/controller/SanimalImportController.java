@@ -802,6 +802,7 @@ public class SanimalImportController implements Initializable
 						// If we have new locations or have new species, show an alert
 						if (!newSpecies.isEmpty() || !newLocations.isEmpty())
 						{
+							// Depending on if new locations or species are found print an appropriate message
 							String message = "";
 							if (!newSpecies.isEmpty() && newLocations.isEmpty())
 								message = "New species ";
@@ -809,16 +810,19 @@ public class SanimalImportController implements Initializable
 								message = "New locations ";
 							else
 								message = "New species and locations ";
+							// Print the message
 							SanimalData.getInstance().getErrorDisplay().notify(message + "found tagged on these images were automatically added to the list(s).");
+
+							this.updateProgress(5, MAX_WORK);
+							this.updateMessage("Adding images to the visual tree...");
+
+							// Add the new species and locations to the data
 							Platform.runLater(() ->
 							{
 								SanimalData.getInstance().getSpeciesList().addAll(newSpecies);
 								SanimalData.getInstance().getLocationList().addAll(newLocations);
 							});
 						}
-
-						this.updateProgress(5, MAX_WORK);
-						this.updateMessage("Adding images to the visual tree...");
 
 						this.updateProgress(6, MAX_WORK);
 						this.updateMessage("Finished!");
