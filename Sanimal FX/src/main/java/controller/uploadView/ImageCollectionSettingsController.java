@@ -16,6 +16,7 @@ import model.SanimalData;
 import model.cyverse.ImageCollection;
 import model.cyverse.Permission;
 import model.threading.ErrorTask;
+import org.controlsfx.control.action.Action;
 import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
@@ -220,12 +221,7 @@ public class ImageCollectionSettingsController implements Initializable
 		// Otherwise show an alert that no permission was selected
 		else
 		{
-			Alert alert = new Alert(Alert.AlertType.WARNING);
-			alert.initOwner(this.tvwPermissions.getScene().getWindow());
-			alert.setTitle("No Selection");
-			alert.setHeaderText("No Permission Selected");
-			alert.setContentText("Please select a permission from the permissions list to edit.");
-			alert.showAndWait();
+			SanimalData.getInstance().getErrorDisplay().notify("Please select a permission from the permissions list to edit.");
 		}
 		// Consume the event
 		actionEvent.consume();
@@ -247,12 +243,7 @@ public class ImageCollectionSettingsController implements Initializable
 			// Double check that each username entered is valid
 			if (!SanimalData.getInstance().getConnectionManager().isValidUsername(permission.getUsername()))
 			{
-				// If it is not, show the save button again, and show an error message
-				Alert alert = new Alert(Alert.AlertType.WARNING);
-				alert.setTitle("Invalid User");
-				alert.setHeaderText("Username entered invalid");
-				alert.setContentText("The username (" + permission.getUsername() + ") you entered was not found on the CyVerse system. Reminder: permissions are expecting usernames, not real names.");
-				alert.showAndWait();
+				SanimalData.getInstance().getErrorDisplay().notify("The username (" + permission.getUsername() + ") you entered was not found on the CyVerse system. Reminder: permissions are expecting usernames, not real names.");
 				btnSave.setDisable(false);
 				// Just return if there is an invalid username
 				return;
@@ -324,30 +315,18 @@ public class ImageCollectionSettingsController implements Initializable
 				if (!gotValidUsername)
 				{
 					// If we didn't get a valid name, show an alert, and ask for a new username
-					Alert alert = new Alert(Alert.AlertType.WARNING);
-					alert.setTitle("Invalid User");
-					alert.setHeaderText("Username entered invalid");
-					alert.setContentText("The username you entered was not found on the CyVerse system, please try again...");
-					alert.showAndWait();
+					SanimalData.getInstance().getErrorDisplay().notify("The username you entered was not found on the CyVerse system, please try again...");
 				}
 			}
 			else
 				return;
 		}
 
-		// We want to confirm that the user wants to transfer the collection, because this may result in full loss of permissions
-		Alert transferConfirmation = new Alert(Alert.AlertType.CONFIRMATION);
-		transferConfirmation.setTitle("Transfer Confirmation");
-		transferConfirmation.setHeaderText("Continue finalizing transfer?");
-		transferConfirmation.setContentText("Once the owner has been set, you will no longer be able to edit collection permissions, description, title, or any other settings. Are you sure you want to continue?");
-		Optional<ButtonType> buttonTypeSelected = transferConfirmation.showAndWait();
-		buttonTypeSelected.ifPresent(buttonType ->
-		{
-			if (buttonType == ButtonType.OK)
+		SanimalData.getInstance().getErrorDisplay().notify("Once the owner has been set, you will no longer be able to edit collection permissions, description, title, or any other settings. Are you sure you want to continue?",
+			new Action("Confirm", actionEvent1 ->
 			{
 				// For now, this is not supported
-			}
-		});
+			}));
 
 		actionEvent.consume();
 	}

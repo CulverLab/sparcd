@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.function.Function;
 
 /**
  * Class containing sanimal settings
@@ -29,6 +28,7 @@ public class SettingsData
 	private BooleanProperty drSandersonOutput = new SimpleBooleanProperty(false);
 	private BooleanProperty automaticNextImage = new SimpleBooleanProperty(false);
 	private BooleanProperty backgroundImageLoading = new SimpleBooleanProperty(false);
+	private BooleanProperty noPopups = new SimpleBooleanProperty(false);
 
 	/**
 	 * Constructor adds all settings SANIMAL will use to the dictionary
@@ -54,6 +54,7 @@ public class SettingsData
 		this.drSandersonOutput.setValue(otherSettings.getDrSandersonOutput());
 		this.automaticNextImage.setValue(otherSettings.getAutomaticNextImage());
 		this.backgroundImageLoading.setValue(otherSettings.getBackgroundImageLoading());
+		this.noPopups.setValue(otherSettings.getNoPopups());
 	}
 
 	/**
@@ -66,10 +67,11 @@ public class SettingsData
 		settingList.add(new CustomPropertyItem<>("Location Format: ", "Location", "The location format to be used when displaying positional information", locationFormat, LocationFormat.class));
 		settingList.add(new CustomPropertyItem<>("Distance Units: ", "Units", "The units to be used by the program", distanceUnits, DistanceUnits.class));
 		settingList.add(new CustomPropertyItem<>("Popup Hide Delay (in seconds): ", "Options", "How many seconds the popup should wait before disappearing", popupDelaySec, Double.class));
-		settingList.add(new CustomPropertyItem<>("Dr. Sanderson's Directory Compatibility: ", "Options", "Gives the option to read a directory in Dr. Jim Sanderson's format and automatically tag it", drSandersonDirectoryCompatibility, Boolean.class));
-		settingList.add(new CustomPropertyItem<>("Show Dr. Sanderson's Output Replicas: ", "Options", "Gives the option to see Dr. Jim Sanderson's Output.txt and AllPictures.txt replicas when querying", drSandersonOutput, Boolean.class));
-		settingList.add(new CustomPropertyItem<>("Automatically Select Next Image: ", "Options", "Automatically select the next image after tagging one with species", automaticNextImage, Boolean.class));
+		settingList.add(new CustomPropertyItem<>("Dr. Sanderson's Directory Compatibility: ", "Legacy", "Gives the option to read a directory in Dr. Jim Sanderson's format and automatically tag it", drSandersonDirectoryCompatibility, Boolean.class));
+		settingList.add(new CustomPropertyItem<>("Show Dr. Sanderson's Output Replicas: ", "Legacy", "Gives the option to see Dr. Jim Sanderson's Output.txt and AllPictures.txt replicas when querying", drSandersonOutput, Boolean.class));
+		settingList.add(new CustomPropertyItem<>("Automatically Select Next Image: ", "Legacy", "Automatically select the next image after tagging one with species", automaticNextImage, Boolean.class));
 		settingList.add(new CustomPropertyItem<>("Background Image Loading: ", "Options", "Load images in the background when selecting them, useful for slow hard drives or SD cards", backgroundImageLoading, Boolean.class));
+		settingList.add(new CustomPropertyItem<>("No Popups", "Options", "Lose some program functionality to avoid popups at all costs", noPopups, Boolean.class));
 	}
 
 	/**
@@ -455,5 +457,20 @@ public class SettingsData
 	public ObjectProperty<Double> popupDelaySecProperty()
 	{
 		return popupDelaySec;
+	}
+
+	public void setNoPopups(boolean noPopups)
+	{
+		this.noPopups.set(noPopups);
+	}
+
+	public Boolean getNoPopups()
+	{
+		return this.noPopups.get();
+	}
+
+	public BooleanProperty noPopupsProperty()
+	{
+		return noPopups;
 	}
 }

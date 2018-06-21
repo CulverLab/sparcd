@@ -8,7 +8,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import model.SanimalData;
 import model.constant.SanimalMetadataFields;
@@ -187,7 +186,7 @@ public class ImageEntry extends ImageContainer
 					}
 					catch (NumberFormatException ignored)
 					{
-						SanimalData.getInstance().getErrorDisplay().notify("Error parsing elevation for image, it was " + locationElevation + "!\n");
+						SanimalData.getInstance().getErrorDisplay().notify("Error parsing elevation for image, it was " + locationElevation + "!");
 					}
 				}
 			}
@@ -254,7 +253,7 @@ public class ImageEntry extends ImageContainer
 							}
 							catch (NumberFormatException ignored)
 							{
-								SanimalData.getInstance().getErrorDisplay().notify("Error parsing species count for image, it was " + speciesCount + "!\n");
+								SanimalData.getInstance().getErrorDisplay().notify("Error parsing species count for image, it was " + speciesCount + "!");
 							}
 						}
 					}

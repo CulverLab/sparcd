@@ -14,9 +14,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
@@ -35,9 +33,7 @@ import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
 import java.util.Comparator;
-import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -175,8 +171,8 @@ public class SanimalUploadController implements Initializable
 			filteredSortedUploads.predicateProperty().bind(Bindings.createObjectBinding(() -> (cloudUploadEntry ->
 					// Allow any cloud upload entry with a username cloud upload entry search text
 					StringUtils.containsIgnoreCase(cloudUploadEntry.getUploadUser(), this.txtUploadSearch.getCharacters()) ||
-					StringUtils.containsIgnoreCase(SanimalData.getInstance().getSettings().formatDateTime(cloudUploadEntry.getUploadDate(), " "), this.txtUploadSearch.getCharacters()) ||
-					StringUtils.containsIgnoreCase(cloudUploadEntry.getImageCount().toString(), this.txtUploadSearch.getCharacters())), this.txtUploadSearch.textProperty()));
+							StringUtils.containsIgnoreCase(SanimalData.getInstance().getSettings().formatDateTime(cloudUploadEntry.getUploadDate(), " "), this.txtUploadSearch.getCharacters()) ||
+							StringUtils.containsIgnoreCase(cloudUploadEntry.getImageCount().toString(), this.txtUploadSearch.getCharacters())), this.txtUploadSearch.textProperty()));
 			return filteredSortedUploads;
 		}));
 
@@ -209,22 +205,8 @@ public class SanimalUploadController implements Initializable
 			public void onChanged(Change<? extends Task<?>> c)
 			{
 				Node listView = tpvUploads.lookup(".list-view");
-				if (listView instanceof ListView<?>)
-				{
-					((ListView<?>) listView).getItems().addListener((ListChangeListener<Object>) c1 ->
-					{
-						Node group = listView.lookup(".sheet");
-						if (group instanceof Group)
-						{
-							Set<Node> nodes = group.lookupAll(".task-list-cell");
-							nodes.forEach(node ->
-							{
-								Node lookup = node.lookup("borderpane");
-								((BorderPane) lookup).getChildren().removeAll(lookup.lookupAll(".task-cancel-button"));
-							});
-						}
-					});
-				}
+				if (listView instanceof ListView)
+					((ListView<Task<?>>) listView).setCellFactory(param -> new TaskCell<>());
 
 				// Initialization is done, so
 				activeTasks.removeListener(this);
@@ -306,16 +288,15 @@ public class SanimalUploadController implements Initializable
 		{
 			// If a collection is selected, show an alert that data may be deleted!
 			SanimalData.getInstance().getErrorDisplay().notify("Are you sure you want to delete this collection?\nDeleting this collection will result in the permanent removal of all images uploaded to CyVerse to this collection.\nAre you sure you want to continue?",
-				new Action("Continue", actionEvent1 ->
-				{
-					// Remove the collection on the CyVerse system
-					SanimalData.getInstance().getConnectionManager().removeCollection(selected);
+					new Action("Continue", actionEvent1 ->
+					{
+						// Remove the collection on the CyVerse system
+						SanimalData.getInstance().getConnectionManager().removeCollection(selected);
 
-					// Remove the selected collection
-					SanimalData.getInstance().getCollectionList().remove(selected);
-				}));
-		}
-		else
+						// Remove the selected collection
+						SanimalData.getInstance().getCollectionList().remove(selected);
+					}));
+		} else
 		{
 			// If no collection is selected, show an alert
 			SanimalData.getInstance().getErrorDisplay().notify("Please select a collection from the collection list to remove.");
@@ -421,14 +402,12 @@ public class SanimalUploadController implements Initializable
 					uploadEntry.clearLocalCopy();
 				});
 				SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().addTask(saveTask);
-			}
-			else
+			} else
 			{
 				// If an invalid directory is selected, show an alert
 				SanimalData.getInstance().getErrorDisplay().notify("An image in the directory (" + imageDirectory.getFile().getName() + ") you selected to save does not have a location. Please ensure all images are tagged with a location!");
 			}
-		}
-		else
+		} else
 		{
 			SanimalData.getInstance().getErrorDisplay().notify("The Cloud directory has not been downloaded yet, how are you going to save it?");
 		}
@@ -449,20 +428,19 @@ public class SanimalUploadController implements Initializable
 			{
 				// Create the alert
 				SanimalData.getInstance().getErrorDisplay().notify("Any unsaved changes to uploads will be lost, continue?",
-					// If they clicked OK, clear known uploads and resync
-					new Action("Continue", actionEvent1 ->
-					{
-						// Clear any known uploads
-						for (CloudUploadEntry cloudUploadEntry : this.selectedCollection.getValue().getUploads())
-							if (cloudUploadEntry.hasBeenDownloaded())
-								SanimalData.getInstance().getImageTree().removeChildRecursive(cloudUploadEntry.getCloudImageDirectory());
+						// If they clicked OK, clear known uploads and resync
+						new Action("Continue", actionEvent1 ->
+						{
+							// Clear any known uploads
+							for (CloudUploadEntry cloudUploadEntry : this.selectedCollection.getValue().getUploads())
+								if (cloudUploadEntry.hasBeenDownloaded())
+									SanimalData.getInstance().getImageTree().removeChildRecursive(cloudUploadEntry.getCloudImageDirectory());
 
-						// Clear the uploads and resync
-						this.selectedCollection.getValue().getUploads().clear();
-						this.syncUploadsForCollection(this.selectedCollection.getValue());
-					}));
-			}
-			else
+							// Clear the uploads and resync
+							this.selectedCollection.getValue().getUploads().clear();
+							this.syncUploadsForCollection(this.selectedCollection.getValue());
+						}));
+			} else
 			{
 				// Just resync
 				this.syncUploadsForCollection(this.selectedCollection.getValue());
@@ -480,5 +458,89 @@ public class SanimalUploadController implements Initializable
 	{
 		this.txtUploadSearch.clear();
 		actionEvent.consume();
+	}
+
+	/**
+	 * Class required because TaskProgressViewSkin$TaskCell has a cancel button that cannot be removed.
+	 *
+	 * @param <T> Should just be Task<?>
+	 */
+	private class TaskCell<T extends Task<?>> extends ListCell<T>
+	{
+		private ProgressBar progressBar;
+		private Label titleText;
+		private Label messageText;
+
+		private T task;
+		private BorderPane borderPane;
+
+		TaskCell()
+		{
+			titleText = new Label();
+			titleText.getStyleClass().add("task-title");
+
+			messageText = new Label();
+			messageText.getStyleClass().add("task-message");
+
+			progressBar = new ProgressBar();
+			progressBar.setMaxWidth(Double.MAX_VALUE);
+			progressBar.setMaxHeight(8);
+			progressBar.getStyleClass().add("task-progress-bar");
+
+			VBox vbox = new VBox();
+			vbox.setSpacing(4);
+			vbox.getChildren().add(titleText);
+			vbox.getChildren().add(progressBar);
+			vbox.getChildren().add(messageText);
+
+			borderPane = new BorderPane();
+			borderPane.setCenter(vbox);
+			setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+		}
+
+		@Override
+		public void updateIndex(int index)
+		{
+			super.updateIndex(index);
+
+			/*
+			 * I have no idea why this is necessary but it won't work without
+			 * it. Shouldn't the updateItem method be enough?
+			 */
+			if (index == -1)
+			{
+				setGraphic(null);
+				getStyleClass().setAll("task-list-cell-empty");
+			}
+		}
+
+		@Override
+		protected void updateItem(T task, boolean empty)
+		{
+			super.updateItem(task, empty);
+
+			this.task = task;
+
+			if (empty || task == null)
+			{
+				getStyleClass().setAll("task-list-cell-empty");
+				setGraphic(null);
+			} else
+			{
+				getStyleClass().setAll("task-list-cell");
+				progressBar.progressProperty().bind(task.progressProperty());
+				titleText.textProperty().bind(task.titleProperty());
+				messageText.textProperty().bind(task.messageProperty());
+
+				/*
+				 * Really needed. The application might have used a graphic
+				 * factory before and then disabled it. In this case the border
+				 * pane might still have an old graphic in the left position.
+				 */
+				borderPane.setLeft(null);
+
+				setGraphic(borderPane);
+			}
+		}
 	}
 }

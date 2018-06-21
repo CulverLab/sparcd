@@ -24,6 +24,7 @@ import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.threading.ErrorTask;
 import model.util.FXMLLoaderUtils;
+import org.controlsfx.control.action.Action;
 import org.irods.jargon.core.transfer.TransferStatus;
 import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
 
@@ -141,18 +142,25 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 		ImageCollectionSettingsController controller = loader.getController();
 		controller.setCollectionToEdit(this.getItem());
 
-		// Create the stage that will have the Image Collection Editor
-		Stage dialogStage = new Stage();
-		// Set the title
-		dialogStage.setTitle("Image Collection Editor");
-		// Set the modality and initialize the owner to be this current window
-		dialogStage.initModality(Modality.WINDOW_MODAL);
-		dialogStage.initOwner(this.mainPane.getScene().getWindow());
-		// Set the scene to the root of the FXML file
-		Scene scene = new Scene(loader.getRoot());
-		// Set the scene of the stage, and show it!
-		dialogStage.setScene(scene);
-		dialogStage.showAndWait();
+		if (!SanimalData.getInstance().getSettings().getNoPopups())
+		{
+			// Create the stage that will have the Image Collection Editor
+			Stage dialogStage = new Stage();
+			// Set the title
+			dialogStage.setTitle("Image Collection Editor");
+			// Set the modality and initialize the owner to be this current window
+			dialogStage.initModality(Modality.WINDOW_MODAL);
+			dialogStage.initOwner(this.mainPane.getScene().getWindow());
+			// Set the scene to the root of the FXML file
+			Scene scene = new Scene(loader.getRoot());
+			// Set the scene of the stage, and show it!
+			dialogStage.setScene(scene);
+			dialogStage.showAndWait();
+		}
+		else
+		{
+			SanimalData.getInstance().getErrorDisplay().notify("Popups must be enabled to edit a collection!");
+		}
 		actionEvent.consume();
 	}
 
@@ -235,19 +243,8 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 				// If we have a valid directory, perform the upload
 				if (validDirectory)
 				{
-					// Show an alert to tell the user that they are uploading images at this point
-					Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
-					confirmation.initOwner(this.mainPane.getScene().getWindow());
-					confirmation.setTitle("Upload Images");
-					confirmation.setHeaderText("Uploading to " + this.getItem().getName());
-					confirmation.setContentText("Are you sure you want to upload these " + imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count() + " images to the collection " + this.getItem().getName() + "?");
-					Optional<ButtonType> result = confirmation.showAndWait();
-
-					// Test the result...
-					result.ifPresent(buttonType ->
-					{
-						// OK means upload
-						if (buttonType == ButtonType.OK)
+					SanimalData.getInstance().getErrorDisplay().notify("Are you sure you want to upload these " + imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count() + " images to the collection " + this.getItem().getName() + "?",
+						new Action("Yes", actionEvent ->
 						{
 							// Set the upload to 0% so that we don't edit it anymore
 							imageDirectory.setUploadProgress(0.0);
@@ -303,8 +300,7 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 							uploadTask.setOnCancelled(event -> imageDirectory.setUploadProgress(-1));
 							dragEvent.setDropCompleted(true);
 							SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().addTask(uploadTask);
-						}
-					});
+						}));
 				}
 				else
 				{

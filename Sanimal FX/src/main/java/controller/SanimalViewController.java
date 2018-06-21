@@ -6,13 +6,12 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.*;
 import javafx.scene.control.Button;
+import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.GaussianBlur;
@@ -21,6 +20,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import model.SanimalData;
@@ -32,7 +33,6 @@ import model.threading.ErrorTask;
 import model.util.SettingsData;
 import org.controlsfx.control.HyperlinkLabel;
 import org.controlsfx.control.NotificationPane;
-import org.controlsfx.control.action.Action;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
 
@@ -122,10 +122,31 @@ public class SanimalViewController implements Initializable
 				if (notificationPane != null)
 				{
 					// Make sure the button bar is there
-					Node buttonBar = notificationPane.lookup(".button-bar");
+					Node buttonBarNode = notificationPane.lookup(".button-bar");
 					// Update each child button
-					if (buttonBar instanceof ButtonBar)
-						((ButtonBar) buttonBar).getButtons().forEach(node -> ButtonBar.setButtonUniformSize(node, false));
+					if (buttonBarNode instanceof ButtonBar)
+					{
+						// Grab the button bar
+						ButtonBar buttonBar = (ButtonBar) buttonBarNode;
+						buttonBar.getButtons().forEach(node ->
+						{
+							// Make sure the node inside is a button
+							if (node instanceof Button)
+							{
+								// Set the buttons to be non-uniformly sized and their text to wrap
+								ButtonBar.setButtonUniformSize(node, false);
+								((Button) node).setWrapText(true);
+							}
+						});
+						buttonBar.setButtonMinWidth(100);
+					}
+
+					// Make sure the label wraps
+					Node label = notificationPane.lookup(".label");
+					GridPane.setHgrow(label, Priority.NEVER);
+					// If we did indeed get a label, make sure it wraps
+					if (label instanceof Label)
+						((Label) label).setWrapText(true);
 				}
 			}
 		});

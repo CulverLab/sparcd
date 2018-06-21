@@ -2,6 +2,7 @@ package model.util;
 
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
@@ -9,7 +10,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.stage.Window;
 import javafx.util.Duration;
 import model.SanimalData;
 import org.controlsfx.control.NotificationPane;
@@ -31,6 +31,7 @@ public class ErrorDisplay
 	public ErrorDisplay(SanimalData sanimalData)
 	{
 		this.infoImage = new ImageView(new Image("images/generic/info64.png"));
+		this.delay.setDuration(Duration.seconds(sanimalData.getSettings().getPopupDelaySec()));
 		sanimalData.getSettings().popupDelaySecProperty().addListener((observable, oldValue, newValue) ->
 		{
 			if (newValue != null)
@@ -61,15 +62,50 @@ public class ErrorDisplay
 	 */
 	private void notifyOnFX(String content, Action... actions)
 	{
-		notificationPane.getActions().clear();
-		// When any action is pressed, we hide the notification. This makes sure that each action is mapped to a new action that hides
-		// the pane and then calls the action
-		notificationPane.show(content, this.infoImage, Stream.of(actions).map(action -> new Action(action.getText(), actionEvent ->
+		if (SanimalData.getInstance().getSettings().getNoPopups())
 		{
-			this.notificationPane.hide();
-			action.handle(actionEvent);
-		})).toArray(Action[]::new));
-		this.delay.playFromStart();
+			notificationPane.getActions().clear();
+			// When any action is pressed, we hide the notification. This makes sure that each action is mapped to a new action that hides
+			// the pane and then calls the action
+			notificationPane.show(content, this.infoImage, Stream.of(actions).map(action -> new Action(action.getText(), actionEvent ->
+			{
+				this.notificationPane.hide();
+				action.handle(actionEvent);
+			})).toArray(Action[]::new));
+			this.delay.playFromStart();
+		}
+		else
+		{
+			Alert alert = new Alert(Alert.AlertType.INFORMATION);
+			if (content.length() > 150)
+			{
+				TextArea area = new TextArea(content);
+				area.textProperty().bind(alert.contentTextProperty());
+				alert.getDialogPane().setContent(area);
+			}
+			alert.setContentText(content);
+			alert.setHeaderText(null);
+			if (actions.length > 0)
+			{
+				alert.getButtonTypes().clear();
+				ButtonType[] buttonTypes = new ButtonType[actions.length];
+				for (int i = 0; i < actions.length; i++)
+					buttonTypes[i] = new ButtonType(actions[i].getText());
+				alert.getButtonTypes().setAll(buttonTypes);
+				alert.getButtonTypes().add(ButtonType.CANCEL);
+				Optional<ButtonType> result = alert.showAndWait();
+				result.ifPresent(buttonType ->
+				{
+					for (int i = 0; i < buttonTypes.length; i++)
+						if (buttonTypes[i] == buttonType)
+							actions[i].handle(new ActionEvent());
+				});
+			}
+			else
+			{
+				alert.show();
+			}
+		}
 	}
 
 	/**

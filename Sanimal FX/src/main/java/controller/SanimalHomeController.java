@@ -1,6 +1,5 @@
 package controller;
 
-import controller.importView.SpeciesCreatorController;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -181,19 +180,26 @@ public class SanimalHomeController implements Initializable
 		// Load the FXML file of the editor window
 		FXMLLoader loader = FXMLLoaderUtils.loadFXML("homeView/Credits.fxml");
 
-		// Create the stage that will have the species creator/editor
-		Stage dialogStage = new Stage();
-		// Set the title
-		dialogStage.setTitle("Credits");
-		// Set the modality and initialize the owner to be this current window
-		dialogStage.initModality(Modality.WINDOW_MODAL);
-		dialogStage.initOwner(this.mainPane.getScene().getWindow());
-		// Set the scene to the root of the FXML file
-		Scene scene = new Scene(loader.getRoot());
-		// Set the scene of the stage, and show it!
-		dialogStage.setScene(scene);
-		dialogStage.setResizable(false);
-		dialogStage.showAndWait();
+		if (!SanimalData.getInstance().getSettings().getNoPopups())
+		{
+			// Create the stage that will have the species creator/editor
+			Stage dialogStage = new Stage();
+			// Set the title
+			dialogStage.setTitle("Credits");
+			// Set the modality and initialize the owner to be this current window
+			dialogStage.initModality(Modality.WINDOW_MODAL);
+			dialogStage.initOwner(this.mainPane.getScene().getWindow());
+			// Set the scene to the root of the FXML file
+			Scene scene = new Scene(loader.getRoot());
+			// Set the scene of the stage, and show it!
+			dialogStage.setScene(scene);
+			dialogStage.setResizable(false);
+			dialogStage.showAndWait();
+		}
+		else
+		{
+			SanimalData.getInstance().getErrorDisplay().notify("Popups must be enabled to see credits");
+		}
 
 		actionEvent.consume();
 	}

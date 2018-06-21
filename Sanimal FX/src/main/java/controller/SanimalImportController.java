@@ -57,7 +57,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Controller class for the main import window
@@ -557,24 +556,31 @@ public class SanimalImportController implements Initializable
 	 */
 	private void requestEdit(Species species)
 	{
-		// Load the FXML file of the editor window
-		FXMLLoader loader = FXMLLoaderUtils.loadFXML("importView/SpeciesCreator.fxml");
-		// Grab the controller and set the species of that controller
-		SpeciesCreatorController controller = loader.getController();
-		controller.setSpecies(species);
+		if (!SanimalData.getInstance().getSettings().getNoPopups())
+		{
+			// Load the FXML file of the editor window
+			FXMLLoader loader = FXMLLoaderUtils.loadFXML("importView/SpeciesCreator.fxml");
+			// Grab the controller and set the species of that controller
+			SpeciesCreatorController controller = loader.getController();
+			controller.setSpecies(species);
 
-		// Create the stage that will have the species creator/editor
-		Stage dialogStage = new Stage();
-		// Set the title
-		dialogStage.setTitle("Species Creator/Editor");
-		// Set the modality and initialize the owner to be this current window
-		dialogStage.initModality(Modality.WINDOW_MODAL);
-		dialogStage.initOwner(this.imagePreview.getScene().getWindow());
-		// Set the scene to the root of the FXML file
-		Scene scene = new Scene(loader.getRoot());
-		// Set the scene of the stage, and show it!
-		dialogStage.setScene(scene);
-		dialogStage.showAndWait();
+			// Create the stage that will have the species creator/editor
+			Stage dialogStage = new Stage();
+			// Set the title
+			dialogStage.setTitle("Species Creator/Editor");
+			// Set the modality and initialize the owner to be this current window
+			dialogStage.initModality(Modality.WINDOW_MODAL);
+			dialogStage.initOwner(this.imagePreview.getScene().getWindow());
+			// Set the scene to the root of the FXML file
+			Scene scene = new Scene(loader.getRoot());
+			// Set the scene of the stage, and show it!
+			dialogStage.setScene(scene);
+			dialogStage.showAndWait();
+		}
+		else
+		{
+			SanimalData.getInstance().getErrorDisplay().notify("Popups must be enabled to edit a species!");
+		}
 	}
 
 	/**
@@ -669,24 +675,31 @@ public class SanimalImportController implements Initializable
 	 */
 	private void requestEdit(Location location)
 	{
-		// Load the FXML file of the editor window
-		FXMLLoader loader = FXMLLoaderUtils.loadFXML("importView/LocationCreator.fxml");
-		// Grab the controller and set the location of that controller
-		LocationCreatorController controller = loader.getController();
-		controller.setLocation(location);
+		if (!SanimalData.getInstance().getSettings().getNoPopups())
+		{
+			// Load the FXML file of the editor window
+			FXMLLoader loader = FXMLLoaderUtils.loadFXML("importView/LocationCreator.fxml");
+			// Grab the controller and set the location of that controller
+			LocationCreatorController controller = loader.getController();
+			controller.setLocation(location);
 
-		// Create the stage that will have the species creator/editor
-		Stage dialogStage = new Stage();
-		// Set the title
-		dialogStage.setTitle("Location Creator/Editor");
-		// Set the modality and initialize the owner to be this current window
-		dialogStage.initModality(Modality.WINDOW_MODAL);
-		dialogStage.initOwner(this.imagePreview.getScene().getWindow());
-		// Set the scene to the root of the FXML file
-		Scene scene = new Scene(loader.getRoot());
-		// Set the scene of the stage, and show it!
-		dialogStage.setScene(scene);
-		dialogStage.showAndWait();
+			// Create the stage that will have the species creator/editor
+			Stage dialogStage = new Stage();
+			// Set the title
+			dialogStage.setTitle("Location Creator/Editor");
+			// Set the modality and initialize the owner to be this current window
+			dialogStage.initModality(Modality.WINDOW_MODAL);
+			dialogStage.initOwner(this.imagePreview.getScene().getWindow());
+			// Set the scene to the root of the FXML file
+			Scene scene = new Scene(loader.getRoot());
+			// Set the scene of the stage, and show it!
+			dialogStage.setScene(scene);
+			dialogStage.showAndWait();
+		}
+		else
+		{
+			SanimalData.getInstance().getErrorDisplay().notify("Popups must be enabled to edit locations!");
+		}
 	}
 
 	/**
@@ -779,37 +792,27 @@ public class SanimalImportController implements Initializable
 
 						// Diff the new species list and the old one to see if we have new species
 						List<Species> newSpecies = ListUtils.subtract(currentSpecies, SanimalData.getInstance().getSpeciesList());
-						// If we have new species, show an alert
-						if (!newSpecies.isEmpty())
-						{
-							Platform.runLater(() ->
-							{
-								Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-								alert.initOwner(SanimalImportController.this.imagePreview.getScene().getWindow());
-								alert.setTitle("Species Added");
-								alert.setHeaderText("New Species Were Added");
-								alert.setContentText("Species found tagged on these images were automatically added to the list.\nThese include: " + newSpecies.stream().map(Species::getName).collect(Collectors.joining(", ")));
-								alert.show();
-								SanimalData.getInstance().getSpeciesList().addAll(newSpecies);
-							});
-						}
 
 						this.updateProgress(4, MAX_WORK);
 						this.updateMessage("Detecting locations in images...");
 
 						// Diff the new locations list and the old one to see if we have new locations
 						List<Location> newLocations = ListUtils.subtract(currentLocations, SanimalData.getInstance().getLocationList());
-						// If we have new locations, show an alert
-						if (!newLocations.isEmpty())
+
+						// If we have new locations or have new species, show an alert
+						if (!newSpecies.isEmpty() || !newLocations.isEmpty())
 						{
+							String message = "";
+							if (!newSpecies.isEmpty() && newLocations.isEmpty())
+								message = "New species ";
+							else if (newSpecies.isEmpty())
+								message = "New locations ";
+							else
+								message = "New species and locations ";
+							SanimalData.getInstance().getErrorDisplay().notify(message + "found tagged on these images were automatically added to the list(s).");
 							Platform.runLater(() ->
 							{
-								Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-								alert.initOwner(SanimalImportController.this.imagePreview.getScene().getWindow());
-								alert.setTitle("Locations Added");
-								alert.setHeaderText("New Locations Were Added");
-								alert.setContentText("Locations found tagged on these images were automatically added to the list.\nThese include: " + newLocations.stream().map(Location::getName).collect(Collectors.joining(", ")));
-								alert.show();
+								SanimalData.getInstance().getSpeciesList().addAll(newSpecies);
 								SanimalData.getInstance().getLocationList().addAll(newLocations);
 							});
 						}
@@ -913,19 +916,10 @@ public class SanimalImportController implements Initializable
 		if (SanimalData.getInstance().getSettings().getDrSandersonDirectoryCompatibility())
 		{
 			// Ask if the data is legacy
-			SanimalData.getInstance().getErrorDisplay().notify("Would you like the directory to be read as legacy data\nused by Dr. Sanderson's 'Data Analyze' program?",
+			SanimalData.getInstance().getErrorDisplay().notify("Would you like the directory to be read as legacy data used by Dr. Sanderson's 'Data Analyze' program?",
 				new Action("Yes, Auto-Tag it", actionEvent1 ->
 				{
-					SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().addTask(new ErrorTask<Void>()
-					{
-						@Override
-						protected Void call() throws Exception
-						{
-							Thread.sleep(6000);
-							return null;
-						}
-					});
-					//imageImporter.accept(true);
+					imageImporter.accept(true);
 				}),
 				new Action("No", actionEvent1 ->
 				{
@@ -1010,30 +1004,37 @@ public class SanimalImportController implements Initializable
 		// If either a date from the directory or image was detected, process it
 		if (first != null)
 		{
-			timeShiftController.setDate(first);
-			if (timeShiftStage.getOwner() == null)
-				timeShiftStage.initOwner(this.imagePreview.getScene().getWindow());
-			timeShiftStage.showAndWait();
-
-			// Grab the new date from the dialog stage
-			// If a new date was created...
-			if (timeShiftController.dateWasConfirmed())
+			if (!SanimalData.getInstance().getSettings().getNoPopups())
 			{
-				LocalDateTime newDate = timeShiftController.getDate();
-				// If just an image was selected, set the date taken of that specific image
-				if (this.currentlySelectedImage.getValue() != null)
-					this.currentlySelectedImage.getValue().setDateTaken(newDate);
-				// If a directory was selected...
-				else if (this.currentlySelectedDirectory.getValue() != null)
+				timeShiftController.setDate(first);
+				if (timeShiftStage.getOwner() == null)
+					timeShiftStage.initOwner(this.imagePreview.getScene().getWindow());
+				timeShiftStage.showAndWait();
+
+				// Grab the new date from the dialog stage
+				// If a new date was created...
+				if (timeShiftController.dateWasConfirmed())
 				{
-					// Calculate the time between the first date and the newly created date
-					long timeBetween = ChronoUnit.MILLIS.between(first, newDate);
-					// If the offset is non 0, offset the date of every image in the directory by the offset
-					if (timeBetween != 0)
-						this.currentlySelectedDirectory.getValue().flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).forEach(imageEntry -> {
-							imageEntry.setDateTaken(imageEntry.getDateTaken().plus(timeBetween, ChronoUnit.MILLIS));
-						});
+					LocalDateTime newDate = timeShiftController.getDate();
+					// If just an image was selected, set the date taken of that specific image
+					if (this.currentlySelectedImage.getValue() != null)
+						this.currentlySelectedImage.getValue().setDateTaken(newDate);
+						// If a directory was selected...
+					else if (this.currentlySelectedDirectory.getValue() != null)
+					{
+						// Calculate the time between the first date and the newly created date
+						long timeBetween = ChronoUnit.MILLIS.between(first, newDate);
+						// If the offset is non 0, offset the date of every image in the directory by the offset
+						if (timeBetween != 0)
+							this.currentlySelectedDirectory.getValue().flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).forEach(imageEntry -> {
+								imageEntry.setDateTaken(imageEntry.getDateTaken().plus(timeBetween, ChronoUnit.MILLIS));
+							});
+					}
 				}
+			}
+			else
+			{
+				SanimalData.getInstance().getErrorDisplay().notify("Popups must be enabled to shift the image date and time!");
 			}
 		}
 
