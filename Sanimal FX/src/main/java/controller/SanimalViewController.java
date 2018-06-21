@@ -6,11 +6,14 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
@@ -28,6 +31,8 @@ import model.species.Species;
 import model.threading.ErrorTask;
 import model.util.SettingsData;
 import org.controlsfx.control.HyperlinkLabel;
+import org.controlsfx.control.NotificationPane;
+import org.controlsfx.control.action.Action;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
 
@@ -81,9 +86,11 @@ public class SanimalViewController implements Initializable
 	@FXML
 	public AnchorPane homePane;
 
-	// The primary background pane
 	@FXML
-	public StackPane primaryPane;
+	public NotificationPane notificationPane;
+
+	@FXML
+	public Label lblInvalidCredentials;
 
 	///
 	/// FXML Bound fields end
@@ -103,6 +110,26 @@ public class SanimalViewController implements Initializable
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
+		// Whenever we get a new notification, make sure the buttons are scaled correctly
+		this.notificationPane.setOnShowing(event ->
+		{
+			// Make sure the notification bar is there
+			Node notificationBar = this.notificationPane.lookup(".notification-bar");
+			if (notificationBar != null)
+			{
+				// Make sure the notification pane is there
+				Node notificationPane = notificationBar.lookup(".pane");
+				if (notificationPane != null)
+				{
+					// Make sure the button bar is there
+					Node buttonBar = notificationPane.lookup(".button-bar");
+					// Update each child button
+					if (buttonBar instanceof ButtonBar)
+						((ButtonBar) buttonBar).getButtons().forEach(node -> ButtonBar.setButtonUniformSize(node, false));
+				}
+			}
+		});
+
 		// Grab the logged in property
 		ReadOnlyBooleanProperty loggedIn = SanimalData.getInstance().loggedInProperty();
 
@@ -213,6 +240,7 @@ public class SanimalViewController implements Initializable
 						{
 							SanimalData.getInstance().setUsername(username);
 							SanimalData.getInstance().setLoggedIn(true);
+							SanimalData.getInstance().getErrorDisplay().setNotificationPane(notificationPane);
 						});
 
 						// Then initialize the remove sanimal directory
@@ -264,13 +292,7 @@ public class SanimalViewController implements Initializable
 				// If we did not succeed, notify the user
 				if (!loginSucceeded)
 				{
-					// Show an alert to the user that the sign in did not complete
-					Alert invalidAlert = new Alert(Alert.AlertType.INFORMATION);
-					invalidAlert.setTitle("Invalid Credentials");
-					invalidAlert.setHeaderText("");
-					invalidAlert.setContentText("Invalid Username or Password");
-					invalidAlert.initOwner(this.tabPane.getScene().getWindow());
-					invalidAlert.showAndWait();
+					this.lblInvalidCredentials.setVisible(true);
 				}
 				this.loggingIn.setValue(false);
 				// Hide the loading graphic

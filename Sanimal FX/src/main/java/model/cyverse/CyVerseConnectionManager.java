@@ -13,7 +13,6 @@ import model.image.*;
 import model.location.Location;
 import model.query.CyVerseQuery;
 import model.species.Species;
-import model.util.RoundingUtils;
 import model.util.SettingsData;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -120,13 +119,7 @@ public class CyVerseConnectionManager
 		// Not really sure how this happens, probably if the server incorrectly responds or is down
 		catch (JargonException e)
 		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"Authentication failed",
-					"Could not authenticate the user!\n" + ExceptionUtils.getStackTrace(e),
-					false);
+			SanimalData.getInstance().getErrorDisplay().notify("Could not authenticate the user!\n" + ExceptionUtils.getStackTrace(e));
 		}
 		// Default, just return false
 		return false;
@@ -168,13 +161,7 @@ public class CyVerseConnectionManager
 					}
 					catch (IOException e)
 					{
-						SanimalData.getInstance().getErrorDisplay().showPopup(
-								Alert.AlertType.ERROR,
-								null,
-								"Error",
-								"JSON error",
-								"Could not read the local species.json file!\n" + ExceptionUtils.getStackTrace(e),
-								false);
+						SanimalData.getInstance().getErrorDisplay().notify("Could not read the local species.json file!\n" + ExceptionUtils.getStackTrace(e));
 					}
 				}
 
@@ -193,13 +180,7 @@ public class CyVerseConnectionManager
 					}
 					catch (IOException e)
 					{
-						SanimalData.getInstance().getErrorDisplay().showPopup(
-								Alert.AlertType.ERROR,
-								null,
-								"Error",
-								"JSON error",
-								"Could not read the local locations.json file!\n" + ExceptionUtils.getStackTrace(e),
-								false);
+						SanimalData.getInstance().getErrorDisplay().notify("Could not read the local locations.json file!\n" + ExceptionUtils.getStackTrace(e));
 					}
 				}
 
@@ -218,25 +199,13 @@ public class CyVerseConnectionManager
 					}
 					catch (IOException e)
 					{
-						SanimalData.getInstance().getErrorDisplay().showPopup(
-								Alert.AlertType.ERROR,
-								null,
-								"Error",
-								"JSON error",
-								"Could not read the local settings.json file!\n" + ExceptionUtils.getStackTrace(e),
-								false);
+						SanimalData.getInstance().getErrorDisplay().notify("Could not read the local settings.json file!\n" + ExceptionUtils.getStackTrace(e));
 					}
 				}
 			}
 			catch (JargonException e)
 			{
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"Initialization error",
-						"Could not initialize the CyVerse directories!\n" + ExceptionUtils.getStackTrace(e),
-						false);
+				SanimalData.getInstance().getErrorDisplay().notify("Could not initialize the CyVerse directories!\n" + ExceptionUtils.getStackTrace(e));
 			}
 			sessionManager.closeSession();
 		}
@@ -285,13 +254,7 @@ public class CyVerseConnectionManager
 				catch (JsonSyntaxException e)
 				{
 					// If the JSON file is incorrectly formatted, throw an error and return null
-					SanimalData.getInstance().getErrorDisplay().showPopup(
-							Alert.AlertType.ERROR,
-							null,
-							"Error",
-							"JSON error",
-							"Could not pull the settings from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-							false);
+					SanimalData.getInstance().getErrorDisplay().notify("Could not pull the settings from CyVerse!\n" + ExceptionUtils.getStackTrace(e));
 				}
 			}
 			this.sessionManager.closeSession();
@@ -326,13 +289,7 @@ public class CyVerseConnectionManager
 				catch (JsonSyntaxException e)
 				{
 					// If the JSON file is incorrectly formatted, throw an error and return an empty list
-					SanimalData.getInstance().getErrorDisplay().showPopup(
-							Alert.AlertType.ERROR,
-							null,
-							"Error",
-							"JSON error",
-							"Could not pull the location list from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-							false);
+					SanimalData.getInstance().getErrorDisplay().notify("Could not pull the location list from CyVerse!\n" + ExceptionUtils.getStackTrace(e));
 				}
 			}
 			this.sessionManager.closeSession();
@@ -384,13 +341,7 @@ public class CyVerseConnectionManager
 				catch (JsonSyntaxException e)
 				{
 					// If the JSON file is incorrectly formatted, throw an error and return an empty list
-					SanimalData.getInstance().getErrorDisplay().showPopup(
-							Alert.AlertType.ERROR,
-							null,
-							"Error",
-							"JSON error",
-							"Could not pull the species list from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-							false);
+					SanimalData.getInstance().getErrorDisplay().notify("Could not pull the species list from CyVerse!\n" + ExceptionUtils.getStackTrace(e));
 				}
 			}
 			this.sessionManager.closeSession();
@@ -496,13 +447,7 @@ public class CyVerseConnectionManager
 									catch (JsonSyntaxException e)
 									{
 										// If the JSON file is incorrectly formatted, throw an error and return an empty list
-										SanimalData.getInstance().getErrorDisplay().showPopup(
-												Alert.AlertType.ERROR,
-												null,
-												"Error",
-												"JSON collection error",
-												"Could not read the collection " + collectionJSONFile + "!\n" + ExceptionUtils.getStackTrace(e),
-												false);
+										SanimalData.getInstance().getErrorDisplay().notify("Could not read the collection " + collectionJSONFile + "!\n" + ExceptionUtils.getStackTrace(e));
 									}
 								}
 							}
@@ -511,24 +456,12 @@ public class CyVerseConnectionManager
 				}
 				else
 				{
-					SanimalData.getInstance().getErrorDisplay().showPopup(
-							Alert.AlertType.ERROR,
-							null,
-							"Error",
-							"Collection error",
-							"Collections folder not found on CyVerse!\n",
-							false);
+					SanimalData.getInstance().getErrorDisplay().notify("Collections folder not found on CyVerse!");
 				}
 			}
 			catch (JargonException e)
 			{
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"JSON collection download error",
-						"Could not pull the collection list from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-						false);
+				SanimalData.getInstance().getErrorDisplay().notify("Could not pull the collection list from CyVerse!\n" + ExceptionUtils.getStackTrace(e));
 			}
 			this.sessionManager.closeSession();
 		}
@@ -619,13 +552,7 @@ public class CyVerseConnectionManager
 			}
 			catch (JargonException e)
 			{
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"Deletion error",
-						"Could not delete the collection from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-						false);
+				SanimalData.getInstance().getErrorDisplay().notify("Could not delete the collection from CyVerse!\n" + ExceptionUtils.getStackTrace(e));
 			}
 			this.sessionManager.closeSession();
 		}
@@ -662,13 +589,7 @@ public class CyVerseConnectionManager
 				}
 				catch (JargonException e)
 				{
-					SanimalData.getInstance().getErrorDisplay().showPopup(
-							Alert.AlertType.ERROR,
-							null,
-							"Error",
-							"Permission error",
-							"Error setting permissions for user!\n" + ExceptionUtils.getStackTrace(e),
-							false);
+					SanimalData.getInstance().getErrorDisplay().notify("Error setting permissions for user!\n" + ExceptionUtils.getStackTrace(e));
 				}
 			});
 		}
@@ -689,13 +610,7 @@ public class CyVerseConnectionManager
 				}
 				catch (JargonException e)
 				{
-					SanimalData.getInstance().getErrorDisplay().showPopup(
-							Alert.AlertType.ERROR,
-							null,
-							"Error",
-							"Permission error",
-							"Error setting permissions for user!\n" + ExceptionUtils.getStackTrace(e),
-							false);
+					SanimalData.getInstance().getErrorDisplay().notify("Error setting permissions for user!\n" + ExceptionUtils.getStackTrace(e));
 				}
 			});
 		}
@@ -724,13 +639,7 @@ public class CyVerseConnectionManager
 					}
 					catch (JargonException e)
 					{
-						SanimalData.getInstance().getErrorDisplay().showPopup(
-								Alert.AlertType.ERROR,
-								null,
-								"Error",
-								"Permission error",
-								"Error removing permissions from user!\n" + ExceptionUtils.getStackTrace(e),
-								false);
+						SanimalData.getInstance().getErrorDisplay().notify("Error removing permissions from user!\n" + ExceptionUtils.getStackTrace(e));
 					}
 			});
 		}
@@ -747,13 +656,7 @@ public class CyVerseConnectionManager
 					}
 					catch (JargonException e)
 					{
-						SanimalData.getInstance().getErrorDisplay().showPopup(
-								Alert.AlertType.ERROR,
-								null,
-								"Error",
-								"Permission error",
-								"Error removing permissions from user!\n" + ExceptionUtils.getStackTrace(e),
-								false);
+						SanimalData.getInstance().getErrorDisplay().notify("Error removing permissions from user!\n" + ExceptionUtils.getStackTrace(e));
 					}
 			});
 		}
@@ -873,13 +776,7 @@ public class CyVerseConnectionManager
 			}
 			catch (JargonException | IOException e)
 			{
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"Upload error",
-						"Could not upload the images to CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-						false);
+				SanimalData.getInstance().getErrorDisplay().notify("Could not upload the images to CyVerse!\n" + ExceptionUtils.getStackTrace(e));
 			}
 			this.sessionManager.closeSession();
 		}
@@ -982,13 +879,7 @@ public class CyVerseConnectionManager
 			}
 			catch (JargonException e)
 			{
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"Saving error",
-						"Could not save the image list to the collection on CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-						false);
+				SanimalData.getInstance().getErrorDisplay().notify("Could not save the image list to the collection on CyVerse!\n" + ExceptionUtils.getStackTrace(e));
 			}
 			this.sessionManager.closeSession();
 		}
@@ -1038,13 +929,7 @@ public class CyVerseConnectionManager
 							catch (JsonSyntaxException e)
 							{
 								// If the JSON file is incorrectly formatted, throw an error
-								SanimalData.getInstance().getErrorDisplay().showPopup(
-										Alert.AlertType.ERROR,
-										null,
-										"Error",
-										"JSON upload error",
-										"Could not read the upload metadata for the upload " + file.getName() + "!\n" + ExceptionUtils.getStackTrace(e),
-										false);
+								SanimalData.getInstance().getErrorDisplay().notify("Could not read the upload metadata for the upload " + file.getName() + "!\n" + ExceptionUtils.getStackTrace(e));
 							}
 						}
 					}
@@ -1052,13 +937,7 @@ public class CyVerseConnectionManager
 			}
 			catch (JargonException e)
 			{
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"Upload retrieval error",
-						"Could not download the list of uploads to the collection from CyVerse!\n" + ExceptionUtils.getStackTrace(e),
-						false);
+				SanimalData.getInstance().getErrorDisplay().notify("Could not download the list of uploads to the collection from CyVerse!\n" + ExceptionUtils.getStackTrace(e));
 			}
 			this.sessionManager.closeSession();
 		}
@@ -1090,13 +969,7 @@ public class CyVerseConnectionManager
 			catch (JargonException e)
 			{
 				e.printStackTrace();
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"Download failed",
-						"Downloading uploaded collection failed!",
-						false);
+				SanimalData.getInstance().getErrorDisplay().notify("Downloading uploaded collection failed!");
 			}
 			this.sessionManager.closeSession();
 		}
@@ -1183,14 +1056,7 @@ public class CyVerseConnectionManager
 			}
 			catch (JargonQueryException | JargonException | NumberFormatException | GenQueryBuilderException e)
 			{
-				e.printStackTrace();
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"Query failed",
-						"Query caused an exception!",
-						false);
+				SanimalData.getInstance().getErrorDisplay().notify("Query caused an exception!\n" + ExceptionUtils.getStackTrace(e));
 			}
 			this.sessionManager.closeSession();
 		}
@@ -1322,14 +1188,7 @@ public class CyVerseConnectionManager
 			}
 			catch (JargonException | NumberFormatException e)
 			{
-				e.printStackTrace();
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"Query failed",
-						"Query caused an exception!",
-						false);
+				SanimalData.getInstance().getErrorDisplay().notify("Query caused an exception!\n" + ExceptionUtils.getStackTrace(e));
 			}
 			this.sessionManager.closeSession();
 		}
@@ -1370,13 +1229,7 @@ public class CyVerseConnectionManager
 			}
 			catch (JargonException e)
 			{
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"JSON error",
-						"Could not pull the remote file (" + cyverseFile.getName() + ")!\n" + ExceptionUtils.getStackTrace(e),
-						false);
+				SanimalData.getInstance().getErrorDisplay().notify("Could not pull the remote file (" + cyverseFile.getName() + ")!\n" + ExceptionUtils.getStackTrace(e));
 			}
 			this.sessionManager.closeSession();
 		}
@@ -1417,25 +1270,13 @@ public class CyVerseConnectionManager
 				}
 				else
 				{
-					SanimalData.getInstance().getErrorDisplay().showPopup(
-							Alert.AlertType.ERROR,
-							null,
-							"Error",
-							"Permission error",
-							"Could not read the remote file!",
-							false);
+					SanimalData.getInstance().getErrorDisplay().notify("Could not read the remote file!");
 				}
 			}
 		}
 		catch (IOException | JargonException e)
 		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"CyVerse error",
-					"Could not pull the remote file!\n" + ExceptionUtils.getStackTrace(e),
-					false);
+			SanimalData.getInstance().getErrorDisplay().notify("Could not pull the remote file!\n" + ExceptionUtils.getStackTrace(e));
 		}
 
 		// If anything fails return null
@@ -1481,24 +1322,12 @@ public class CyVerseConnectionManager
 			}
 			else
 			{
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"File error",
-						"Error creating a temporary file to write to!",
-						false);
+				SanimalData.getInstance().getErrorDisplay().notify("Error creating a temporary file to write to!");
 			}
 		}
 		catch (IOException | JargonException e)
 		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"Permission error",
-					"Error pushing remote file (" + file + ")!\n" + ExceptionUtils.getStackTrace(e),
-					false);
+			SanimalData.getInstance().getErrorDisplay().notify("Error pushing remote file (" + file + ")!\n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 }

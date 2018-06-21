@@ -109,13 +109,7 @@ public class ImageEntry extends ImageContainer
 		}
 		catch (ImageReadException | IOException e)
 		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"Metadata error",
-					"Error reading image metadata for file " + this.getFile().getName() + "!\n" + ExceptionUtils.getStackTrace(e),
-					false);
+			SanimalData.getInstance().getErrorDisplay().notify("Error reading image metadata for file " + this.getFile().getName() + "!\n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 
@@ -193,13 +187,7 @@ public class ImageEntry extends ImageContainer
 					}
 					catch (NumberFormatException ignored)
 					{
-						SanimalData.getInstance().getErrorDisplay().showPopup(
-								Alert.AlertType.ERROR,
-								null,
-								"Error",
-								"Location error",
-								"Error parsing elevation for image, it was " + locationElevation + "!\n",
-								false);
+						SanimalData.getInstance().getErrorDisplay().notify("Error parsing elevation for image, it was " + locationElevation + "!\n");
 					}
 				}
 			}
@@ -266,13 +254,7 @@ public class ImageEntry extends ImageContainer
 							}
 							catch (NumberFormatException ignored)
 							{
-								SanimalData.getInstance().getErrorDisplay().showPopup(
-										Alert.AlertType.ERROR,
-										null,
-										"Error",
-										"Species error",
-										"Error parsing species count for image, it was " + speciesCount + "!\n",
-										false);
+								SanimalData.getInstance().getErrorDisplay().notify("Error parsing species count for image, it was " + speciesCount + "!\n");
 							}
 						}
 					}
@@ -519,13 +501,7 @@ public class ImageEntry extends ImageContainer
 		}
 		catch (ImageReadException | IOException | ImageWriteException e)
 		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"Metadata error",
-					"Error writing metadata to the image " + this.getFile().getName() + "!\n" + ExceptionUtils.getStackTrace(e),
-					false);
+			SanimalData.getInstance().getErrorDisplay().notify("Error writing metadata to the image " + this.getFile().getName() + "!\n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 }

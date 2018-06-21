@@ -12,6 +12,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.SanimalData;
 import model.util.FXMLLoaderUtils;
+import org.controlsfx.control.action.Action;
 
 import java.util.Optional;
 
@@ -50,29 +51,12 @@ public class Sanimal extends Application
             // If a task is still running ask for confirmation to exit
             if (SanimalData.getInstance().getSanimalExecutor().anyTaskRunning())
             {
-                // Code examples from here: https://stackoverflow.com/questions/31540500/alert-box-for-when-user-attempts-to-close-application-using-setoncloserequest-in
-
-                // Show an alert notifying that exiting now may cause problems
-                Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
-                Button btnExit = (Button) confirmation.getDialogPane().lookupButton(ButtonType.OK);
-                Button btnWait = (Button) confirmation.getDialogPane().lookupButton(ButtonType.CANCEL);
-                btnExit.setText("Exit");
-                btnWait.setText("Wait");
-                confirmation.setHeaderText("Exit Warning");
-                confirmation.setContentText("Sanimal is still cleaning up background tasks and exiting now may cause data corruption. Are you sure you want to exit?");
-                confirmation.initModality(Modality.APPLICATION_MODAL);
-                confirmation.initOwner(primaryStage);
-
-                Optional<ButtonType> buttonType = confirmation.showAndWait();
-                // Exit if everything's ok, otherwise continue
-                if (buttonType.isPresent() && buttonType.get() == ButtonType.OK)
-                    System.exit(0);
-                else
-                    event.consume();
-            }
-            else
-            {
-                System.exit(0);
+                SanimalData.getInstance().getErrorDisplay().notify("Sanimal is still cleaning up background tasks and exiting now may cause data corruption. Are you sure you want to exit?",
+					new Action("Exit Anyway", actionEvent ->
+					{
+						System.exit(0);
+					}));
+				event.consume();
             }
         });
         primaryStage.setMaximized(true);

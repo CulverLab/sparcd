@@ -6,6 +6,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -13,7 +14,11 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import library.TreeViewAutomatic;
 import model.SanimalData;
@@ -25,12 +30,14 @@ import model.util.FXMLLoaderUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.MaskerPane;
 import org.controlsfx.control.TaskProgressView;
+import org.controlsfx.control.action.Action;
 import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -189,8 +196,40 @@ public class SanimalUploadController implements Initializable
 			}
 		});
 
+		ObservableList<Task<?>> activeTasks = SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().getActiveTasks();
+
 		// Bind the tasks
-		EasyBind.listBind(this.tpvUploads.getTasks(), SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().getActiveTasks());
+		EasyBind.listBind(this.tpvUploads.getTasks(), activeTasks);
+
+		// This removes the "cancel" button from the task
+		activeTasks.addListener(new ListChangeListener<Task<?>>()
+		{
+			// When the first task gets added we perform some initialization
+			@Override
+			public void onChanged(Change<? extends Task<?>> c)
+			{
+				Node listView = tpvUploads.lookup(".list-view");
+				if (listView instanceof ListView<?>)
+				{
+					((ListView<?>) listView).getItems().addListener((ListChangeListener<Object>) c1 ->
+					{
+						Node group = listView.lookup(".sheet");
+						if (group instanceof Group)
+						{
+							Set<Node> nodes = group.lookupAll(".task-list-cell");
+							nodes.forEach(node ->
+							{
+								Node lookup = node.lookup("borderpane");
+								((BorderPane) lookup).getChildren().removeAll(lookup.lookupAll(".task-cancel-button"));
+							});
+						}
+					});
+				}
+
+				// Initialization is done, so
+				activeTasks.removeListener(this);
+			}
+		});
 	}
 
 	/**
@@ -266,33 +305,20 @@ public class SanimalUploadController implements Initializable
 		if (selected != null)
 		{
 			// If a collection is selected, show an alert that data may be deleted!
-			Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-			alert.initOwner(this.collectionListView.getScene().getWindow());
-			alert.setTitle("Confirmation");
-			alert.setHeaderText("Are you sure you want to delete this collection?");
-			alert.setContentText("Deleting this collection will result in the permanent removal of all images uploaded to CyVerse to this collection. Are you sure you want to continue?");
-			Optional<ButtonType> buttonType = alert.showAndWait();
-			if (buttonType.isPresent())
-			{
-				if (buttonType.get() == ButtonType.OK)
+			SanimalData.getInstance().getErrorDisplay().notify("Are you sure you want to delete this collection?\nDeleting this collection will result in the permanent removal of all images uploaded to CyVerse to this collection.\nAre you sure you want to continue?",
+				new Action("Continue", actionEvent1 ->
 				{
 					// Remove the collection on the CyVerse system
 					SanimalData.getInstance().getConnectionManager().removeCollection(selected);
 
 					// Remove the selected collection
 					SanimalData.getInstance().getCollectionList().remove(selected);
-				}
-			}
+				}));
 		}
 		else
 		{
 			// If no collection is selected, show an alert
-			Alert alert = new Alert(Alert.AlertType.WARNING);
-			alert.initOwner(this.collectionListView.getScene().getWindow());
-			alert.setTitle("No Selection");
-			alert.setHeaderText("No Collection Selected");
-			alert.setContentText("Please select a collection from the collection list to remove.");
-			alert.showAndWait();
+			SanimalData.getInstance().getErrorDisplay().notify("Please select a collection from the collection list to remove.");
 		}
 		actionEvent.consume();
 	}
@@ -399,22 +425,12 @@ public class SanimalUploadController implements Initializable
 			else
 			{
 				// If an invalid directory is selected, show an alert
-				SanimalData.getInstance().getErrorDisplay().showPopup(Alert.AlertType.WARNING,
-						this.collectionListView.getScene().getWindow(),
-						"Invalid Directory",
-						"Invalid Directory (" + imageDirectory.getFile().getName() + ") Selected",
-						"An image in the directory (" + imageDirectory.getFile().getName() + ") you selected to save does not have a location. Please ensure all images are tagged with a location!",
-						true);
+				SanimalData.getInstance().getErrorDisplay().notify("An image in the directory (" + imageDirectory.getFile().getName() + ") you selected to save does not have a location. Please ensure all images are tagged with a location!");
 			}
 		}
 		else
 		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(Alert.AlertType.ERROR,
-					this.collectionListView.getScene().getWindow(),
-					"Error",
-					"Directory not downloaded",
-					"The Cloud directory has not been downloaded yet, how are you going to save it?",
-					false);
+			SanimalData.getInstance().getErrorDisplay().notify("The Cloud directory has not been downloaded yet, how are you going to save it?");
 		}
 	}
 
@@ -432,16 +448,9 @@ public class SanimalUploadController implements Initializable
 			if (selectedCollection.getValue().getUploads().stream().anyMatch(CloudUploadEntry::hasBeenDownloaded))
 			{
 				// Create the alert
-				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-				alert.initOwner(this.imageTree.getScene().getWindow());
-				alert.setTitle("Changes lost");
-				alert.setHeaderText("Unsaved changes may be lost");
-				alert.setContentText("Any unsaved changes to uploads will be lost, continue?");
-				Optional<ButtonType> responseOptional = alert.showAndWait();
-				responseOptional.ifPresent(response ->
-				{
+				SanimalData.getInstance().getErrorDisplay().notify("Any unsaved changes to uploads will be lost, continue?",
 					// If they clicked OK, clear known uploads and resync
-					if (response.getButtonData() == ButtonBar.ButtonData.OK_DONE)
+					new Action("Continue", actionEvent1 ->
 					{
 						// Clear any known uploads
 						for (CloudUploadEntry cloudUploadEntry : this.selectedCollection.getValue().getUploads())
@@ -451,8 +460,7 @@ public class SanimalUploadController implements Initializable
 						// Clear the uploads and resync
 						this.selectedCollection.getValue().getUploads().clear();
 						this.syncUploadsForCollection(this.selectedCollection.getValue());
-					}
-				});
+					}));
 			}
 			else
 			{

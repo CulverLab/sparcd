@@ -82,13 +82,13 @@ public class SanimalData
 	// Manager of all temporary files used by the SANIMAL software
 	private final TempDirectoryManager tempDirectoryManager = new TempDirectoryManager();
 
-	// Class used to display errors as popups
-	private final ErrorDisplay errorDisplay = new ErrorDisplay();
-
 	// List of sanimal settings
 	private final SettingsData settings = new SettingsData();
 	private AtomicBoolean needSettingsSync = new AtomicBoolean(false);
 	private AtomicBoolean settingsSyncInProgress = new AtomicBoolean(false);
+
+	// Class used to display errors as popups
+	private final ErrorDisplay errorDisplay = new ErrorDisplay(this);
 
 	// Query engine used in storing the current query setup
 	private QueryEngine queryEngine = new QueryEngine();

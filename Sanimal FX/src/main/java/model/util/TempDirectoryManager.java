@@ -32,13 +32,7 @@ public class TempDirectoryManager
 		}
 		catch (IOException e)
 		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"Directory error",
-					"Error creating a temporary SANIMAL directory!\n" + ExceptionUtils.getStackTrace(e),
-					false);
+			SanimalData.getInstance().getErrorDisplay().notify("Error creating a temporary SANIMAL directory!\n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 

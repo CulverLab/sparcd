@@ -309,13 +309,7 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 				else
 				{
 					// If an invalid directory is selected, show an alert
-					SanimalData.getInstance().getErrorDisplay().showPopup(
-							Alert.AlertType.WARNING,
-							this.mainPane.getScene().getWindow(),
-							"Invalid Directory",
-							"Invalid Directory (" + imageDirectory.getFile().getName() + ") Selected",
-							"An image in the directory (" + imageDirectory.getFile().getName() + ") you selected does not have a location. Please ensure all images are tagged with a location!",
-							true);
+					SanimalData.getInstance().getErrorDisplay().notify("An image in the directory (" + imageDirectory.getFile().getName() + ") you selected does not have a location. Please ensure all images are tagged with a location!");
 				}
 			});
 		}

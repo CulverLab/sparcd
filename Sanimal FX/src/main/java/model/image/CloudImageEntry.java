@@ -78,13 +78,7 @@ public class CloudImageEntry extends ImageEntry
 			}
 			catch (IOException e)
 			{
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"Error initializing",
-						"Error initializing placeholder image for cloud images!\n" + ExceptionUtils.getStackTrace(e),
-						false);
+				SanimalData.getInstance().getErrorDisplay().notify("Error initializing placeholder image for cloud images!\n" + ExceptionUtils.getStackTrace(e));
 			}
 		}
 

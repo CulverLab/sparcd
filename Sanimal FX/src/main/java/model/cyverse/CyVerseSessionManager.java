@@ -1,6 +1,5 @@
 package model.cyverse;
 
-import javafx.collections.FXCollections;
 import javafx.scene.control.Alert;
 import javafx.util.Pair;
 import model.SanimalData;
@@ -15,7 +14,6 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactoryImpl;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
 
 /**
  * Class that maintains connections to cyverse
@@ -64,13 +62,7 @@ public class CyVerseSessionManager
 			// Print an error and return false
 			catch (JargonException e)
 			{
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"Session error",
-						"Error creating a session!\n" + ExceptionUtils.getStackTrace(e),
-						false);
+				SanimalData.getInstance().getErrorDisplay().notify("Error creating a session!\n" + ExceptionUtils.getStackTrace(e));
 				return false;
 			}
 		}
@@ -95,13 +87,7 @@ public class CyVerseSessionManager
 			// An error occured, ignore it
 			catch (JargonException e)
 			{
-				SanimalData.getInstance().getErrorDisplay().showPopup(
-						Alert.AlertType.ERROR,
-						null,
-						"Error",
-						"Session error",
-						"Error closing a session!\n" + org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(e),
-						false);
+				SanimalData.getInstance().getErrorDisplay().notify("Error closing a session!\n" + org.apache.commons.lang.exception.ExceptionUtils.getStackTrace(e));
 			}
 			this.sessions.remove(current);
 		}
