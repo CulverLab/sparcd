@@ -765,7 +765,7 @@ public class CyVerseConnectionManager
 						localToUpload.delete();
 					}
 
-					SanimalData.getInstance().getEsConnectionManager().indexImages(uploadDirName, directoryToWrite);
+					SanimalData.getInstance().getEsConnectionManager().indexImages(uploadDirName, collection.getID().toString(), directoryToWrite);
 					// Let rules do the rest!
 				}
 			}
