@@ -338,7 +338,7 @@ public class LocationStatFormatter extends TextFormatter
 			for (Location other : analysis.getAllImageLocations())
 				if (!location.equals(other))
 				{
-					double distance = SanimalAnalysisUtils.distanceBetween(location.getLat(), location.getLng(), other.getLat(), other.getLng());
+					double distance = SanimalAnalysisUtils.distanceBetween(location.getLatitude(), location.getLongitude(), other.getLatitude(), other.getLongitude());
 					if (distance >= maxDistance)
 					{
 						maxDistance = distance;
@@ -368,7 +368,7 @@ public class LocationStatFormatter extends TextFormatter
 			toReturn.append(String.format("%-32s", location.getName()));
 			for (Location other : analysis.getAllImageLocations())
 			{
-				double distance = SanimalAnalysisUtils.distanceBetween(location.getLat(), location.getLng(), other.getLat(), other.getLng());
+				double distance = SanimalAnalysisUtils.distanceBetween(location.getLatitude(), location.getLongitude(), other.getLatitude(), other.getLongitude());
 				toReturn.append(String.format("%-28f", distance));
 			}
 			toReturn.append("\n");

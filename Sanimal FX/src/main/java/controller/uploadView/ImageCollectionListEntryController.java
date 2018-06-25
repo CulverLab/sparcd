@@ -262,7 +262,7 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 									this.updateMessage("Uploading image directory " + imageDirectory.getFile().getName() + " to CyVerse.");
 									messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
 									// Upload images to CyVerse, we give it a transfer status callback so that we can show the progress
-									SanimalData.getInstance().getConnectionManager().uploadImages(ImageCollectionListEntryController.this.getItem(), imageDirectory, new TransferStatusCallbackListener()
+									SanimalData.getInstance().getCyConnectionManager().uploadImages(ImageCollectionListEntryController.this.getItem(), imageDirectory, new TransferStatusCallbackListener()
 									{
 										@Override
 										public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus)

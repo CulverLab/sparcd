@@ -83,30 +83,42 @@ public class ErrorDisplay
 				this.notificationPane.hide();
 				action.handle(actionEvent);
 			})).toArray(Action[]::new));
+			// Reset the delay
 			this.delay.playFromStart();
 		}
 		else
 		{
+			// Create an alert from the content and the actions
 			Alert alert = new Alert(Alert.AlertType.INFORMATION);
+			// If our content is too long, replace it with a text area instead of a label for increased readability
 			if (content.length() > 150)
 			{
 				TextArea area = new TextArea(content);
 				area.textProperty().bind(alert.contentTextProperty());
 				alert.getDialogPane().setContent(area);
 			}
+			// Set our alert content and header
 			alert.setContentText(content);
 			alert.setHeaderText(null);
+			// If we have actions, add them as buttons
 			if (actions.length > 0)
 			{
+				// Clear the buttons currently available
 				alert.getButtonTypes().clear();
+				// Create a parallel array to the actions array of button types
 				ButtonType[] buttonTypes = new ButtonType[actions.length];
+				// For each action, create a button that fires that action
 				for (int i = 0; i < actions.length; i++)
 					buttonTypes[i] = new ButtonType(actions[i].getText());
+				// Set the alert's buttons
 				alert.getButtonTypes().setAll(buttonTypes);
+				// Add a cancel button
 				alert.getButtonTypes().add(ButtonType.CANCEL);
+				// Grab the result of the alert
 				Optional<ButtonType> result = alert.showAndWait();
 				result.ifPresent(buttonType ->
 				{
+					// Find the action for that button type and fire off the action
 					for (int i = 0; i < buttonTypes.length; i++)
 						if (buttonTypes[i] == buttonType)
 							actions[i].handle(new ActionEvent());
@@ -114,6 +126,7 @@ public class ErrorDisplay
 			}
 			else
 			{
+				// Just show the alert
 				alert.show();
 			}
 		}
@@ -129,6 +142,21 @@ public class ErrorDisplay
 		System.err.println(errorMessage);
 	}
 
+	/**
+	 * Prints a debug message to STDOut for internal debug
+	 *
+	 * @param debugMessage The message
+	 */
+	public void printDebug(String debugMessage)
+	{
+		System.out.println(debugMessage);
+	}
+
+	/**
+	 * Sets the notification pane reference that the error display should update
+	 *
+	 * @param notificationPane The pane to update
+	 */
 	@FXML
 	public void setNotificationPane(NotificationPane notificationPane)
 	{

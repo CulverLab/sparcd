@@ -241,7 +241,7 @@ public class ImageCollectionSettingsController implements Initializable
 		for (Permission permission : currentlySelected.getPermissions())
 		{
 			// Double check that each username entered is valid
-			if (!SanimalData.getInstance().getConnectionManager().isValidUsername(permission.getUsername()))
+			if (!SanimalData.getInstance().getCyConnectionManager().isValidUsername(permission.getUsername()))
 			{
 				SanimalData.getInstance().getErrorDisplay().notify("The username (" + permission.getUsername() + ") you entered was not found on the CyVerse system. Reminder: permissions are expecting usernames, not real names.");
 				btnSave.setDisable(false);
@@ -271,7 +271,7 @@ public class ImageCollectionSettingsController implements Initializable
 				StringProperty messageUpdater = new SimpleStringProperty("");
 				messageUpdater.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
 
-				SanimalData.getInstance().getConnectionManager().pushLocalCollection(originalCollection, messageUpdater);
+				SanimalData.getInstance().getCyConnectionManager().pushLocalCollection(originalCollection, messageUpdater);
 
 				this.updateProgress(1, 1);
 				return null;
@@ -311,7 +311,7 @@ public class ImageCollectionSettingsController implements Initializable
 				// Grab the owner string
 				newOwner = inputValue.get();
 				// Test if it is valid
-				gotValidUsername = SanimalData.getInstance().getConnectionManager().isValidUsername(newOwner);
+				gotValidUsername = SanimalData.getInstance().getCyConnectionManager().isValidUsername(newOwner);
 				if (!gotValidUsername)
 				{
 					// If we didn't get a valid name, show an alert, and ask for a new username

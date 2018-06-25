@@ -12,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import model.cyverse.CyVerseConnectionManager;
 import model.cyverse.ImageCollection;
+import model.elasticsearch.ElasticSearchConnectionManager;
 import model.image.ImageContainer;
 import model.image.ImageDirectory;
 import model.image.ImageEntry;
@@ -74,7 +75,10 @@ public class SanimalData
 	private final Gson gson = FxGson.fullBuilder().setPrettyPrinting().serializeNulls().create();
 
 	// The connection manager used to authenticate the CyVerse user
-	private CyVerseConnectionManager connectionManager = new CyVerseConnectionManager();
+	private CyVerseConnectionManager cyConnectionManager = new CyVerseConnectionManager();
+
+	// The connection manager used to manage the database
+	private ElasticSearchConnectionManager esConnectionManager = new ElasticSearchConnectionManager();
 
 	// Preferences used to save the user's username
 	private final Preferences sanimalPreferences = Preferences.userNodeForPackage(SanimalData.class);
@@ -105,7 +109,7 @@ public class SanimalData
 		this.setupAutoSpeciesSync();
 
 		// Create the location list and add some default locations
-		this.locationList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList(location -> new Observable[]{location.nameProperty(), location.idProperty(), location.getLatProperty(), location.getLngProperty(), location.getElevationProperty() }));
+		this.locationList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList(location -> new Observable[]{location.nameProperty(), location.idProperty(), location.latitudeProperty(), location.longitudeProperty(), location.elevationProperty() }));
 
 		// When the location list changes we push the changes to the CyVerse servers
 		this.setupAutoLocationSync();
@@ -140,7 +144,7 @@ public class SanimalData
 					{
 						// Perform the push of the location data
 						this.updateMessage("Syncing new species list to CyVerse...");
-						SanimalData.getInstance().getConnectionManager().pushLocalSpecies(SanimalData.getInstance().getSpeciesList());
+						SanimalData.getInstance().getEsConnectionManager().pushLocalSpecies(SanimalData.getInstance().getSpeciesList());
 						return null;
 					}
 				};
@@ -196,7 +200,7 @@ public class SanimalData
 					{
 						// Perform the push of the location data
 						this.updateMessage("Syncing new location list to CyVerse...");
-						SanimalData.getInstance().getConnectionManager().pushLocalLocations(SanimalData.getInstance().getLocationList());
+						SanimalData.getInstance().getEsConnectionManager().pushLocalLocations(SanimalData.getInstance().getLocationList());
 						return null;
 					}
 				};
@@ -320,7 +324,7 @@ public class SanimalData
 					{
 						// Perform the push of the settings data
 						this.updateMessage("Syncing new settings to CyVerse...");
-						SanimalData.getInstance().getConnectionManager().pushLocalSettings(SanimalData.getInstance().getSettings());
+						SanimalData.getInstance().getEsConnectionManager().pushLocalSettings(SanimalData.getInstance().getSettings());
 						return null;
 					}
 				};
@@ -408,9 +412,17 @@ public class SanimalData
 	/**
 	 * @return The Cyverse connection manager used to authenticate and upload the user's images
 	 */
-	public CyVerseConnectionManager getConnectionManager()
+	public CyVerseConnectionManager getCyConnectionManager()
 	{
-		return connectionManager;
+		return cyConnectionManager;
+	}
+
+	/**
+	 * @return The ElasticSearch connection manager used to manage the DB
+	 */
+	public ElasticSearchConnectionManager getEsConnectionManager()
+	{
+		return esConnectionManager;
 	}
 
 	/**

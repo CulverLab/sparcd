@@ -132,7 +132,18 @@
             <artifactId>commons-compress</artifactId>
             <version>RELEASE</version>
         </dependency>
-
+        <!-- elasticsearch -->
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>6.3.0</version>
+        </dependency>
+        <!-- log4j2 for elasticsearch -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>RELEASE</version>
+        </dependency>
 
     </dependencies>
 

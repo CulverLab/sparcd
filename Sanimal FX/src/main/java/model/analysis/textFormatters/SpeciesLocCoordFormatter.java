@@ -42,8 +42,8 @@ public class SpeciesLocCoordFormatter extends TextFormatter
 			toReturn.append("Location                        UTMe-w   UTMn-s    Elevation   Lat        Long\n");
 			for (Location location : analysis.locationsForImageList(withSpecies))
 			{
-				UTMCoord coord = SanimalAnalysisUtils.Deg2UTM(location.getLat(), location.getLng());
-				toReturn.append(String.format("%-28s  %8d  %8d  %7.0f      %8.6f  %8.6f\n", location.getName(), Math.round(coord.getEasting()), Math.round(coord.getNorthing()), location.getElevation(), location.getLat(), location.getLng()));
+				UTMCoord coord = SanimalAnalysisUtils.Deg2UTM(location.getLatitude(), location.getLongitude());
+				toReturn.append(String.format("%-28s  %8d  %8d  %7.0f      %8.6f  %8.6f\n", location.getName(), Math.round(coord.getEasting()), Math.round(coord.getNorthing()), location.getElevation(), location.getLatitude(), location.getLongitude()));
 			}
 			toReturn.append("\n");
 		}

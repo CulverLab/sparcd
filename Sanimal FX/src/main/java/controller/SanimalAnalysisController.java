@@ -9,8 +9,6 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -25,13 +23,11 @@ import model.query.IQueryCondition;
 import model.query.QueryEngine;
 import model.threading.ErrorTask;
 import model.util.FXMLLoaderUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.controlsfx.control.MaskerPane;
 import org.controlsfx.control.action.Action;
 
 import java.net.URL;
 import java.util.List;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
@@ -166,7 +162,7 @@ public class SanimalAnalysisController implements Initializable
 			{
 				this.updateMessage("Performing query...");
 				// Grab the result of the query
-				return SanimalData.getInstance().getConnectionManager().performQuery(query);
+				return SanimalData.getInstance().getCyConnectionManager().performQuery(query);
 			}
 		};
 		Integer finalEventInterval = eventInterval;
@@ -176,6 +172,8 @@ public class SanimalAnalysisController implements Initializable
 		{
 			// Get the result of the first query
 			List<String> irodsAbsolutePaths = queryTask.getValue();
+
+			this.mpnQuerying.setVisible(false);
 
 			// Ask the user if they would like to continue to part 2 of the query where we retrieve metadata. This takes a while
 			SanimalData.getInstance().getErrorDisplay().notify("This query will return " + irodsAbsolutePaths.size() + " results at approximately 6 results per second, continue?",
@@ -191,7 +189,7 @@ public class SanimalAnalysisController implements Initializable
 						{
 							this.updateMessage("Performing image query...");
 							// Grab the result of the image query
-							return SanimalData.getInstance().getConnectionManager().fetchMetadataFor(irodsAbsolutePaths);
+							return SanimalData.getInstance().getCyConnectionManager().fetchMetadataFor(irodsAbsolutePaths);
 						}
 					};
 
@@ -210,8 +208,6 @@ public class SanimalAnalysisController implements Initializable
 					SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(queryImageTask);
 				})
 			);
-
-			this.mpnQuerying.setVisible(false);
 		});
 		SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(queryTask);
 

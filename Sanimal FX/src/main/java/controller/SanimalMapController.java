@@ -149,14 +149,14 @@ public class SanimalMapController implements Initializable
 		// Create the marker options which defines the title and position
 		MarkerOptions options = new MarkerOptions()
 				.title(location.getName())
-				.position(new LatLong(location.getLat(), location.getLng()));
+				.position(new LatLong(location.getLatitude(), location.getLongitude()));
 		Marker marker = new Marker(options);
 		// Add a marker to the map
 		this.googleMap.addMarker(marker);
 		// Create an info window that shows the location details when opened
 		InfoWindowOptions infoWindowOptions = new InfoWindowOptions()
 				.content(location.getName())
-				.position(new LatLong(location.getLat(), location.getLng()));
+				.position(new LatLong(location.getLatitude(), location.getLongitude()));
 		InfoWindow infoWindow = new InfoWindow(infoWindowOptions);
 		// When we click the map marker, open the info window
 		this.googleMap.addUIEventHandler(marker, UIEventType.click, (JSObject obj) -> {

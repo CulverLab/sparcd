@@ -80,14 +80,14 @@ public class VisCSVController implements VisControllerBase
 			{
 				// Add lat/lng
 				locationString = locationString +
-					location.getLat() + "," +
-					location.getLng() + ",";
+					location.getLatitude() + "," +
+					location.getLongitude() + ",";
 			}
 			// If we're using UTM
 			else if (SanimalData.getInstance().getSettings().getLocationFormat() == SettingsData.LocationFormat.UTM)
 			{
 				// Convert to UTM, and print it
-				UTMCoord utmCoord = SanimalAnalysisUtils.Deg2UTM(location.getLat(), location.getLng());
+				UTMCoord utmCoord = SanimalAnalysisUtils.Deg2UTM(location.getLatitude(), location.getLongitude());
 				locationString = locationString +
 					utmCoord.getZone().toString() + utmCoord.getLetter().toString() + "," +
 					utmCoord.getEasting() + "E," +
@@ -123,13 +123,13 @@ public class VisCSVController implements VisControllerBase
 			{
 				// Use lat,lng
 				locationString = locationString +
-					location.getLat() + "," +
-					location.getLng() + ",";
+					location.getLatitude() + "," +
+					location.getLongitude() + ",";
 			}
 			// If we're using UTM
 			else
 			{
-				UTMCoord utmCoord = SanimalAnalysisUtils.Deg2UTM(location.getLat(), location.getLng());
+				UTMCoord utmCoord = SanimalAnalysisUtils.Deg2UTM(location.getLatitude(), location.getLongitude());
 				locationString = locationString +
 					utmCoord.getZone().toString() + utmCoord.getLetter().toString() + "," +
 					utmCoord.getEasting() + "E," +

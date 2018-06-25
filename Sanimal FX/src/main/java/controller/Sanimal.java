@@ -4,17 +4,11 @@ import com.panemu.tiwulfx.form.BaseControl;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.SanimalData;
 import model.util.FXMLLoaderUtils;
 import org.controlsfx.control.action.Action;
-
-import java.util.Optional;
 
 /**
  * Main class entry point
@@ -57,6 +51,10 @@ public class Sanimal extends Application
 						System.exit(0);
 					}));
 				event.consume();
+            }
+            else
+            {
+                System.exit(0);
             }
         });
         primaryStage.setMaximized(true);

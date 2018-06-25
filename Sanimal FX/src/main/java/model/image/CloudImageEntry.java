@@ -6,7 +6,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import model.SanimalData;
 import model.location.Location;
@@ -260,7 +259,7 @@ public class CloudImageEntry extends ImageEntry
 			protected File call()
 			{
 				this.updateMessage("Downloading the image " + getCyverseFile().getName() + " for editing...");
-				return SanimalData.getInstance().getConnectionManager().remoteToLocalImageFile(getCyverseFile());
+				return SanimalData.getInstance().getCyConnectionManager().remoteToLocalImageFile(getCyverseFile());
 			}
 		};
 

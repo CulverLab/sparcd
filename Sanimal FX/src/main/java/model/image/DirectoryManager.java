@@ -1,16 +1,12 @@
 package model.image;
 
-import javafx.scene.control.Alert;
 import model.SanimalData;
 import model.analysis.SanimalAnalysisUtils;
 import model.location.Location;
 import model.species.Species;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.irods.jargon.core.pub.domain.AvuData;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -260,8 +256,8 @@ public class DirectoryManager
 				currentLocation.setName(locationName);
 				currentLocation.setId("None");
 				currentLocation.setElevation(0.0);
-				currentLocation.setLat(0.0);
-				currentLocation.setLng(0.0);
+				currentLocation.setLatitude(0.0);
+				currentLocation.setLongitude(0.0);
 				knownLocations.add(currentLocation);
 			}
 

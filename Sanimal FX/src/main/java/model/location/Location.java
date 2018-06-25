@@ -10,11 +10,11 @@ import javafx.beans.property.*;
 public class Location
 {
 	// Properties of a location are the name, latitude, longitude, and elevation
-	private final StringProperty nameProperty = new SimpleStringProperty();
-	private final StringProperty idProperty = new SimpleStringProperty();
-	private final DoubleProperty latProperty = new SimpleDoubleProperty();
-	private final DoubleProperty lngProperty = new SimpleDoubleProperty();
-	private final DoubleProperty elevationProperty = new SimpleDoubleProperty();
+	private final StringProperty name = new SimpleStringProperty();
+	private final StringProperty id = new SimpleStringProperty();
+	private final DoubleProperty latitude = new SimpleDoubleProperty();
+	private final DoubleProperty longitude = new SimpleDoubleProperty();
+	private final DoubleProperty elevation = new SimpleDoubleProperty();
 
 	/**
 	 * Location constructor
@@ -32,11 +32,11 @@ public class Location
 	 */
 	public Location(String name, String id, Double lat, Double lng, Double elevation)
 	{
-		this.nameProperty.setValue(name);
-		this.idProperty.setValue(id);
-		this.latProperty.setValue(lat);
-		this.lngProperty.setValue(lng);
-		this.elevationProperty.setValue(elevation);
+		this.name.setValue(name);
+		this.id.setValue(id);
+		this.latitude.setValue(lat);
+		this.longitude.setValue(lng);
+		this.elevation.setValue(elevation);
 	}
 
 	/**
@@ -44,37 +44,37 @@ public class Location
 	 */
 	public Location()
 	{
-		this.nameProperty.setValue("");
-		this.idProperty.setValue("");
-		this.latProperty.setValue(-1000);
-		this.lngProperty.setValue(-1000);
-		this.elevationProperty.setValue(-20000);
+		this.name.setValue("");
+		this.id.setValue("");
+		this.latitude.setValue(-1000);
+		this.longitude.setValue(-1000);
+		this.elevation.setValue(-20000);
 	}
 
 	/**
 	 * @return True if the name is not empty
 	 */
-	public Boolean nameValid() { return !this.nameProperty.getValue().isEmpty(); }
+	public Boolean nameValid() { return !this.name.getValue().isEmpty(); }
 
 	/**
 	 * @return True if the id is not empty
 	 */
-	public Boolean idValid() { return !this.idProperty.getValue().isEmpty(); }
+	public Boolean idValid() { return !this.id.getValue().isEmpty(); }
 
 	/**
 	 * @return True if latitude is between -85 and +85
 	 */
-	public Boolean latValid() { return this.latProperty.getValue() <= 85.0 && this.latProperty.getValue() >= -85.0; }
+	public Boolean latValid() { return this.latitude.getValue() <= 85.0 && this.latitude.getValue() >= -85.0; }
 
 	/**
 	 * @return True if longitude is between -180 and +180
 	 */
-	public Boolean lngValid() { return this.lngProperty.getValue() <= 180.0 && this.lngProperty.getValue() >= -180; }
+	public Boolean lngValid() { return this.longitude.getValue() <= 180.0 && this.longitude.getValue() >= -180; }
 
 	/**
 	 * @return True if elevation is not the default -20000 value
 	 */
-	public Boolean elevationValid() { return this.elevationProperty.getValue() != -20000; }
+	public Boolean elevationValid() { return this.elevation.getValue() != -20000; }
 
 	/**
 	 * @return True if the name, latitude, longitude, and elevation are valid
@@ -88,7 +88,7 @@ public class Location
 	 */
 	public void setName(String name)
 	{
-		this.nameProperty.setValue(name);
+		this.name.setValue(name);
 	}
 
 	/**
@@ -98,7 +98,7 @@ public class Location
 	 */
 	public String getName()
 	{
-		return nameProperty.getValue();
+		return name.getValue();
 	}
 
 	/**
@@ -108,7 +108,7 @@ public class Location
 	 */
 	public StringProperty nameProperty()
 	{
-		return nameProperty;
+		return name;
 	}
 
 	/**
@@ -118,7 +118,7 @@ public class Location
 	 */
 	public void setId(String id)
 	{
-		this.idProperty.setValue(id);
+		this.id.setValue(id);
 	}
 
 	/**
@@ -128,7 +128,7 @@ public class Location
 	 */
 	public String getId()
 	{
-		return idProperty.getValue();
+		return id.getValue();
 	}
 
 	/**
@@ -138,7 +138,7 @@ public class Location
 	 */
 	public StringProperty idProperty()
 	{
-		return idProperty;
+		return id;
 	}
 
 	/**
@@ -146,9 +146,9 @@ public class Location
 	 *
 	 * @param lat The latitude property
 	 */
-	public void setLat(Double lat)
+	public void setLatitude(Double lat)
 	{
-		this.latProperty.setValue(lat);
+		this.latitude.setValue(lat);
 	}
 
 	/**
@@ -156,9 +156,9 @@ public class Location
 	 * 
 	 * @return the latitude of the location
 	 */
-	public Double getLat()
+	public Double getLatitude()
 	{
-		return latProperty.getValue();
+		return latitude.getValue();
 	}
 
 	/**
@@ -166,9 +166,9 @@ public class Location
 	 *
 	 * @return The lat property
 	 */
-	public DoubleProperty getLatProperty()
+	public DoubleProperty latitudeProperty()
 	{
-		return latProperty;
+		return latitude;
 	}
 
 	/**
@@ -176,9 +176,9 @@ public class Location
 	 *
 	 * @param lng The new longitude
 	 */
-	public void setLng(Double lng)
+	public void setLongitude(Double lng)
 	{
-		this.lngProperty.setValue(lng);
+		this.longitude.setValue(lng);
 	}
 
 	/**
@@ -186,9 +186,9 @@ public class Location
 	 * 
 	 * @return the longitude of the location
 	 */
-	public Double getLng()
+	public Double getLongitude()
 	{
-		return lngProperty.getValue();
+		return longitude.getValue();
 	}
 
 	/**
@@ -196,9 +196,9 @@ public class Location
 	 *
 	 * @return The lng property
 	 */
-	public DoubleProperty getLngProperty()
+	public DoubleProperty longitudeProperty()
 	{
-		return lngProperty;
+		return longitude;
 	}
 
 	/**
@@ -208,7 +208,7 @@ public class Location
 	 */
 	public void setElevation(Double elevation)
 	{
-		this.elevationProperty.setValue(elevation);
+		this.elevation.setValue(elevation);
 	}
 
 	/**
@@ -218,7 +218,7 @@ public class Location
 	 */
 	public Double getElevation()
 	{
-		return elevationProperty.getValue();
+		return elevation.getValue();
 	}
 
 	/**
@@ -226,9 +226,9 @@ public class Location
 	 *
 	 * @return The elevation property
 	 */
-	public DoubleProperty getElevationProperty()
+	public DoubleProperty elevationProperty()
 	{
-		return elevationProperty;
+		return elevation;
 	}
 
 	/**
@@ -237,6 +237,6 @@ public class Location
 	@Override
 	public String toString()
 	{
-		return this.getName() + "\nID: " + this.getId() + "\nLatitude: " + this.getLat() + "\nLongitude: " + this.getLng() + "\nElevation: " + this.getElevation();
+		return this.getName() + "\nID: " + this.getId() + "\nLatitude: " + this.getLatitude() + "\nLongitude: " + this.getLongitude() + "\nElevation: " + this.getElevation();
 	}
 }

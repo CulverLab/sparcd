@@ -169,8 +169,8 @@ public class ImageEntry extends ImageContainer
 								.stream()
 								.filter(location ->
 										StringUtils.equalsIgnoreCase(location.getId(), locationId) &&
-												Math.abs(location.getLat() - locationLatitude) < 0.0001 &&
-												Math.abs(location.getLng() - locationLongitude) < 0.0001)// For now, ignore elevation Math.abs(location.getElevation() - Double.parseDouble(locationElevation)) < 25)
+												Math.abs(location.getLatitude() - locationLatitude) < 0.0001 &&
+												Math.abs(location.getLongitude() - locationLongitude) < 0.0001)// For now, ignore elevation Math.abs(location.elevationProperty() - Double.parseDouble(locationElevation)) < 25)
 								.findFirst();
 
 						if (correctLocation.isPresent())
@@ -310,8 +310,8 @@ public class ImageEntry extends ImageContainer
 		// Location metadata
 		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_NAME, locationTaken.getName(), ""));
 		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_ID, locationTaken.getId(), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LATITUDE, locationTaken.getLat().toString(), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, locationTaken.getLng().toString(), ""));
+		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LATITUDE, locationTaken.getLatitude().toString(), ""));
+		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, locationTaken.getLongitude().toString(), ""));
 		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_ELEVATION, locationTaken.getElevation().toString(), "meters"));
 
 		// Species metadata uses the AVU Unit as a foreign key to link a list of entries together
@@ -486,7 +486,7 @@ public class ImageEntry extends ImageContainer
 			if (this.getLocationTaken() != null && this.getLocationTaken().locationValid())
 			{
 				// Write the lat/lng
-				outputSet.setGPSInDegrees(this.getLocationTaken().getLng(), this.getLocationTaken().getLat());
+				outputSet.setGPSInDegrees(this.getLocationTaken().getLongitude(), this.getLocationTaken().getLatitude());
 				// Remove the location entry name and elevation
 				directory.removeField(SanimalMetadataFields.LOCATION_ENTRY);
 				// Add the new location entry name and elevation

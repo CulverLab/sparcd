@@ -237,7 +237,7 @@ public class SanimalUploadController implements Initializable
 				this.updateMessage("Downloading list of uploads to collection: " + collection.getName());
 				DoubleProperty progress = new SimpleDoubleProperty(0.0);
 				progress.addListener((observable, oldValue, newValue) -> this.updateProgress(progress.getValue(), 1.0));
-				SanimalData.getInstance().getConnectionManager().retrieveAndInsertUploadList(collection, progress);
+				SanimalData.getInstance().getCyConnectionManager().retrieveAndInsertUploadList(collection, progress);
 				return null;
 			}
 		};
@@ -293,7 +293,7 @@ public class SanimalUploadController implements Initializable
 					new Action("Continue", actionEvent1 ->
 					{
 						// Remove the collection on the CyVerse system
-						SanimalData.getInstance().getConnectionManager().removeCollection(selected);
+						SanimalData.getInstance().getCyConnectionManager().removeCollection(selected);
 
 						// Remove the selected collection
 						SanimalData.getInstance().getCollectionList().remove(selected);
@@ -330,7 +330,7 @@ public class SanimalUploadController implements Initializable
 				{
 					this.updateMessage("Downloading directory for editing...");
 					// Download the directory and add it to our tree structure
-					CloudImageDirectory cloudDirectory = SanimalData.getInstance().getConnectionManager().downloadUploadDirectory(uploadEntry);
+					CloudImageDirectory cloudDirectory = SanimalData.getInstance().getCyConnectionManager().downloadUploadDirectory(uploadEntry);
 					Platform.runLater(() ->
 					{
 						uploadEntry.setCloudImageDirectory(cloudDirectory);
@@ -392,7 +392,7 @@ public class SanimalUploadController implements Initializable
 						messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
 
 						// Save images to CyVerse, we give it a transfer status callback so that we can show the progress
-						SanimalData.getInstance().getConnectionManager().saveImages(selectedCollection.getValue(), uploadEntry, messageCallback);
+						SanimalData.getInstance().getCyConnectionManager().saveImages(selectedCollection.getValue(), uploadEntry, messageCallback);
 						return null;
 					}
 				};

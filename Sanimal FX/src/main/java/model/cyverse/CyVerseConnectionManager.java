@@ -6,7 +6,6 @@ import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Alert;
 import model.SanimalData;
 import model.constant.SanimalMetadataFields;
 import model.image.*;
@@ -17,7 +16,10 @@ import model.util.SettingsData;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.irods.jargon.core.connection.*;
+import org.irods.jargon.core.connection.AuthScheme;
+import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.connection.IRODSSession;
+import org.irods.jargon.core.connection.IRODSSimpleProtocolManager;
 import org.irods.jargon.core.connection.auth.AuthResponse;
 import org.irods.jargon.core.exception.AuthenticationException;
 import org.irods.jargon.core.exception.InvalidUserException;
@@ -805,7 +807,11 @@ public class CyVerseConnectionManager
 					// Grab the image directory to save
 					ImageDirectory imageDirectory = uploadEntryToSave.getCloudImageDirectory();
 					// Grab the list of images to upload
-					List<CloudImageEntry> toUpload = imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof CloudImageEntry).map(imageContainer -> (CloudImageEntry) imageContainer).collect(Collectors.toList());
+					List<CloudImageEntry> toUpload = imageDirectory.flattened()
+							.filter(imageContainer -> imageContainer instanceof CloudImageEntry)
+							.map(imageContainer -> (CloudImageEntry) imageContainer)
+							.filter(cloudImageEntry -> cloudImageEntry.hasBeenPulledFromCloud() && cloudImageEntry.isCloudDirty())
+							.collect(Collectors.toList());
 					Platform.runLater(() -> imageDirectory.setUploadProgress(0.0));
 
 					messageCallback.setValue("Saving " + toUpload.size() + " images to CyVerse...");
@@ -819,51 +825,48 @@ public class CyVerseConnectionManager
 						// Grab the cloud image entry to upload
 						CloudImageEntry cloudImageEntry = toUpload.get(i);
 						// If it has been pulled save it
-						if (cloudImageEntry.hasBeenPulledFromCloud() && cloudImageEntry.isCloudDirty())
+						if (cloudImageEntry.getSpeciesPresent().isEmpty() && cloudImageEntry.wasTaggedWithSpecies())
+							numberOfDetaggedImages++;
+						else if (!cloudImageEntry.getSpeciesPresent().isEmpty() && !cloudImageEntry.wasTaggedWithSpecies())
+							numberOfRetaggedImages++;
+
+						// Save that specific cloud image
+						this.sessionManager.getCurrentAO().getDataTransferOperations(this.authenticatedAccount).putOperation(cloudImageEntry.getFile(), cloudImageEntry.getCyverseFile(), new TransferStatusCallbackListener()
 						{
-							if (cloudImageEntry.getSpeciesPresent().isEmpty() && cloudImageEntry.wasTaggedWithSpecies())
-								numberOfDetaggedImages++;
-							else if (!cloudImageEntry.getSpeciesPresent().isEmpty() && !cloudImageEntry.wasTaggedWithSpecies())
-								numberOfRetaggedImages++;
+							@Override
+							public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) { return FileStatusCallbackResponse.CONTINUE; }
+							@Override
+							public void overallStatusCallback(TransferStatus transferStatus) {}
+							@Override
+							public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection) { return CallbackResponse.YES_FOR_ALL; }
+						}, null);
 
-							// Save that specific cloud image
-							this.sessionManager.getCurrentAO().getDataTransferOperations(this.authenticatedAccount).putOperation(cloudImageEntry.getFile(), cloudImageEntry.getCyverseFile(), new TransferStatusCallbackListener()
+						// Get the absolute path of the uploaded file
+						String fileAbsoluteCyVersePath = cloudImageEntry.getCyverseFile().getAbsolutePath();
+						// Update the collection tag
+						AvuData collectionIDTag = new AvuData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
+						// Write image metadata to the file
+						List<AvuData> imageMetadata = cloudImageEntry.convertToAVUMetadata();
+						imageMetadata.add(collectionIDTag);
+						imageMetadata.forEach(avuData ->
+						{
+							try
 							{
-								@Override
-								public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus) { return FileStatusCallbackResponse.CONTINUE; }
-								@Override
-								public void overallStatusCallback(TransferStatus transferStatus) {}
-								@Override
-								public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection) { return CallbackResponse.YES_FOR_ALL; }
-							}, null);
-
-							// Get the absolute path of the uploaded file
-							String fileAbsoluteCyVersePath = cloudImageEntry.getCyverseFile().getAbsolutePath();
-							// Update the collection tag
-							AvuData collectionIDTag = new AvuData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
-							// Write image metadata to the file
-							List<AvuData> imageMetadata = cloudImageEntry.convertToAVUMetadata();
-							imageMetadata.add(collectionIDTag);
-							imageMetadata.forEach(avuData ->
-							{
-								try
-								{
-									// Set the file AVU data
-									this.sessionManager.getCurrentAO().getDataObjectAO(this.authenticatedAccount).setAVUMetadata(fileAbsoluteCyVersePath, avuData);
-								}
-								catch (JargonException e)
-								{
-									SanimalData.getInstance().getErrorDisplay().printError("Could not add metadata to image: " + cloudImageEntry.getCyverseFile().getAbsolutePath() + ", error was: ");
-									e.printStackTrace();
-								}
-							});
-
-							// Update the progress every 20 uploads
-							if (i % 20 == 0)
-							{
-								int finalI = i;
-								Platform.runLater(() -> imageDirectory.setUploadProgress(finalI / numberOfImagesToUpload));
+								// Set the file AVU data
+								this.sessionManager.getCurrentAO().getDataObjectAO(this.authenticatedAccount).setAVUMetadata(fileAbsoluteCyVersePath, avuData);
 							}
+							catch (JargonException e)
+							{
+								SanimalData.getInstance().getErrorDisplay().printError("Could not add metadata to image: " + cloudImageEntry.getCyverseFile().getAbsolutePath() + ", error was: ");
+								e.printStackTrace();
+							}
+						});
+
+						// Update the progress every 20 uploads
+						if (i % 20 == 0)
+						{
+							int finalI = i;
+							Platform.runLater(() -> imageDirectory.setUploadProgress(finalI / numberOfImagesToUpload));
 						}
 					}
 
