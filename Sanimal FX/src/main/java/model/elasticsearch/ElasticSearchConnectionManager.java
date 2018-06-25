@@ -2,15 +2,20 @@ package model.elasticsearch;
 
 import com.google.gson.reflect.TypeToken;
 import model.SanimalData;
+import model.image.ImageDirectory;
+import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
 import model.util.SettingsData;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.http.HttpHost;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -27,6 +32,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -46,6 +52,13 @@ public class ElasticSearchConnectionManager
 	private static final Integer INDEX_SANIMAL_USERS_SHARD_COUNT = 1;
 	private static final Integer INDEX_SANIMAL_USERS_REPLICA_COUNT = 0;
 
+	// The name of the metadata index
+	private static final String INDEX_SANIMAL_METADATA = "metadata";
+	// The type for the sanimal metadata index
+	private static final String INDEX_SANIMAL_METADATA_TYPE = "_doc";
+	private static final Integer INDEX_SANIMAL_METADATA_SHARD_COUNT = 1;
+	private static final Integer INDEX_SANIMAL_METADATA_REPLICA_COUNT = 0;
+
 	// The type used to serialize a list of species through Gson
 	private static final Type SPECIES_LIST_TYPE = new TypeToken<ArrayList<Species>>()
 	{
@@ -55,7 +68,7 @@ public class ElasticSearchConnectionManager
 	{
 	}.getType();
 
-	public void nukeAndRecreateIndex()
+	public void nukeAndRecreateUserIndex()
 	{
 		RestHighLevelClient esClient = new RestHighLevelClient(RestClient.builder(new HttpHost(ELASTIC_SEARCH_HOST, ELASTIC_SEARCH_PORT, ELASTIC_SEARCH_SCHEME)));
 
@@ -185,6 +198,117 @@ public class ElasticSearchConnectionManager
 		catch (IOException e)
 		{
 			SanimalData.getInstance().getErrorDisplay().printError("Could not build sanimal users index mapping!\n" + ExceptionUtils.getStackTrace(e));
+		}
+		return builder;
+	}
+
+	public void nukeAndRecreateMetadataIndex()
+	{
+		RestHighLevelClient esClient = new RestHighLevelClient(RestClient.builder(new HttpHost(ELASTIC_SEARCH_HOST, ELASTIC_SEARCH_PORT, ELASTIC_SEARCH_SCHEME)));
+
+		try
+		{
+			DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(INDEX_SANIMAL_METADATA);
+			esClient.indices().delete(deleteIndexRequest);
+		}
+		catch (IOException e)
+		{
+			SanimalData.getInstance().getErrorDisplay().printError("Error deleting '" + INDEX_SANIMAL_METADATA + "' from the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
+		}
+		catch (ElasticsearchStatusException e)
+		{
+			SanimalData.getInstance().getErrorDisplay().printError("Delete failed, status = " + e.status());
+		}
+
+		try
+		{
+			CreateIndexRequest createIndexRequest = new CreateIndexRequest(INDEX_SANIMAL_METADATA);
+			createIndexRequest.settings(Settings.builder()
+					.put("index.number_of_shards", INDEX_SANIMAL_METADATA_SHARD_COUNT)
+					.put("index.number_of_replicas", INDEX_SANIMAL_METADATA_REPLICA_COUNT));
+			createIndexRequest.mapping(INDEX_SANIMAL_METADATA_TYPE, this.makeSanimalMetadataIndexMapping());
+			esClient.indices().create(createIndexRequest);
+		}
+		catch (IOException e)
+		{
+			SanimalData.getInstance().getErrorDisplay().printError("Error creating '" + INDEX_SANIMAL_METADATA + "' from the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
+		}
+
+		try
+		{
+			esClient.close();
+		}
+		catch (IOException e)
+		{
+			SanimalData.getInstance().getErrorDisplay().printError("Could not close ElasticSearch connection: \n" + ExceptionUtils.getStackTrace(e));
+		}
+	}
+
+	private XContentBuilder makeSanimalMetadataIndexMapping()
+	{
+		XContentBuilder builder = null;
+		try
+		{
+			builder = XContentFactory.jsonBuilder()
+			.startObject()
+				.startObject(INDEX_SANIMAL_METADATA_TYPE)
+					.startObject("properties")
+						.startObject("storageType")
+							.field("type", "keyword")
+						.endObject()
+						.startObject("storagePath")
+							.field("type", "text")
+						.endObject()
+						.startObject("collectionID")
+							.field("type", "keyword")
+						.endObject()
+						.startObject("imageMetadata")
+							.field("type", "object")
+							.startObject("properties")
+								.startObject("dateTaken")
+									.field("type", "date")
+									.field("format", "yyyy-MM-dd HH:mm:ss")
+								.endObject()
+								.startObject("location")
+									.field("type", "object")
+									.startObject("properties")
+										.startObject("name")
+											.field("type", "text")
+										.endObject()
+										.startObject("id")
+											.field("type", "text")
+										.endObject()
+										.startObject("elevation")
+											.field("type", "double")
+										.endObject()
+										.startObject("position")
+											.field("type", "geo_point")
+										.endObject()
+									.endObject()
+								.endObject()
+								.startObject("species")
+									.field("type", "nested")
+									.startObject("properties")
+										.startObject("commonName")
+											.field("type", "text")
+										.endObject()
+										.startObject("scientificName")
+											.field("type", "text")
+										.endObject()
+										.startObject("count")
+											.field("type", "integer")
+										.endObject()
+									.endObject()
+								.endObject()
+							.endObject()
+						.endObject()
+					.endObject()
+				.endObject()
+			.endObject();
+		}
+		catch (IOException e)
+		{
+			SanimalData.getInstance().getErrorDisplay().printError("Could not build sanimal metadata index mapping!\n" + ExceptionUtils.getStackTrace(e));
 		}
 		return builder;
 	}
@@ -530,5 +654,72 @@ public class ElasticSearchConnectionManager
 			SanimalData.getInstance().getErrorDisplay().printError("Could not build settings update!\n" + ExceptionUtils.getStackTrace(e));
 		}
 		return builder;
+	}
+
+	public void indexImages(String basePath, ImageDirectory directory)
+	{
+		RestHighLevelClient esClient = new RestHighLevelClient(RestClient.builder(new HttpHost(ELASTIC_SEARCH_HOST, ELASTIC_SEARCH_PORT, ELASTIC_SEARCH_SCHEME)));
+		// List of images to be uploaded
+		List<ImageEntry> imageEntries = directory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).collect(Collectors.toList());
+
+		String localDirAbsolutePath = directory.getFile().getAbsolutePath();
+
+		List<Map<String, Object>> imageMetadata = imageEntries.stream().map(imageEntry ->
+		{
+			Map<String, Object> metadata = new HashMap<>();
+			metadata.put("storageType", "CyVerse Datastore");
+			String fileAbsolutePath = basePath + StringUtils.substringAfter(imageEntry.getFile().getAbsolutePath(), localDirAbsolutePath);
+			fileAbsolutePath = fileAbsolutePath.replace('\\', '/');
+			metadata.put("storagePath", fileAbsolutePath);
+			metadata.put("dateTaken", imageEntry.getDateTaken().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+			metadata.put("location", new HashMap<String, Object>()
+			{{
+				put("elevation", imageEntry.getLocationTaken().getElevation());
+				put("id", imageEntry.getLocationTaken().getId());
+				put("name", imageEntry.getLocationTaken().getName());
+				put("position", imageEntry.getLocationTaken().getLatitude() + ", " + imageEntry.getLocationTaken().getLongitude());
+			}});
+			metadata.put("species", imageEntry.getSpeciesPresent().stream().map(speciesEntry ->
+			{
+				Map<String, Object> speciesData = new HashMap<>();
+				speciesData.put("commonName", speciesEntry.getSpecies().getName());
+				speciesData.put("scientificName", speciesEntry.getSpecies().getScientificName());
+				speciesData.put("count", speciesEntry.getAmount());
+				return speciesData;
+			}).collect(Collectors.toList()));
+			return metadata;
+		}).collect(Collectors.toList());
+
+		BulkRequest bulkRequest = new BulkRequest();
+
+		imageMetadata.forEach(metadata ->
+		{
+			IndexRequest request = new IndexRequest()
+					.index(INDEX_SANIMAL_METADATA)
+					.type(INDEX_SANIMAL_METADATA_TYPE)
+					.source(metadata);
+			bulkRequest.add(request);
+		});
+
+		try
+		{
+			BulkResponse bulkResponse = esClient.bulk(bulkRequest);
+
+			if (bulkResponse.status() != RestStatus.OK)
+				SanimalData.getInstance().getErrorDisplay().printError("Error bulk inserting metadata, error response was: " + bulkResponse.status());
+		}
+		catch (IOException e)
+		{
+			SanimalData.getInstance().getErrorDisplay().printError("Error bulk inserting metadata, response was: '\n" + ExceptionUtils.getStackTrace(e));
+		}
+
+		try
+		{
+			esClient.close();
+		}
+		catch (IOException e)
+		{
+			SanimalData.getInstance().getErrorDisplay().printError("Could not close ElasticSearch connection: \n" + ExceptionUtils.getStackTrace(e));
+		}
 	}
 }

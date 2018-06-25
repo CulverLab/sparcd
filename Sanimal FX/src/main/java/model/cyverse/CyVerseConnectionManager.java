@@ -742,21 +742,12 @@ public class CyVerseConnectionManager
 					// Make a set of tar files from the image files. Don't use a single tar file because we may have > 1000 images in each
 					File[] tarsToWrite = DirectoryManager.directoryToTars(directoryToWrite, directoryMetaJSON, imageEntry ->
 					{
-						try
-						{
-							// Compute the image's "cyverse" path
-							String fileRelativePath = localDirName + StringUtils.substringAfter(imageEntry.getFile().getAbsolutePath(), localDirAbsolutePath);
-							fileRelativePath = fileRelativePath.replace('\\', '/');
-							List<AvuData> imageMetadata = imageEntry.convertToAVUMetadata();
-							imageMetadata.add(collectionIDTag);
-							return fileRelativePath + "," + imageMetadata.stream().map(avuData -> avuData.getAttribute() + "," + avuData.getValue() + "," + avuData.getUnit()).collect(Collectors.joining(",")) + "\n";
-						}
-						catch (JargonException e)
-						{
-							SanimalData.getInstance().getErrorDisplay().printError("Could not add metadata to image: " + imageEntry.getFile().getAbsolutePath() + ", error was: ");
-							e.printStackTrace();
-						}
-						return "";
+						// Compute the image's "cyverse" path
+						String fileRelativePath = localDirName + StringUtils.substringAfter(imageEntry.getFile().getAbsolutePath(), localDirAbsolutePath);
+						fileRelativePath = fileRelativePath.replace('\\', '/');
+						List<AvuData> imageMetadata = imageEntry.convertToAVUMetadata();
+						imageMetadata.add(collectionIDTag);
+						return fileRelativePath + "," + imageMetadata.stream().map(avuData -> avuData.getAttribute() + "," + avuData.getValue() + "," + avuData.getUnit()).collect(Collectors.joining(",")) + "\n";
 					}, 900);
 
 					// For each tar part, upload
@@ -773,6 +764,8 @@ public class CyVerseConnectionManager
 
 						localToUpload.delete();
 					}
+
+					SanimalData.getInstance().getEsConnectionManager().indexImages(uploadDirName, directoryToWrite);
 					// Let rules do the rest!
 				}
 			}

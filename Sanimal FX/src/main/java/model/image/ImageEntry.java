@@ -24,7 +24,6 @@ import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.AvuData;
 
 import java.io.File;
@@ -286,9 +285,8 @@ public class ImageEntry extends ImageContainer
 	 * Writes the image entry's metadata to CyVerse's AVU format
 	 *
 	 * @return A list of AVU entries representing the metadata
-	 * @throws JargonException If anything goes wrong
 	 */
-	public List<AvuData> convertToAVUMetadata() throws JargonException
+	public List<AvuData> convertToAVUMetadata()
 	{
 		// Create a list to return
 		List<AvuData> metadata = new LinkedList<>();
