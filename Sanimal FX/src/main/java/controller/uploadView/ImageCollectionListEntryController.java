@@ -161,7 +161,8 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 		{
 			SanimalData.getInstance().getErrorDisplay().notify("Popups must be enabled to edit a collection!");
 		}
-		actionEvent.consume();
+		if (actionEvent != null)
+			actionEvent.consume();
 	}
 
 	/**

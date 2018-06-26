@@ -26,6 +26,7 @@ import model.util.*;
 import org.hildan.fxgson.FxGson;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
@@ -71,8 +72,8 @@ public class SanimalData
 	// Executor used to thread off long tasks
 	private SanimalExecutor sanimalExecutor = new SanimalExecutor();
 
-	// GSon object used to serialize data
-	private final Gson gson = FxGson.fullBuilder().setPrettyPrinting().serializeNulls().create();
+	// GSon object used to serialize data. We register a local date time adapter to ensure dates are serialized correctly
+	private final Gson gson = FxGson.fullBuilder().setPrettyPrinting().serializeNulls().registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter()).create();
 
 	// The connection manager used to authenticate the CyVerse user
 	private CyVerseConnectionManager cyConnectionManager = new CyVerseConnectionManager();

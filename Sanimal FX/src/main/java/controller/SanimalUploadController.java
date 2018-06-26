@@ -237,7 +237,7 @@ public class SanimalUploadController implements Initializable
 				this.updateMessage("Downloading list of uploads to collection: " + collection.getName());
 				DoubleProperty progress = new SimpleDoubleProperty(0.0);
 				progress.addListener((observable, oldValue, newValue) -> this.updateProgress(progress.getValue(), 1.0));
-				SanimalData.getInstance().getCyConnectionManager().retrieveAndInsertUploadList(collection, progress);
+				SanimalData.getInstance().getEsConnectionManager().retrieveAndInsertUploadListFor(collection);
 				return null;
 			}
 		};

@@ -272,6 +272,7 @@ public class ImageCollectionSettingsController implements Initializable
 				messageUpdater.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
 
 				SanimalData.getInstance().getCyConnectionManager().pushLocalCollection(originalCollection, messageUpdater);
+				SanimalData.getInstance().getEsConnectionManager().pushLocalCollection(originalCollection);
 
 				this.updateProgress(1, 1);
 				return null;

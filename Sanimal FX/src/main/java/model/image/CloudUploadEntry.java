@@ -1,13 +1,11 @@
 package model.image;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * The cloud upload entry that represents some upload at some point in time
@@ -31,6 +29,9 @@ public class CloudUploadEntry
 	private List<String> editComments = new ArrayList<>();
 	// A path to the upload on CyVerse
 	private String uploadIRODSPath;
+
+	// The unique identifier for the upload
+	private ObjectProperty<UUID> id = new SimpleObjectProperty<>(UUID.randomUUID());
 
 	/**
 	 * Constructor initializes all fields
@@ -134,5 +135,15 @@ public class CloudUploadEntry
 	public ObjectProperty<CloudImageDirectory> cloudImageDirectoryProperty()
 	{
 		return this.cloudImageDirectoryProperty;
+	}
+
+	public UUID getID()
+	{
+		return id.getValue();
+	}
+
+	public ObjectProperty<UUID> idProperty()
+	{
+		return id;
 	}
 }

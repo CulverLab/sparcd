@@ -268,17 +268,16 @@ public class SanimalViewController implements Initializable
 
 						//esConnectionManager.nukeAndRecreateUserIndex();
 						//esConnectionManager.nukeAndRecreateMetadataIndex();
+						//esConnectionManager.nukeAndRecreateCollectionsIndex();
 
 						// Then initialize the remove sanimal directory
 						this.updateMessage("Initializing Sanimal remote directory...");
 						this.updateProgress(2, 7);
-						//cyConnectionManager.initSanimalRemoteDirectory();
 						esConnectionManager.initSanimalRemoteDirectory();
 
 						// Pull Sanimal settings from the remote directory
 						this.updateMessage("Pulling settings from remote directory...");
 						this.updateProgress(3, 7);
-						//SettingsData settingsData = cyConnectionManager.pullRemoteSettings();
 						SettingsData settingsData = esConnectionManager.pullRemoteSettings();
 
 						// Set the settings data
@@ -287,7 +286,7 @@ public class SanimalViewController implements Initializable
 						// Pull any species from the remote directory
 						this.updateMessage("Pulling species from remote directory...");
 						this.updateProgress(4, 7);
-						List<Species> species = esConnectionManager.pullRemoteSpecies();//cyConnectionManager.pullRemoteSpecies();
+						List<Species> species = esConnectionManager.pullRemoteSpecies();
 
 						// Set the species list to be these species
 						Platform.runLater(() -> SanimalData.getInstance().getSpeciesList().addAll(species));
@@ -295,7 +294,7 @@ public class SanimalViewController implements Initializable
 						// Pull any locations from the remote directory
 						this.updateMessage("Pulling locations from remote directory...");
 						this.updateProgress(5, 7);
-						List<Location> locations = esConnectionManager.pullRemoteLocations();//cyConnectionManager.pullRemoteLocations();
+						List<Location> locations = esConnectionManager.pullRemoteLocations();
 
 						// Set the location list to be these locations
 						Platform.runLater(() -> SanimalData.getInstance().getLocationList().addAll(locations));
@@ -303,7 +302,7 @@ public class SanimalViewController implements Initializable
 						// Pull any species from the remote directory
 						this.updateMessage("Pulling collections from remote directory...");
 						this.updateProgress(6, 7);
-						List<ImageCollection> imageCollections = cyConnectionManager.pullRemoteCollections();
+						List<ImageCollection> imageCollections = esConnectionManager.pullRemoteCollections();
 
 						// Set the image collection list to be these collections
 						Platform.runLater(() -> SanimalData.getInstance().getCollectionList().addAll(imageCollections));

@@ -10,10 +10,10 @@ import javafx.beans.property.StringProperty;
  */
 public class Permission implements Cloneable
 {
-	private StringProperty usernameProperty = new SimpleStringProperty("Unnamed");
-	private BooleanProperty readProperty = new SimpleBooleanProperty(false);
-	private BooleanProperty uploadProperty = new SimpleBooleanProperty(false);
-	private BooleanProperty ownerProperty = new SimpleBooleanProperty(false);
+	private StringProperty username = new SimpleStringProperty("Unnamed");
+	private BooleanProperty read = new SimpleBooleanProperty(false);
+	private BooleanProperty upload = new SimpleBooleanProperty(false);
+	private BooleanProperty owner = new SimpleBooleanProperty(false);
 
 	/**
 	 * Just initializes listeners
@@ -30,16 +30,16 @@ public class Permission implements Cloneable
 	public void initListeners()
 	{
 		// If the owner property is set and we try to disable any of the other properties, ignore the change
-		this.uploadProperty.addListener((observable, oldValue, newValue) -> {
-			if (!newValue && this.ownerProperty.getValue())
+		this.upload.addListener((observable, oldValue, newValue) -> {
+			if (!newValue && this.owner.getValue())
 				this.setUpload(true);
 			else if (newValue)
 				this.setRead(true);
 		});
 
 		// If the owner property is set and we try to disable any of the other properties, ignore the change
-		this.readProperty.addListener((observable, oldValue, newValue) -> {
-			if (!newValue && (this.ownerProperty.getValue() || this.uploadProperty.getValue()))
+		this.read.addListener((observable, oldValue, newValue) -> {
+			if (!newValue && (this.owner.getValue() || this.upload.getValue()))
 				this.setRead(true);
 		});
 	}
@@ -76,61 +76,61 @@ public class Permission implements Cloneable
 
 	public void setUsername(String username)
 	{
-		this.usernameProperty.setValue(username);
+		this.username.setValue(username);
 	}
 
 	public String getUsername()
 	{
-		return usernameProperty.getValue();
+		return username.getValue();
 	}
 
 	public StringProperty usernameProperty()
 	{
-		return usernameProperty;
+		return username;
 	}
 
 	public void setUpload(boolean upload)
 	{
-		this.uploadProperty.setValue(upload);
+		this.upload.setValue(upload);
 	}
 
 	public boolean canUpload()
 	{
-		return this.uploadProperty.getValue();
+		return this.upload.getValue();
 	}
 
 	public BooleanProperty uploadProperty()
 	{
-		return this.uploadProperty;
+		return this.upload;
 	}
 
 	public void setRead(boolean read)
 	{
-		this.readProperty.setValue(read);
+		this.read.setValue(read);
 	}
 
 	public boolean canRead()
 	{
-		return this.readProperty.getValue();
+		return this.read.getValue();
 	}
 
 	public BooleanProperty readProperty()
 	{
-		return readProperty;
+		return read;
 	}
 
 	public void setOwner(boolean owner)
 	{
-		this.ownerProperty.setValue(owner);
+		this.owner.setValue(owner);
 	}
 
 	public boolean isOwner()
 	{
-		return this.ownerProperty.getValue();
+		return this.owner.getValue();
 	}
 
 	public BooleanProperty ownerProperty()
 	{
-		return this.ownerProperty;
+		return this.owner;
 	}
 }
