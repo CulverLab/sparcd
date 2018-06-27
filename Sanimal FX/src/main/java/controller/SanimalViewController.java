@@ -267,8 +267,8 @@ public class SanimalViewController implements Initializable
 						});
 
 						//esConnectionManager.nukeAndRecreateUserIndex();
-						esConnectionManager.nukeAndRecreateMetadataIndex();
-						esConnectionManager.nukeAndRecreateCollectionsIndex();
+						//esConnectionManager.nukeAndRecreateMetadataIndex();
+						//esConnectionManager.nukeAndRecreateCollectionsIndex();
 
 						// Then initialize the remove sanimal directory
 						this.updateMessage("Initializing Sanimal remote directory...");

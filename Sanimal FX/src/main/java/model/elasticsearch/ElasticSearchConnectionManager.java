@@ -30,12 +30,10 @@ import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.DeprecationHandler;
-import org.elasticsearch.common.xcontent.NamedXContentRegistry;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.common.xcontent.*;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.Script;
@@ -262,10 +260,10 @@ public class ElasticSearchConnectionManager
 		}
 		catch (IOException e)
 		{
+			// Print an error if anything went wrong
 			SanimalData.getInstance().getErrorDisplay().notify("Error initializing user '" + SanimalData.getInstance().getUsername() + "' in the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
-
 
 	/**
 	 * Fetches the user's settings from the ElasticSearch index
@@ -707,25 +705,24 @@ public class ElasticSearchConnectionManager
 		// Compute the absolute path of the image directory
 		String localDirAbsolutePath = directory.getFile().getAbsolutePath();
 
-		// Convert the images to a map format ready to be converted to JSON
-		List<Map<String, Object>> imageMetadata = imageEntries.stream().map(imageEntry -> this.elasticSearchSchemaManager.imageToJSONMap(imageEntry, collectionID, basePath, localDirAbsolutePath)).collect(Collectors.toList());
-
-		// Create a bulk index request to update all these images at once
-		BulkRequest bulkRequest = new BulkRequest();
-
-		// For each item we want to index, store it into our bulk index request
-		imageMetadata.forEach(metadata ->
-		{
-			IndexRequest request = new IndexRequest()
-					.index(INDEX_SANIMAL_METADATA)
-					.type(INDEX_SANIMAL_METADATA_TYPE)
-					.id((String) metadata.get("storagePath"))
-					.source(metadata);
-			bulkRequest.add(request);
-		});
 
 		try
 		{
+			// Create a bulk index request to update all these images at once
+			BulkRequest bulkRequest = new BulkRequest();
+
+			// Convert the images to a map format ready to be converted to JSON
+			for (ImageEntry imageEntry : imageEntries)
+			{
+				Tuple<String, XContentBuilder> idAndJSON = this.elasticSearchSchemaManager.imageToJSONMap(imageEntry, collectionID, basePath, localDirAbsolutePath);
+				IndexRequest request = new IndexRequest()
+						.index(INDEX_SANIMAL_METADATA)
+						.type(INDEX_SANIMAL_METADATA_TYPE)
+						.id(idAndJSON.v1())
+						.source(idAndJSON.v2());
+				bulkRequest.add(request);
+			}
+
 			// Execute the bulk insert
 			BulkResponse bulkResponse = this.elasticSearchClient.bulk(bulkRequest);
 
@@ -794,57 +791,58 @@ public class ElasticSearchConnectionManager
 	@SuppressWarnings("unchecked")
 	public void updateIndexedImages(List<CloudImageEntry> imagesToSave, String collectionID, CloudUploadEntry cloudUploadEntry)
 	{
-		// Do the update in bulk
-		BulkRequest bulkUpdate = new BulkRequest();
-
-		// For each image entry, create an update request and add it to the bulk update
-		imagesToSave.forEach(cloudImageEntry ->
-		{
-			// The first update will update the metadata in the metadata index
-			UpdateRequest updateMetaRequest = new UpdateRequest();
-			updateMetaRequest
-					.index(INDEX_SANIMAL_METADATA)
-					.type(INDEX_SANIMAL_METADATA_TYPE)
-					.id(cloudImageEntry.getCyverseFile().getAbsolutePath())
-					// The new document will contain all new fields
-					.doc(this.elasticSearchSchemaManager.imageToJSONMap(cloudImageEntry, collectionID, cloudImageEntry.getCyverseFile().getAbsolutePath()));
-
-			// The second update will update the collection upload metadata
-			UpdateRequest updateCollectionRequest = new UpdateRequest();
-			// We do this update with a script, and it needs 3 arguments. Create of map of those 3 arguments now
-			HashMap<String, Object> args = new HashMap<>();
-			args.put("id", cloudUploadEntry.getID().toString());
-			args.put("comment", cloudUploadEntry.getEditComments().get(cloudUploadEntry.getEditComments().size() - 1));
-			args.put("imagesWithSpecies", cloudUploadEntry.getImagesWithSpecies());
-
-			// Setup the collection update request
-			updateCollectionRequest
-					.index(INDEX_SANIMAL_COLLECTIONS)
-					.type(INDEX_SANIMAL_COLLECTIONS_TYPE)
-					.id(collectionID)
-					// We use a script because we're updating nested fields. The script written out looks like:
-					/*
-					// Iterate over all uploads
-					for (upload in ctx._source.uploads)
-					{
-						// If the IDs match
-						if (upload.id == params.id)
-						{
-							// Add the edit comment, and update the images with species
-							upload.editComments.add(params.comment);
-							upload.imagesWithSpecies = params.imagesWithSpecies;
-						}
-					 }
-					 */
-					.script(new Script(ScriptType.INLINE, Script.DEFAULT_SCRIPT_LANG, "for (upload in ctx._source.uploads) { if (upload.id == params.id) { upload.editComments.add(params.comment); upload.imagesWithSpecies = params.imagesWithSpecies } }", args));
-
-			// Add the updates to the bulk request
-			bulkUpdate.add(updateMetaRequest);
-			bulkUpdate.add(updateCollectionRequest);
-		});
-
 		try
 		{
+			// Do the update in bulk
+			BulkRequest bulkUpdate = new BulkRequest();
+
+			// For each image entry, create an update request and add it to the bulk update
+			for (CloudImageEntry cloudImageEntry : imagesToSave)
+			{
+				Tuple<String, XContentBuilder> idAndJSON = this.elasticSearchSchemaManager.imageToJSONMap(cloudImageEntry, collectionID, cloudImageEntry.getCyverseFile().getAbsolutePath());
+				// The first update will update the metadata in the metadata index
+				UpdateRequest updateMetaRequest = new UpdateRequest();
+				updateMetaRequest
+						.index(INDEX_SANIMAL_METADATA)
+						.type(INDEX_SANIMAL_METADATA_TYPE)
+						.id(idAndJSON.v1())
+						// The new document will contain all new fields
+						.doc(idAndJSON.v2());
+
+				// The second update will update the collection upload metadata
+				UpdateRequest updateCollectionRequest = new UpdateRequest();
+				// We do this update with a script, and it needs 3 arguments. Create of map of those 3 arguments now
+				HashMap<String, Object> args = new HashMap<>();
+				args.put("id", cloudUploadEntry.getID().toString());
+				args.put("comment", cloudUploadEntry.getEditComments().get(cloudUploadEntry.getEditComments().size() - 1));
+				args.put("imagesWithSpecies", cloudUploadEntry.getImagesWithSpecies());
+
+				// Setup the collection update request
+				updateCollectionRequest
+						.index(INDEX_SANIMAL_COLLECTIONS)
+						.type(INDEX_SANIMAL_COLLECTIONS_TYPE)
+						.id(collectionID)
+						// We use a script because we're updating nested fields. The script written out looks like:
+						/*
+						// Iterate over all uploads
+						for (upload in ctx._source.uploads)
+						{
+							// If the IDs match
+							if (upload.id == params.id)
+							{
+								// Add the edit comment, and update the images with species
+								upload.editComments.add(params.comment);
+								upload.imagesWithSpecies = params.imagesWithSpecies;
+							}
+						 }
+						 */
+						.script(new Script(ScriptType.INLINE, Script.DEFAULT_SCRIPT_LANG, "for (upload in ctx._source.uploads) { if (upload.id == params.id) { upload.editComments.add(params.comment); upload.imagesWithSpecies = params.imagesWithSpecies } }", args));
+
+				// Add the updates to the bulk request
+				bulkUpdate.add(updateMetaRequest);
+				bulkUpdate.add(updateCollectionRequest);
+			}
+
 			// Fire off the bulk request and save the response
 			BulkResponse bulkResponse = this.elasticSearchClient.bulk(bulkUpdate);
 
@@ -872,6 +870,7 @@ public class ElasticSearchConnectionManager
 				.scroll(scroll)
 				.source(new SearchSourceBuilder()
 					.query(queryBuilder.build())
+					.size(50)
 					.fetchSource(FetchSourceContext.FETCH_SOURCE));
 
 		try

@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Class representing a query to be sent to CyVerse
@@ -162,51 +163,22 @@ public class ElasticSearchQuery
 	public QueryBuilder build()
 	{
 		if (!speciesQuery.isEmpty())
-		{
 			this.queryBuilder.must().add(QueryBuilders.termQuery("imageMetadata.species.scientificName", this.speciesQuery.stream().map(Species::getScientificName).toArray(String[]::new)));
-		}
 
-		/*
-		// To test if a location is in a list, we is the "IN" operator. We need to create a formatted string like: ('loc1','loc2')
-		String locationInStr = "(" + this.locationQuery.stream().map(location -> "'" + location.getId() + "'").collect(Collectors.joining(",")) + ")";
 		if (!locationQuery.isEmpty())
-		{
-			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_LOCATION_ID);
-			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, locationInStr);
-		}
+			this.queryBuilder.must().add(QueryBuilders.termQuery("imageMetadata.location.id", this.locationQuery.stream().map(Location::getId).toArray(String[]::new)));
 
-		// To test if a collection is in a list, we is the "IN" operator. We need to create a formatted string like: ('col1','col2')
-		String imageCollectionInStr = "(" + this.collectionQuery.stream().map(imageCollection -> "'" + imageCollection.getID().toString() + "'").collect(Collectors.joining(",")) + ")";
 		if (!collectionQuery.isEmpty())
-		{
-			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_COLLECTION_ID);
-			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, imageCollectionInStr);
-		}
+			this.queryBuilder.must().add(QueryBuilders.termQuery("collectionID", this.collectionQuery.stream().map(ImageCollection::getID).map(UUID::toString).toArray(String[]::new)));
 
-		// To test if a month is in a list, we is the "IN" operator. We need to create a formatted string like: ('mon1','mon2')
-		String monthInStr = "(" + this.monthQuery.stream().map(month -> "'" + month.toString() + "'").collect(Collectors.joining(",")) + ")";
 		if (!monthQuery.isEmpty())
-		{
-			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_MONTH_TAKEN);
-			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, monthInStr);
-		}
+			this.queryBuilder.must().add(QueryBuilders.termQuery("imageMetadata.monthTaken", this.monthQuery.toArray(new Integer[0])));
 
-		// To test if a hour is in a list, we is the "IN" operator. We need to create a formatted string like: ('hr1','hr2')
-		String hourInStr = "(" + this.hourQuery.stream().map(hour -> "'" + hour.toString() + "'").collect(Collectors.joining(",")) + ")";
 		if (!hourQuery.isEmpty())
-		{
-			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_HOUR_TAKEN);
-			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, hourInStr);
-		}
+			this.queryBuilder.must().add(QueryBuilders.termQuery("imageMetadata.hourTaken", this.hourQuery.toArray(new Integer[0])));
 
-		// To test if a day of week is in a list, we is the "IN" operator. We need to create a formatted string like: ('doy1','doy2')
-		String dayOfWeekInStr = "(" + this.dayOfWeekQuery.stream().map(dayOfWeek -> "'" + dayOfWeek.toString() + "'").collect(Collectors.joining(",")) + ")";
 		if (!dayOfWeekQuery.isEmpty())
-		{
-			appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN);
-			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, dayOfWeekInStr);
-		}
-		*/
+			this.queryBuilder.must().add(QueryBuilders.termQuery("imageMetadata.dayOfWeek", this.dayOfWeekQuery.toArray(new Integer[0])));
 
 		return this.queryBuilder;
 	}

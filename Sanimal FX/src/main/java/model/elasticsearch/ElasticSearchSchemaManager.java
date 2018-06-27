@@ -5,16 +5,17 @@ import model.cyverse.ImageCollection;
 import model.image.ImageEntry;
 import model.location.Location;
 import model.species.Species;
+import model.species.SpeciesEntry;
 import model.util.SettingsData;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.xcontent.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -304,15 +305,15 @@ public class ElasticSearchSchemaManager
 
 			// Setup the JSON by using the default values found in the JSON files
 			builder = XContentFactory.jsonBuilder()
-					.startObject()
-					.field("username", username)
-					.field("settings")
-					.copyCurrentStructure(settingsParser)
-					.field("species")
-					.copyCurrentStructure(speciesParser)
-					.field("locations")
-					.copyCurrentStructure(locationsParser)
-					.endObject();
+			.startObject()
+				.field("username", username)
+				.field("settings")
+				.copyCurrentStructure(settingsParser)
+				.field("species")
+				.copyCurrentStructure(speciesParser)
+				.field("locations")
+				.copyCurrentStructure(locationsParser)
+			.endObject();
 		}
 		catch (IOException e)
 		{
@@ -334,10 +335,10 @@ public class ElasticSearchSchemaManager
 		String speciesJSON = SanimalData.getInstance().getGson().toJson(species);
 		// Create a species field with the value as the JSON blob we just created above
 		return XContentFactory.jsonBuilder()
-				.startObject()
-				.field("species")
-				.copyCurrentStructure(XContentFactory.xContent(XContentType.JSON).createParser(NamedXContentRegistry.EMPTY, DeprecationHandler.THROW_UNSUPPORTED_OPERATION, speciesJSON.getBytes()))
-				.endObject();
+		.startObject()
+			.field("species")
+			.copyCurrentStructure(XContentFactory.xContent(XContentType.JSON).createParser(NamedXContentRegistry.EMPTY, DeprecationHandler.THROW_UNSUPPORTED_OPERATION, speciesJSON.getBytes()))
+		.endObject();
 	}
 
 	/**
@@ -347,26 +348,27 @@ public class ElasticSearchSchemaManager
 	 * @param locations The list of locations to be converted
 	 * @return A map of key value pairs to be converted into JSON
 	 */
-	Map<String, Object> makeLocationsUpdate(List<Location> locations)
+	XContentBuilder makeLocationsUpdate(List<Location> locations) throws IOException
 	{
-		// We need to do some post-processing here, We store locations as [lat, long] points, but ElasticSearch
-		// uses a special geo point data type, so we need to convert our lat and long fields into a position field
-		List<Map<String, Object>> indexedLocations = locations.stream().map(location ->
+		XContentBuilder locationsJSON = XContentFactory.jsonBuilder()
+		.startObject()
+			.startArray("locations");
+
+		for (Location location : locations)
 		{
-			// Create a new map which contains name, id, and elevation as usual. It also contains a position field which is
-			// built from lat and long.
-			Map<String, Object> map = new HashMap<>();
-			map.put("name", location.getName());
-			map.put("id", location.getId());
-			map.put("elevation", location.getElevation());
-			map.put("position", location.getLatitude().toString() + ", " + location.getLongitude().toString());
-			return map;
-		}).collect(Collectors.toList());
-		// Return a wrapper around this location list ready to be indexed
-		return new HashMap<String, Object>()
-		{{
-			put("locations", indexedLocations);
-		}};
+			locationsJSON
+			.startObject()
+				.field("name", location.getName())
+				.field("id", location.getId())
+				.field("elevation", location.getElevation())
+				.field("position", location.getLatitude() + ", " + location.getLongitude())
+			.endObject();
+		}
+
+		locationsJSON
+			.endArray()
+		.endObject();
+		return locationsJSON;
 	}
 
 	/**
@@ -381,10 +383,10 @@ public class ElasticSearchSchemaManager
 		String settingsJSON = SanimalData.getInstance().getGson().toJson(settingsData);
 		// The field is called settings, and the value is the JSON we just produced
 		return XContentFactory.jsonBuilder()
-				.startObject()
-				.field("settings")
-				.copyCurrentStructure(XContentFactory.xContent(XContentType.JSON).createParser(NamedXContentRegistry.EMPTY, DeprecationHandler.THROW_UNSUPPORTED_OPERATION, settingsJSON.getBytes()))
-				.endObject();
+		.startObject()
+			.field("settings")
+			.copyCurrentStructure(XContentFactory.xContent(XContentType.JSON).createParser(NamedXContentRegistry.EMPTY, DeprecationHandler.THROW_UNSUPPORTED_OPERATION, settingsJSON.getBytes()))
+		.endObject();
 	}
 
 	/**
@@ -401,7 +403,7 @@ public class ElasticSearchSchemaManager
 
 		// Read this JSON directly and return it. Simple as that
 		return XContentFactory.jsonBuilder()
-				.copyCurrentStructure(XContentFactory.xContent(XContentType.JSON).createParser(NamedXContentRegistry.EMPTY, DeprecationHandler.THROW_UNSUPPORTED_OPERATION, collectionJSON.getBytes()));
+			.copyCurrentStructure(XContentFactory.xContent(XContentType.JSON).createParser(NamedXContentRegistry.EMPTY, DeprecationHandler.THROW_UNSUPPORTED_OPERATION, collectionJSON.getBytes()));
 	}
 
 	/**
@@ -417,17 +419,17 @@ public class ElasticSearchSchemaManager
 		// We can't do the entire document at once because we don't want to overwrite uploads
 		String permissionsJSON = SanimalData.getInstance().getGson().toJson(imageCollection.getPermissions());
 		return XContentFactory.jsonBuilder()
-				.startObject()
-				// Setup all the basic fields
-				.field("contactInfo", imageCollection.getContactInfo())
-				.field("description", imageCollection.getDescription())
-				.field("id", imageCollection.getID().toString())
-				.field("name", imageCollection.getName())
-				.field("organization", imageCollection.getOrganization())
-				// Permissions are pulled permission list
-				.field("permissions")
-				.copyCurrentStructure(XContentFactory.xContent(XContentType.JSON).createParser(NamedXContentRegistry.EMPTY, DeprecationHandler.THROW_UNSUPPORTED_OPERATION, permissionsJSON.getBytes()))
-				.endObject();
+		.startObject()
+			// Setup all the basic fields
+			.field("contactInfo", imageCollection.getContactInfo())
+			.field("description", imageCollection.getDescription())
+			.field("id", imageCollection.getID().toString())
+			.field("name", imageCollection.getName())
+			.field("organization", imageCollection.getOrganization())
+			// Permissions are pulled permission list
+			.field("permissions")
+			.copyCurrentStructure(XContentFactory.xContent(XContentType.JSON).createParser(NamedXContentRegistry.EMPTY, DeprecationHandler.THROW_UNSUPPORTED_OPERATION, permissionsJSON.getBytes()))
+		.endObject();
 	}
 
 	/**
@@ -439,7 +441,7 @@ public class ElasticSearchSchemaManager
 	 * @param localDirAbsolutePath The local directory absolute path of the image
 	 * @return A map of key->value pairs used later in creating JSON
 	 */
-	Map<String, Object> imageToJSONMap(ImageEntry imageEntry, String collectionID, String basePath, String localDirAbsolutePath)
+	Tuple<String, XContentBuilder> imageToJSONMap(ImageEntry imageEntry, String collectionID, String basePath, String localDirAbsolutePath) throws IOException
 	{
 		// Compute the final path the image will have once uploaded on the datastore. It should look something like:
 		// /iplant/home/user/.../Uploads/imgxyz.jpg
@@ -454,52 +456,46 @@ public class ElasticSearchSchemaManager
 	 * @param fileAbsolutePath The absolute path of the file on CyVerse
 	 * @return A map of key->value pairs used later in creating JSON
 	 */
-	Map<String, Object> imageToJSONMap(ImageEntry imageEntry, String collectionID, String fileAbsolutePath)
+	Tuple<String, XContentBuilder> imageToJSONMap(ImageEntry imageEntry, String collectionID, String fileAbsolutePath) throws IOException
 	{
-		Map<String, Object> metadata = new HashMap<>();
-		// For now we only support storing data in the CyVerse datastore format
-		metadata.put("storageType", "CyVerse Datastore");
-		fileAbsolutePath = fileAbsolutePath.replace('\\', '/');
-		// Store the absolute path to the image file
-		metadata.put("storagePath", fileAbsolutePath);
-		// Store the ID of the collection that this image belongs into
-		metadata.put("collectionID", collectionID);
-		// Store image EXIF metadata
-		metadata.put("imageMetadata", new HashMap<String, Object>()
-		{{
-			// The date the image was taken
-			put("dateTaken", imageEntry.getDateTaken().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-			// The image year taken
-			put("yearTaken", imageEntry.getDateTaken().getYear());
-			// The image month taken
-			put("monthTaken", imageEntry.getDateTaken().getMonthValue());
-			// The image hour taken
-			put("hourTaken", imageEntry.getDateTaken().getHour());
-			// The day of year the image was taken
-			put("dayOfYearTaken", imageEntry.getDateTaken().getDayOfYear());
-			// The day of week taken
-			put("dayOfWeekTaken", imageEntry.	getDateTaken().getDayOfWeek().getValue());
-			// The location the image was taken at. Has an ID field, a name field, a position and elevation
-			put("location", new HashMap<String, Object>()
-			{{
-				put("elevation", imageEntry.getLocationTaken().getElevation());
-				put("id", imageEntry.getLocationTaken().getId());
-				put("name", imageEntry.getLocationTaken().getName());
-				put("position", imageEntry.getLocationTaken().getLatitude() + ", " + imageEntry.getLocationTaken().getLongitude());
-			}});
-			// The species present in the image, stored as a list of objects containing common name, scientific name, and count
-			put("speciesEntries", imageEntry.getSpeciesPresent().stream().map(speciesEntry ->
-			{
-				Map<String, Object> speciesEntryData = new HashMap<>();
-				speciesEntryData.put("species", new HashMap<String, Object>()
-				{{
-					put("commonName", speciesEntry.getSpecies().getCommonName());
-					put("scientificName", speciesEntry.getSpecies().getScientificName());
-				}});
-				speciesEntryData.put("count", speciesEntry.getCount());
-				return speciesEntryData;
-			}).collect(Collectors.toList()));
-		}});
-		return metadata;
+		String fixedAbsolutePath = fileAbsolutePath.replace('\\', '/');
+		XContentBuilder imageJSON = XContentFactory.jsonBuilder()
+		.startObject()
+			.field("storageType", "CyVerse Datastore")
+			.field("storagePath", fixedAbsolutePath)
+			.field("collectionID", collectionID)
+			.startObject("imageMetadata")
+				.field("dateTaken", imageEntry.getDateTaken().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+				.field("yearTaken", imageEntry.getDateTaken().getYear())
+				.field("monthTaken", imageEntry.getDateTaken().getMonthValue())
+				.field("hourTaken", imageEntry.getDateTaken().getHour())
+				.field("dayOfYearTaken", imageEntry.getDateTaken().getDayOfYear())
+				.field("dayOfWeekTaken", imageEntry.	getDateTaken().getDayOfWeek().getValue())
+				.startObject("location")
+					.field("elevation", imageEntry.getLocationTaken().getElevation())
+					.field("id", imageEntry.getLocationTaken().getId())
+					.field("name", imageEntry.getLocationTaken().getName())
+					.field("position", imageEntry.getLocationTaken().getLatitude() + ", " + imageEntry.getLocationTaken().getLongitude())
+				.endObject()
+				.startArray("speciesEntries");
+
+		for (SpeciesEntry speciesEntry : imageEntry.getSpeciesPresent())
+		{
+			imageJSON
+					.startObject()
+					.startObject("species")
+						.field("commonName", speciesEntry.getSpecies().getCommonName())
+						.field("scientificName", speciesEntry.getSpecies().getScientificName())
+					.endObject()
+					.field("count", speciesEntry.getCount())
+					.endObject();
+		}
+
+		imageJSON
+				.endArray()
+			.endObject()
+		.endObject();
+
+		return Tuple.tuple(fixedAbsolutePath, imageJSON);
 	}
 }
