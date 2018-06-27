@@ -81,6 +81,14 @@ public class Location
 	 */
 	public Boolean locationValid() { return nameValid() && idValid() && latValid() && lngValid() && elevationValid(); }
 
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (obj instanceof Location)
+			return ((Location) obj).getId().compareTo(this.getId()) == 0;
+		return false;
+	}
+
 	/**
 	 * Set the name of the location
 	 *

@@ -155,14 +155,14 @@ public class SanimalAnalysisController implements Initializable
 		for (IQueryCondition queryCondition : SanimalData.getInstance().getQueryEngine().getQueryConditions())
 			queryCondition.appendConditionToQuery(query);
 
-		Task<List<String>> queryTask = new ErrorTask<List<String>>()
+		Task<List<ImageEntry>> queryTask = new ErrorTask<List<ImageEntry>>()
 		{
 			@Override
-			protected List<String> call()
+			protected List<ImageEntry> call()
 			{
 				this.updateMessage("Performing query...");
 				// Grab the result of the query
-				return SanimalData.getInstance().getCyConnectionManager().performQuery(query);
+				return SanimalData.getInstance().getEsConnectionManager().performQuery(query);
 			}
 		};
 		Integer finalEventInterval = eventInterval;
@@ -170,44 +170,14 @@ public class SanimalAnalysisController implements Initializable
 		// Once finished with the task, we test if the user wants to continue
 		queryTask.setOnSucceeded(event ->
 		{
-			// Get the result of the first query
-			List<String> irodsAbsolutePaths = queryTask.getValue();
-
 			this.mpnQuerying.setVisible(false);
 
-			// Ask the user if they would like to continue to part 2 of the query where we retrieve metadata. This takes a while
-			SanimalData.getInstance().getErrorDisplay().notify("This query will return " + irodsAbsolutePaths.size() + " results at approximately 6 results per second, continue?",
-				new Action("Retrieve " + irodsAbsolutePaths.size() + " results", actionEvent1 ->
-				{
-					this.mpnQuerying.setVisible(true);
+			// Analyze the result of the query
+			DataAnalyzer dataAnalyzer = new DataAnalyzer(queryTask.getValue(), finalEventInterval);
 
-					// Create a second task to perform the next query
-					Task<List<ImageEntry>> queryImageTask = new ErrorTask<List<ImageEntry>>()
-					{
-						@Override
-						protected List<ImageEntry> call()
-						{
-							this.updateMessage("Performing image query...");
-							// Grab the result of the image query
-							return SanimalData.getInstance().getCyConnectionManager().fetchMetadataFor(irodsAbsolutePaths);
-						}
-					};
-
-					queryImageTask.setOnSucceeded(event1 ->
-					{
-						// Analyze the result of the query
-						DataAnalyzer dataAnalyzer = new DataAnalyzer(queryImageTask.getValue(), finalEventInterval);
-
-						// Hand the analysis over to the visualizations to graph
-						visDrSandersonController.visualize(dataAnalyzer);
-						visCSVController.visualize(dataAnalyzer);
-						this.mpnQuerying.setVisible(false);
-					});
-
-					// Execute the second query
-					SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(queryImageTask);
-				})
-			);
+			// Hand the analysis over to the visualizations to graph
+			visDrSandersonController.visualize(dataAnalyzer);
+			visCSVController.visualize(dataAnalyzer);
 		});
 		SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(queryTask);
 
