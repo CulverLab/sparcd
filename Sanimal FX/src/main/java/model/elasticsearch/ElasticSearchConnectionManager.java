@@ -9,6 +9,7 @@ import model.image.CloudUploadEntry;
 import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.location.Location;
+import model.query.ElasticSearchQuery;
 import model.species.Species;
 import model.util.SettingsData;
 import org.apache.commons.collections4.ListUtils;
@@ -131,7 +132,7 @@ public class ElasticSearchConnectionManager
 		catch (IOException e)
 		{
 			// Print any errors we may have encountered
-			SanimalData.getInstance().getErrorDisplay().printError("Error creating '" + INDEX_SANIMAL_USERS + "' from the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Error creating '" + INDEX_SANIMAL_USERS + "' from the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 
@@ -248,7 +249,7 @@ public class ElasticSearchConnectionManager
 		}
 		catch (IOException e)
 		{
-			SanimalData.getInstance().getErrorDisplay().printError("Error creating '" + INDEX_SANIMAL_METADATA + "' in the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Error creating '" + INDEX_SANIMAL_METADATA + "' in the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 
@@ -279,6 +280,21 @@ public class ElasticSearchConnectionManager
 							.startObject("dateTaken")
 								.field("type", "date")
 								.field("format", "yyyy-MM-dd HH:mm:ss")
+							.endObject()
+							.startObject("yearTaken")
+								.field("type", "integer")
+							.endObject()
+							.startObject("monthTaken")
+								.field("type", "integer")
+							.endObject()
+							.startObject("hourTaken")
+								.field("type", "integer")
+							.endObject()
+							.startObject("dayOfYearTaken")
+								.field("type", "integer")
+							.endObject()
+							.startObject("dayOfWeekTaken")
+								.field("type", "integer")
 							.endObject()
 							.startObject("location")
 								.field("type", "object")
@@ -339,7 +355,7 @@ public class ElasticSearchConnectionManager
 		}
 		catch (IOException e)
 		{
-			SanimalData.getInstance().getErrorDisplay().printError("Error creating '" + INDEX_SANIMAL_COLLECTIONS + "' in the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Error creating '" + INDEX_SANIMAL_COLLECTIONS + "' in the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 
@@ -435,12 +451,12 @@ public class ElasticSearchConnectionManager
 		catch (IOException e)
 		{
 			// If the delete fails just print out an error message
-			SanimalData.getInstance().getErrorDisplay().printError("Error deleting '" + index + "' from the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Error deleting '" + index + "' from the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
 		}
 		catch (ElasticsearchStatusException e)
 		{
 			// If the delete fails just print out an error message
-			SanimalData.getInstance().getErrorDisplay().printError("Delete failed, status = " + e.status());
+			SanimalData.getInstance().getErrorDisplay().notify("Delete failed, status = " + e.status());
 		}
 	}
 
@@ -481,7 +497,7 @@ public class ElasticSearchConnectionManager
 		}
 		catch (IOException e)
 		{
-			SanimalData.getInstance().getErrorDisplay().printError("Error initializing user '" + SanimalData.getInstance().getUsername() + "' in the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Error initializing user '" + SanimalData.getInstance().getUsername() + "' in the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 
@@ -530,7 +546,7 @@ public class ElasticSearchConnectionManager
 		catch (IOException e)
 		{
 			// Print an error if something went wrong internally
-			SanimalData.getInstance().getErrorDisplay().printError("Could not insert a new user into the index!\n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Could not insert a new user into the index!\n" + ExceptionUtils.getStackTrace(e));
 		}
 		return builder;
 	}
@@ -697,12 +713,12 @@ public class ElasticSearchConnectionManager
 			ClearScrollResponse clearScrollResponse = this.elasticSearchClient.clearScroll(clearScrollRequest);
 			// If clearing the scroll request fails, show an error
 			if (!clearScrollResponse.isSucceeded())
-				SanimalData.getInstance().getErrorDisplay().printError("Could not clear the scroll when reading collections");
+				SanimalData.getInstance().getErrorDisplay().notify("Could not clear the scroll when reading collections");
 		}
 		catch (IOException e)
 		{
 			// Something went wrong, so show an error
-			SanimalData.getInstance().getErrorDisplay().printError("Error pulling remote collections, error was:\n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Error pulling remote collections, error was:\n" + ExceptionUtils.getStackTrace(e));
 		}
 
 		// Collections are deserialized and have null listeners, call initFromJSON to fix those listeners
@@ -745,13 +761,13 @@ public class ElasticSearchConnectionManager
 			else
 			{
 				// Bad response, print out an error message. User probably doesnt exist
-				SanimalData.getInstance().getErrorDisplay().printError("User not found on the DB. This should not be possible.");
+				SanimalData.getInstance().getErrorDisplay().notify("User not found on the DB. This should not be possible.");
 			}
 		}
 		catch (IOException e)
 		{
 			// Error happened when executing a GET request. Print an error
-			SanimalData.getInstance().getErrorDisplay().printError("Error pulling remote field '" + field + "' for the user '" + SanimalData.getInstance().getUsername() + "' from the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Error pulling remote field '" + field + "' for the user '" + SanimalData.getInstance().getUsername() + "' from the ElasticSearch index: \n" + ExceptionUtils.getStackTrace(e));
 		}
 
 		return null;
@@ -780,12 +796,12 @@ public class ElasticSearchConnectionManager
 
 			// Test to make sure it went OK, if not, return an error
 			if (updateResponse.status() != RestStatus.OK)
-				SanimalData.getInstance().getErrorDisplay().printError("Error syncing species list, error response was: " + updateResponse.status());
+				SanimalData.getInstance().getErrorDisplay().notify("Error syncing species list, error response was: " + updateResponse.status());
 		}
 		catch (IOException e)
 		{
 			// Print an error if the update fails
-			SanimalData.getInstance().getErrorDisplay().printError("Error updating species list for the user '" + SanimalData.getInstance().getUsername() + "'\n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Error updating species list for the user '" + SanimalData.getInstance().getUsername() + "'\n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 
@@ -830,12 +846,12 @@ public class ElasticSearchConnectionManager
 
 			// Print an error if the response code is not OK
 			if (updateResponse.status() != RestStatus.OK)
-				SanimalData.getInstance().getErrorDisplay().printError("Error syncing location list, error response was: " + updateResponse.status());
+				SanimalData.getInstance().getErrorDisplay().notify("Error syncing location list, error response was: " + updateResponse.status());
 		}
 		catch (IOException e)
 		{
 			// Print an error if the update request fails
-			SanimalData.getInstance().getErrorDisplay().printError("Error updating location list for the user '" + SanimalData.getInstance().getUsername() + "'\n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Error updating location list for the user '" + SanimalData.getInstance().getUsername() + "'\n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 
@@ -891,12 +907,12 @@ public class ElasticSearchConnectionManager
 
 			// If the response is OK, continue, if not print an error
 			if (updateResponse.status() != RestStatus.OK)
-				SanimalData.getInstance().getErrorDisplay().printError("Error syncing settings, error response was: " + updateResponse.status());
+				SanimalData.getInstance().getErrorDisplay().notify("Error syncing settings, error response was: " + updateResponse.status());
 		}
 		catch (IOException e)
 		{
 			// Print an error if the update fails
-			SanimalData.getInstance().getErrorDisplay().printError("Error updating settings for the user '" + SanimalData.getInstance().getUsername() + "'\n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Error updating settings for the user '" + SanimalData.getInstance().getUsername() + "'\n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 
@@ -952,12 +968,12 @@ public class ElasticSearchConnectionManager
 
 			// If the response is OK, continue, if not print an error
 			if (updateResponse.status() != RestStatus.OK && updateResponse.status() != RestStatus.CREATED)
-				SanimalData.getInstance().getErrorDisplay().printError("Error saving collection '" + imageCollection.getName() + "', error response was: " + updateResponse.status());
+				SanimalData.getInstance().getErrorDisplay().notify("Error saving collection '" + imageCollection.getName() + "', error response was: " + updateResponse.status());
 		}
 		catch (IOException e)
 		{
 			// Print an error if the update fails
-			SanimalData.getInstance().getErrorDisplay().printError("Error saving collection '" + imageCollection.getName() + "'\n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Error saving collection '" + imageCollection.getName() + "'\n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 
@@ -1061,7 +1077,7 @@ public class ElasticSearchConnectionManager
 		catch (IOException e)
 		{
 			// If something went wrong, print out an error.
-			SanimalData.getInstance().getErrorDisplay().printError("Error retrieving uploads for image collection '" + collectionID + "', error was:\n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Error retrieving uploads for image collection '" + collectionID + "', error was:\n" + ExceptionUtils.getStackTrace(e));
 		}
 		return null;
 	}
@@ -1107,12 +1123,12 @@ public class ElasticSearchConnectionManager
 
 			// Check if everything went OK, if not return an error
 			if (bulkResponse.status() != RestStatus.OK)
-				SanimalData.getInstance().getErrorDisplay().printError("Error bulk inserting metadata, error response was: " + bulkResponse.status());
+				SanimalData.getInstance().getErrorDisplay().notify("Error bulk inserting metadata, error response was: " + bulkResponse.status());
 		}
 		catch (IOException e)
 		{
 			// Print an error if the bulk insert fails
-			SanimalData.getInstance().getErrorDisplay().printError("Error bulk inserting metadata, response was: '\n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Error bulk inserting metadata, response was: '\n" + ExceptionUtils.getStackTrace(e));
 		}
 
 		// Get all the uploads for a given collection
@@ -1149,12 +1165,12 @@ public class ElasticSearchConnectionManager
 					UpdateResponse updateResponse = this.elasticSearchClient.update(updateRequest);
 					// If the response was not OK, print an error
 					if (updateResponse.status() != RestStatus.OK)
-						SanimalData.getInstance().getErrorDisplay().printError("Could not update the Collection's index with a new upload!");
+						SanimalData.getInstance().getErrorDisplay().notify("Could not update the Collection's index with a new upload!");
 				}
 				catch (IOException e)
 				{
 					// If the update failed for some reason, print that error
-					SanimalData.getInstance().getErrorDisplay().printError("Could not insert the upload into the collection index!\n" + ExceptionUtils.getStackTrace(e));
+					SanimalData.getInstance().getErrorDisplay().notify("Could not insert the upload into the collection index!\n" + ExceptionUtils.getStackTrace(e));
 				}
 			}
 		}
@@ -1200,10 +1216,13 @@ public class ElasticSearchConnectionManager
 					.id(collectionID)
 					// We use a script because we're updating nested fields. The script written out looks like:
 					/*
+					// Iterate over all uploads
 					for (upload in ctx._source.uploads)
 					{
+						// If the IDs match
 						if (upload.id == params.id)
 						{
+							// Add the edit comment, and update the images with species
 							upload.editComments.add(params.comment);
 							upload.imagesWithSpecies = params.imagesWithSpecies;
 						}
@@ -1228,7 +1247,7 @@ public class ElasticSearchConnectionManager
 		catch (IOException e)
 		{
 			// If something went wrong while updating, print an error
-			SanimalData.getInstance().getErrorDisplay().printError("Error updating the image index. Error was:\n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Error updating the image index. Error was:\n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 
@@ -1271,6 +1290,16 @@ public class ElasticSearchConnectionManager
 		{{
 			// The date the image was taken
 			put("dateTaken", imageEntry.getDateTaken().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+			// The image year taken
+			put("yearTaken", imageEntry.getDateTaken().getYear());
+			// The image month taken
+			put("monthTaken", imageEntry.getDateTaken().getMonthValue());
+			// The image hour taken
+			put("hourTaken", imageEntry.getDateTaken().getHour());
+			// The day of year the image was taken
+			put("dayOfYearTaken", imageEntry.getDateTaken().getDayOfYear());
+			// The day of week taken
+			put("dayOfWeekTaken", imageEntry.	getDateTaken().getDayOfWeek().getValue());
 			// The location the image was taken at. Has an ID field, a name field, a position and elevation
 			put("location", new HashMap<String, Object>()
 			{{
@@ -1292,10 +1321,63 @@ public class ElasticSearchConnectionManager
 		return metadata;
 	}
 
+	public List<ImageEntry> performQuery(ElasticSearchQuery queryBuilder)
+	{
+		List<ImageEntry> toReturn = new ArrayList<>();
+
+		Scroll scroll = new Scroll(TimeValue.timeValueMinutes(10));
+
+		SearchRequest searchRequest = new SearchRequest();
+		searchRequest
+				.indices(INDEX_SANIMAL_METADATA)
+				.types(INDEX_SANIMAL_METADATA_TYPE)
+				.scroll(scroll)
+				.source(new SearchSourceBuilder()
+					.query(queryBuilder.build())
+					.fetchSource(FetchSourceContext.FETCH_SOURCE));
+
+		try
+		{
+			SearchResponse searchResponse = this.elasticSearchClient.search(searchRequest);
+			String scrollID = searchResponse.getScrollId();
+			SearchHit[] searchHits = searchResponse.getHits().getHits();
+
+			while (searchHits != null && searchHits.length > 0)
+			{
+				for (SearchHit searchHit : searchHits)
+				{
+					searchHit.getSourceAsMap();
+				}
+
+				SearchScrollRequest searchScrollRequest = new SearchScrollRequest();
+				searchScrollRequest
+					.scrollId(scrollID)
+					.scroll(scroll);
+				searchResponse = this.elasticSearchClient.searchScroll(searchScrollRequest);
+				scrollID = searchResponse.getScrollId();
+				searchHits = searchResponse.getHits().getHits();
+			}
+
+			ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
+			clearScrollRequest.addScrollId(scrollID);
+			ClearScrollResponse clearScrollResponse = this.elasticSearchClient.clearScroll(clearScrollRequest);
+			if (!clearScrollResponse.isSucceeded())
+			{
+				SanimalData.getInstance().getErrorDisplay().notify("Clearing the scroll after querying did not succeed!");
+			}
+		}
+		catch (IOException e)
+		{
+			SanimalData.getInstance().getErrorDisplay().notify("Error occoured when performing query!\n" + ExceptionUtils.getStackTrace(e));
+		}
+
+		return toReturn;
+	}
+
 	/**
 	 * Finalize method is called like a deconstructor and can be used to clean up any floating objects
 	 *
-	 * @throws Throwable
+	 * @throws Throwable If finalization fails for some reason
 	 */
 	@Override
 	protected void finalize() throws Throwable
@@ -1309,7 +1391,7 @@ public class ElasticSearchConnectionManager
 		}
 		catch (IOException e)
 		{
-			SanimalData.getInstance().getErrorDisplay().printError("Could not close ElasticSearch connection: \n" + ExceptionUtils.getStackTrace(e));
+			SanimalData.getInstance().getErrorDisplay().notify("Could not close ElasticSearch connection: \n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 }

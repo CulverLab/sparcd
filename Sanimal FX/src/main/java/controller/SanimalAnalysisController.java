@@ -18,7 +18,7 @@ import javafx.scene.layout.VBox;
 import model.SanimalData;
 import model.analysis.DataAnalyzer;
 import model.image.ImageEntry;
-import model.query.CyVerseQuery;
+import model.query.ElasticSearchQuery;
 import model.query.IQueryCondition;
 import model.query.QueryEngine;
 import model.threading.ErrorTask;
@@ -150,7 +150,7 @@ public class SanimalAnalysisController implements Initializable
 		catch (NumberFormatException ignored) {}
 
 		// Create a query
-		CyVerseQuery query = new CyVerseQuery();
+		ElasticSearchQuery query = new ElasticSearchQuery();
 		// For each condition listed in the listview, apply that to the overall query
 		for (IQueryCondition queryCondition : SanimalData.getInstance().getQueryEngine().getQueryConditions())
 			queryCondition.appendConditionToQuery(query);

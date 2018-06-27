@@ -4,12 +4,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
 import model.SanimalData;
-import model.cyverse.ImageCollection;
-import model.query.CyVerseQuery;
+import model.query.ElasticSearchQuery;
 import model.query.IQueryCondition;
 import model.species.Species;
 
@@ -50,7 +46,7 @@ public class SpeciesFilterCondition implements IQueryCondition
 	 * @param query The current state of the query before the appending
 	 */
 	@Override
-	public void appendConditionToQuery(CyVerseQuery query)
+	public void appendConditionToQuery(ElasticSearchQuery query)
 	{
 		for (Species species : this.getSpeciesList())
 			if (speciesToSelected.containsKey(species) && speciesToSelected.get(species).getValue())

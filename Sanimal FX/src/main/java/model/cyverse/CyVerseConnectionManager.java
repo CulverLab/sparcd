@@ -7,7 +7,7 @@ import model.SanimalData;
 import model.constant.SanimalMetadataFields;
 import model.image.*;
 import model.location.Location;
-import model.query.CyVerseQuery;
+import model.query.ElasticSearchQuery;
 import model.species.Species;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -549,8 +549,9 @@ public class CyVerseConnectionManager
 	 * @param queryBuilder The query builder with all specified options
 	 * @return A list of image CyVerse paths instead of local paths
 	 */
-	public List<String> performQuery(CyVerseQuery queryBuilder)
+	public List<String> performQuery(ElasticSearchQuery queryBuilder)
 	{
+		/*
 		if (this.sessionManager.openSession())
 		{
 			try
@@ -595,6 +596,7 @@ public class CyVerseConnectionManager
 			}
 			this.sessionManager.closeSession();
 		}
+		*/
 
 		return Collections.emptyList();
 	}

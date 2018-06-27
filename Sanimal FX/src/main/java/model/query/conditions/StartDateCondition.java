@@ -2,7 +2,7 @@ package model.query.conditions;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import model.query.CyVerseQuery;
+import model.query.ElasticSearchQuery;
 import model.query.IQueryCondition;
 
 import java.time.LocalDateTime;
@@ -22,7 +22,7 @@ public class StartDateCondition implements IQueryCondition
 	 * @param query The current state of the query before the appending
 	 */
 	@Override
-	public void appendConditionToQuery(CyVerseQuery query)
+	public void appendConditionToQuery(ElasticSearchQuery query)
 	{
 		query.setStartDate(startDate.getValue());
 	}
