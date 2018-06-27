@@ -6,11 +6,9 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.species.Species;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -18,7 +16,6 @@ import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
 import org.controlsfx.validation.decoration.GraphicValidationDecoration;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -103,8 +100,8 @@ public class SpeciesCreatorController implements Initializable
 	{
 		// Setup all the fields for this given species
 		this.speciesToEdit = species;
-		if (this.speciesToEdit.nameValid())
-			this.newName.set(species.getName());
+		if (this.speciesToEdit.commonNameValid())
+			this.newName.set(species.getCommonName());
 		if (this.speciesToEdit.scientificNameValid())
 			this.newScientificName.set(species.getScientificName());
 		if (this.speciesToEdit.iconValid())
@@ -129,7 +126,7 @@ public class SpeciesCreatorController implements Initializable
 	public void confirmPressed(ActionEvent actionEvent)
 	{
 		// Set the name
-		speciesToEdit.setName(newName.getValue());
+		speciesToEdit.setCommonName(newName.getValue());
 		// Set the scientific name to unknown if no name was given
 		speciesToEdit.setScientificName(newScientificName.getValue().trim().isEmpty() ? "Unknown" : newScientificName.getValue());
 		// Set the icon either to the local file name or URL

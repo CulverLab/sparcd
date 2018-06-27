@@ -66,14 +66,14 @@ public class SpeciesConditionController implements IConditionController
 			// Grab the global species list
 			SortedList<Species> speciesSorted = new SortedList<>(this.speciesFilterCondition.getSpeciesList());
 			// We set the comparator to be the name of the species
-			speciesSorted.setComparator(Comparator.comparing(Species::getName));
+			speciesSorted.setComparator(Comparator.comparing(Species::getCommonName));
 			// We create a local wrapper of the species list to filter
 			FilteredList<Species> speciesFilteredList = new FilteredList<>(speciesSorted);
 			// Set the filter to update whenever the species search text changes
 			this.txtSpeciesSearch.textProperty().addListener(observable -> {
 				speciesFilteredList.setPredicate(speciesToFilter ->
 						// Allow any species with a name or scientific name containing the species search text
-						(StringUtils.containsIgnoreCase(speciesToFilter.getName(), this.txtSpeciesSearch.getCharacters()) ||
+						(StringUtils.containsIgnoreCase(speciesToFilter.getCommonName(), this.txtSpeciesSearch.getCharacters()) ||
 								StringUtils.containsIgnoreCase(speciesToFilter.getScientificName(), this.txtSpeciesSearch.getCharacters())));
 			});
 			// Set the items of the species list view to the newly sorted list

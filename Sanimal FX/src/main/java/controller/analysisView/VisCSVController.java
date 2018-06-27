@@ -99,9 +99,9 @@ public class VisCSVController implements VisControllerBase
 			return imageEntry.getFile().getName() + "," +
 				SanimalData.getInstance().getSettings().formatDateTime(imageEntry.getDateTaken(), " ") + "," +
 				imageEntry.getSpeciesPresent().stream().map(speciesEntry ->
-					speciesEntry.getSpecies().getName() + ";" +
+					speciesEntry.getSpecies().getCommonName() + ";" +
 					speciesEntry.getSpecies().getScientificName() + ";" +
-					speciesEntry.getAmount().toString()
+					speciesEntry.getCount().toString()
 				).collect(Collectors.joining(";")) + "," +
 				locationString;
 		}).collect(Collectors.joining("\n"));
@@ -146,7 +146,7 @@ public class VisCSVController implements VisControllerBase
 		// The species CSV contains each species, one per line, in the form:
 		// Name, Scientific Name, Key bound (or null if none)
 		String speciesCSV = dataAnalyzer.getAllImageSpecies().stream().map(species ->
-			species.getName() + "," +
+			species.getCommonName() + "," +
 			species.getScientificName()
 		).collect(Collectors.joining("\n"));
 		this.txtSpeciesCSV.setText(speciesCSV);

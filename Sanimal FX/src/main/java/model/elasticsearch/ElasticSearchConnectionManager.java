@@ -1,5 +1,6 @@
 package model.elasticsearch;
 
+import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
 import model.SanimalData;
@@ -14,7 +15,6 @@ import model.species.Species;
 import model.species.SpeciesEntry;
 import model.util.SettingsData;
 import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.http.HttpHost;
 import org.elasticsearch.ElasticsearchStatusException;
@@ -32,7 +32,10 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.*;
+import org.elasticsearch.common.xcontent.DeprecationHandler;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.Script;
@@ -929,47 +932,40 @@ public class ElasticSearchConnectionManager
 				{
 					String storagePath = (String) storagePathObj;
 					Map<String, Object> imageMetadata = (Map<String, Object>) imageMetadataObj;
-					if (imageMetadata.containsKey("dateTaken") && imageMetadata.containsKey("location") && imageMetadata.containsKey("species"))
+					if (imageMetadata.containsKey("dateTaken") && imageMetadata.containsKey("location") && imageMetadata.containsKey("speciesEntries"))
 					{
 						Object dateTakenObj = imageMetadata.get("dateTaken");
 						Object locationObj = imageMetadata.get("location");
-						Object speciesListObj = imageMetadata.get("species");
+						Object speciesListObj = imageMetadata.get("speciesEntries");
 						if (dateTakenObj instanceof String && locationObj instanceof Map<?, ?> && speciesListObj instanceof List<?>)
 						{
 							LocalDateTime dateTaken = LocalDateTime.parse((String) dateTakenObj, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 							Map<String, Object> locationMap = (Map<String, Object>) locationObj;
-							List<Map<String, Object>> speciesEntryList = (List<Map<String, Object>>) speciesListObj;
-							if (locationMap.containsKey("position") && locationMap.containsKey("id") && locationMap.containsKey("name") && locationMap.containsKey("elevation"))
+							List<Object> speciesEntryList = (List<Object>) speciesListObj;
+							if (locationMap.containsKey("position"))
 							{
 								Object positionObj = locationMap.get("position");
-								Object idObj = locationMap.get("id");
-								Object nameObj = locationMap.get("name");
-								Object elevationObj = locationMap.get("elevation");
-								if (positionObj instanceof String && idObj instanceof String && nameObj instanceof String && elevationObj instanceof Double)
+								if (positionObj instanceof String)
 								{
-									String locationPosition = (String) locationMap.get("position");
-									String locationID = (String) locationMap.get("id");
-									String locationName = (String) locationMap.get("name");
-									Double locationElevation = (Double) locationMap.get("elevation");
+									String locationPosition = (String) locationMap.remove("position");
 									String[] latLongArray = locationPosition.split(", ");
 									if (latLongArray.length == 2)
 									{
-										Double locationLatitude = Double.parseDouble(latLongArray[0]);
-										Double locationLongitude = Double.parseDouble(latLongArray[1]);
+										locationMap.put("latitude", latLongArray[0]);
+										locationMap.put("longitude", latLongArray[1]);
+
+										Gson gson = SanimalData.getInstance().getGson();
+										Location tempLocation = gson.fromJson(gson.toJson(locationMap), Location.class);
+										List<SpeciesEntry> tempSpeciesEntries = gson.fromJson(gson.toJson(speciesEntryList), SPECIES_ENTRY_LIST_TYPE);
+										List<Species> tempSpeciesList = tempSpeciesEntries.stream().map(SpeciesEntry::getSpecies).distinct().collect(Collectors.toList());
+										tempSpeciesList.forEach(species -> species.setSpeciesIcon(Species.DEFAULT_ICON));
 
 										// Compute a new location if we need to
-										Boolean locationForImagePresent = uniqueLocations.stream().anyMatch(location -> location.getId().equals(locationID));
+										Boolean locationForImagePresent = uniqueLocations.stream().anyMatch(location -> location.getId().equals(tempLocation.getId()));
 										// Do we have the location?
 										if (!locationForImagePresent)
-											uniqueLocations.add(new Location(locationName, locationID, locationLatitude, locationLongitude, locationElevation));
+											uniqueLocations.add(tempLocation);
 
-										
-
-										speciesEntryList.forEach(speciesEntry -> {
-
-										});
-
-										/*
 										// Compute a new species (s) if we need to
 										for (Species tempSpecies : tempSpeciesList)
 										{
@@ -987,14 +983,13 @@ public class ElasticSearchConnectionManager
 										entry.setLocationTaken(correctLocation);
 										entry.setDateTaken(dateTaken);
 										// Add the species to the image entries
-										for (SpeciesEntry tempSpeciesEntry : tempSpeciesEntryList)
+										for (SpeciesEntry tempSpeciesEntry : tempSpeciesEntries)
 										{
 											// Grab the species based on ID
 											Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(tempSpeciesEntry.getSpecies().getScientificName())).findFirst().get();
-											entry.addSpecies(correctSpecies, tempSpeciesEntry.getAmount());
+											entry.addSpecies(correctSpecies, tempSpeciesEntry.getCount());
 										}
 										return entry;
-										*/
 									}
 								}
 							}

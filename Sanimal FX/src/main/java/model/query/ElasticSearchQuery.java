@@ -81,7 +81,7 @@ public class ElasticSearchQuery
 	 */
 	public void setStartAndEndYear(Integer startYear, Integer endYear)
 	{
-		queryBuilder.must().add(QueryBuilders.rangeQuery("yearTaken").gte(startYear).lte(endYear));
+		queryBuilder.must().add(QueryBuilders.rangeQuery("imageMetadata.yearTaken").gte(startYear).lte(endYear));
 	}
 
 	/**
@@ -121,7 +121,7 @@ public class ElasticSearchQuery
 	 */
 	public void setStartDate(LocalDateTime startDate)
 	{
-		this.queryBuilder.must().add(QueryBuilders.rangeQuery("dateTaken").gte(startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+		this.queryBuilder.must().add(QueryBuilders.rangeQuery("imageMetadata.dateTaken").gte(startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
 	}
 
 	/**
@@ -131,7 +131,7 @@ public class ElasticSearchQuery
 	 */
 	public void setEndDate(LocalDateTime endDate)
 	{
-		this.queryBuilder.must().add(QueryBuilders.rangeQuery("dateTaken").lte(endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+		this.queryBuilder.must().add(QueryBuilders.rangeQuery("imageMetadata.dateTaken").lte(endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
 	}
 
 	public void addElevationCondition(Double elevation, ElevationCondition.ElevationComparisonOperators operator)
@@ -139,19 +139,19 @@ public class ElasticSearchQuery
 		switch (operator)
 		{
 			case Equal:
-				this.queryBuilder.must().add(QueryBuilders.termQuery("location.elevation", elevation));
+				this.queryBuilder.must().add(QueryBuilders.termQuery("imageMetadata.location.elevation", elevation));
 				break;
 			case GreaterThan:
-				this.queryBuilder.must().add(QueryBuilders.rangeQuery("location.elevation").gt(elevation));
+				this.queryBuilder.must().add(QueryBuilders.rangeQuery("imageMetadata.location.elevation").gt(elevation));
 				break;
 			case GreaterThanOrEqual:
-				this.queryBuilder.must().add(QueryBuilders.rangeQuery("location.elevation").gte(elevation));
+				this.queryBuilder.must().add(QueryBuilders.rangeQuery("imageMetadata.location.elevation").gte(elevation));
 				break;
 			case LessThan:
-				this.queryBuilder.must().add(QueryBuilders.rangeQuery("location.elevation").lt(elevation));
+				this.queryBuilder.must().add(QueryBuilders.rangeQuery("imageMetadata.location.elevation").lt(elevation));
 				break;
 			case LessThanOrEqual:
-				this.queryBuilder.must().add(QueryBuilders.rangeQuery("location.elevation").lte(elevation));
+				this.queryBuilder.must().add(QueryBuilders.rangeQuery("imageMetadata.location.elevation").lte(elevation));
 				break;
 			default:
 				SanimalData.getInstance().getErrorDisplay().printError("Got an impossible elevation condition");
@@ -163,7 +163,7 @@ public class ElasticSearchQuery
 	{
 		if (!speciesQuery.isEmpty())
 		{
-			this.queryBuilder.must().add(QueryBuilders.termQuery("imageMetadata.species.scientificName", this.speciesQuery.stream().map(Species::getScientificName).toArray(Species[]::new)));
+			this.queryBuilder.must().add(QueryBuilders.termQuery("imageMetadata.species.scientificName", this.speciesQuery.stream().map(Species::getScientificName).toArray(String[]::new)));
 		}
 
 		/*

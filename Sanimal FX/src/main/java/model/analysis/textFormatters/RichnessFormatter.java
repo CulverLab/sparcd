@@ -38,7 +38,7 @@ public class RichnessFormatter extends TextFormatter
 		toReturn.append("  One record of each species per location per PERIOD\n");
 		toReturn.append("Location                          ");
 		for (Species species : analysis.getAllImageSpecies())
-			toReturn.append(String.format("%-6s ", StringUtils.left(species.getName(), 6)));
+			toReturn.append(String.format("%-6s ", StringUtils.left(species.getCommonName(), 6)));
 		toReturn.append("Rich\n");
 
 		for (Location location : analysis.getAllImageLocations())

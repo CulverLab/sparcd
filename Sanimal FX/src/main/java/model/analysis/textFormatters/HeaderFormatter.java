@@ -56,7 +56,7 @@ public class HeaderFormatter extends TextFormatter
 
 		toReturn.append("SPECIES ").append(analysis.getAllImageSpecies().size()).append("\n");
 		for (Species species : analysis.getAllImageSpecies())
-			toReturn.append(species.getName()).append(" ");
+			toReturn.append(species.getCommonName()).append(" ");
 		toReturn.append("\n\n");
 
 		return toReturn.toString();

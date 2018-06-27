@@ -51,7 +51,7 @@ public class ExcelFormatter
 		//		{
 		//			long days = daysBetween(firstImageDate, entry.getValue().getDateTaken());
 		//			int currentNum = ++number;
-		//			String name = entry.getKey().getName();
+		//			String name = entry.getKey().getCommonName();
 		//			Row row = mainSheet.createRow(rowid++);
 		//			int cellid = 0;
 		//			Cell cellCounter = row.createCell(cellid++, XSSFCell.CELL_TYPE_NUMERIC);

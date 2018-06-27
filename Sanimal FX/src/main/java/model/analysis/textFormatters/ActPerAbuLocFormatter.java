@@ -98,7 +98,7 @@ public class ActPerAbuLocFormatter extends TextFormatter
 		toReturn.append("NUMBER OF PICTURES BY SPECIES BY YEAR\n");
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn.append("  ").append(species.getName()).append("\n");
+			toReturn.append("  ").append(species.getCommonName()).append("\n");
 			toReturn.append("        Year       All Activity   Period Abundance Locations\n");
 			int speciesImageTotal = 0;
 			int speciesActivityTotal = 0;
@@ -163,7 +163,7 @@ public class ActPerAbuLocFormatter extends TextFormatter
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
 			for (Integer year : analysis.getAllImageYears())
 				speciesPeriodTotal = speciesPeriodTotal + analysis.periodForImageList(new ImageQuery().yearOnly(year).query(withSpecies));
-			toReturn.append(String.format("  %-28s %5d  %7.2f\n", species.getName(), speciesPeriodTotal, (speciesPeriodTotal.doubleValue() / periodTotal) * 100.0));
+			toReturn.append(String.format("  %-28s %5d  %7.2f\n", species.getCommonName(), speciesPeriodTotal, (speciesPeriodTotal.doubleValue() / periodTotal) * 100.0));
 		}
 		toReturn.append(String.format("  Total pictures               %5d   100.00\n", periodTotal));
 		toReturn.append("\n");
@@ -212,7 +212,7 @@ public class ActPerAbuLocFormatter extends TextFormatter
 				abundanceTotal = abundanceTotal + analysis.abundanceForImageList(withSpeciesYear, species);
 				periodTotal = periodTotal + analysis.periodForImageList(withSpeciesYear);
 			}
-			toReturn.append(String.format("%-28s %7d               %7.2f             %7.2f             %7.2f\n", species.getName(), periodTotal, 100.0D * (double) periodTotal / periodOverAllSpecies, (double) abundanceTotal / periodTotal, (double) abundanceTotal / numAnimalsPhotographed * 100));
+			toReturn.append(String.format("%-28s %7d               %7.2f             %7.2f             %7.2f\n", species.getCommonName(), periodTotal, 100.0D * (double) periodTotal / periodOverAllSpecies, (double) abundanceTotal / periodTotal, (double) abundanceTotal / numAnimalsPhotographed * 100));
 		}
 		toReturn.append(String.format("Total                        %7d                100.00", periodOverAllSpecies));
 
@@ -248,7 +248,7 @@ public class ActPerAbuLocFormatter extends TextFormatter
 			for (Species species : analysis.getAllImageSpecies())
 			{
 				List<ImageEntry> withYearSpecies = new ImageQuery().speciesOnly(species).query(withYear);
-				toReturn.append(String.format("%-28s", species.getName()));
+				toReturn.append(String.format("%-28s", species.getCommonName()));
 				for (Location location : analysis.getAllImageLocations())
 				{
 					List<ImageEntry> withYearSpeciesLoc = new ImageQuery().locationOnly(location).query(withYearSpecies);
@@ -291,7 +291,7 @@ public class ActPerAbuLocFormatter extends TextFormatter
 		for (Species species : analysis.getAllImageSpecies())
 		{
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
-			toReturn.append(String.format("%-28s", species.getName()));
+			toReturn.append(String.format("%-28s", species.getCommonName()));
 			for (Location location : analysis.getAllImageLocations())
 			{
 				List<ImageEntry> withSpeciesLoc = new ImageQuery().locationOnly(location).query(withSpecies);

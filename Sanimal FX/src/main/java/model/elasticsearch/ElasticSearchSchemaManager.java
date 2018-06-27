@@ -39,7 +39,7 @@ public class ElasticSearchSchemaManager
 					.startObject("species")
 						.field("type", "nested")
 						.startObject("properties")
-							.startObject("name")
+							.startObject("commonName")
 								.field("type", "text")
 							.endObject()
 							.startObject("scientificName")
@@ -170,14 +170,19 @@ public class ElasticSearchSchemaManager
 									.endObject()
 								.endObject()
 							.endObject()
-							.startObject("species")
+							.startObject("speciesEntries")
 								.field("type", "nested")
 								.startObject("properties")
-									.startObject("commonName")
-										.field("type", "text")
-									.endObject()
-									.startObject("scientificName")
-										.field("type", "text")
+									.startObject("species")
+										.field("type", "object")
+										.startObject("properties")
+											.startObject("commonName")
+												.field("type", "text")
+											.endObject()
+											.startObject("scientificName")
+												.field("type", "text")
+											.endObject()
+										.endObject()
 									.endObject()
 									.startObject("count")
 										.field("type", "integer")
@@ -483,13 +488,16 @@ public class ElasticSearchSchemaManager
 				put("position", imageEntry.getLocationTaken().getLatitude() + ", " + imageEntry.getLocationTaken().getLongitude());
 			}});
 			// The species present in the image, stored as a list of objects containing common name, scientific name, and count
-			put("species", imageEntry.getSpeciesPresent().stream().map(speciesEntry ->
+			put("speciesEntries", imageEntry.getSpeciesPresent().stream().map(speciesEntry ->
 			{
-				Map<String, Object> speciesData = new HashMap<>();
-				speciesData.put("commonName", speciesEntry.getSpecies().getName());
-				speciesData.put("scientificName", speciesEntry.getSpecies().getScientificName());
-				speciesData.put("count", speciesEntry.getAmount());
-				return speciesData;
+				Map<String, Object> speciesEntryData = new HashMap<>();
+				speciesEntryData.put("species", new HashMap<String, Object>()
+				{{
+					put("commonName", speciesEntry.getSpecies().getCommonName());
+					put("scientificName", speciesEntry.getSpecies().getScientificName());
+				}});
+				speciesEntryData.put("count", speciesEntry.getCount());
+				return speciesEntryData;
 			}).collect(Collectors.toList()));
 		}});
 		return metadata;

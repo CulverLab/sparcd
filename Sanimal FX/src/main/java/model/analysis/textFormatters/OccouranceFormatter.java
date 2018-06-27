@@ -42,14 +42,14 @@ public class OccouranceFormatter extends TextFormatter
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn.append(String.format("%3s ", StringUtils.left(species.getName(), 3)));
+			toReturn.append(String.format("%3s ", StringUtils.left(species.getCommonName(), 3)));
 		}
 
 		toReturn.append("\n");
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn.append(String.format("%-28s", species.getName()));
+			toReturn.append(String.format("%-28s", species.getCommonName()));
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
 
 			for (Species other : analysis.getAllImageSpecies())
@@ -109,7 +109,7 @@ public class OccouranceFormatter extends TextFormatter
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn.append(String.format("%-28s", species.getName()));
+			toReturn.append(String.format("%-28s", species.getCommonName()));
 
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
 
@@ -159,7 +159,7 @@ public class OccouranceFormatter extends TextFormatter
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn.append(String.format("%-28s", species.getName()));
+			toReturn.append(String.format("%-28s", species.getCommonName()));
 
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
 
@@ -207,7 +207,7 @@ public class OccouranceFormatter extends TextFormatter
 				}
 			}
 
-			toReturn.append(String.format("%-28s %5.0f %5.0f\n", species.getName(), minElevation, maxElevation));
+			toReturn.append(String.format("%-28s %5.0f %5.0f\n", species.getCommonName(), minElevation, maxElevation));
 		}
 
 		toReturn.append("\n");
@@ -252,7 +252,7 @@ public class OccouranceFormatter extends TextFormatter
 					locationsWithSpecies = locationsWithSpecies + 1;
 			}
 
-			pairsToPrint.add(Pair.of((double) locationsWithSpecies / totalLocations, String.format("%-28s           %5.3f                  %3d\n", species.getName(), (double) locationsWithSpecies / totalLocations, locationsWithSpecies)));
+			pairsToPrint.add(Pair.of((double) locationsWithSpecies / totalLocations, String.format("%-28s           %5.3f                  %3d\n", species.getCommonName(), (double) locationsWithSpecies / totalLocations, locationsWithSpecies)));
 		}
 
 		pairsToPrint.sort((pair1, pair2) ->
@@ -287,11 +287,11 @@ public class OccouranceFormatter extends TextFormatter
 		toReturn = toReturn + "No idea what these numbers are\n\n";
 
 		//		for (Location location : analysis.getAllImageLocations())
-		//			toReturn = toReturn + String.format("%-8s", StringUtils.left(location.getName(), 8));
+		//			toReturn = toReturn + String.format("%-8s", StringUtils.left(location.getCommonName(), 8));
 		//		toReturn = toReturn + "\n";
 		//		for (Location location : analysis.getAllImageLocations())
 		//		{
-		//			toReturn = toReturn + String.format("%-28s", location.getName());
+		//			toReturn = toReturn + String.format("%-28s", location.getCommonName());
 		//
 		//			toReturn = toReturn + "\n";
 		//		}

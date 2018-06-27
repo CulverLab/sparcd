@@ -65,8 +65,8 @@ public class ImageEntry extends ImageContainer
 	private final ObjectProperty<Location> locationTakenProperty = new SimpleObjectProperty<Location>();
 	// The species present in the image
 	private final ObservableList<SpeciesEntry> speciesPresent = FXCollections.<SpeciesEntry> observableArrayList(image -> new Observable[] {
-			image.getAmountProperty(),
-			image.getSpeciesProperty()
+			image.countProperty(),
+			image.speciesProperty()
 	});
 	// If this image is dirty, we set a flag to write it to disk at some later point
 	private transient final AtomicBoolean isDiskDirty = new AtomicBoolean(false);
@@ -230,7 +230,7 @@ public class ImageEntry extends ImageContainer
 								knownSpecies
 									.stream()
 									.filter(species ->
-											StringUtils.equalsIgnoreCase(species.getName(), speciesName) &&
+											StringUtils.equalsIgnoreCase(species.getCommonName(), speciesName) &&
 													StringUtils.equalsIgnoreCase(species.getScientificName(), speciesScientificName))
 									.findFirst();
 
@@ -317,8 +317,8 @@ public class ImageEntry extends ImageContainer
 		for (SpeciesEntry speciesEntry : this.getSpeciesPresent())
 		{
 			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, speciesEntry.getSpecies().getScientificName(), entryID.toString()));
-			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_COMMON_NAME, speciesEntry.getSpecies().getName(), entryID.toString()));
-			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_COUNT, speciesEntry.getAmount().toString(), entryID.toString()));
+			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_COMMON_NAME, speciesEntry.getSpecies().getCommonName(), entryID.toString()));
+			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_COUNT, speciesEntry.getCount().toString(), entryID.toString()));
 			entryID++;
 		}
 		return metadata;
@@ -419,7 +419,7 @@ public class ImageEntry extends ImageContainer
 	{
 		// Grab the old species entry for the given species if present, and then add the amounts
 		Optional<SpeciesEntry> currentEntry = this.speciesPresent.stream().filter(speciesEntry -> speciesEntry.getSpecies().equals(species)).findFirst();
-		int oldAmount = currentEntry.map(SpeciesEntry::getAmount).orElse(0);
+		int oldAmount = currentEntry.map(SpeciesEntry::getCount).orElse(0);
 		this.removeSpecies(species);
 		this.speciesPresent.add(new SpeciesEntry(species, amount + oldAmount));
 	}
@@ -476,7 +476,7 @@ public class ImageEntry extends ImageContainer
 			// Remove the species field if it exists
 			directory.removeField(SanimalMetadataFields.SPECIES_ENTRY);
 			// Use the species format name, scientific name, count
-			String[] metaVals = this.speciesPresent.stream().map(speciesEntry -> speciesEntry.getSpecies().getName() + ", " + speciesEntry.getSpecies().getScientificName() + ", " + speciesEntry.getAmount()).toArray(String[]::new);
+			String[] metaVals = this.speciesPresent.stream().map(speciesEntry -> speciesEntry.getSpecies().getCommonName() + ", " + speciesEntry.getSpecies().getScientificName() + ", " + speciesEntry.getCount()).toArray(String[]::new);
 			// Add the species entry field
 			directory.add(SanimalMetadataFields.SPECIES_ENTRY, metaVals);
 

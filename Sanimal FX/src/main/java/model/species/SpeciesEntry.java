@@ -13,22 +13,22 @@ import javafx.beans.property.SimpleObjectProperty;
 public class SpeciesEntry implements Comparable<SpeciesEntry>
 {
 	// The species represented
-	private final ObjectProperty<Species> speciesProperty = new SimpleObjectProperty<>();
+	private final ObjectProperty<Species> species = new SimpleObjectProperty<>();
 	// The number of that species
-	private final IntegerProperty amountProperty = new SimpleIntegerProperty();
+	private final IntegerProperty count = new SimpleIntegerProperty();
 
 	/**
 	 * Construct a species entry with a species and a number of that species
 	 * 
 	 * @param species
 	 *            The species to add
-	 * @param amount
+	 * @param count
 	 *            The number of that species to add
 	 */
-	public SpeciesEntry(Species species, Integer amount)
+	public SpeciesEntry(Species species, Integer count)
 	{
-		this.speciesProperty.setValue(species);
-		this.amountProperty.setValue(amount);
+		this.species.setValue(species);
+		this.count.setValue(count);
 	}
 
 	/**
@@ -36,36 +36,36 @@ public class SpeciesEntry implements Comparable<SpeciesEntry>
 	 */
 	public Species getSpecies()
 	{
-		return speciesProperty.getValue();
+		return species.getValue();
 	}
 
-	public void setAmount(Integer amountProperty)
+	public void setCount(Integer countProperty)
 	{
-		this.amountProperty.setValue(amountProperty);
+		this.count.setValue(countProperty);
 	}
 
 	/**
 	 * @return The amount of the given species in the entry
 	 */
-	public Integer getAmount()
+	public Integer getCount()
 	{
-		return amountProperty.getValue();
+		return count.getValue();
 	}
 
 	/**
 	 * @return The property representing the amount of a species
 	 */
-	public IntegerProperty getAmountProperty()
+	public IntegerProperty countProperty()
 	{
-		return this.amountProperty;
+		return this.count;
 	}
 
 	/**
 	 * @return The property representing the species type
 	 */
-	public ObjectProperty<Species> getSpeciesProperty()
+	public ObjectProperty<Species> speciesProperty()
 	{
-		return this.speciesProperty;
+		return this.species;
 	}
 
 
@@ -75,7 +75,7 @@ public class SpeciesEntry implements Comparable<SpeciesEntry>
 	@Override
 	public String toString()
 	{
-		return this.getSpecies().getName() + " (" + this.getAmount() + ")";
+		return this.getSpecies().getCommonName() + " (" + this.getCount() + ")";
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class SpeciesEntry implements Comparable<SpeciesEntry>
 		if (obj instanceof SpeciesEntry)
 		{
 			SpeciesEntry other = (SpeciesEntry) obj;
-			return other.getAmount() == this.getAmount() && other.getSpecies().equals(this.getSpecies());
+			return other.getCount().equals(this.getCount()) && other.getSpecies().equals(this.getSpecies());
 		}
 		return false;
 	}
@@ -98,7 +98,7 @@ public class SpeciesEntry implements Comparable<SpeciesEntry>
 	@Override
 	public int compareTo(SpeciesEntry other)
 	{
-		if (other.getAmount().equals(this.getAmount()) && other.getSpecies().equals(this.getSpecies()))
+		if (other.getCount().equals(this.getCount()) && other.getSpecies().equals(this.getSpecies()))
 			return 0;
 		else
 			return 1;

@@ -1,6 +1,5 @@
 package controller.importView;
 
-import controller.uploadView.UploadTreeCellController;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -189,7 +188,7 @@ public class ImageTreeCellController extends TreeCell<ImageContainer>
 			String commonName = (String) dragboard.getContent(SPECIES_NAME_FORMAT);
 			String scientificName = (String) dragboard.getContent(SPECIES_SCIENTIFIC_NAME_FORMAT);
 			// Grab the species with the given ID
-			Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getScientificName().equals(scientificName) && species.getName().equals(commonName)).findFirst();
+			Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getScientificName().equals(scientificName) && species.getCommonName().equals(commonName)).findFirst();
 			// Add the species to the image
 			ImageContainer item = this.getItem();
 			if (toAdd.isPresent())

@@ -104,7 +104,7 @@ public class SanimalData
 	private SanimalData()
 	{
 		// Create the species list, and add some default species
-		this.speciesList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList(species -> new Observable[]{species.nameProperty(), species.scientificNameProperty(), species.speciesIconURLProperty(), species.keyBindingProperty()}));
+		this.speciesList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList(species -> new Observable[]{species.commonNameProperty(), species.scientificNameProperty(), species.speciesIconURLProperty(), species.keyBindingProperty()}));
 
 		// When the species list changes we push the changes to the CyVerse servers
 		this.setupAutoSpeciesSync();
@@ -294,7 +294,7 @@ public class SanimalData
 		{
 			while (c.next())
 			{
-				if (c.wasUpdated())
+				if (c.wasUpdated() || c.wasAdded())
 				{
 					// If a sync is already in progress, we set a flag telling the current sync to perform another sync right after it finishes
 					if (!this.metadataSyncInProgress.get())

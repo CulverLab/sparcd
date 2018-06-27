@@ -252,7 +252,7 @@ public class DirectoryManager
 			{
 				// Get the species name
 				String speciesName = speciesDirectory.getFile().getName();
-				Optional<Species> speciesOpt = knownSpecies.stream().filter(species -> species.getName().equalsIgnoreCase(speciesName)).findFirst();
+				Optional<Species> speciesOpt = knownSpecies.stream().filter(species -> species.getCommonName().equalsIgnoreCase(speciesName)).findFirst();
 				Species currentSpecies;
 				// Get the species if it exists
 				if (speciesOpt.isPresent())
@@ -263,7 +263,7 @@ public class DirectoryManager
 				else
 				{
 					currentSpecies = new Species();
-					currentSpecies.setName(speciesName);
+					currentSpecies.setCommonName(speciesName);
 					currentSpecies.setSpeciesIcon(Species.DEFAULT_ICON);
 					knownSpecies.add(currentSpecies);
 				}

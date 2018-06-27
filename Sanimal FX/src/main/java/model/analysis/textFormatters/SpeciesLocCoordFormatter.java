@@ -38,7 +38,7 @@ public class SpeciesLocCoordFormatter extends TextFormatter
 		for (Species species : analysis.getAllImageSpecies())
 		{
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
-			toReturn.append(species.getName()).append("\n");
+			toReturn.append(species.getCommonName()).append("\n");
 			toReturn.append("Location                        UTMe-w   UTMn-s    Elevation   Lat        Long\n");
 			for (Location location : analysis.locationsForImageList(withSpecies))
 			{

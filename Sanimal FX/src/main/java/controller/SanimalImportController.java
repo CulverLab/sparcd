@@ -210,13 +210,13 @@ public class SanimalImportController implements Initializable
 		// Grab the global species list
 		SortedList<Species> species = new SortedList<>(SanimalData.getInstance().getSpeciesList());
 		// We set the comparator to be the name of the species
-		species.setComparator(Comparator.comparing(Species::getName));
+		species.setComparator(Comparator.comparing(Species::getCommonName));
 		// We create a local wrapper of the species list to filter
 		FilteredList<Species> speciesFilteredList = new FilteredList<>(species);
 		// Set the filter to update whenever the species search text changes
 		speciesFilteredList.predicateProperty().bind(Bindings.createObjectBinding(() -> (speciesToFilter ->
 			// Allow any species with a name or scientific name containing the species search text
-			(StringUtils.containsIgnoreCase(speciesToFilter.getName(), this.txtSpeciesSearch.getCharacters()) ||
+			(StringUtils.containsIgnoreCase(speciesToFilter.getCommonName(), this.txtSpeciesSearch.getCharacters()) ||
 					StringUtils.containsIgnoreCase(speciesToFilter.getScientificName(), this.txtSpeciesSearch.getCharacters()))), this.txtSpeciesSearch.textProperty()));
 		// Set the items of the species list view to the newly sorted list
 		this.speciesListView.setItems(speciesFilteredList);
@@ -611,7 +611,7 @@ public class SanimalImportController implements Initializable
 			// Otherwise prompt the user if they want to untag all images with the species
 			else
 			{
-				SanimalData.getInstance().getErrorDisplay().notify("This species (" + selected.getName() + ") has already been tagged in " + speciesUsages + " images.\nYes will untag all images with the species and remove it.",
+				SanimalData.getInstance().getErrorDisplay().notify("This species (" + selected.getCommonName() + ") has already been tagged in " + speciesUsages + " images.\nYes will untag all images with the species and remove it.",
 					new Action("Yes", actionEvent1 ->
 					{
 						// Remove the species and remove each species entry that has its species set to the selected species
@@ -727,7 +727,7 @@ public class SanimalImportController implements Initializable
 			// Otherwise prompt the user if they want to untag all images with the location
 			else
 			{
-				SanimalData.getInstance().getErrorDisplay().notify("This location (\" + selected.getName() + \") has already been tagged in \" + locationUsages + \" images.\\nYes will untag all images with the location and remove it.",
+				SanimalData.getInstance().getErrorDisplay().notify("This location (\" + selected.getCommonName() + \") has already been tagged in \" + locationUsages + \" images.\\nYes will untag all images with the location and remove it.",
 					new Action("Yes", actionEvent1 ->
 					{
 						// Remove the location and remove each image that has its location set to the selected location
@@ -1061,7 +1061,7 @@ public class SanimalImportController implements Initializable
 
 			// Create a clipboard and put the species unique ID into that clipboard
 			ClipboardContent content = new ClipboardContent();
-			content.put(SanimalDataFormats.SPECIES_NAME_FORMAT, selected.getName());
+			content.put(SanimalDataFormats.SPECIES_NAME_FORMAT, selected.getCommonName());
 			content.put(SanimalDataFormats.SPECIES_SCIENTIFIC_NAME_FORMAT, selected.getScientificName());
 			// Set the dragboard's context, and then consume the event
 			dragboard.setContent(content);
@@ -1154,7 +1154,7 @@ public class SanimalImportController implements Initializable
 			String commonName = (String) dragboard.getContent(SanimalDataFormats.SPECIES_NAME_FORMAT);
 			String scientificName = (String) dragboard.getContent(SanimalDataFormats.SPECIES_SCIENTIFIC_NAME_FORMAT);
 			// Grab the species with the given ID
-			Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getScientificName().equals(scientificName) && species.getName().equals(commonName)).findFirst();
+			Optional<Species> toAdd = SanimalData.getInstance().getSpeciesList().stream().filter(species -> species.getScientificName().equals(scientificName) && species.getCommonName().equals(commonName)).findFirst();
 			// Add the species to the image
 			if (toAdd.isPresent())
 				if (currentlySelectedImage.getValue() != null)
