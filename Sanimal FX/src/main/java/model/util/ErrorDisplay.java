@@ -73,7 +73,7 @@ public class ErrorDisplay
 	 */
 	private void notifyOnFX(String content, Action... actions)
 	{
-		if (SanimalData.getInstance().getSettings().getNoPopups())
+		if (SanimalData.getInstance().getSettings().getDisablePopups())
 		{
 			notificationPane.getActions().clear();
 			// When any action is pressed, we hide the notification. This makes sure that each action is mapped to a new action that hides

@@ -142,7 +142,7 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 		ImageCollectionSettingsController controller = loader.getController();
 		controller.setCollectionToEdit(this.getItem());
 
-		if (!SanimalData.getInstance().getSettings().getNoPopups())
+		if (!SanimalData.getInstance().getSettings().getDisablePopups())
 		{
 			// Create the stage that will have the Image Collection Editor
 			Stage dialogStage = new Stage();

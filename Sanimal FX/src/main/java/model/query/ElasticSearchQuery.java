@@ -6,15 +6,18 @@ import model.cyverse.ImageCollection;
 import model.location.Location;
 import model.query.conditions.ElevationCondition;
 import model.species.Species;
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermsQueryBuilder;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Class representing a query to be sent to CyVerse
@@ -163,22 +166,25 @@ public class ElasticSearchQuery
 	public QueryBuilder build()
 	{
 		if (!speciesQuery.isEmpty())
-			this.queryBuilder.must().add(QueryBuilders.termQuery("imageMetadata.species.scientificName", this.speciesQuery.stream().map(Species::getScientificName).toArray(String[]::new)));
+		{
+			TermsQueryBuilder innerQuery = QueryBuilders.termsQuery("imageMetadata.speciesEntries.species.scientificName", this.speciesQuery.stream().map(Species::getScientificName).collect(Collectors.toList()));
+			this.queryBuilder.must(QueryBuilders.nestedQuery("imageMetadata.speciesEntries", innerQuery, ScoreMode.Max));
+		}
 
 		if (!locationQuery.isEmpty())
-			this.queryBuilder.must().add(QueryBuilders.termQuery("imageMetadata.location.id", this.locationQuery.stream().map(Location::getId).toArray(String[]::new)));
+			this.queryBuilder.must().add(QueryBuilders.termsQuery("imageMetadata.location.id", this.locationQuery.stream().map(Location::getId).collect(Collectors.toList())));
 
 		if (!collectionQuery.isEmpty())
-			this.queryBuilder.must().add(QueryBuilders.termQuery("collectionID", this.collectionQuery.stream().map(ImageCollection::getID).map(UUID::toString).toArray(String[]::new)));
+			this.queryBuilder.must().add(QueryBuilders.termsQuery("collectionID", this.collectionQuery.stream().map(imageCollection -> imageCollection.getID().toString()).collect(Collectors.toList())));
 
 		if (!monthQuery.isEmpty())
-			this.queryBuilder.must().add(QueryBuilders.termQuery("imageMetadata.monthTaken", this.monthQuery.toArray(new Integer[0])));
+			this.queryBuilder.must().add(QueryBuilders.termsQuery("imageMetadata.monthTaken", this.monthQuery));
 
 		if (!hourQuery.isEmpty())
-			this.queryBuilder.must().add(QueryBuilders.termQuery("imageMetadata.hourTaken", this.hourQuery.toArray(new Integer[0])));
+			this.queryBuilder.must().add(QueryBuilders.termsQuery("imageMetadata.hourTaken", this.hourQuery));
 
 		if (!dayOfWeekQuery.isEmpty())
-			this.queryBuilder.must().add(QueryBuilders.termQuery("imageMetadata.dayOfWeek", this.dayOfWeekQuery.toArray(new Integer[0])));
+			this.queryBuilder.must().add(QueryBuilders.termsQuery("imageMetadata.dayOfWeekTaken", this.dayOfWeekQuery));
 
 		return this.queryBuilder;
 	}

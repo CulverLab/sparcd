@@ -45,7 +45,7 @@ public class SanimalMapController implements Initializable
 	 */
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
-	{
+	{;
 		// Setup the google map view with the map options class
 		this.googleMapView.addMapInializedListener(() ->
 		{

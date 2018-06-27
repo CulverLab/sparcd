@@ -28,7 +28,7 @@ public class SettingsData
 	private BooleanProperty drSandersonOutput = new SimpleBooleanProperty(false);
 	private BooleanProperty automaticNextImage = new SimpleBooleanProperty(false);
 	private BooleanProperty backgroundImageLoading = new SimpleBooleanProperty(false);
-	private BooleanProperty noPopups = new SimpleBooleanProperty(false);
+	private BooleanProperty disablePopups = new SimpleBooleanProperty(false);
 
 	/**
 	 * Constructor adds all settings SANIMAL will use to the dictionary
@@ -54,7 +54,7 @@ public class SettingsData
 		this.drSandersonOutput.setValue(otherSettings.getDrSandersonOutput());
 		this.automaticNextImage.setValue(otherSettings.getAutomaticNextImage());
 		this.backgroundImageLoading.setValue(otherSettings.getBackgroundImageLoading());
-		this.noPopups.setValue(otherSettings.getNoPopups());
+		this.disablePopups.setValue(otherSettings.getDisablePopups());
 	}
 
 	/**
@@ -71,7 +71,7 @@ public class SettingsData
 		settingList.add(new CustomPropertyItem<>("Show Dr. Sanderson's Output Replicas: ", "Legacy", "Gives the option to see Dr. Jim Sanderson's Output.txt and AllPictures.txt replicas when querying", drSandersonOutput, Boolean.class));
 		settingList.add(new CustomPropertyItem<>("Automatically Select Next Image: ", "Legacy", "Automatically select the next image after tagging one with species", automaticNextImage, Boolean.class));
 		settingList.add(new CustomPropertyItem<>("Background Image Loading: ", "Options", "Load images in the background when selecting them, useful for slow hard drives or SD cards", backgroundImageLoading, Boolean.class));
-		settingList.add(new CustomPropertyItem<>("No Popups", "Options", "Lose some program functionality to avoid popups at all costs", noPopups, Boolean.class));
+		settingList.add(new CustomPropertyItem<>("Disable Popups: ", "Options", "Lose some program functionality to avoid popups at all costs", disablePopups, Boolean.class));
 	}
 
 	/**
@@ -459,18 +459,18 @@ public class SettingsData
 		return popupDelaySec;
 	}
 
-	public void setNoPopups(boolean noPopups)
+	public void setDisablePopups(boolean disablePopups)
 	{
-		this.noPopups.set(noPopups);
+		this.disablePopups.set(disablePopups);
 	}
 
-	public Boolean getNoPopups()
+	public Boolean getDisablePopups()
 	{
-		return this.noPopups.get();
+		return this.disablePopups.get();
 	}
 
-	public BooleanProperty noPopupsProperty()
+	public BooleanProperty disablePopupsProperty()
 	{
-		return noPopups;
+		return disablePopups;
 	}
 }

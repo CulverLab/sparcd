@@ -180,7 +180,7 @@ public class SanimalHomeController implements Initializable
 		// Load the FXML file of the editor window
 		FXMLLoader loader = FXMLLoaderUtils.loadFXML("homeView/Credits.fxml");
 
-		if (!SanimalData.getInstance().getSettings().getNoPopups())
+		if (!SanimalData.getInstance().getSettings().getDisablePopups())
 		{
 			// Create the stage that will have the species creator/editor
 			Stage dialogStage = new Stage();

@@ -556,7 +556,7 @@ public class SanimalImportController implements Initializable
 	 */
 	private void requestEdit(Species species)
 	{
-		if (!SanimalData.getInstance().getSettings().getNoPopups())
+		if (!SanimalData.getInstance().getSettings().getDisablePopups())
 		{
 			// Load the FXML file of the editor window
 			FXMLLoader loader = FXMLLoaderUtils.loadFXML("importView/SpeciesCreator.fxml");
@@ -675,7 +675,7 @@ public class SanimalImportController implements Initializable
 	 */
 	private void requestEdit(Location location)
 	{
-		if (!SanimalData.getInstance().getSettings().getNoPopups())
+		if (!SanimalData.getInstance().getSettings().getDisablePopups())
 		{
 			// Load the FXML file of the editor window
 			FXMLLoader loader = FXMLLoaderUtils.loadFXML("importView/LocationCreator.fxml");
@@ -1008,7 +1008,7 @@ public class SanimalImportController implements Initializable
 		// If either a date from the directory or image was detected, process it
 		if (first != null)
 		{
-			if (!SanimalData.getInstance().getSettings().getNoPopups())
+			if (!SanimalData.getInstance().getSettings().getDisablePopups())
 			{
 				timeShiftController.setDate(first);
 				if (timeShiftStage.getOwner() == null)

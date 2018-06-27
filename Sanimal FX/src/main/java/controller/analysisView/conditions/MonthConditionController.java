@@ -7,11 +7,15 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.cell.CheckBoxListCell;
+import javafx.util.StringConverter;
 import model.query.IQueryCondition;
 import model.query.conditions.MonthCondition;
 
 import java.net.URL;
+import java.time.DayOfWeek;
 import java.time.Month;
+import java.time.format.TextStyle;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
@@ -58,7 +62,13 @@ public class MonthConditionController implements IConditionController
 			this.monthCondition = (MonthCondition) iQueryCondition;
 			// Set the items of the hour list view to the months specified by the condition
 			this.monthFilterListView.setItems(this.monthCondition.getMonthList());
-			this.monthFilterListView.setCellFactory(CheckBoxListCell.forListView(this.monthCondition::monthSelectedProperty));
+			this.monthFilterListView.setCellFactory(CheckBoxListCell.forListView(this.monthCondition::monthSelectedProperty, new StringConverter<Month>()
+			{
+				@Override
+				public String toString(Month month) { return month.getDisplayName(TextStyle.FULL, Locale.getDefault()); }
+				@Override
+				public Month fromString(String string) { return Month.valueOf(string.toUpperCase()); }
+			}));
 			this.monthFilterListView.setEditable(true);
 		}
 	}

@@ -7,11 +7,14 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.cell.CheckBoxListCell;
+import javafx.util.StringConverter;
 import model.query.IQueryCondition;
 import model.query.conditions.DayOfWeekCondition;
 
 import java.net.URL;
 import java.time.DayOfWeek;
+import java.time.format.TextStyle;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
@@ -59,7 +62,13 @@ public class DayOfWeekConditionController implements IConditionController
 			// Set the items to be the list specified in the controller
 			this.dayOfWeekFilterListView.setItems(this.dayOfWeekCondition.getDayOfWeekList());
 			// Use checkbox cells to hold the data
-			this.dayOfWeekFilterListView.setCellFactory(CheckBoxListCell.forListView(this.dayOfWeekCondition::dayOfWeekSelectedProperty));
+			this.dayOfWeekFilterListView.setCellFactory(CheckBoxListCell.forListView(this.dayOfWeekCondition::dayOfWeekSelectedProperty, new StringConverter<DayOfWeek>()
+			{
+				@Override
+				public String toString(DayOfWeek dayOfWeek) { return dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault()); }
+				@Override
+				public DayOfWeek fromString(String string) { return DayOfWeek.valueOf(string.toUpperCase()); }
+			}));
 			this.dayOfWeekFilterListView.setEditable(true);
 		}
 	}
