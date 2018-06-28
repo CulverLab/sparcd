@@ -10,6 +10,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.text.Font;
 import javafx.util.Duration;
 import model.SanimalData;
 import org.controlsfx.control.NotificationPane;
@@ -94,6 +95,7 @@ public class ErrorDisplay
 			if (content.length() > 150)
 			{
 				TextArea area = new TextArea(content);
+				area.setFont(Font.font("Monospaced", 12));
 				area.textProperty().bind(alert.contentTextProperty());
 				alert.getDialogPane().setContent(area);
 			}

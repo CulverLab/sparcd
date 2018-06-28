@@ -24,14 +24,11 @@ import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.irods.jargon.core.pub.domain.AvuData;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -279,49 +276,6 @@ public class ImageEntry extends ImageContainer
 			return DEFAULT_IMAGE_ICON;
 		}, this.locationTakenProperty, this.speciesPresent);
 		selectedImageProperty.bind(imageBinding);
-	}
-
-	/**
-	 * Writes the image entry's metadata to CyVerse's AVU format
-	 *
-	 * @return A list of AVU entries representing the metadata
-	 */
-	public List<AvuData> convertToAVUMetadata()
-	{
-		// Create a list to return
-		List<AvuData> metadata = new LinkedList<>();
-
-		// Grab the location taken
-		Location locationTaken = this.getLocationTaken();
-
-		// Flag saying this image was tagged by sanimal
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_SANIMAL, "true", ""));
-
-		// Metadata of the image's date taken
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_TIME_TAKEN, Long.toString(this.getDateTaken().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_YEAR_TAKEN, Integer.toString(this.getDateTaken().getYear()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_MONTH_TAKEN, Integer.toString(this.getDateTaken().getMonthValue()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_HOUR_TAKEN, Integer.toString(this.getDateTaken().getHour()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_DAY_OF_YEAR_TAKEN, Integer.toString(this.getDateTaken().getDayOfYear()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN, Integer.toString(this.getDateTaken().getDayOfWeek().getValue()), ""));
-
-		// Location metadata
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_NAME, locationTaken.getName(), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_ID, locationTaken.getId(), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LATITUDE, locationTaken.getLatitude().toString(), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, locationTaken.getLongitude().toString(), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_ELEVATION, locationTaken.getElevation().toString(), "meters"));
-
-		// Species metadata uses the AVU Unit as a foreign key to link a list of entries together
-		Integer entryID = 0;
-		for (SpeciesEntry speciesEntry : this.getSpeciesPresent())
-		{
-			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, speciesEntry.getSpecies().getScientificName(), entryID.toString()));
-			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_COMMON_NAME, speciesEntry.getSpecies().getCommonName(), entryID.toString()));
-			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_COUNT, speciesEntry.getCount().toString(), entryID.toString()));
-			entryID++;
-		}
-		return metadata;
 	}
 
 	/**

@@ -118,7 +118,7 @@
         <dependency>
             <groupId>org.irods.jargon</groupId>
             <artifactId>jargon-core</artifactId>
-            <version>RELEASE</version>
+            <version>LATEST</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.panemu/tiwulfx -->
         <dependency>

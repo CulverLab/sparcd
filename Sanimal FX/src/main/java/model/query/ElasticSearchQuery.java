@@ -2,6 +2,7 @@ package model.query;
 
 
 import model.SanimalData;
+import model.constant.SanimalMetadataFields;
 import model.cyverse.ImageCollection;
 import model.location.Location;
 import model.query.conditions.ElevationCondition;
@@ -13,10 +14,9 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -126,7 +126,7 @@ public class ElasticSearchQuery
 	 */
 	public void setStartDate(LocalDateTime startDate)
 	{
-		this.queryBuilder.must().add(QueryBuilders.rangeQuery("imageMetadata.dateTaken").gte(startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+		this.queryBuilder.must().add(QueryBuilders.rangeQuery("imageMetadata.dateTaken").gte(startDate.atZone(ZoneId.systemDefault()).format(SanimalMetadataFields.INDEX_DATE_TIME_FORMAT)));
 	}
 
 	/**
@@ -136,7 +136,7 @@ public class ElasticSearchQuery
 	 */
 	public void setEndDate(LocalDateTime endDate)
 	{
-		this.queryBuilder.must().add(QueryBuilders.rangeQuery("imageMetadata.dateTaken").lte(endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+		this.queryBuilder.must().add(QueryBuilders.rangeQuery("imageMetadata.dateTaken").lte(endDate.atZone(ZoneId.systemDefault()).format(SanimalMetadataFields.INDEX_DATE_TIME_FORMAT)));
 	}
 
 	/**

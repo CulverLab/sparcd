@@ -86,7 +86,8 @@
                             <padding>
                                 <Insets bottom="20" left="5" right="5" top="20"/>
                             </padding>
-                            <Button fx:id="btnRefreshUploads" onAction="#refreshUploads" styleClass="refreshUploadsBtn" text="Refresh Uploads"/>
+                            <Button fx:id="btnIndexExisting" onAction="#indexExisting" styleClass="indexExistingBtn" text="Index Existing Images"/>
+                            <Button fx:id="btnRefreshUploads" onAction="#refreshUploads" styleClass="refreshUploadsBtn" text="Refresh"/>
                         </FlowPane>
                     </VBox>
                     <MaskerPane fx:id="mpnDownloadUploads" progressVisible="true"/>

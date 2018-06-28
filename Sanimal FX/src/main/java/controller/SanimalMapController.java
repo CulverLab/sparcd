@@ -109,7 +109,6 @@ public class SanimalMapController implements Initializable
 
 			/*
 
-
 			// Create a test polygon
 			double startBearing = 0;
 			double endBearing = 30;
@@ -118,13 +117,15 @@ public class SanimalMapController implements Initializable
 			MVCArray path = ArcBuilder.buildArcPoints(tucson, startBearing, endBearing, radius);
 			path.push(tucson);
 
-			Polygon arc = new Polygon(new PolygonOptions()
-					.paths(path)
+			Circle arc = new Circle(new CircleOptions()
 					.strokeColor("blue")
 					.fillColor("lightBlue")
 					.fillOpacity(0.3)
 					.strokeWeight(2)
-					.editable(false));
+					.editable(false)
+					.draggable(true)
+					.center(tucson)
+					.radius(500));
 
 			// Add the test polygon
 			this.googleMap.addMapShape(arc);

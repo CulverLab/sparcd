@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
 import model.SanimalData;
+import model.constant.SanimalMetadataFields;
 import model.cyverse.ImageCollection;
 import model.image.CloudImageEntry;
 import model.image.CloudUploadEntry;
@@ -33,7 +34,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.*;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.Script;
@@ -47,7 +48,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -695,7 +697,7 @@ public class ElasticSearchConnectionManager
 	/**
 	 * Given a path, a collection ID, and a directory of images, this function indexes the directory of images into the ElasticSearch
 	 * index.
-	 *  @param basePath The base path all images will be placed to on the datastore. Often will look like /iplant/home/user/uploads/
+	 * @param basePath The base path all images will be placed to on the datastore. Often will look like /iplant/home/user/uploads/
 	 * @param collectionID The ID of the collection that these images will be uploaded to
 	 * @param directory The directory containing all images awaiting upload
 	 * @param uploadEntry The upload entry representing this upload, will be put into our collections index
@@ -733,55 +735,43 @@ public class ElasticSearchConnectionManager
 			// Check if everything went OK, if not return an error
 			if (bulkResponse.status() != RestStatus.OK)
 				SanimalData.getInstance().getErrorDisplay().notify("Error bulk inserting metadata, error response was: " + bulkResponse.status());
+
+			// Now that we've updated our metadata index, update the collections uploads field
+
+			// Update the uploads field
+			UpdateRequest updateRequest = new UpdateRequest();
+
+			// We do this update with a script, and it needs 1 argument. Create of map of that 1 argument now
+			HashMap<String, Object> args = new HashMap<>();
+			// We can't use XContentBuilder so just use hashmaps. We set all appropriate fields and insert it as the arguments parameter
+			args.put("upload", new HashMap<String, Object>()
+			{{
+				put("imageCount", uploadEntry.getImageCount());
+				put("imagesWithSpecies", uploadEntry.getImagesWithSpecies());
+				put("uploadDate", uploadEntry.getUploadDate().atZone(ZoneId.systemDefault()).format(SanimalMetadataFields.INDEX_DATE_TIME_FORMAT));
+				put("editComments", uploadEntry.getEditComments());
+				put("uploadUser", uploadEntry.getUploadUser());
+				put("uploadIRODSPath", uploadEntry.getUploadIRODSPath());
+			}});
+			updateRequest
+				.index(INDEX_SANIMAL_COLLECTIONS)
+				.type(INDEX_SANIMAL_COLLECTIONS_TYPE)
+				.id(collectionID)
+				// We use a script because we're updating nested fields. The script written out looks like:
+				/*
+				ctx._source.uploads.add(params.upload)
+				 */
+				.script(new Script(ScriptType.INLINE, Script.DEFAULT_SCRIPT_LANG, "ctx._source.uploads.add(params.upload)", args));
+			// Execute the update, and save the result
+			UpdateResponse updateResponse = this.elasticSearchClient.update(updateRequest);
+			// If the response was not OK, print an error
+			if (updateResponse.status() != RestStatus.OK)
+				SanimalData.getInstance().getErrorDisplay().notify("Could not update the Collection's index with a new upload!");
 		}
 		catch (IOException e)
 		{
-			// Print an error if the bulk insert fails
-			SanimalData.getInstance().getErrorDisplay().notify("Error bulk inserting metadata, response was: '\n" + ExceptionUtils.getStackTrace(e));
-		}
-
-		// Get all the uploads for a given collection
-		Map<String, Object> uploadsForCollection = getUploadsForCollection(collectionID);
-
-		// Make sure the uploads collection has the right fields
-		if (uploadsForCollection != null && uploadsForCollection.containsKey("uploads"))
-		{
-			// Make sure the field is of the right type
-			if (uploadsForCollection.get("uploads") instanceof List<?>)
-			{
-				// Convert the object into something usable
-				List<Object> uploads = (List<Object>) uploadsForCollection.get("uploads");
-				try
-				{
-					// Add the upload entry to the current list of uploads
-					uploads.add(uploadEntry);
-					// Conver the upload to JSON
-					String uploadJson = SanimalData.getInstance().getGson().toJson(uploads);
-
-					// Update the uploads field
-					UpdateRequest updateRequest = new UpdateRequest();
-					updateRequest
-							.index(INDEX_SANIMAL_COLLECTIONS)
-							.type(INDEX_SANIMAL_COLLECTIONS_TYPE)
-							.id(collectionID)
-							// Our document will just contain an uploads field with prebuild JSON
-							.doc(XContentFactory.jsonBuilder()
-									.startObject()
-									.field("uploads")
-									.copyCurrentStructure(XContentFactory.xContent(XContentType.JSON).createParser(NamedXContentRegistry.EMPTY, DeprecationHandler.THROW_UNSUPPORTED_OPERATION, uploadJson.getBytes()))
-									.endObject());
-					// Execute the update, and save the result
-					UpdateResponse updateResponse = this.elasticSearchClient.update(updateRequest);
-					// If the response was not OK, print an error
-					if (updateResponse.status() != RestStatus.OK)
-						SanimalData.getInstance().getErrorDisplay().notify("Could not update the Collection's index with a new upload!");
-				}
-				catch (IOException e)
-				{
-					// If the update failed for some reason, print that error
-					SanimalData.getInstance().getErrorDisplay().notify("Could not insert the upload into the collection index!\n" + ExceptionUtils.getStackTrace(e));
-				}
-			}
+			// If the update failed for some reason, print that error
+			SanimalData.getInstance().getErrorDisplay().notify("Could not insert the upload into the collection index!\n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 
@@ -817,7 +807,7 @@ public class ElasticSearchConnectionManager
 				UpdateRequest updateCollectionRequest = new UpdateRequest();
 				// We do this update with a script, and it needs 3 arguments. Create of map of those 3 arguments now
 				HashMap<String, Object> args = new HashMap<>();
-				args.put("id", cloudUploadEntry.getID().toString());
+				args.put("pathID", cloudUploadEntry.getUploadIRODSPath());
 				args.put("comment", cloudUploadEntry.getEditComments().get(cloudUploadEntry.getEditComments().size() - 1));
 				args.put("imagesWithSpecies", cloudUploadEntry.getImagesWithSpecies());
 
@@ -832,7 +822,7 @@ public class ElasticSearchConnectionManager
 						for (upload in ctx._source.uploads)
 						{
 							// If the IDs match
-							if (upload.id == params.id)
+							if (upload.uploadIRODSPath == params.pathID)
 							{
 								// Add the edit comment, and update the images with species
 								upload.editComments.add(params.comment);
@@ -840,7 +830,7 @@ public class ElasticSearchConnectionManager
 							}
 						 }
 						 */
-						.script(new Script(ScriptType.INLINE, Script.DEFAULT_SCRIPT_LANG, "for (upload in ctx._source.uploads) { if (upload.id == params.id) { upload.editComments.add(params.comment); upload.imagesWithSpecies = params.imagesWithSpecies } }", args));
+						.script(new Script(ScriptType.INLINE, Script.DEFAULT_SCRIPT_LANG, "for (upload in ctx._source.uploads) { if (upload.uploadIRODSPath == params.pathID) { upload.editComments.add(params.comment); upload.imagesWithSpecies = params.imagesWithSpecies } }", args));
 
 				// Add the updates to the bulk request
 				bulkUpdate.add(updateMetaRequest);
@@ -872,13 +862,17 @@ public class ElasticSearchConnectionManager
 		// The list of images to return
 		List<ImageEntry> toReturn = new ArrayList<>();
 
+		// We use a scroll to retrieve results 50 at a time instead of all at once
 		Scroll scroll = new Scroll(TimeValue.timeValueMinutes(10));
 
+		// The search request to perform the query
 		SearchRequest searchRequest = new SearchRequest();
 		searchRequest
 				.indices(INDEX_SANIMAL_METADATA)
 				.types(INDEX_SANIMAL_METADATA_TYPE)
+				// Set the scroll up so that we don't retrieve all results at once
 				.scroll(scroll)
+				// The source of the query will be our query builder
 				.source(new SearchSourceBuilder()
 					.query(queryBuilder.build())
 					.size(50)
@@ -886,93 +880,132 @@ public class ElasticSearchConnectionManager
 
 		try
 		{
+			// Execute the query
 			SearchResponse searchResponse = this.elasticSearchClient.search(searchRequest);
+			// Grab the new scroll ID from the response used in the follow up search
 			String scrollID = searchResponse.getScrollId();
+			// Grab a list of hits from the search
 			SearchHit[] searchHits = searchResponse.getHits().getHits();
 
 			// A unique list of species and locations is used to ensure images with identical locations don't create two locations
 			List<Location> uniqueLocations = new LinkedList<>();
 			List<Species> uniqueSpecies = new LinkedList<>();
 
+			// While we have results...
 			while (searchHits != null && searchHits.length > 0)
 			{
+				// Iterate over all search hits and fetch the source
 				for (SearchHit searchHit : searchHits)
 				{
+					// Grab the source for the image, and convert it into a usable format
 					Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
+					// Conver the image and store it
 					ImageEntry imageEntry = this.convertSourceToImage(sourceAsMap, uniqueSpecies, uniqueLocations);
 					if (imageEntry != null)
 						toReturn.add(imageEntry);
 				}
 
+				// Test if there are more results by using a scroll request
 				SearchScrollRequest searchScrollRequest = new SearchScrollRequest();
+				// Set the ID and scroll of this scroll request
 				searchScrollRequest
 					.scrollId(scrollID)
 					.scroll(scroll);
+				// Perform a search and save the result into the same object. ALso save hits and the next scroll ID
+				// for the next iteration
 				searchResponse = this.elasticSearchClient.searchScroll(searchScrollRequest);
 				scrollID = searchResponse.getScrollId();
 				searchHits = searchResponse.getHits().getHits();
 			}
 
+			// After the query is complete we clear the scroll request
 			ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
 			clearScrollRequest.addScrollId(scrollID);
+			// Execute the scroll clear
 			ClearScrollResponse clearScrollResponse = this.elasticSearchClient.clearScroll(clearScrollRequest);
+			// If the clear fails, print an error
 			if (!clearScrollResponse.isSucceeded())
-			{
 				SanimalData.getInstance().getErrorDisplay().notify("Clearing the scroll after querying did not succeed!");
-			}
 		}
 		catch (IOException e)
 		{
-			SanimalData.getInstance().getErrorDisplay().notify("Error occoured when performing query!\n" + ExceptionUtils.getStackTrace(e));
+			// If something goes wrong with the query print an error
+			SanimalData.getInstance().getErrorDisplay().notify("Error occurred when performing query!\n" + ExceptionUtils.getStackTrace(e));
 		}
 
 		return toReturn;
 	}
 
+	/**
+	 * Utility function used to convert raw index metadata into a structured format
+	 *
+	 * @param source The raw metadata in key->value format
+	 * @param uniqueSpecies A list of current species to be used. This ensures we don't allocate thousands of species objects
+	 * @param uniqueLocations A list of current locations to be used. This ensures we don't allocate thousands of location objects
+	 * @return An image entry representing the source, or null if something went wrong
+	 */
 	@SuppressWarnings("unchecked")
 	private ImageEntry convertSourceToImage(Map<String, Object> source, List<Species> uniqueSpecies, List<Location> uniqueLocations)
 	{
 		try
 		{
+			// Source must have storage path and metadata fields
 			if (source.containsKey("storagePath") && source.containsKey("imageMetadata"))
 			{
+				// Grab the two fields
 				Object storagePathObj = source.get("storagePath");
 				Object imageMetadataObj = source.get("imageMetadata");
+				// Make sure the fields are of the correct type
 				if (storagePathObj instanceof String && imageMetadataObj instanceof Map<?, ?>)
 				{
+					// Cast the objects to the correct type
 					String storagePath = (String) storagePathObj;
 					Map<String, Object> imageMetadata = (Map<String, Object>) imageMetadataObj;
+					// Make sure the metadata map contains the correct fields
 					if (imageMetadata.containsKey("dateTaken") && imageMetadata.containsKey("location") && imageMetadata.containsKey("speciesEntries"))
 					{
+						// Pull the metadata map fields
 						Object dateTakenObj = imageMetadata.get("dateTaken");
 						Object locationObj = imageMetadata.get("location");
 						Object speciesListObj = imageMetadata.get("speciesEntries");
+						// Make sure that the objects are of the correct type
 						if (dateTakenObj instanceof String && locationObj instanceof Map<?, ?> && speciesListObj instanceof List<?>)
 						{
-							LocalDateTime dateTaken = LocalDateTime.parse((String) dateTakenObj, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+							// Cast the objects to the correct type
+							LocalDateTime dateTaken = ZonedDateTime.parse((String) dateTakenObj, SanimalMetadataFields.INDEX_DATE_TIME_FORMAT).toLocalDateTime();
 							Map<String, Object> locationMap = (Map<String, Object>) locationObj;
 							List<Object> speciesEntryList = (List<Object>) speciesListObj;
+							// Make sure that our location map has a position field
 							if (locationMap.containsKey("position"))
 							{
+								// Grab the position string from the map
 								Object positionObj = locationMap.get("position");
+								// Make sure the position object is of the right format
 								if (positionObj instanceof String)
 								{
+									// Remove this field from the location map, to later replace it with a properly formatted string
 									String locationPosition = (String) locationMap.remove("position");
+									// Split the location string into 'lat' and 'long'
 									String[] latLongArray = locationPosition.split(", ");
+									// The split should return 2 results
 									if (latLongArray.length == 2)
 									{
+										// Store the latitude and longitude back into the location. We do this so that
 										locationMap.put("latitude", latLongArray[0]);
 										locationMap.put("longitude", latLongArray[1]);
 
+										// Convert our hashmaps into a usable format
 										Gson gson = SanimalData.getInstance().getGson();
 										Location tempLocation = gson.fromJson(gson.toJson(locationMap), Location.class);
 										List<SpeciesEntry> tempSpeciesEntries = gson.fromJson(gson.toJson(speciesEntryList), SPECIES_ENTRY_LIST_TYPE);
+										// Pull unique species off of the species entries list
 										List<Species> tempSpeciesList = tempSpeciesEntries.stream().map(SpeciesEntry::getSpecies).distinct().collect(Collectors.toList());
+										// Make sure each of the species has the default icon set
 										tempSpeciesList.forEach(species -> species.setSpeciesIcon(Species.DEFAULT_ICON));
 
 										// Compute a new location if we need to
 										Boolean locationForImagePresent = uniqueLocations.stream().anyMatch(location -> location.getId().equals(tempLocation.getId()));
-										// Do we have the location?
+										// Do we have the location? If not add it
 										if (!locationForImagePresent)
 											uniqueLocations.add(tempLocation);
 
@@ -995,7 +1028,7 @@ public class ElasticSearchConnectionManager
 										// Add the species to the image entries
 										for (SpeciesEntry tempSpeciesEntry : tempSpeciesEntries)
 										{
-											// Grab the species based on ID
+											// Grab the species based on scientific name
 											Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(tempSpeciesEntry.getSpecies().getScientificName())).findFirst().get();
 											entry.addSpecies(correctSpecies, tempSpeciesEntry.getCount());
 										}
@@ -1008,6 +1041,7 @@ public class ElasticSearchConnectionManager
 				}
 			}
 		}
+		// This will happen if the numbers are in the wrong format. If so just ignore it and return null
 		catch (NumberFormatException ignored)
 		{
 		}

@@ -4,11 +4,7 @@ import javafx.application.Platform;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import model.SanimalData;
-import model.constant.SanimalMetadataFields;
 import model.image.*;
-import model.location.Location;
-import model.query.ElasticSearchQuery;
-import model.species.Species;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -22,19 +18,19 @@ import org.irods.jargon.core.exception.InvalidUserException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.pub.*;
-import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.User;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
-import org.irods.jargon.core.query.*;
+import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
+import org.irods.jargon.core.rule.IRODSRuleExecResult;
+import org.irods.jargon.core.rule.IRODSRuleParameter;
+import org.irods.jargon.core.rule.RuleInvocationConfiguration;
 import org.irods.jargon.core.transfer.TransferStatus;
 import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -349,7 +345,6 @@ public class CyVerseConnectionManager
 					// Create the meta.csv representing the metadata for all images in the tar file
 					String localDirAbsolutePath = directoryToWrite.getFile().getAbsolutePath();
 					String localDirName = directoryToWrite.getFile().getName();
-					AvuData collectionIDTag = new AvuData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
 
 					// Make a set of tar files from the image files. Don't use a single tar file because we may have > 1000 images in each
 					File[] tarsToWrite = DirectoryManager.directoryToTars(directoryToWrite, imageEntry ->
@@ -357,9 +352,7 @@ public class CyVerseConnectionManager
 						// Compute the image's "cyverse" path
 						String fileRelativePath = localDirName + StringUtils.substringAfter(imageEntry.getFile().getAbsolutePath(), localDirAbsolutePath);
 						fileRelativePath = fileRelativePath.replace('\\', '/');
-						List<AvuData> imageMetadata = imageEntry.convertToAVUMetadata();
-						imageMetadata.add(collectionIDTag);
-						return fileRelativePath + "," + imageMetadata.stream().map(avuData -> avuData.getAttribute() + "," + avuData.getValue() + "," + avuData.getUnit()).collect(Collectors.joining(",")) + "\n";
+						return fileRelativePath + "\n";
 					}, 900);
 
 					// For each tar part, upload
@@ -543,6 +536,34 @@ public class CyVerseConnectionManager
 					this.createDirectoryAndImageTree(subDirectory);
 				}
 			}
+		}
+	}
+
+	public void indexExisitingImages(ImageCollection imageCollection, String absoluteIRODSPath)
+	{
+		if (this.sessionManager.openSession())
+		{
+			try
+			{
+				IRODSFileFactory fileFactory = this.sessionManager.getCurrentAO().getIRODSFileFactory(this.authenticatedAccount);
+				IRODSFile topLevelDirectory = fileFactory.instanceIRODSFile(absoluteIRODSPath);
+				if (topLevelDirectory.exists() && topLevelDirectory.isDirectory() && topLevelDirectory.canRead())
+				{
+					RuleProcessingAO ruleProcessingAO = this.sessionManager.getCurrentAO().getRuleProcessingAO(this.authenticatedAccount);
+					IRODSRuleExecResult irodsRuleExecResult = ruleProcessingAO.executeRuleFromIRODSFile(
+							"/iplant/home/dslovikosky/Sanimal/Rules/IndexDirectory.r",
+							Arrays.asList(new IRODSRuleParameter("*arguments", "\"-c 'print(Hello World!)'\"")),
+							RuleInvocationConfiguration.instanceWithDefaultAutoSettings());
+					System.out.println(irodsRuleExecResult.getRuleExecOut());
+					System.err.println(irodsRuleExecResult.getRuleExecErr());
+				}
+			}
+			catch (JargonException e)
+			{
+				SanimalData.getInstance().getErrorDisplay().notify("Error indexing exising images. Error was:\n" + ExceptionUtils.getStackTrace(e));
+			}
+
+			this.sessionManager.closeSession();
 		}
 	}
 

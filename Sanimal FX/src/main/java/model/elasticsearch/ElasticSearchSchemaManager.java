@@ -1,6 +1,7 @@
 package model.elasticsearch;
 
 import model.SanimalData;
+import model.constant.SanimalMetadataFields;
 import model.cyverse.ImageCollection;
 import model.image.ImageEntry;
 import model.location.Location;
@@ -15,9 +16,8 @@ import org.elasticsearch.common.xcontent.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -140,7 +140,7 @@ public class ElasticSearchSchemaManager
 						.startObject("properties")
 							.startObject("dateTaken")
 								.field("type", "date")
-								.field("format", "yyyy-MM-dd HH:mm:ss")
+								.field("format", "date_time")
 							.endObject()
 							.startObject("yearTaken")
 								.field("type", "integer")
@@ -252,7 +252,7 @@ public class ElasticSearchSchemaManager
 							.endObject()
 							.startObject("uploadDate")
 								.field("type", "date")
-								.field("format", "yyyy-MM-dd HH:mm:ss")
+								.field("format", "date_time")
 							.endObject()
 							.startObject("imagesWithSpecies")
 								.field("type", "integer")
@@ -264,9 +264,6 @@ public class ElasticSearchSchemaManager
 								.field("type", "text")
 							.endObject()
 							.startObject("uploadIRODSPath")
-								.field("type", "keyword")
-							.endObject()
-							.startObject("id")
 								.field("type", "keyword")
 							.endObject()
 						.endObject()
@@ -473,7 +470,7 @@ public class ElasticSearchSchemaManager
 			.field("storagePath", fixedAbsolutePath)
 			.field("collectionID", collectionID)
 			.startObject("imageMetadata")
-				.field("dateTaken", imageEntry.getDateTaken().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+				.field("dateTaken", imageEntry.getDateTaken().atZone(ZoneId.systemDefault()).format(SanimalMetadataFields.INDEX_DATE_TIME_FORMAT))
 				.field("yearTaken", imageEntry.getDateTaken().getYear())
 				.field("monthTaken", imageEntry.getDateTaken().getMonthValue())
 				.field("hourTaken", imageEntry.getDateTaken().getHour())

@@ -1,19 +1,18 @@
 package model.util;
 
 import com.google.gson.*;
+import model.constant.SanimalMetadataFields;
 
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 /**
  * Utility class used to serialize and deserialize a local date time object
  */
 public class LocalDateTimeAdapter implements JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime>
 {
-	// The formatter used to store dates
-	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
 	/**
 	 * Serialize is called when a local date time needs to be converted into JSON
 	 *
@@ -25,7 +24,7 @@ public class LocalDateTimeAdapter implements JsonSerializer<LocalDateTime>, Json
 	@Override
 	public JsonElement serialize(LocalDateTime localDateTime, Type type, JsonSerializationContext jsonSerializationContext)
 	{
-		return new JsonPrimitive(localDateTime.format(formatter));
+		return new JsonPrimitive(localDateTime.atZone(ZoneId.systemDefault()).format(SanimalMetadataFields.INDEX_DATE_TIME_FORMAT));
 	}
 
 	/**
@@ -40,6 +39,6 @@ public class LocalDateTimeAdapter implements JsonSerializer<LocalDateTime>, Json
 	@Override
 	public LocalDateTime deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException
 	{
-		return LocalDateTime.parse(jsonElement.getAsString(), formatter);
+		return ZonedDateTime.parse(jsonElement.getAsString(), SanimalMetadataFields.INDEX_DATE_TIME_FORMAT).toLocalDateTime();
 	}
 }
