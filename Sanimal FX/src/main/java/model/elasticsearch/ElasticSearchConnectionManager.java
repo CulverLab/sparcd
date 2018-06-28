@@ -107,8 +107,12 @@ public class ElasticSearchConnectionManager
 	// Create a new elastic search client
 	private final RestHighLevelClient elasticSearchClient;
 
+	// Create a new elastic search schema manager
 	private final ElasticSearchSchemaManager elasticSearchSchemaManager;
 
+	/**
+	 * The constructor initializes the elastic search
+	 */
 	public ElasticSearchConnectionManager()
 	{
 		// Establish a connection to the elastic search server
@@ -705,7 +709,6 @@ public class ElasticSearchConnectionManager
 		// Compute the absolute path of the image directory
 		String localDirAbsolutePath = directory.getFile().getAbsolutePath();
 
-
 		try
 		{
 			// Create a bulk index request to update all these images at once
@@ -714,6 +717,7 @@ public class ElasticSearchConnectionManager
 			// Convert the images to a map format ready to be converted to JSON
 			for (ImageEntry imageEntry : imageEntries)
 			{
+				// Our image to JSON map will return 2 items, one is the ID of the document and one is the JSON request
 				Tuple<String, XContentBuilder> idAndJSON = this.elasticSearchSchemaManager.imageToJSONMap(imageEntry, collectionID, basePath, localDirAbsolutePath);
 				IndexRequest request = new IndexRequest()
 						.index(INDEX_SANIMAL_METADATA)
@@ -857,8 +861,15 @@ public class ElasticSearchConnectionManager
 		}
 	}
 
+	/**
+	 * Performs a query given an ElasticSearch query builder that returns a list of images that match that query
+	 *
+	 * @param queryBuilder The query builder used to specify query parameters
+	 * @return The list of images that match the query
+	 */
 	public List<ImageEntry> performQuery(ElasticSearchQuery queryBuilder)
 	{
+		// The list of images to return
 		List<ImageEntry> toReturn = new ArrayList<>();
 
 		Scroll scroll = new Scroll(TimeValue.timeValueMinutes(10));
