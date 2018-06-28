@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Class used to create JSON requests from model classes for managing schemas
+ */
 public class ElasticSearchSchemaManager
 {
 	/**
@@ -350,10 +353,12 @@ public class ElasticSearchSchemaManager
 	 */
 	XContentBuilder makeLocationsUpdate(List<Location> locations) throws IOException
 	{
+		// Begin locations updates with an array (since we have a list of locations)
 		XContentBuilder locationsJSON = XContentFactory.jsonBuilder()
 		.startObject()
 			.startArray("locations");
 
+		// Iterate over all locations passed in, for each create an object and assign proper fields
 		for (Location location : locations)
 		{
 			locationsJSON
@@ -365,6 +370,7 @@ public class ElasticSearchSchemaManager
 			.endObject();
 		}
 
+		// Finish the locations JSON array and return it
 		locationsJSON
 			.endArray()
 		.endObject();
@@ -458,7 +464,9 @@ public class ElasticSearchSchemaManager
 	 */
 	Tuple<String, XContentBuilder> imageToJSONMap(ImageEntry imageEntry, String collectionID, String fileAbsolutePath) throws IOException
 	{
+		// On windows paths have \ as a path separator vs unix /. Make sure that we always use /
 		String fixedAbsolutePath = fileAbsolutePath.replace('\\', '/');
+		// Start the image metadata JSON with basic fields
 		XContentBuilder imageJSON = XContentFactory.jsonBuilder()
 		.startObject()
 			.field("storageType", "CyVerse Datastore")
@@ -479,6 +487,7 @@ public class ElasticSearchSchemaManager
 				.endObject()
 				.startArray("speciesEntries");
 
+		// For each species entry we write out one JSON object
 		for (SpeciesEntry speciesEntry : imageEntry.getSpeciesPresent())
 		{
 			imageJSON
@@ -491,11 +500,13 @@ public class ElasticSearchSchemaManager
 					.endObject();
 		}
 
+		// Finalize the JSON object
 		imageJSON
 				.endArray()
 			.endObject()
 		.endObject();
 
+		// We return two fields, one is the absolute path of the image file, and the other is the JSON representing the image metadata
 		return Tuple.tuple(fixedAbsolutePath, imageJSON);
 	}
 }

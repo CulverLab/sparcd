@@ -39,7 +39,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * A class used to wrap the CyVerse Jargon FTP library
+ * A class used to wrap the CyVerse Jargon FTP/iRODS library
  */
 public class CyVerseConnectionManager
 {
@@ -377,7 +377,9 @@ public class CyVerseConnectionManager
 						localToUpload.delete();
 					}
 
+					// Finally we actually index the image metadata using elasticsearch
 					SanimalData.getInstance().getEsConnectionManager().indexImages(uploadDirName + "/" + localDirName, collection.getID().toString(), directoryToWrite, uploadEntry);
+
 					// Let rules do the rest!
 				}
 				else
@@ -463,6 +465,7 @@ public class CyVerseConnectionManager
 					Integer imagesWithSpecies = uploadEntryToSave.getImagesWithSpecies() - numberOfDetaggedImages + numberOfRetaggedImages;
 					uploadEntryToSave.setImagesWithSpecies(imagesWithSpecies);
 
+					// Finally we update our metadata index
 					SanimalData.getInstance().getEsConnectionManager().updateIndexedImages(toUpload, collection.getID().toString(), uploadEntryToSave);
 				}
 				else

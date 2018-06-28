@@ -81,6 +81,12 @@ public class Location
 	 */
 	public Boolean locationValid() { return nameValid() && idValid() && latValid() && lngValid() && elevationValid(); }
 
+	/**
+	 * Two locations are equal if their site codes align
+	 *
+	 * @param obj The other location to compare to
+	 * @return True if the site codes of the locations match, false otherwise
+	 */
 	@Override
 	public boolean equals(Object obj)
 	{

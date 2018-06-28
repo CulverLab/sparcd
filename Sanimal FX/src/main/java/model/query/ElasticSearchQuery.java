@@ -20,7 +20,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Class representing a query to be sent to CyVerse
+ * Class representing a query to be sent to our ElasticSearch cluster
  */
 public class ElasticSearchQuery
 {
@@ -37,6 +37,7 @@ public class ElasticSearchQuery
 	// A list of days of week to query for
 	private Set<Integer> dayOfWeekQuery = new HashSet<>();
 
+	// Query builder used to make queries that we will send out
 	private final BoolQueryBuilder queryBuilder;
 
 	/**
@@ -138,10 +139,17 @@ public class ElasticSearchQuery
 		this.queryBuilder.must().add(QueryBuilders.rangeQuery("imageMetadata.dateTaken").lte(endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
 	}
 
+	/**
+	 * Adds a condition on which elevation can be filtered with an operator argument
+	 *
+	 * @param elevation The elevation value to filter on
+	 * @param operator The operator with which to test the given elevation, can be <, <=, >, >=, or =
+	 */
 	public void addElevationCondition(Double elevation, ElevationCondition.ElevationComparisonOperators operator)
 	{
 		switch (operator)
 		{
+			// Depending on the operator we pick a query to be used
 			case Equal:
 				this.queryBuilder.must().add(QueryBuilders.termQuery("imageMetadata.location.elevation", elevation));
 				break;
@@ -163,26 +171,45 @@ public class ElasticSearchQuery
 		}
 	}
 
+	/**
+	 * Finalizes the ElasticSearch query and returns the builder
+	 *
+	 * @return The query builder ready to be executed
+	 */
 	public QueryBuilder build()
 	{
+		// Make sure that we have at least one species we're looking for
+		// Species are IDd by scientific name
 		if (!speciesQuery.isEmpty())
 		{
+			// For this query we need to use 2 queries because speciesEntries is a nested field. The first query looks into the speciesEntries object and searches for
+			// for any inner objects that satisfy the inside query which tests scientific name.
 			TermsQueryBuilder innerQuery = QueryBuilders.termsQuery("imageMetadata.speciesEntries.species.scientificName", this.speciesQuery.stream().map(Species::getScientificName).collect(Collectors.toList()));
 			this.queryBuilder.must(QueryBuilders.nestedQuery("imageMetadata.speciesEntries", innerQuery, ScoreMode.Max));
 		}
 
+		// Make sure that we have at least one location we're looking for
+		// Locations are IDd by site code
 		if (!locationQuery.isEmpty())
 			this.queryBuilder.must().add(QueryBuilders.termsQuery("imageMetadata.location.id", this.locationQuery.stream().map(Location::getId).collect(Collectors.toList())));
 
+		// Make sure that we have at least one collection we're looking for
+		// Collections are IDd by UUID
 		if (!collectionQuery.isEmpty())
 			this.queryBuilder.must().add(QueryBuilders.termsQuery("collectionID", this.collectionQuery.stream().map(imageCollection -> imageCollection.getID().toString()).collect(Collectors.toList())));
 
+		// Make sure that we have at least one month we're looking for
+		// Months are IDd by ordinal value (1-12)
 		if (!monthQuery.isEmpty())
 			this.queryBuilder.must().add(QueryBuilders.termsQuery("imageMetadata.monthTaken", this.monthQuery));
 
+		// Make sure that we have at least one hour we're looking for
+		// Hours are IDd by ordinal value (1-24)
 		if (!hourQuery.isEmpty())
 			this.queryBuilder.must().add(QueryBuilders.termsQuery("imageMetadata.hourTaken", this.hourQuery));
 
+		// Make sure that we have at least one day-of-week we're looking for
+		// Days of week are IDd by ordinal value (1-7)
 		if (!dayOfWeekQuery.isEmpty())
 			this.queryBuilder.must().add(QueryBuilders.termsQuery("imageMetadata.dayOfWeekTaken", this.dayOfWeekQuery));
 
