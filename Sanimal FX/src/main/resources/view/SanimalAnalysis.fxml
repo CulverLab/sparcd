@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import java.net.URL?>
-
-<?import com.panemu.tiwulfx.control.DetachableTabPane?>
-<?import com.panemu.tiwulfx.control.DetachableTab?>
-<?import org.controlsfx.control.RangeSlider?>
-<?import jfxtras.scene.control.LocalDateTimePicker?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
 <?import library.ImageViewPane?>
-
 <?import org.controlsfx.control.MaskerPane?>
+<?import java.net.URL?>
 <StackPane xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalAnalysisController">
     <stylesheets>
         <URL value="@SanimalAnalysis.css"/>
@@ -69,14 +63,14 @@
                 </ImageViewPane>
                 <ListView styleClass="queryConditionsLvw" HBox.hgrow="ALWAYS" fx:id="lvwQueryConditions" orientation="HORIZONTAL"/>
             </HBox>
-            <DetachableTabPane fx:id="tpnVisualizations">
-                <DetachableTab fx:id="dtbDrSanderson" detachable="false" text="Dr. Sanderson's Output" closable="false">
+            <TabPane fx:id="tpnVisualizations">
+                <Tab fx:id="tabDrSanderson" text="Dr. Sanderson's Output" closable="false">
                     <fx:include fx:id="visDrSanderson" source="analysisView/VisDrSanderson.fxml"/>
-                </DetachableTab>
-                <DetachableTab detachable="false" text="CSV Output" closable="false">
+                </Tab>
+                <Tab text="CSV Output" closable="false">
                     <fx:include fx:id="visCSV" source="analysisView/VisCSV.fxml"/>
-                </DetachableTab>
-            </DetachableTabPane>
+                </Tab>
+            </TabPane>
         </items>
     </SplitPane>
     <MaskerPane fx:id="mpnQuerying" text="Performing Query..." progressVisible="true"/>

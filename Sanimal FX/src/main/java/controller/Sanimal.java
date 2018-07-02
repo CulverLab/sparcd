@@ -1,6 +1,5 @@
 package controller;
 
-import com.panemu.tiwulfx.form.BaseControl;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -33,8 +32,7 @@ public class Sanimal extends Application
         FXMLLoader root = FXMLLoaderUtils.loadFXML("SanimalView.fxml");
         // Create the scene
         Scene scene = new Scene(root.getRoot());
-        // We need this to ensure that the tiwulfx library correctly renders the detachable tabs
-        scene.getStylesheets().add(BaseControl.class.getResource("/com/panemu/tiwulfx/res/tiwulfx.css").toExternalForm());
+
         // Put the scene on the stage
         primaryStage.setScene(scene);
         primaryStage.getIcons().add(new Image("images/mainMenu/paw.png"));

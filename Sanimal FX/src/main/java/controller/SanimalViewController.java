@@ -1,6 +1,5 @@
 package controller;
 
-import com.panemu.tiwulfx.control.DetachableTabPane;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -81,7 +80,7 @@ public class SanimalViewController implements Initializable
 	public Button btnLogin;
 
 	@FXML
-	public DetachableTabPane tabPane;
+	public TabPane tabPane;
 
 	// A reference to the home screen
 	@FXML

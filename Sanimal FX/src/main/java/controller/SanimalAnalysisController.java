@@ -1,7 +1,5 @@
 package controller;
 
-import com.panemu.tiwulfx.control.DetachableTab;
-import com.panemu.tiwulfx.control.DetachableTabPane;
 import controller.analysisView.VisCSVController;
 import controller.analysisView.VisDrSandersonController;
 import javafx.collections.ObservableList;
@@ -10,6 +8,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -24,7 +24,6 @@ import model.query.QueryEngine;
 import model.threading.ErrorTask;
 import model.util.FXMLLoaderUtils;
 import org.controlsfx.control.MaskerPane;
-import org.controlsfx.control.action.Action;
 
 import java.net.URL;
 import java.util.List;
@@ -54,11 +53,11 @@ public class SanimalAnalysisController implements Initializable
 
 	// The detachable tab containing the Dr. Sanderson output
 	@FXML
-	public DetachableTab dtbDrSanderson;
+	public Tab tabDrSanderson;
 
 	// Tab pane full of visualizations
 	@FXML
-	public DetachableTabPane tpnVisualizations;
+	public TabPane tpnVisualizations;
 
 	// The list of possible filters
 	@FXML
@@ -102,7 +101,7 @@ public class SanimalAnalysisController implements Initializable
 		// Hide the Dr. Sanderson tab and the event interval if we don't have Dr. Sanderson's compatibility
 		if (!SanimalData.getInstance().getSettings().getDrSandersonOutput())
 		{
-			this.tpnVisualizations.getTabs().remove(this.dtbDrSanderson);
+			this.tpnVisualizations.getTabs().remove(this.tabDrSanderson);
 			this.eventIntervalIndex = this.vbxQuery.getChildren().indexOf(this.txtEventInterval);
 			this.vbxQuery.getChildren().remove(this.txtEventInterval);
 		}
@@ -112,14 +111,14 @@ public class SanimalAnalysisController implements Initializable
 		{
 			if (newValue)
 			{
-				if (!this.tpnVisualizations.getTabs().contains(this.dtbDrSanderson))
-					this.tpnVisualizations.getTabs().add(0, this.dtbDrSanderson);
+				if (!this.tpnVisualizations.getTabs().contains(this.tabDrSanderson))
+					this.tpnVisualizations.getTabs().add(0, this.tabDrSanderson);
 				if (!this.vbxQuery.getChildren().contains(this.txtEventInterval))
 					this.vbxQuery.getChildren().add(this.eventIntervalIndex, this.txtEventInterval);
 			}
 			else
 			{
-				this.tpnVisualizations.getTabs().remove(this.dtbDrSanderson);
+				this.tpnVisualizations.getTabs().remove(this.tabDrSanderson);
 				this.eventIntervalIndex = this.vbxQuery.getChildren().indexOf(this.txtEventInterval);
 				this.vbxQuery.getChildren().remove(this.txtEventInterval);
 			}
