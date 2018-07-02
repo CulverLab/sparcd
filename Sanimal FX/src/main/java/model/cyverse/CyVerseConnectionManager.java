@@ -22,16 +22,15 @@ import org.irods.jargon.core.pub.domain.User;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
-import org.irods.jargon.core.rule.IRODSRuleExecResult;
-import org.irods.jargon.core.rule.IRODSRuleParameter;
-import org.irods.jargon.core.rule.RuleInvocationConfiguration;
 import org.irods.jargon.core.transfer.TransferStatus;
 import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -550,17 +549,12 @@ public class CyVerseConnectionManager
 				if (topLevelDirectory.exists() && topLevelDirectory.isDirectory() && topLevelDirectory.canRead())
 				{
 					RuleProcessingAO ruleProcessingAO = this.sessionManager.getCurrentAO().getRuleProcessingAO(this.authenticatedAccount);
-					IRODSRuleExecResult irodsRuleExecResult = ruleProcessingAO.executeRuleFromIRODSFile(
-							"/iplant/home/dslovikosky/Sanimal/Rules/IndexDirectory.r",
-							Arrays.asList(new IRODSRuleParameter("*arguments", "\"-c 'print(Hello World!)'\"")),
-							RuleInvocationConfiguration.instanceWithDefaultAutoSettings());
-					System.out.println(irodsRuleExecResult.getRuleExecOut());
-					System.err.println(irodsRuleExecResult.getRuleExecErr());
+
 				}
 			}
 			catch (JargonException e)
 			{
-				SanimalData.getInstance().getErrorDisplay().notify("Error indexing exising images. Error was:\n" + ExceptionUtils.getStackTrace(e));
+				SanimalData.getInstance().getErrorDisplay().notify("Error indexing existing images. Error was:\n" + ExceptionUtils.getStackTrace(e));
 			}
 
 			this.sessionManager.closeSession();
