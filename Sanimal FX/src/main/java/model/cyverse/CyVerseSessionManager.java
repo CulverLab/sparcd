@@ -1,6 +1,5 @@
 package model.cyverse;
 
-import javafx.scene.control.Alert;
 import javafx.util.Pair;
 import model.SanimalData;
 import org.apache.commons.lang3.exception.ExceptionUtils;

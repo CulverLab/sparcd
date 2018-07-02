@@ -1,6 +1,5 @@
 package model.util;
 
-import javafx.scene.control.Alert;
 import model.SanimalData;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;

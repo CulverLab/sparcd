@@ -11,9 +11,7 @@ import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.time.Year;
 import java.util.ResourceBundle;
-import java.util.function.Predicate;
 
 /**
  * Class used as a controller for the "Year filter" UI component

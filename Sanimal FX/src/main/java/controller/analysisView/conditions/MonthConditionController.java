@@ -1,10 +1,8 @@
 package controller.analysisView.conditions;
 
 import controller.analysisView.IConditionController;
-import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.util.StringConverter;
@@ -12,7 +10,6 @@ import model.query.IQueryCondition;
 import model.query.conditions.MonthCondition;
 
 import java.net.URL;
-import java.time.DayOfWeek;
 import java.time.Month;
 import java.time.format.TextStyle;
 import java.util.Locale;

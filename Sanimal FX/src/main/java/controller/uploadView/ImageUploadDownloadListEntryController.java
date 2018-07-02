@@ -8,15 +8,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Font;
 import model.SanimalData;
 import model.image.CloudUploadEntry;
 import model.image.ImageDirectory;
 import org.fxmisc.easybind.EasyBind;
-
-import javax.swing.event.ChangeListener;
-import java.text.SimpleDateFormat;
-import java.util.List;
 
 /**
  * Controller for the download entry which allows downloading/saving of image files
