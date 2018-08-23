@@ -25,7 +25,7 @@
             <children>
                 <ImageView fitHeight="168.0" pickOnBounds="true" preserveRatio="true" StackPane.alignment="TOP_LEFT">
                     <image>
-                        <Image url="@../images/mainMenu/sanimalTitle.png" />
+                        <Image url="@../images/mainMenu/sanimalTitle.png"/>
                     </image>
                 </ImageView>
                 <Label fx:id="lblUsername" styleClass="usernameLbl" text="Welcome &lt;Username&gt;" textAlignment="RIGHT" GridPane.hgrow="ALWAYS" StackPane.alignment="TOP_LEFT">
