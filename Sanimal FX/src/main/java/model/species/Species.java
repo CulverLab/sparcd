@@ -1,9 +1,11 @@
 package model.species;
 
 import com.google.gson.annotations.Expose;
-import javafx.beans.property.*;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.input.KeyCode;
-import model.image.ImageEntry;
 
 
 /**
@@ -14,7 +16,7 @@ import model.image.ImageEntry;
 public class Species
 {
     // The name of the species
-    private StringProperty name = new SimpleStringProperty();
+    private StringProperty commonName = new SimpleStringProperty();
     // The scientific name of the species
     private StringProperty scientificName = new SimpleStringProperty();
     // The species icon URL
@@ -33,14 +35,14 @@ public class Species
     /**
      * Constructor for the species, sets a default icon
      *
-     * @param name
+     * @param commonName
      *            The name of the species
      * @param scientificName
      *            The scientific name of the species
      */
-    public Species(String name, String scientificName)
+    public Species(String commonName, String scientificName)
     {
-        this.name.setValue(name);
+        this.commonName.setValue(commonName);
         this.scientificName.setValue(scientificName);
         this.speciesIconURL.setValue(DEFAULT_ICON);
     }
@@ -48,16 +50,16 @@ public class Species
     /**
      * Constructor for the species
      *
-     * @param name
+     * @param commonName
      *            The name of the species
      * @param scientificName
      *            The scientific name of the species
      * @param speciesIconURL
      *            The URL of the icon as a string
      */
-    public Species(String name, String scientificName, String speciesIconURL)
+    public Species(String commonName, String scientificName, String speciesIconURL)
     {
-        this.name.setValue(name);
+        this.commonName.setValue(commonName);
         this.scientificName.setValue(scientificName);
         this.speciesIconURL.setValue(speciesIconURL);
     }
@@ -67,7 +69,7 @@ public class Species
      */
     public Species()
     {
-        this.name.setValue(UNINITIALIZED);
+        this.commonName.setValue(UNINITIALIZED);
         this.scientificName.setValue(UNINITIALIZED);
         this.speciesIconURL.setValue(UNINITIALIZED);
     }
@@ -77,15 +79,15 @@ public class Species
      */
     public Boolean isUninitialized()
     {
-        return !this.nameValid() || !this.scientificNameValid() || !this.iconValid();
+        return !this.commonNameValid() || !this.scientificNameValid() || !this.iconValid();
     }
 
     /**
      * @return True if the name is not uninitialized
      */
-    public Boolean nameValid()
+    public Boolean commonNameValid()
     {
-        return !this.name.getValue().equals(UNINITIALIZED);
+        return !this.commonName.getValue().equals(UNINITIALIZED);
     }
 
     /**
@@ -104,29 +106,37 @@ public class Species
         return !this.speciesIconURL.getValue().equals(UNINITIALIZED);
     }
 
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof Species)
+            return ((Species) obj).getScientificName().equals(this.getScientificName());
+        return super.equals(obj);
+    }
+
     /**
      * Set the name of the species
      * @param name The new name of the species
      */
-    public void setName(String name)
+    public void setCommonName(String name)
     {
-        this.name.setValue(name);
+        this.commonName.setValue(name);
     }
 
     /**
      * @return The name of the species
      */
-    public String getName()
+    public String getCommonName()
     {
-        return name.getValue();
+        return this.commonName.getValue();
     }
 
     /**
      * @return The name property
      */
-    public StringProperty nameProperty()
+    public StringProperty commonNameProperty()
     {
-        return this.name;
+        return this.commonName;
     }
 
     /**
@@ -210,6 +220,6 @@ public class Species
     @Override
     public String toString()
     {
-        return this.getName();
+        return this.getCommonName();
     }
 }

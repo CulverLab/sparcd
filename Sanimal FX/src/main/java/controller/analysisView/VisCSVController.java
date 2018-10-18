@@ -80,14 +80,14 @@ public class VisCSVController implements VisControllerBase
 			{
 				// Add lat/lng
 				locationString = locationString +
-					location.getLat() + "," +
-					location.getLng() + ",";
+					location.getLatitude() + "," +
+					location.getLongitude() + ",";
 			}
 			// If we're using UTM
 			else if (SanimalData.getInstance().getSettings().getLocationFormat() == SettingsData.LocationFormat.UTM)
 			{
 				// Convert to UTM, and print it
-				UTMCoord utmCoord = SanimalAnalysisUtils.Deg2UTM(location.getLat(), location.getLng());
+				UTMCoord utmCoord = SanimalAnalysisUtils.Deg2UTM(location.getLatitude(), location.getLongitude());
 				locationString = locationString +
 					utmCoord.getZone().toString() + utmCoord.getLetter().toString() + "," +
 					utmCoord.getEasting() + "E," +
@@ -99,9 +99,9 @@ public class VisCSVController implements VisControllerBase
 			return imageEntry.getFile().getName() + "," +
 				SanimalData.getInstance().getSettings().formatDateTime(imageEntry.getDateTaken(), " ") + "," +
 				imageEntry.getSpeciesPresent().stream().map(speciesEntry ->
-					speciesEntry.getSpecies().getName() + ";" +
+					speciesEntry.getSpecies().getCommonName() + ";" +
 					speciesEntry.getSpecies().getScientificName() + ";" +
-					speciesEntry.getAmount().toString()
+					speciesEntry.getCount().toString()
 				).collect(Collectors.joining(";")) + "," +
 				locationString;
 		}).collect(Collectors.joining("\n"));
@@ -123,13 +123,13 @@ public class VisCSVController implements VisControllerBase
 			{
 				// Use lat,lng
 				locationString = locationString +
-					location.getLat() + "," +
-					location.getLng() + ",";
+					location.getLatitude() + "," +
+					location.getLongitude() + ",";
 			}
 			// If we're using UTM
 			else
 			{
-				UTMCoord utmCoord = SanimalAnalysisUtils.Deg2UTM(location.getLat(), location.getLng());
+				UTMCoord utmCoord = SanimalAnalysisUtils.Deg2UTM(location.getLatitude(), location.getLongitude());
 				locationString = locationString +
 					utmCoord.getZone().toString() + utmCoord.getLetter().toString() + "," +
 					utmCoord.getEasting() + "E," +
@@ -146,7 +146,7 @@ public class VisCSVController implements VisControllerBase
 		// The species CSV contains each species, one per line, in the form:
 		// Name, Scientific Name, Key bound (or null if none)
 		String speciesCSV = dataAnalyzer.getAllImageSpecies().stream().map(species ->
-			species.getName() + "," +
+			species.getCommonName() + "," +
 			species.getScientificName()
 		).collect(Collectors.joining("\n"));
 		this.txtSpeciesCSV.setText(speciesCSV);

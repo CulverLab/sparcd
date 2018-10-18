@@ -1,23 +1,18 @@
 package controller.uploadView;
 
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import model.constant.SanimalDataFormats;
 import model.image.ImageContainer;
 import model.image.ImageDirectory;
-import org.fxmisc.easybind.EasyBind;
 
 /**
  * Class used as the controller for an upload entry in the treeview

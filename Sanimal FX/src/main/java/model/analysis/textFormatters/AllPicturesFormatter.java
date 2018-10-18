@@ -42,7 +42,7 @@ public class AllPicturesFormatter extends TextFormatter
 				List<ImageEntry> withLocationSpecies = new ImageQuery().speciesOnly(species).query(withLocation);
 				for (ImageEntry imageEntry : withLocationSpecies)
 				{
-					toReturn.append(String.format("%-28s %-28s %-28s\n", location.getName(), species.getName(), imageEntry.getDateTaken().format(formatter) + "." + FilenameUtils.getExtension(imageEntry.getFile().toString())));
+					toReturn.append(String.format("%-28s %-28s %-28s\n", location.getName(), species.getCommonName(), imageEntry.getDateTaken().format(formatter) + "." + FilenameUtils.getExtension(imageEntry.getFile().toString())));
 				}
 			}
 		}

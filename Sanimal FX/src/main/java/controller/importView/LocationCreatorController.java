@@ -235,9 +235,9 @@ public class LocationCreatorController implements Initializable
 		if (this.locationToEdit.idValid())
 			this.newId.set(location.getId());
 		if (this.locationToEdit.latValid())
-			this.newZoneOrLat.set(locationToEdit.getLat().toString());
+			this.newZoneOrLat.set(locationToEdit.getLatitude().toString());
 		if (this.locationToEdit.lngValid())
-			this.newLetterOrLng.set(locationToEdit.getLng().toString());
+			this.newLetterOrLng.set(locationToEdit.getLongitude().toString());
 		if (this.locationToEdit.elevationValid())
 			this.newElevation.set(locationToEdit.getElevation().toString());
 	}
@@ -257,8 +257,8 @@ public class LocationCreatorController implements Initializable
 		locationToEdit.setName(newName.getValue());
 		locationToEdit.setId(newId.getValue());
 		// Round latitude/longitude
-		locationToEdit.setLat(RoundingUtils.roundLat(Double.parseDouble(newZoneOrLat.getValue())));
-		locationToEdit.setLng(RoundingUtils.roundLng(Double.parseDouble(newLetterOrLng.getValue())));
+		locationToEdit.setLatitude(RoundingUtils.roundLat(Double.parseDouble(newZoneOrLat.getValue())));
+		locationToEdit.setLongitude(RoundingUtils.roundLng(Double.parseDouble(newLetterOrLng.getValue())));
 		// If feet is selected, convert meters to feet
 		if (this.tbnMeters.isSelected())
 			locationToEdit.setElevation((double) Math.round(Double.parseDouble(newElevation.getValue())));

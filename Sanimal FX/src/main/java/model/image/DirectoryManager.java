@@ -1,16 +1,12 @@
 package model.image;
 
-import javafx.scene.control.Alert;
 import model.SanimalData;
 import model.analysis.SanimalAnalysisUtils;
 import model.location.Location;
 import model.species.Species;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.irods.jargon.core.pub.domain.AvuData;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -141,11 +137,10 @@ public class DirectoryManager
 	 * Given an image directory, this will create a TAR file out of the directory
 	 *
 	 * @param directory The image directory to TAR
-	 * @param directoryMetaJSON The JSON file representing this image directory
 	 * @param imageToMetadata The CSV file representing each image's metadata
 	 * @return The TAR file
 	 */
-	public static File[] directoryToTars(ImageDirectory directory, File directoryMetaJSON, Function<ImageEntry, String> imageToMetadata, Integer maxImagesPerTar)
+	public static File[] directoryToTars(ImageDirectory directory, Function<ImageEntry, String> imageToMetadata, Integer maxImagesPerTar)
 	{
 		maxImagesPerTar = maxImagesPerTar - 1;
 		try
@@ -191,19 +186,6 @@ public class DirectoryManager
 				}
 				// Close the writer to the metadata file
 				metaOut.close();
-
-				// If this is the first tar file, include the UploadMeta.csv file
-				if (tarIndex == 0)
-				{
-					// Create an archive entry for the upload meta file
-					ArchiveEntry archiveEntry = tarOut.createArchiveEntry(directoryMetaJSON, "/UploadMeta.json");
-					// Put the archive entry into the TAR file
-					tarOut.putArchiveEntry(archiveEntry);
-					// Write all the bytes in the file into the TAR file
-					tarOut.write(Files.readAllBytes(directoryMetaJSON.toPath()));
-					// Finish writing the TAR entry
-					tarOut.closeArchiveEntry();
-				}
 
 				// Create an archive entry for the metaCSV file
 				ArchiveEntry archiveEntry = tarOut.createArchiveEntry(tempMetaCSV, "/meta-" + tarIndex.toString() + ".csv");
@@ -260,8 +242,8 @@ public class DirectoryManager
 				currentLocation.setName(locationName);
 				currentLocation.setId("None");
 				currentLocation.setElevation(0.0);
-				currentLocation.setLat(0.0);
-				currentLocation.setLng(0.0);
+				currentLocation.setLatitude(0.0);
+				currentLocation.setLongitude(0.0);
 				knownLocations.add(currentLocation);
 			}
 
@@ -270,7 +252,7 @@ public class DirectoryManager
 			{
 				// Get the species name
 				String speciesName = speciesDirectory.getFile().getName();
-				Optional<Species> speciesOpt = knownSpecies.stream().filter(species -> species.getName().equalsIgnoreCase(speciesName)).findFirst();
+				Optional<Species> speciesOpt = knownSpecies.stream().filter(species -> species.getCommonName().equalsIgnoreCase(speciesName)).findFirst();
 				Species currentSpecies;
 				// Get the species if it exists
 				if (speciesOpt.isPresent())
@@ -281,7 +263,7 @@ public class DirectoryManager
 				else
 				{
 					currentSpecies = new Species();
-					currentSpecies.setName(speciesName);
+					currentSpecies.setCommonName(speciesName);
 					currentSpecies.setSpeciesIcon(Species.DEFAULT_ICON);
 					knownSpecies.add(currentSpecies);
 				}

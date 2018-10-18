@@ -108,15 +108,15 @@ public class LocationListEntryController extends ListCell<Location>
         if (format == SettingsData.LocationFormat.LatLong)
         {
             // Locations are stored in lat/lng so we can just use the value
-            this.lblLocationFirst.setText(location.getLat().toString());
-            this.lblLocationSecond.setText(location.getLng().toString());
+            this.lblLocationFirst.setText(location.getLatitude().toString());
+            this.lblLocationSecond.setText(location.getLongitude().toString());
             this.lblLocationThird.setText(Math.round(distanceUnits.formatToMeters(location.getElevation())) + distanceUnits.getSymbol());
         }
         // If we are using UTM
         else if (format == SettingsData.LocationFormat.UTM)
         {
             // Convert to UTM
-            UTMCoord utmEquiv = SanimalAnalysisUtils.Deg2UTM(location.getLat(), location.getLng());
+            UTMCoord utmEquiv = SanimalAnalysisUtils.Deg2UTM(location.getLatitude(), location.getLongitude());
             // Update the labels
             this.lblLocationFirst.setText(utmEquiv.getEasting().intValue() + "E");
             this.lblLocationSecond.setText(utmEquiv.getNorthing().intValue() + "N");

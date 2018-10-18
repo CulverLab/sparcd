@@ -1,21 +1,15 @@
 package controller.analysisView.conditions;
 
 import controller.analysisView.IConditionController;
-import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.cell.CheckBoxListCell;
 import model.query.IQueryCondition;
 import model.query.conditions.HourCondition;
-import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
-import java.time.Month;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Class used as a controller for the "Hour filter" UI component

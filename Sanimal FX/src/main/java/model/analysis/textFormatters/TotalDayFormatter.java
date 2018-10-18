@@ -288,7 +288,7 @@ public class TotalDayFormatter extends TextFormatter
 				List<ImageEntry> imagesBySpeciesAndYear = new ImageQuery().yearOnly(year).speciesOnly(species).query(analysis.getImagesSortedByDate());
 				if (!imagesBySpeciesAndYear.isEmpty())
 				{
-					toReturn.append(String.format("%-28s", species.getName()));
+					toReturn.append(String.format("%-28s", species.getCommonName()));
 					Integer total = 0;
 					for (int i = 0; i < 12; i++)
 					{
@@ -407,7 +407,7 @@ public class TotalDayFormatter extends TextFormatter
 		int[] totalRichness = new int[12];
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn.append(String.format("%-28s", species.getName()));
+			toReturn.append(String.format("%-28s", species.getCommonName()));
 
 			List<ImageEntry> imagesBySpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
 			Integer total = 0;
@@ -534,7 +534,7 @@ public class TotalDayFormatter extends TextFormatter
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn.append(species.getName()).append("\n");
+			toReturn.append(species.getCommonName()).append("\n");
 
 			for (Integer year : analysis.getAllImageYears())
 			{
@@ -779,7 +779,7 @@ public class TotalDayFormatter extends TextFormatter
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn.append(species.getName()).append("\n");
+			toReturn.append(species.getCommonName()).append("\n");
 
 			List<ImageEntry> withSpecices = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
 
@@ -1086,7 +1086,7 @@ public class TotalDayFormatter extends TextFormatter
 		{
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
 			toReturn.append("Location                  Elevation   # pics/Effort   Percent\n");
-			toReturn.append(species.getName()).append("\n");
+			toReturn.append(species.getCommonName()).append("\n");
 			double[] picsOverEffortTotals = new double[analysis.getAllImageLocations().size()];
 			Double picsOverEffortTotal = 0D;
 			for (Location location : analysis.getAllImageLocations())
@@ -1180,7 +1180,7 @@ public class TotalDayFormatter extends TextFormatter
 		toReturn.append("Location                  Elevation ");
 
 		for (Species species : analysis.getAllImageSpecies())
-			toReturn.append(String.format("%6s ", StringUtils.left(species.getName(), 6)));
+			toReturn.append(String.format("%6s ", StringUtils.left(species.getCommonName(), 6)));
 
 		toReturn.append("\n");
 

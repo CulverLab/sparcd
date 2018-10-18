@@ -49,7 +49,7 @@ public class LocationStatFormatter extends TextFormatter
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn.append(String.format("%-26s", species.getName()));
+			toReturn.append(String.format("%-26s", species.getCommonName()));
 			for (Location location : analysis.getAllImageLocations())
 			{
 				Integer totalPeriod = analysis.periodForImageList(new ImageQuery().locationOnly(location).anyValidSpecies().query(analysis.getImagesSortedByDate()));
@@ -104,7 +104,7 @@ public class LocationStatFormatter extends TextFormatter
 						List<ImageEntry> atLocationWithSpecies = new ImageQuery().speciesOnly(species).query(atLocation);
 						if (!atLocationWithSpecies.isEmpty())
 						{
-							toReturn.append(String.format("%-28s", species.getName()));
+							toReturn.append(String.format("%-28s", species.getCommonName()));
 							// Months 0-12
 							for (int i = 0; i < 12; i++)
 							{
@@ -224,7 +224,7 @@ public class LocationStatFormatter extends TextFormatter
 					List<ImageEntry> atLocationWithSpecies = new ImageQuery().speciesOnly(species).query(atLocation);
 					if (!atLocationWithSpecies.isEmpty())
 					{
-						toReturn.append(String.format("%-28s", species.getName()));
+						toReturn.append(String.format("%-28s", species.getCommonName()));
 						// Months 0-12
 						for (int i = 0; i < 12; i++)
 						{
@@ -338,7 +338,7 @@ public class LocationStatFormatter extends TextFormatter
 			for (Location other : analysis.getAllImageLocations())
 				if (!location.equals(other))
 				{
-					double distance = SanimalAnalysisUtils.distanceBetween(location.getLat(), location.getLng(), other.getLat(), other.getLng());
+					double distance = SanimalAnalysisUtils.distanceBetween(location.getLatitude(), location.getLongitude(), other.getLatitude(), other.getLongitude());
 					if (distance >= maxDistance)
 					{
 						maxDistance = distance;
@@ -368,7 +368,7 @@ public class LocationStatFormatter extends TextFormatter
 			toReturn.append(String.format("%-32s", location.getName()));
 			for (Location other : analysis.getAllImageLocations())
 			{
-				double distance = SanimalAnalysisUtils.distanceBetween(location.getLat(), location.getLng(), other.getLat(), other.getLng());
+				double distance = SanimalAnalysisUtils.distanceBetween(location.getLatitude(), location.getLongitude(), other.getLatitude(), other.getLongitude());
 				toReturn.append(String.format("%-28f", distance));
 			}
 			toReturn.append("\n");
@@ -396,12 +396,12 @@ public class LocationStatFormatter extends TextFormatter
 		toReturn.append("                          Locations  Locations and percent of locations where both species were recorded\n");
 		toReturn.append("Species                    recorded ");
 		for (Species species : analysis.getAllImageSpecies())
-			toReturn.append(String.format("%-12s", species.getName()));
+			toReturn.append(String.format("%-12s", species.getCommonName()));
 		toReturn.append("\n");
 		for (Species species : analysis.getAllImageSpecies())
 		{
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(images);
-			toReturn.append(String.format("%-28s", species.getName()));
+			toReturn.append(String.format("%-28s", species.getCommonName()));
 			List<Location> locations = analysis.locationsForImageList(withSpecies);
 			toReturn.append(String.format("%3d    ", locations.size()));
 			for (Species other : analysis.getAllImageSpecies())

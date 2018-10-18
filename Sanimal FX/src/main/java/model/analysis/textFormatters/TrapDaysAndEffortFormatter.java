@@ -52,7 +52,7 @@ public class TrapDaysAndEffortFormatter extends TextFormatter
 
 			StringBuilder speciesPresent = new StringBuilder();
 			for (SpeciesEntry entry : firstEntry.getSpeciesPresent())
-				speciesPresent.append(entry.getSpecies().getName()).append(" ");
+				speciesPresent.append(entry.getSpecies().getCommonName()).append(" ");
 
 			toReturn.append(String.format("%-27s %4s %2d %2d  %4s %2d %2d %9d   %4s %2d %2d  %s\n", location.getName(), firstCal.getYear(), firstCal.getMonthValue() + 1, firstCal.getDayOfMonth(), lastCal.getYear(), lastCal.getMonthValue() + 1, lastCal.getDayOfMonth(), currentDuration, firstCal.getYear(), firstCal.getMonthValue() + 1, firstCal.getDayOfMonth(), speciesPresent.toString()));
 		}

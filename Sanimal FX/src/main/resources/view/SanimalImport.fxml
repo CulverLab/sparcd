@@ -37,7 +37,7 @@
                 </FlowPane>
             </children>
         </VBox>
-        <SplitPane dividerPositions="0.75" orientation="VERTICAL">
+        <SplitPane dividerPositions="0.70" orientation="VERTICAL">
             <items>
                 <StackPane fx:id="imagePane" onDragDropped="#imagePaneDragDropped" onDragEntered="#imagePaneDragEntered" onDragExited="#imagePaneDragExited" onDragOver="#imagePaneDragOver" onMouseEntered="#imagePaneMouseEntered" onMouseExited="#imagePaneMouseExited">
                     <children>

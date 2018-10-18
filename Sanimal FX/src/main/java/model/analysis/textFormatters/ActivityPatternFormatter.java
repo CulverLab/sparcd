@@ -98,7 +98,7 @@ public class ActivityPatternFormatter extends TextFormatter
 			toAdd.append("\n");
 
 			// Print the header first
-			toReturn.append(String.format("%-28s (%6d/ %6d)\n", species.getName(), totals[0], totalImages));
+			toReturn.append(String.format("%-28s (%6d/ %6d)\n", species.getCommonName(), totals[0], totalImages));
 
 			toReturn.append(toAdd);
 
@@ -129,14 +129,14 @@ public class ActivityPatternFormatter extends TextFormatter
 		toReturn.append("                            ");
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn.append(String.format("%-8s ", StringUtils.left(species.getName(), 8)));
+			toReturn.append(String.format("%-8s ", StringUtils.left(species.getCommonName(), 8)));
 		}
 
 		toReturn.append("\n");
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn.append(String.format("%-27s", species.getName()));
+			toReturn.append(String.format("%-27s", species.getCommonName()));
 			for (Species other : analysis.getAllImageSpecies())
 			{
 				List<ImageEntry> imagesWithSpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
@@ -230,7 +230,7 @@ public class ActivityPatternFormatter extends TextFormatter
 
 		if (lowest != null)
 		{
-			toReturn.append(String.format("Hour            %-28s %-28s\n", lowest.getName(), lowestOther.getName()));
+			toReturn.append(String.format("Hour            %-28s %-28s\n", lowest.getCommonName(), lowestOther.getCommonName()));
 
 			List<ImageEntry> imagesWithSpecies = new ImageQuery().speciesOnly(lowest).query(images);
 			List<ImageEntry> imagesWithSpeciesOther = new ImageQuery().speciesOnly(lowestOther).query(images);
@@ -284,7 +284,7 @@ public class ActivityPatternFormatter extends TextFormatter
 		toReturn.append("                            ");
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn.append(String.format("%-8s ", StringUtils.left(species.getName(), 8)));
+			toReturn.append(String.format("%-8s ", StringUtils.left(species.getCommonName(), 8)));
 		}
 
 		toReturn.append("\n");
@@ -295,7 +295,7 @@ public class ActivityPatternFormatter extends TextFormatter
 			int totalImages = imagesWithSpecies.size();
 			if (totalImages >= 25)
 			{
-				toReturn.append(String.format("%-28s", species.getName()));
+				toReturn.append(String.format("%-28s", species.getCommonName()));
 				for (Species other : analysis.getAllImageSpecies())
 				{
 					List<ImageEntry> imagesWithSpeciesOther = new ImageQuery().speciesOnly(other).query(images);
@@ -402,7 +402,7 @@ public class ActivityPatternFormatter extends TextFormatter
 		{
 			List<ImageEntry> withSpecies = new ImageQuery().speciesOnly(species).query(analysis.getImagesSortedByDate());
 
-			toReturn.append(species.getName()).append("\n");
+			toReturn.append(species.getCommonName()).append("\n");
 			toReturn.append("                     Dec-Jan-Feb           Mar-Apr-May           Jun-Jul-Aug           Sep-Oct-Nov\n");
 			toReturn.append("Camera trap days    ");
 

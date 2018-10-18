@@ -1,7 +1,10 @@
 package model.cyverse;
 
 import javafx.beans.Observable;
-import javafx.beans.property.*;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import model.image.CloudUploadEntry;
@@ -14,20 +17,20 @@ import java.util.UUID;
 public class ImageCollection
 {
 	// The collection name, does not need to be unique
-	private StringProperty nameProperty = new SimpleStringProperty("");
+	private StringProperty name = new SimpleStringProperty("");
 	// The organization that owns the collection
-	private StringProperty organizationProperty = new SimpleStringProperty("");
+	private StringProperty organization = new SimpleStringProperty("");
 	// The contact info of the owner of the collection
-	private StringProperty contactInfoProperty = new SimpleStringProperty("");
+	private StringProperty contactInfo = new SimpleStringProperty("");
 	// The description of the collection used to display collection purpose
-	private StringProperty descriptionProperty = new SimpleStringProperty("");
+	private StringProperty description = new SimpleStringProperty("");
 	// The unique identifier for the collection
-	private ObjectProperty<UUID> idProperty = new SimpleObjectProperty<>(UUID.randomUUID());
+	private ObjectProperty<UUID> id = new SimpleObjectProperty<>(UUID.randomUUID());
 	// A list containing permissions of this collection
 	// We don't serialize it when converting to JSON since we want to keep this field transient (Because permissions are private!)
-	private transient ObservableList<Permission> permissions = FXCollections.observableArrayList(permission -> new Observable[] { permission.usernameProperty(), permission.readProperty(), permission.uploadProperty(), permission.ownerProperty()});
+	private ObservableList<Permission> permissions = FXCollections.observableArrayList(permission -> new Observable[] { permission.usernameProperty(), permission.readProperty(), permission.uploadProperty(), permission.ownerProperty()});
 	// Keep a list of uploads that is also transient so it will not be serialized. We serialize this differently because uploads should not be public
-	private transient ObservableList<CloudUploadEntry> uploads = FXCollections.observableArrayList(upload -> new Observable[] {});
+	private ObservableList<CloudUploadEntry> uploads = FXCollections.observableArrayList(upload -> new Observable[] {});
 	private transient Boolean uploadsWereSynced = false;
 
 	/**
@@ -66,74 +69,74 @@ public class ImageCollection
 
 	public void setName(String name)
 	{
-		this.nameProperty.setValue(name);
+		this.name.setValue(name);
 	}
 
 	public String getName()
 	{
-		return this.nameProperty.getValue();
+		return this.name.getValue();
 	}
 
 	public StringProperty nameProperty()
 	{
-		return this.nameProperty;
+		return this.name;
 	}
 
 	public void setOrganization(String organization)
 	{
-		this.organizationProperty.setValue(organization);
+		this.organization.setValue(organization);
 	}
 
 	public String getOrganization()
 	{
-		return this.organizationProperty.getValue();
+		return this.organization.getValue();
 	}
 
 	public StringProperty organizationProperty()
 	{
-		return this.organizationProperty;
+		return this.organization;
 	}
 
 	public void setContactInfo(String contactInfo)
 	{
-		this.contactInfoProperty.setValue(contactInfo);
+		this.contactInfo.setValue(contactInfo);
 	}
 
 	public String getContactInfo()
 	{
-		return this.contactInfoProperty.getValue();
+		return this.contactInfo.getValue();
 	}
 
 	public StringProperty contactInfoProperty()
 	{
-		return contactInfoProperty;
+		return contactInfo;
 	}
 
 	public void setDescription(String description)
 	{
-		this.descriptionProperty.setValue(description);
+		this.description.setValue(description);
 	}
 
 	public String getDescription()
 	{
-		return this.descriptionProperty.getValue();
+		return this.description.getValue();
 	}
 
 	public StringProperty descriptionProperty()
 	{
-		 return this.descriptionProperty;
+		 return this.description;
 	}
 
 	// NO SETTER for id since it's a one time thing
 
 	public UUID getID()
 	{
-		return this.idProperty.getValue();
+		return this.id.getValue();
 	}
 
 	public ObjectProperty<UUID> idProperty()
 	{
-		return idProperty;
+		return id;
 	}
 
 	public ObservableList<Permission> getPermissions()

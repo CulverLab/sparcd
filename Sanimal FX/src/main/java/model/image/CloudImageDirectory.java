@@ -3,7 +3,6 @@ package model.image;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.image.Image;
-import model.cyverse.ImageCollection;
 import org.irods.jargon.core.pub.io.IRODSFile;
 
 /**

@@ -6,7 +6,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import model.SanimalData;
 import model.cyverse.ImageCollection;
-import model.query.CyVerseQuery;
+import model.query.ElasticSearchQuery;
 import model.query.IQueryCondition;
 
 import java.util.HashMap;
@@ -46,7 +46,7 @@ public class CollectionCondition implements IQueryCondition
 	 * @param query The current state of the query before the appending
 	 */
 	@Override
-	public void appendConditionToQuery(CyVerseQuery query)
+	public void appendConditionToQuery(ElasticSearchQuery query)
 	{
 		for (ImageCollection imageCollection : this.getImageCollections())
 			if (imageCollectionToSelected.containsKey(imageCollection) && imageCollectionToSelected.get(imageCollection).getValue())

@@ -1,6 +1,5 @@
 package controller;
 
-import com.panemu.tiwulfx.control.DetachableTabPane;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -9,8 +8,10 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.*;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
@@ -18,16 +19,20 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import model.SanimalData;
 import model.cyverse.CyVerseConnectionManager;
 import model.cyverse.ImageCollection;
+import model.elasticsearch.ElasticSearchConnectionManager;
 import model.location.Location;
 import model.species.Species;
 import model.threading.ErrorTask;
 import model.util.SettingsData;
 import org.controlsfx.control.HyperlinkLabel;
+import org.controlsfx.control.NotificationPane;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
 
@@ -75,15 +80,17 @@ public class SanimalViewController implements Initializable
 	public Button btnLogin;
 
 	@FXML
-	public DetachableTabPane tabPane;
+	public TabPane tabPane;
 
 	// A reference to the home screen X
 	@FXML
 	public AnchorPane homePane;
 
-	// The primary background pane
 	@FXML
-	public StackPane primaryPane;
+	public NotificationPane notificationPane;
+
+	@FXML
+	public Label lblInvalidCredentials;
 
 	///
 	/// FXML Bound fields end
@@ -103,6 +110,47 @@ public class SanimalViewController implements Initializable
 	@Override
 	public void initialize(URL location, ResourceBundle resources)
 	{
+		// Whenever we get a new notification, make sure the buttons are scaled correctly
+		this.notificationPane.setOnShowing(event ->
+		{
+			// Make sure the notification bar is there
+			Node notificationBar = this.notificationPane.lookup(".notification-bar");
+			if (notificationBar != null)
+			{
+				// Make sure the notification pane is there
+				Node notificationPane = notificationBar.lookup(".pane");
+				if (notificationPane != null)
+				{
+					// Make sure the button bar is there
+					Node buttonBarNode = notificationPane.lookup(".button-bar");
+					// Update each child button
+					if (buttonBarNode instanceof ButtonBar)
+					{
+						// Grab the button bar
+						ButtonBar buttonBar = (ButtonBar) buttonBarNode;
+						buttonBar.getButtons().forEach(node ->
+						{
+							// Make sure the node inside is a button
+							if (node instanceof Button)
+							{
+								// Set the buttons to be non-uniformly sized and their text to wrap
+								ButtonBar.setButtonUniformSize(node, false);
+								((Button) node).setWrapText(true);
+							}
+						});
+						buttonBar.setButtonMinWidth(100);
+					}
+
+					// Make sure the label wraps
+					Node label = notificationPane.lookup(".label");
+					GridPane.setHgrow(label, Priority.NEVER);
+					// If we did indeed get a label, make sure it wraps
+					if (label instanceof Label)
+						((Label) label).setWrapText(true);
+				}
+			}
+		});
+
 		// Grab the logged in property
 		ReadOnlyBooleanProperty loggedIn = SanimalData.getInstance().loggedInProperty();
 
@@ -191,8 +239,9 @@ public class SanimalViewController implements Initializable
 
 			// Show the loading icon graphic
 			this.btnLogin.setGraphic(new ImageView(new Image("/images/mainMenu/loading.gif", 26, 26, true, true)));
-			// Grab our connection manager
-			CyVerseConnectionManager connectionManager = SanimalData.getInstance().getConnectionManager();
+			// Grab our connection managers
+			ElasticSearchConnectionManager esConnectionManager = SanimalData.getInstance().getEsConnectionManager();
+			CyVerseConnectionManager cyConnectionManager = SanimalData.getInstance().getCyConnectionManager();
 			// Grab the username and password
 			String username = this.txtUsername.getText();
 			String password = this.txtPassword.getText();
@@ -205,7 +254,7 @@ public class SanimalViewController implements Initializable
 					// First login
 					this.updateMessage("Logging in...");
 					this.updateProgress(1, 7);
-					Boolean loginSuccessful = connectionManager.login(username, password);
+					Boolean loginSuccessful = cyConnectionManager.login(username, password);
 
 					if (loginSuccessful)
 					{
@@ -213,17 +262,22 @@ public class SanimalViewController implements Initializable
 						{
 							SanimalData.getInstance().setUsername(username);
 							SanimalData.getInstance().setLoggedIn(true);
+							SanimalData.getInstance().getErrorDisplay().setNotificationPane(notificationPane);
 						});
+
+						//esConnectionManager.nukeAndRecreateUserIndex();
+						//esConnectionManager.nukeAndRecreateMetadataIndex();
+						//esConnectionManager.nukeAndRecreateCollectionsIndex();
 
 						// Then initialize the remove sanimal directory
 						this.updateMessage("Initializing Sanimal remote directory...");
 						this.updateProgress(2, 7);
-						connectionManager.initSanimalRemoteDirectory();
+						esConnectionManager.initSanimalRemoteDirectory();
 
 						// Pull Sanimal settings from the remote directory
 						this.updateMessage("Pulling settings from remote directory...");
 						this.updateProgress(3, 7);
-						SettingsData settingsData = connectionManager.pullRemoteSettings();
+						SettingsData settingsData = esConnectionManager.pullRemoteSettings();
 
 						// Set the settings data
 						Platform.runLater(() -> SanimalData.getInstance().getSettings().loadFromOther(settingsData));
@@ -231,7 +285,7 @@ public class SanimalViewController implements Initializable
 						// Pull any species from the remote directory
 						this.updateMessage("Pulling species from remote directory...");
 						this.updateProgress(4, 7);
-						List<Species> species = connectionManager.pullRemoteSpecies();
+						List<Species> species = esConnectionManager.pullRemoteSpecies();
 
 						// Set the species list to be these species
 						Platform.runLater(() -> SanimalData.getInstance().getSpeciesList().addAll(species));
@@ -239,7 +293,7 @@ public class SanimalViewController implements Initializable
 						// Pull any locations from the remote directory
 						this.updateMessage("Pulling locations from remote directory...");
 						this.updateProgress(5, 7);
-						List<Location> locations = connectionManager.pullRemoteLocations();
+						List<Location> locations = esConnectionManager.pullRemoteLocations();
 
 						// Set the location list to be these locations
 						Platform.runLater(() -> SanimalData.getInstance().getLocationList().addAll(locations));
@@ -247,7 +301,7 @@ public class SanimalViewController implements Initializable
 						// Pull any species from the remote directory
 						this.updateMessage("Pulling collections from remote directory...");
 						this.updateProgress(6, 7);
-						List<ImageCollection> imageCollections = connectionManager.pullRemoteCollections();
+						List<ImageCollection> imageCollections = esConnectionManager.pullRemoteCollections();
 
 						// Set the image collection list to be these collections
 						Platform.runLater(() -> SanimalData.getInstance().getCollectionList().addAll(imageCollections));
@@ -264,13 +318,7 @@ public class SanimalViewController implements Initializable
 				// If we did not succeed, notify the user
 				if (!loginSucceeded)
 				{
-					// Show an alert to the user that the sign in did not complete
-					Alert invalidAlert = new Alert(Alert.AlertType.INFORMATION);
-					invalidAlert.setTitle("Invalid Credentials");
-					invalidAlert.setHeaderText("");
-					invalidAlert.setContentText("Invalid Username or Password");
-					invalidAlert.initOwner(this.tabPane.getScene().getWindow());
-					invalidAlert.showAndWait();
+					this.lblInvalidCredentials.setVisible(true);
 				}
 				this.loggingIn.setValue(false);
 				// Hide the loading graphic

@@ -37,3 +37,7 @@
 .refreshUploadsBtn {
     -fx-graphic: url("../images/uploadWindow/refresh16.png");
 }
+
+.indexExistingBtn {
+    -fx-graphic: url("../images/uploadWindow/transfer16.png");
+}

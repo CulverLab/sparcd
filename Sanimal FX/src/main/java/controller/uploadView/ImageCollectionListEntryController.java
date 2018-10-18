@@ -8,7 +8,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
@@ -24,6 +27,7 @@ import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.threading.ErrorTask;
 import model.util.FXMLLoaderUtils;
+import org.controlsfx.control.action.Action;
 import org.irods.jargon.core.transfer.TransferStatus;
 import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
 
@@ -141,19 +145,27 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 		ImageCollectionSettingsController controller = loader.getController();
 		controller.setCollectionToEdit(this.getItem());
 
-		// Create the stage that will have the Image Collection Editor
-		Stage dialogStage = new Stage();
-		// Set the title
-		dialogStage.setTitle("Image Collection Editor");
-		// Set the modality and initialize the owner to be this current window
-		dialogStage.initModality(Modality.WINDOW_MODAL);
-		dialogStage.initOwner(this.mainPane.getScene().getWindow());
-		// Set the scene to the root of the FXML file
-		Scene scene = new Scene(loader.getRoot());
-		// Set the scene of the stage, and show it!
-		dialogStage.setScene(scene);
-		dialogStage.showAndWait();
-		actionEvent.consume();
+		if (!SanimalData.getInstance().getSettings().getDisablePopups())
+		{
+			// Create the stage that will have the Image Collection Editor
+			Stage dialogStage = new Stage();
+			// Set the title
+			dialogStage.setTitle("Image Collection Editor");
+			// Set the modality and initialize the owner to be this current window
+			dialogStage.initModality(Modality.WINDOW_MODAL);
+			dialogStage.initOwner(this.mainPane.getScene().getWindow());
+			// Set the scene to the root of the FXML file
+			Scene scene = new Scene(loader.getRoot());
+			// Set the scene of the stage, and show it!
+			dialogStage.setScene(scene);
+			dialogStage.showAndWait();
+		}
+		else
+		{
+			SanimalData.getInstance().getErrorDisplay().notify("Popups must be enabled to edit a collection!");
+		}
+		if (actionEvent != null)
+			actionEvent.consume();
 	}
 
 	/**
@@ -235,19 +247,8 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 				// If we have a valid directory, perform the upload
 				if (validDirectory)
 				{
-					// Show an alert to tell the user that they are uploading images at this point
-					Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
-					confirmation.initOwner(this.mainPane.getScene().getWindow());
-					confirmation.setTitle("Upload Images");
-					confirmation.setHeaderText("Uploading to " + this.getItem().getName());
-					confirmation.setContentText("Are you sure you want to upload these " + imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count() + " images to the collection " + this.getItem().getName() + "?");
-					Optional<ButtonType> result = confirmation.showAndWait();
-
-					// Test the result...
-					result.ifPresent(buttonType ->
-					{
-						// OK means upload
-						if (buttonType == ButtonType.OK)
+					SanimalData.getInstance().getErrorDisplay().notify("Are you sure you want to upload these " + imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count() + " images to the collection " + this.getItem().getName() + "?",
+						new Action("Yes", actionEvent ->
 						{
 							// Set the upload to 0% so that we don't edit it anymore
 							imageDirectory.setUploadProgress(0.0);
@@ -265,7 +266,7 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 									this.updateMessage("Uploading image directory " + imageDirectory.getFile().getName() + " to CyVerse.");
 									messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
 									// Upload images to CyVerse, we give it a transfer status callback so that we can show the progress
-									SanimalData.getInstance().getConnectionManager().uploadImages(ImageCollectionListEntryController.this.getItem(), imageDirectory, new TransferStatusCallbackListener()
+									SanimalData.getInstance().getCyConnectionManager().uploadImages(ImageCollectionListEntryController.this.getItem(), imageDirectory, new TransferStatusCallbackListener()
 									{
 										@Override
 										public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus)
@@ -303,19 +304,12 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 							uploadTask.setOnCancelled(event -> imageDirectory.setUploadProgress(-1));
 							dragEvent.setDropCompleted(true);
 							SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().addTask(uploadTask);
-						}
-					});
+						}));
 				}
 				else
 				{
 					// If an invalid directory is selected, show an alert
-					SanimalData.getInstance().getErrorDisplay().showPopup(
-							Alert.AlertType.WARNING,
-							this.mainPane.getScene().getWindow(),
-							"Invalid Directory",
-							"Invalid Directory (" + imageDirectory.getFile().getName() + ") Selected",
-							"An image in the directory (" + imageDirectory.getFile().getName() + ") you selected does not have a location. Please ensure all images are tagged with a location!",
-							true);
+					SanimalData.getInstance().getErrorDisplay().notify("An image in the directory (" + imageDirectory.getFile().getName() + ") you selected does not have a location. Please ensure all images are tagged with a location!");
 				}
 			});
 		}

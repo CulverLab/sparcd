@@ -48,7 +48,7 @@ public class LunarActivityFormatter extends TextFormatter
 
 		for (Species species : analysis.getAllImageSpecies())
 		{
-			toReturn.append(species.getName()).append("\n");
+			toReturn.append(species.getCommonName()).append("\n");
 			toReturn.append("                 Full moon activity    New moon activity\n");
 			toReturn.append("    Hour        Number    Frequency   Number    Frequency\n");
 
@@ -124,7 +124,7 @@ public class LunarActivityFormatter extends TextFormatter
 
 			toReturn.append("SPECIES LUNAR ACTIVITY MOST DIFFERENT: ");
 
-			toReturn.append(lunarActivities.get(0).getSpecies().getName()).append("\n");
+			toReturn.append(lunarActivities.get(0).getSpecies().getCommonName()).append("\n");
 
 			toReturn.append("\nSpecies                   Difference Number of records\n");
 			for (LunarActivityEntry entry : lunarActivities)

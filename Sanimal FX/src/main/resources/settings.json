@@ -3,5 +3,10 @@
   "timeFormat": "Time24Hour",
   "locationFormat": "LatLong",
   "distanceUnits": "Meters",
-  "drSandersonCompatibility": false
+  "popupDelaySec": 10.0,
+  "drSandersonDirectoryCompatibility": false,
+  "drSandersonOutput": false,
+  "automaticNextImage": false,
+  "backgroundImageLoading": false,
+  "noPopups": false
 }

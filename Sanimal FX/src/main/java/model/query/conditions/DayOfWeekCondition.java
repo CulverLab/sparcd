@@ -4,12 +4,11 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import model.query.CyVerseQuery;
+import model.query.ElasticSearchQuery;
 import model.query.IQueryCondition;
 
 import java.time.DayOfWeek;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,7 +38,7 @@ public class DayOfWeekCondition implements IQueryCondition
 	 * @param query The current state of the query before the appending
 	 */
 	@Override
-	public void appendConditionToQuery(CyVerseQuery query)
+	public void appendConditionToQuery(ElasticSearchQuery query)
 	{
 		for (DayOfWeek dayOfWeek : DayOfWeek.values())
 			if (this.dayOfWeekToSelected.containsKey(dayOfWeek) && this.dayOfWeekToSelected.get(dayOfWeek).getValue())

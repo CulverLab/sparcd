@@ -46,7 +46,7 @@ public class DetectionRateFormatter extends TextFormatter
 			toReturn.append("Location                     days    pics       /prd    ");
 
 			for (Species species : analysis.getAllImageSpecies())
-				toReturn.append(String.format("%5s ", StringUtils.left(species.getName(), 5)));
+				toReturn.append(String.format("%5s ", StringUtils.left(species.getCommonName(), 5)));
 
 			toReturn.append("\n");
 
@@ -152,7 +152,7 @@ public class DetectionRateFormatter extends TextFormatter
 		toReturn.append("Location                     days    pics     /prd   ");
 
 		for (Species species : analysis.getAllImageSpecies())
-			toReturn.append(String.format("%5s ", StringUtils.left(species.getName(), 5)));
+			toReturn.append(String.format("%5s ", StringUtils.left(species.getCommonName(), 5)));
 
 		toReturn.append("\n");
 
@@ -466,7 +466,7 @@ public class DetectionRateFormatter extends TextFormatter
 		//			toReturn = toReturn + "  " + year + " ";
 		//
 		//			for (Species species : analysis.getAllImageSpecies())
-		//				toReturn = toReturn + String.format("%5s ", StringUtils.left(species.getName(), 5));
+		//				toReturn = toReturn + String.format("%5s ", StringUtils.left(species.getCommonName(), 5));
 		//
 		//			toReturn = toReturn + "\n";
 		//

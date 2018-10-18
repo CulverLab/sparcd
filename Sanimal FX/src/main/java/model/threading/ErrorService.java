@@ -1,7 +1,6 @@
 package model.threading;
 
 import javafx.concurrent.Service;
-import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;

@@ -8,7 +8,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import model.SanimalData;
 import model.constant.SanimalMetadataFields;
@@ -25,15 +24,11 @@ import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.domain.AvuData;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -67,8 +62,8 @@ public class ImageEntry extends ImageContainer
 	private final ObjectProperty<Location> locationTakenProperty = new SimpleObjectProperty<Location>();
 	// The species present in the image
 	private final ObservableList<SpeciesEntry> speciesPresent = FXCollections.<SpeciesEntry> observableArrayList(image -> new Observable[] {
-			image.getAmountProperty(),
-			image.getSpeciesProperty()
+			image.countProperty(),
+			image.speciesProperty()
 	});
 	// If this image is dirty, we set a flag to write it to disk at some later point
 	private transient final AtomicBoolean isDiskDirty = new AtomicBoolean(false);
@@ -109,13 +104,7 @@ public class ImageEntry extends ImageContainer
 		}
 		catch (ImageReadException | IOException e)
 		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"Metadata error",
-					"Error reading image metadata for file " + this.getFile().getName() + "!\n" + ExceptionUtils.getStackTrace(e),
-					false);
+			SanimalData.getInstance().getErrorDisplay().notify("Error reading image metadata for file " + this.getFile().getName() + "!\n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 
@@ -176,8 +165,8 @@ public class ImageEntry extends ImageContainer
 								.stream()
 								.filter(location ->
 										StringUtils.equalsIgnoreCase(location.getId(), locationId) &&
-												Math.abs(location.getLat() - locationLatitude) < 0.0001 &&
-												Math.abs(location.getLng() - locationLongitude) < 0.0001)// For now, ignore elevation Math.abs(location.getElevation() - Double.parseDouble(locationElevation)) < 25)
+												Math.abs(location.getLatitude() - locationLatitude) < 0.0001 &&
+												Math.abs(location.getLongitude() - locationLongitude) < 0.0001)// For now, ignore elevation Math.abs(location.elevationProperty() - Double.parseDouble(locationElevation)) < 25)
 								.findFirst();
 
 						if (correctLocation.isPresent())
@@ -193,13 +182,7 @@ public class ImageEntry extends ImageContainer
 					}
 					catch (NumberFormatException ignored)
 					{
-						SanimalData.getInstance().getErrorDisplay().showPopup(
-								Alert.AlertType.ERROR,
-								null,
-								"Error",
-								"Location error",
-								"Error parsing elevation for image, it was " + locationElevation + "!\n",
-								false);
+						SanimalData.getInstance().getErrorDisplay().notify("Error parsing elevation for image, it was " + locationElevation + "!");
 					}
 				}
 			}
@@ -244,7 +227,7 @@ public class ImageEntry extends ImageContainer
 								knownSpecies
 									.stream()
 									.filter(species ->
-											StringUtils.equalsIgnoreCase(species.getName(), speciesName) &&
+											StringUtils.equalsIgnoreCase(species.getCommonName(), speciesName) &&
 													StringUtils.equalsIgnoreCase(species.getScientificName(), speciesScientificName))
 									.findFirst();
 
@@ -266,13 +249,7 @@ public class ImageEntry extends ImageContainer
 							}
 							catch (NumberFormatException ignored)
 							{
-								SanimalData.getInstance().getErrorDisplay().showPopup(
-										Alert.AlertType.ERROR,
-										null,
-										"Error",
-										"Species error",
-										"Error parsing species count for image, it was " + speciesCount + "!\n",
-										false);
+								SanimalData.getInstance().getErrorDisplay().notify("Error parsing species count for image, it was " + speciesCount + "!");
 							}
 						}
 					}
@@ -299,50 +276,6 @@ public class ImageEntry extends ImageContainer
 			return DEFAULT_IMAGE_ICON;
 		}, this.locationTakenProperty, this.speciesPresent);
 		selectedImageProperty.bind(imageBinding);
-	}
-
-	/**
-	 * Writes the image entry's metadata to CyVerse's AVU format
-	 *
-	 * @return A list of AVU entries representing the metadata
-	 * @throws JargonException If anything goes wrong
-	 */
-	public List<AvuData> convertToAVUMetadata() throws JargonException
-	{
-		// Create a list to return
-		List<AvuData> metadata = new LinkedList<>();
-
-		// Grab the location taken
-		Location locationTaken = this.getLocationTaken();
-
-		// Flag saying this image was tagged by sanimal
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_SANIMAL, "true", ""));
-
-		// Metadata of the image's date taken
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_TIME_TAKEN, Long.toString(this.getDateTaken().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_YEAR_TAKEN, Integer.toString(this.getDateTaken().getYear()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_MONTH_TAKEN, Integer.toString(this.getDateTaken().getMonthValue()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_HOUR_TAKEN, Integer.toString(this.getDateTaken().getHour()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_DAY_OF_YEAR_TAKEN, Integer.toString(this.getDateTaken().getDayOfYear()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN, Integer.toString(this.getDateTaken().getDayOfWeek().getValue()), ""));
-
-		// Location metadata
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_NAME, locationTaken.getName(), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_ID, locationTaken.getId(), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LATITUDE, locationTaken.getLat().toString(), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, locationTaken.getLng().toString(), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_ELEVATION, locationTaken.getElevation().toString(), "meters"));
-
-		// Species metadata uses the AVU Unit as a foreign key to link a list of entries together
-		Integer entryID = 0;
-		for (SpeciesEntry speciesEntry : this.getSpeciesPresent())
-		{
-			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, speciesEntry.getSpecies().getScientificName(), entryID.toString()));
-			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_COMMON_NAME, speciesEntry.getSpecies().getName(), entryID.toString()));
-			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_COUNT, speciesEntry.getAmount().toString(), entryID.toString()));
-			entryID++;
-		}
-		return metadata;
 	}
 
 	/**
@@ -440,7 +373,7 @@ public class ImageEntry extends ImageContainer
 	{
 		// Grab the old species entry for the given species if present, and then add the amounts
 		Optional<SpeciesEntry> currentEntry = this.speciesPresent.stream().filter(speciesEntry -> speciesEntry.getSpecies().equals(species)).findFirst();
-		int oldAmount = currentEntry.map(SpeciesEntry::getAmount).orElse(0);
+		int oldAmount = currentEntry.map(SpeciesEntry::getCount).orElse(0);
 		this.removeSpecies(species);
 		this.speciesPresent.add(new SpeciesEntry(species, amount + oldAmount));
 	}
@@ -497,7 +430,7 @@ public class ImageEntry extends ImageContainer
 			// Remove the species field if it exists
 			directory.removeField(SanimalMetadataFields.SPECIES_ENTRY);
 			// Use the species format name, scientific name, count
-			String[] metaVals = this.speciesPresent.stream().map(speciesEntry -> speciesEntry.getSpecies().getName() + ", " + speciesEntry.getSpecies().getScientificName() + ", " + speciesEntry.getAmount()).toArray(String[]::new);
+			String[] metaVals = this.speciesPresent.stream().map(speciesEntry -> speciesEntry.getSpecies().getCommonName() + ", " + speciesEntry.getSpecies().getScientificName() + ", " + speciesEntry.getCount()).toArray(String[]::new);
 			// Add the species entry field
 			directory.add(SanimalMetadataFields.SPECIES_ENTRY, metaVals);
 
@@ -505,7 +438,7 @@ public class ImageEntry extends ImageContainer
 			if (this.getLocationTaken() != null && this.getLocationTaken().locationValid())
 			{
 				// Write the lat/lng
-				outputSet.setGPSInDegrees(this.getLocationTaken().getLng(), this.getLocationTaken().getLat());
+				outputSet.setGPSInDegrees(this.getLocationTaken().getLongitude(), this.getLocationTaken().getLatitude());
 				// Remove the location entry name and elevation
 				directory.removeField(SanimalMetadataFields.LOCATION_ENTRY);
 				// Add the new location entry name and elevation
@@ -519,13 +452,7 @@ public class ImageEntry extends ImageContainer
 		}
 		catch (ImageReadException | IOException | ImageWriteException e)
 		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.ERROR,
-					null,
-					"Error",
-					"Metadata error",
-					"Error writing metadata to the image " + this.getFile().getName() + "!\n" + ExceptionUtils.getStackTrace(e),
-					false);
+			SanimalData.getInstance().getErrorDisplay().notify("Error writing metadata to the image " + this.getFile().getName() + "!\n" + ExceptionUtils.getStackTrace(e));
 		}
 	}
 }

@@ -118,13 +118,7 @@
         <dependency>
             <groupId>org.irods.jargon</groupId>
             <artifactId>jargon-core</artifactId>
-            <version>RELEASE</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.panemu/tiwulfx -->
-        <dependency>
-            <groupId>com.panemu</groupId>
-            <artifactId>tiwulfx</artifactId>
-            <version>2.0-SNAPSHOT</version>
+            <version>LATEST</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
         <dependency>
@@ -132,8 +126,18 @@
             <artifactId>commons-compress</artifactId>
             <version>RELEASE</version>
         </dependency>
-
-
+        <!-- elasticsearch -->
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>6.3.0</version>
+        </dependency>
+        <!-- log4j2 for elasticsearch -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>RELEASE</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -169,6 +173,10 @@
                 <updatePolicy>always</updatePolicy>
                 <checksumPolicy>warn</checksumPolicy>
             </snapshots>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
         </repository>
     </repositories>
 </project>

@@ -34,6 +34,7 @@ public class CloudUploadEntry
 
 	/**
 	 * Constructor initializes all fields
+	 * Constructor initializes all fields
 	 *
 	 * @param uploadUser The user that uploaded the images
 	 * @param uploadDate The date the upload happened on

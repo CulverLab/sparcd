@@ -1,28 +1,24 @@
 package controller;
 
-import com.panemu.tiwulfx.control.DetachableTab;
-import com.panemu.tiwulfx.control.DetachableTabPane;
 import controller.analysisView.VisCSVController;
 import controller.analysisView.VisDrSandersonController;
-import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseDragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import model.SanimalData;
 import model.analysis.DataAnalyzer;
 import model.image.ImageEntry;
-import model.query.CyVerseQuery;
+import model.query.ElasticSearchQuery;
 import model.query.IQueryCondition;
 import model.query.QueryEngine;
 import model.threading.ErrorTask;
@@ -31,7 +27,6 @@ import org.controlsfx.control.MaskerPane;
 
 import java.net.URL;
 import java.util.List;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
@@ -58,11 +53,11 @@ public class SanimalAnalysisController implements Initializable
 
 	// The detachable tab containing the Dr. Sanderson output
 	@FXML
-	public DetachableTab dtbDrSanderson;
+	public Tab tabDrSanderson;
 
 	// Tab pane full of visualizations
 	@FXML
-	public DetachableTabPane tpnVisualizations;
+	public TabPane tpnVisualizations;
 
 	// The list of possible filters
 	@FXML
@@ -106,7 +101,7 @@ public class SanimalAnalysisController implements Initializable
 		// Hide the Dr. Sanderson tab and the event interval if we don't have Dr. Sanderson's compatibility
 		if (!SanimalData.getInstance().getSettings().getDrSandersonOutput())
 		{
-			this.tpnVisualizations.getTabs().remove(this.dtbDrSanderson);
+			this.tpnVisualizations.getTabs().remove(this.tabDrSanderson);
 			this.eventIntervalIndex = this.vbxQuery.getChildren().indexOf(this.txtEventInterval);
 			this.vbxQuery.getChildren().remove(this.txtEventInterval);
 		}
@@ -116,14 +111,14 @@ public class SanimalAnalysisController implements Initializable
 		{
 			if (newValue)
 			{
-				if (!this.tpnVisualizations.getTabs().contains(this.dtbDrSanderson))
-					this.tpnVisualizations.getTabs().add(0, this.dtbDrSanderson);
+				if (!this.tpnVisualizations.getTabs().contains(this.tabDrSanderson))
+					this.tpnVisualizations.getTabs().add(0, this.tabDrSanderson);
 				if (!this.vbxQuery.getChildren().contains(this.txtEventInterval))
 					this.vbxQuery.getChildren().add(this.eventIntervalIndex, this.txtEventInterval);
 			}
 			else
 			{
-				this.tpnVisualizations.getTabs().remove(this.dtbDrSanderson);
+				this.tpnVisualizations.getTabs().remove(this.tabDrSanderson);
 				this.eventIntervalIndex = this.vbxQuery.getChildren().indexOf(this.txtEventInterval);
 				this.vbxQuery.getChildren().remove(this.txtEventInterval);
 			}
@@ -154,19 +149,19 @@ public class SanimalAnalysisController implements Initializable
 		catch (NumberFormatException ignored) {}
 
 		// Create a query
-		CyVerseQuery query = new CyVerseQuery();
+		ElasticSearchQuery query = new ElasticSearchQuery();
 		// For each condition listed in the listview, apply that to the overall query
 		for (IQueryCondition queryCondition : SanimalData.getInstance().getQueryEngine().getQueryConditions())
 			queryCondition.appendConditionToQuery(query);
 
-		Task<List<String>> queryTask = new ErrorTask<List<String>>()
+		Task<List<ImageEntry>> queryTask = new ErrorTask<List<ImageEntry>>()
 		{
 			@Override
-			protected List<String> call()
+			protected List<ImageEntry> call()
 			{
 				this.updateMessage("Performing query...");
 				// Grab the result of the query
-				return SanimalData.getInstance().getConnectionManager().performQuery(query);
+				return SanimalData.getInstance().getEsConnectionManager().performQuery(query);
 			}
 		};
 		Integer finalEventInterval = eventInterval;
@@ -174,52 +169,14 @@ public class SanimalAnalysisController implements Initializable
 		// Once finished with the task, we test if the user wants to continue
 		queryTask.setOnSucceeded(event ->
 		{
-			// Get the result of the first query
-			List<String> irodsAbsolutePaths = queryTask.getValue();
+			this.mpnQuerying.setVisible(false);
 
-			// Ask the user if they would like to continue to part 2 of the query where we retrieve metadata. This takes a while
-			Optional<ButtonType> buttonTypeOpt = SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.CONFIRMATION,
-					this.lvwFilters.getScene().getWindow(),
-					"Query Count",
-					null,
-					"This query will return " + irodsAbsolutePaths.size() + " results at approximately 6 results per second, continue?",
-					true);
+			// Analyze the result of the query
+			DataAnalyzer dataAnalyzer = new DataAnalyzer(queryTask.getValue(), finalEventInterval);
 
-			// If they press OK, query, otherwise just jump out
-			if (buttonTypeOpt.isPresent() && buttonTypeOpt.get() == ButtonType.OK)
-			{
-				// Create a second task to perform the next query
-				Task<List<ImageEntry>> queryImageTask = new ErrorTask<List<ImageEntry>>()
-				{
-					@Override
-					protected List<ImageEntry> call()
-					{
-						this.updateMessage("Performing image query...");
-						// Grab the result of the image query
-						return SanimalData.getInstance().getConnectionManager().fetchMetadataFor(irodsAbsolutePaths);
-					}
-				};
-
-				queryImageTask.setOnSucceeded(event1 ->
-				{
-					// Analyze the result of the query
-					DataAnalyzer dataAnalyzer = new DataAnalyzer(queryImageTask.getValue(), finalEventInterval);
-
-					// Hand the analysis over to the visualizations to graph
-					visDrSandersonController.visualize(dataAnalyzer);
-					visCSVController.visualize(dataAnalyzer);
-					this.mpnQuerying.setVisible(false);
-				});
-
-				// Execute the second query
-				SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(queryImageTask);
-			}
-			else
-			{
-				this.mpnQuerying.setVisible(false);
-			}
-
+			// Hand the analysis over to the visualizations to graph
+			visDrSandersonController.visualize(dataAnalyzer);
+			visCSVController.visualize(dataAnalyzer);
 		});
 		SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(queryTask);
 

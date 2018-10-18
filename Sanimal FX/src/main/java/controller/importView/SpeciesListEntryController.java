@@ -151,7 +151,7 @@ public class SpeciesListEntryController extends ListCell<Species>
         else
         {
             // Set the name to the species name
-            this.lblName.setText(species.getName());
+            this.lblName.setText(species.getCommonName());
             // Set the scientific name to the species scientific name
             this.lblScientificName.setText(species.getScientificName());
             // Check if the image cache contains the species unique key. If it does not, load it in a thread.

@@ -41,7 +41,7 @@ public class SpeciesEntryListEntryController extends ListCell<SpeciesEntry>
 	@FXML
 	public void initialize()
 	{
-		this.txtCount.valueProperty().addListener(((observable, oldValue, newValue) -> this.getItem().setAmount(newValue)));
+		this.txtCount.valueProperty().addListener(((observable, oldValue, newValue) -> this.getItem().setCount(newValue)));
 	}
 
 	/**
@@ -67,9 +67,9 @@ public class SpeciesEntryListEntryController extends ListCell<SpeciesEntry>
 		else
 		{
 			// Set the name to the given species name
-			this.lblName.setText(speciesEntry.getSpecies().getName());
+			this.lblName.setText(speciesEntry.getSpecies().getCommonName());
 			// Set the spinner to a default value
-			this.txtCount.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE, speciesEntry.getAmount()));
+			this.txtCount.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE, speciesEntry.getCount()));
 			// Update the graphic to the main pane
 			this.setGraphic(mainPane);
 		}

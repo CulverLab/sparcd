@@ -2,14 +2,12 @@ package model.query.conditions;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import model.SanimalData;
 import model.location.Location;
-import model.query.CyVerseQuery;
+import model.query.ElasticSearchQuery;
 import model.query.IQueryCondition;
-import model.species.Species;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +46,7 @@ public class LocationFilterCondition implements IQueryCondition
 	 * @param query The current state of the query before the appending
 	 */
 	@Override
-	public void appendConditionToQuery(CyVerseQuery query)
+	public void appendConditionToQuery(ElasticSearchQuery query)
 	{
 		for (Location location : this.getLocationList())
 			if (locationToSelected.containsKey(location) && locationToSelected.get(location).getValue())

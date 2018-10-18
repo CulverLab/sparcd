@@ -6,6 +6,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -13,7 +14,9 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import library.TreeViewAutomatic;
 import model.SanimalData;
@@ -25,11 +28,11 @@ import model.util.FXMLLoaderUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.MaskerPane;
 import org.controlsfx.control.TaskProgressView;
+import org.controlsfx.control.action.Action;
 import org.fxmisc.easybind.EasyBind;
 
 import java.net.URL;
 import java.util.Comparator;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -89,6 +92,9 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public Button btnResetSearch;
 
+	@FXML
+	public Button btnIndexExisting;
+
 	///
 	/// FXML Bound Fields End
 	///
@@ -136,6 +142,7 @@ public class SanimalUploadController implements Initializable
 		}).orElse(nothingSelected));
 
 		this.btnRefreshUploads.disableProperty().bind(nothingSelected);
+		this.btnIndexExisting.disableProperty().bind(nothingSelected);
 
 		// Initialize root of the right side directory/image tree and make the root invisible
 		// This is because a treeview must have ONE root.
@@ -168,8 +175,8 @@ public class SanimalUploadController implements Initializable
 			filteredSortedUploads.predicateProperty().bind(Bindings.createObjectBinding(() -> (cloudUploadEntry ->
 					// Allow any cloud upload entry with a username cloud upload entry search text
 					StringUtils.containsIgnoreCase(cloudUploadEntry.getUploadUser(), this.txtUploadSearch.getCharacters()) ||
-					StringUtils.containsIgnoreCase(SanimalData.getInstance().getSettings().formatDateTime(cloudUploadEntry.getUploadDate(), " "), this.txtUploadSearch.getCharacters()) ||
-					StringUtils.containsIgnoreCase(cloudUploadEntry.getImageCount().toString(), this.txtUploadSearch.getCharacters())), this.txtUploadSearch.textProperty()));
+							StringUtils.containsIgnoreCase(SanimalData.getInstance().getSettings().formatDateTime(cloudUploadEntry.getUploadDate(), " "), this.txtUploadSearch.getCharacters()) ||
+							StringUtils.containsIgnoreCase(cloudUploadEntry.getImageCount().toString(), this.txtUploadSearch.getCharacters())), this.txtUploadSearch.textProperty()));
 			return filteredSortedUploads;
 		}));
 
@@ -189,8 +196,28 @@ public class SanimalUploadController implements Initializable
 			}
 		});
 
+		ObservableList<Task<?>> activeTasks = SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().getActiveTasks();
+
 		// Bind the tasks
-		EasyBind.listBind(this.tpvUploads.getTasks(), SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().getActiveTasks());
+		EasyBind.listBind(this.tpvUploads.getTasks(), activeTasks);
+
+		// This removes the "cancel" button from the task
+		activeTasks.addListener(new ListChangeListener<Task<?>>()
+		{
+			// When the first task gets added we perform some initialization
+			@Override
+			public void onChanged(Change<? extends Task<?>> c)
+			{
+				// Grab the list view from the library control (which we dont have access to)
+				Node listView = tpvUploads.lookup(".list-view");
+				if (listView instanceof ListView)
+					// Update the cell factory to use our custom factory
+					((ListView<Task<?>>) listView).setCellFactory(param -> new TaskCell<>());
+
+				// Initialization is done, so
+				activeTasks.removeListener(this);
+			}
+		});
 	}
 
 	/**
@@ -214,7 +241,7 @@ public class SanimalUploadController implements Initializable
 				this.updateMessage("Downloading list of uploads to collection: " + collection.getName());
 				DoubleProperty progress = new SimpleDoubleProperty(0.0);
 				progress.addListener((observable, oldValue, newValue) -> this.updateProgress(progress.getValue(), 1.0));
-				SanimalData.getInstance().getConnectionManager().retrieveAndInsertUploadList(collection, progress);
+				SanimalData.getInstance().getEsConnectionManager().retrieveAndInsertUploadListFor(collection);
 				return null;
 			}
 		};
@@ -266,33 +293,19 @@ public class SanimalUploadController implements Initializable
 		if (selected != null)
 		{
 			// If a collection is selected, show an alert that data may be deleted!
-			Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-			alert.initOwner(this.collectionListView.getScene().getWindow());
-			alert.setTitle("Confirmation");
-			alert.setHeaderText("Are you sure you want to delete this collection?");
-			alert.setContentText("Deleting this collection will result in the permanent removal of all images uploaded to CyVerse to this collection. Are you sure you want to continue?");
-			Optional<ButtonType> buttonType = alert.showAndWait();
-			if (buttonType.isPresent())
-			{
-				if (buttonType.get() == ButtonType.OK)
-				{
-					// Remove the collection on the CyVerse system
-					SanimalData.getInstance().getConnectionManager().removeCollection(selected);
+			SanimalData.getInstance().getErrorDisplay().notify("Are you sure you want to delete this collection?\nDeleting this collection will result in the permanent removal of all images uploaded to CyVerse to this collection.\nAre you sure you want to continue?",
+					new Action("Continue", actionEvent1 ->
+					{
+						// Remove the collection on the CyVerse system
+						SanimalData.getInstance().getCyConnectionManager().removeCollection(selected);
 
-					// Remove the selected collection
-					SanimalData.getInstance().getCollectionList().remove(selected);
-				}
-			}
-		}
-		else
+						// Remove the selected collection
+						SanimalData.getInstance().getCollectionList().remove(selected);
+					}));
+		} else
 		{
 			// If no collection is selected, show an alert
-			Alert alert = new Alert(Alert.AlertType.WARNING);
-			alert.initOwner(this.collectionListView.getScene().getWindow());
-			alert.setTitle("No Selection");
-			alert.setHeaderText("No Collection Selected");
-			alert.setContentText("Please select a collection from the collection list to remove.");
-			alert.showAndWait();
+			SanimalData.getInstance().getErrorDisplay().notify("Please select a collection from the collection list to remove.");
 		}
 		actionEvent.consume();
 	}
@@ -321,7 +334,7 @@ public class SanimalUploadController implements Initializable
 				{
 					this.updateMessage("Downloading directory for editing...");
 					// Download the directory and add it to our tree structure
-					CloudImageDirectory cloudDirectory = SanimalData.getInstance().getConnectionManager().downloadUploadDirectory(uploadEntry);
+					CloudImageDirectory cloudDirectory = SanimalData.getInstance().getCyConnectionManager().downloadUploadDirectory(uploadEntry);
 					Platform.runLater(() ->
 					{
 						uploadEntry.setCloudImageDirectory(cloudDirectory);
@@ -383,7 +396,7 @@ public class SanimalUploadController implements Initializable
 						messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
 
 						// Save images to CyVerse, we give it a transfer status callback so that we can show the progress
-						SanimalData.getInstance().getConnectionManager().saveImages(selectedCollection.getValue(), uploadEntry, messageCallback);
+						SanimalData.getInstance().getCyConnectionManager().saveImages(selectedCollection.getValue(), uploadEntry, messageCallback);
 						return null;
 					}
 				};
@@ -395,26 +408,14 @@ public class SanimalUploadController implements Initializable
 					uploadEntry.clearLocalCopy();
 				});
 				SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().addTask(saveTask);
-			}
-			else
+			} else
 			{
 				// If an invalid directory is selected, show an alert
-				SanimalData.getInstance().getErrorDisplay().showPopup(Alert.AlertType.WARNING,
-						this.collectionListView.getScene().getWindow(),
-						"Invalid Directory",
-						"Invalid Directory (" + imageDirectory.getFile().getName() + ") Selected",
-						"An image in the directory (" + imageDirectory.getFile().getName() + ") you selected to save does not have a location. Please ensure all images are tagged with a location!",
-						true);
+				SanimalData.getInstance().getErrorDisplay().notify("An image in the directory (" + imageDirectory.getFile().getName() + ") you selected to save does not have a location. Please ensure all images are tagged with a location!");
 			}
-		}
-		else
+		} else
 		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(Alert.AlertType.ERROR,
-					this.collectionListView.getScene().getWindow(),
-					"Error",
-					"Directory not downloaded",
-					"The Cloud directory has not been downloaded yet, how are you going to save it?",
-					false);
+			SanimalData.getInstance().getErrorDisplay().notify("The Cloud directory has not been downloaded yet, how are you going to save it?");
 		}
 	}
 
@@ -432,29 +433,20 @@ public class SanimalUploadController implements Initializable
 			if (selectedCollection.getValue().getUploads().stream().anyMatch(CloudUploadEntry::hasBeenDownloaded))
 			{
 				// Create the alert
-				Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-				alert.initOwner(this.imageTree.getScene().getWindow());
-				alert.setTitle("Changes lost");
-				alert.setHeaderText("Unsaved changes may be lost");
-				alert.setContentText("Any unsaved changes to uploads will be lost, continue?");
-				Optional<ButtonType> responseOptional = alert.showAndWait();
-				responseOptional.ifPresent(response ->
-				{
-					// If they clicked OK, clear known uploads and resync
-					if (response.getButtonData() == ButtonBar.ButtonData.OK_DONE)
-					{
-						// Clear any known uploads
-						for (CloudUploadEntry cloudUploadEntry : this.selectedCollection.getValue().getUploads())
-							if (cloudUploadEntry.hasBeenDownloaded())
-								SanimalData.getInstance().getImageTree().removeChildRecursive(cloudUploadEntry.getCloudImageDirectory());
+				SanimalData.getInstance().getErrorDisplay().notify("Any unsaved changes to uploads will be lost, continue?",
+						// If they clicked OK, clear known uploads and resync
+						new Action("Continue", actionEvent1 ->
+						{
+							// Clear any known uploads
+							for (CloudUploadEntry cloudUploadEntry : this.selectedCollection.getValue().getUploads())
+								if (cloudUploadEntry.hasBeenDownloaded())
+									SanimalData.getInstance().getImageTree().removeChildRecursive(cloudUploadEntry.getCloudImageDirectory());
 
-						// Clear the uploads and resync
-						this.selectedCollection.getValue().getUploads().clear();
-						this.syncUploadsForCollection(this.selectedCollection.getValue());
-					}
-				});
-			}
-			else
+							// Clear the uploads and resync
+							this.selectedCollection.getValue().getUploads().clear();
+							this.syncUploadsForCollection(this.selectedCollection.getValue());
+						}));
+			} else
 			{
 				// Just resync
 				this.syncUploadsForCollection(this.selectedCollection.getValue());
@@ -472,5 +464,118 @@ public class SanimalUploadController implements Initializable
 	{
 		this.txtUploadSearch.clear();
 		actionEvent.consume();
+	}
+
+	/**
+	 * Indexes existing images on the CyVerse datastore
+	 *
+	 * @param actionEvent consumed
+	 */
+	public void indexExisting(ActionEvent actionEvent)
+	{
+		if (!SanimalData.getInstance().getSettings().getDisablePopups())
+		{
+			TextInputDialog dialog = new TextInputDialog();
+			dialog.setContentText(null);
+			dialog.setHeaderText("Enter the path to the top level CyVerse datastore directory to recursively index\nEx: /iplant/home/dslovikosky/myUploads/myImages/");
+			dialog.setTitle("Index Existing Images");
+
+			dialog.showAndWait().ifPresent(result ->
+			{
+				if (this.selectedCollection.getValue() != null)
+					SanimalData.getInstance().getCyConnectionManager().indexExisitingImages(this.selectedCollection.getValue(), result);
+			});
+		}
+		else
+		{
+			SanimalData.getInstance().getErrorDisplay().notify("Popups must be enabled to see credits");
+		}
+		actionEvent.consume();
+	}
+
+	/**
+	 * Class required because TaskProgressViewSkin$TaskCell has a cancel button that cannot be removed.
+	 * This class is copy + pasted from TaskProgressViewSkin$TaskCell, so see that for documentation. Only the
+	 * cancel button field was removed.
+	 *
+	 * @param <T> Should just be Task<?>
+	 */
+	private class TaskCell<T extends Task<?>> extends ListCell<T>
+	{
+		private ProgressBar progressBar;
+		private Label titleText;
+		private Label messageText;
+
+		private T task;
+		private BorderPane borderPane;
+
+		TaskCell()
+		{
+			titleText = new Label();
+			titleText.getStyleClass().add("task-title");
+
+			messageText = new Label();
+			messageText.getStyleClass().add("task-message");
+
+			progressBar = new ProgressBar();
+			progressBar.setMaxWidth(Double.MAX_VALUE);
+			progressBar.setMaxHeight(8);
+			progressBar.getStyleClass().add("task-progress-bar");
+
+			VBox vbox = new VBox();
+			vbox.setSpacing(4);
+			vbox.getChildren().add(titleText);
+			vbox.getChildren().add(progressBar);
+			vbox.getChildren().add(messageText);
+
+			borderPane = new BorderPane();
+			borderPane.setCenter(vbox);
+			setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+		}
+
+		@Override
+		public void updateIndex(int index)
+		{
+			super.updateIndex(index);
+
+			/*
+			 * I have no idea why this is necessary but it won't work without
+			 * it. Shouldn't the updateItem method be enough?
+			 */
+			if (index == -1)
+			{
+				setGraphic(null);
+				getStyleClass().setAll("task-list-cell-empty");
+			}
+		}
+
+		@Override
+		protected void updateItem(T task, boolean empty)
+		{
+			super.updateItem(task, empty);
+
+			this.task = task;
+
+			if (empty || task == null)
+			{
+				getStyleClass().setAll("task-list-cell-empty");
+				setGraphic(null);
+			} else
+			{
+				getStyleClass().setAll("task-list-cell");
+				progressBar.progressProperty().bind(task.progressProperty());
+				titleText.textProperty().bind(task.titleProperty());
+				messageText.textProperty().bind(task.messageProperty());
+
+				/*
+				 * Really needed. The application might have used a graphic
+				 * factory before and then disabled it. In this case the border
+				 * pane might still have an old graphic in the left position.
+				 */
+				borderPane.setLeft(null);
+
+				setGraphic(borderPane);
+			}
+		}
 	}
 }

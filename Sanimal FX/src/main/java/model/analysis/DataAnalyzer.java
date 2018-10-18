@@ -67,7 +67,7 @@ public class DataAnalyzer
 					allImageSpecies.add(speciesEntry.getSpecies());
 
 		// Sort species by name
-		allImageSpecies.sort(Comparator.comparing(Species::getName));
+		allImageSpecies.sort(Comparator.comparing(Species::getCommonName));
 
 		// Find all image years
 		for (ImageEntry imageEntry : images)
@@ -262,7 +262,7 @@ public class DataAnalyzer
 			// The max number of animals is the max number of animals in this image or the max number of animals in the last image
 			for (SpeciesEntry speciesEntry : image.getSpeciesPresent())
 				if (speciesFilter == null || speciesEntry.getSpecies() == speciesFilter)
-					maxAnimalsInEvent = Math.max(maxAnimalsInEvent, speciesEntry.getAmount());
+					maxAnimalsInEvent = Math.max(maxAnimalsInEvent, speciesEntry.getCount());
 
 			lastImageTimeMillis = imageTimeMillis;
 		}

@@ -133,7 +133,7 @@ public class FirstLastSpeciesFormatter extends TextFormatter
 		toReturn.append("  DAY    NUMBER    SPECIES\n");
 		int number = 0;
 		for (Pair<Species, ImageEntry> entry : speciesFirstImage)
-			toReturn.append(String.format("%5d     %3d      %s\n", SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), entry.getValue().getDateTaken()) + 1, ++number, entry.getKey().getName()));
+			toReturn.append(String.format("%5d     %3d      %s\n", SanimalAnalysisUtils.daysBetween(analysis.getImagesSortedByDate().get(0).getDateTaken(), entry.getValue().getDateTaken()) + 1, ++number, entry.getKey().getCommonName()));
 
 		toReturn.append("\n");
 
