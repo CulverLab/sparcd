@@ -77,7 +77,7 @@ public class SanimalViewController implements Initializable
 	@FXML
 	public DetachableTabPane tabPane;
 
-	// A reference to the home screen
+	// A reference to the home screen X
 	@FXML
 	public AnchorPane homePane;
 
