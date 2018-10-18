@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<BorderPane prefHeight="-Infinity" fx:controller="controller.analysisView.conditions.ElevationConditionController" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+    <top>
+        <Label text="Elevation Filter" BorderPane.alignment="CENTER">
+            <BorderPane.margin>
+                <Insets top="5" bottom="5"/>
+            </BorderPane.margin>
+        </Label>
+    </top>
+    <center>
+        <VBox spacing="5" alignment="TOP_CENTER">
+            <Label text="Return all elevations which are"/>
+            <ComboBox maxWidth="Infinity" fx:id="cbxOperators"/>
+            <HBox spacing="5" alignment="CENTER">
+                <TextField fx:id="txtElevation" promptText="Elevation"/>
+                <ComboBox fx:id="cbxUnit"/>
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>

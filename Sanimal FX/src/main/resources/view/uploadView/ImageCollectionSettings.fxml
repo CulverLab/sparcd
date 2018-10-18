@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+<SplitPane dividerPositions="0.38, 0.85" orientation="VERTICAL" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.uploadView.ImageCollectionSettingsController">
+    <stylesheets>
+        <URL value="@ImageCollectionSettings.css" />
+    </stylesheets>
+    <GridPane hgap="5" vgap="5" SplitPane.resizableWithParent="false">
+        <columnConstraints>
+            <ColumnConstraints maxWidth="100" minWidth="100" />
+            <ColumnConstraints hgrow="ALWAYS" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints vgrow="NEVER" />
+            <RowConstraints vgrow="NEVER" />
+            <RowConstraints vgrow="NEVER" />
+            <RowConstraints vgrow="ALWAYS" />
+        </rowConstraints>
+        <padding>
+            <Insets bottom="10" left="10" right="10" top="10" />
+        </padding>
+        <children>
+            <Label text="Name:" />
+            <TextField fx:id="txtName" GridPane.columnIndex="1" />
+            <Label text="Organization:" GridPane.rowIndex="1" />
+            <TextField fx:id="txtOrganization" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label text="Contact Info: " GridPane.rowIndex="2" />
+            <TextField fx:id="txtContactInfo" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label text="Description: " GridPane.rowIndex="3" />
+            <TextArea fx:id="tbxDescription" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        </children>
+    </GridPane>
+    <TableView fx:id="tvwPermissions">
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
+        <columns>
+            <TableColumn fx:id="clmUser" text="User" />
+            <TableColumn fx:id="clmRead" maxWidth="70" minWidth="70" text="Read" />
+            <TableColumn fx:id="clmUpload" maxWidth="70" minWidth="70" text="Upload" />
+            <TableColumn fx:id="clmOwner" maxWidth="130" minWidth="130" text="Administrator (Non-editable)" />
+        </columns>
+    </TableView>
+    <FlowPane alignment="CENTER" hgap="5" vgap="10" SplitPane.resizableWithParent="false">
+        <Button fx:id="btnAddUser" styleClass="addUserBtn" onAction="#addNewUser" text="Add User" />
+        <Button fx:id="btnRemoveUser" styleClass="removeUserBtn" onAction="#removeCurrentUser" text="Remove User" />
+        <Button fx:id="btnSave" styleClass="saveBtn" onAction="#saveCollection" text="Save Collection Settings" />
+        <Button fx:id="btnTransferOwnership" disable="true" styleClass="transferOwnershipBtn" onAction="#transferOwnership" text="Transfer Collection Ownership" />
+    </FlowPane>
+</SplitPane>

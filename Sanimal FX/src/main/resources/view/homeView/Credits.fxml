@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.text.Font?>
+<?import javafx.geometry.Insets?>
+<?import java.net.URL?>
+<BorderPane fx:controller="controller.homeView.CreditsController" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+    <padding>
+        <Insets top="10" bottom="10" right="10" left="10"/>
+    </padding>
+    <stylesheets>
+        <URL value="@Credits.css"/>
+    </stylesheets>
+    <top>
+        <Label BorderPane.alignment="CENTER" text="SANIMAL Credits">
+            <font>
+                <Font size="32"/>
+            </font>
+            <padding>
+                <Insets top="5" bottom="5"/>
+            </padding>
+        </Label>
+    </top>
+    <center>
+        <GridPane styleClass="creditsPane" BorderPane.alignment="CENTER" alignment="CENTER" vgap="10" hgap="20">
+            <columnConstraints>
+                <ColumnConstraints/>
+                <ColumnConstraints/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints/>
+                <RowConstraints/>
+                <RowConstraints/>
+                <RowConstraints/>
+                <RowConstraints/>
+                <RowConstraints/>
+                <RowConstraints/>
+                <RowConstraints/>
+                <RowConstraints/>
+            </rowConstraints>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="Lead Developer:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="0" text="David Slovikosky"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="1" text="Ideas Lead and Tester:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="1" text="Susan Malusa"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="2" text="Ideas and Tester:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="2" text="Dr. Melanie Culver"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="3" text="Technical advisor:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="3" text="Dr. Richard Snodgrass"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="4" text="Technical advisor:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="4" text="Dr. Carlos Scheidegger"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="5" text="CyVerse technical support:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="5" text="Dr. Blake Joyce"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="6" text="CyVerse technical support:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="6" text="Dr. Tyson Swetnam"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="7" text="CyVerse backend support:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="7" text="Tony Edgin"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="8" text="Ideas:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="8" text="Gary Slovikosky"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="9" text="Ideas:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="9" text="Sandy Slovikosky"/>
+        </GridPane>
+    </center>
+</BorderPane>

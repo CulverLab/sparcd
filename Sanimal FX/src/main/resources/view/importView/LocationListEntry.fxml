@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+<?import java.net.URL?>
+<VBox styleClass="locationBackground" fx:id="mainPane" spacing="3" prefHeight="110" prefWidth="180" alignment="CENTER" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.importView.LocationListEntryController">
+    <stylesheets>
+        <URL value="@LocationListEntry.css"/>
+    </stylesheets>
+    <padding>
+        <Insets bottom="5" left="5" right="5" top="5"/>
+    </padding>
+    <fx:define>
+        <Tooltip fx:id="primaryTooltip" text="${controller.item}" style="-fx-font-size: 16px">
+            <graphic>
+                <ImageView>
+                    <Image url="@../../images/importWindow/worldIcon.png"/>
+                </ImageView>
+            </graphic>
+        </Tooltip>
+    </fx:define>
+    <children>
+        <Label fx:id="lblName" styleClass="largeBold" wrapText="true" text="Name" textAlignment="CENTER" tooltip="$primaryTooltip"/>
+        <Label fx:id="lblId" styleClass="mediumItalic" wrapText="true" text="Id" tooltip="$primaryTooltip"/>
+        <Label fx:id="lblLocationFirst" wrapText="true" text="Lat/Easting" tooltip="$primaryTooltip"/>
+        <Label fx:id="lblLocationSecond" wrapText="true" text="Lng/Northing" tooltip="$primaryTooltip"/>
+        <Label fx:id="lblLocationThird" wrapText="true" text="Elevation+Zone" tooltip="$primaryTooltip"/>
+    </children>
+</VBox>

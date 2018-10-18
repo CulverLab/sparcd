@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.SegmentedButton?>
+<?import java.net.URL?>
+<GridPane hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.importView.LocationCreatorController">
+    <stylesheets>
+        <URL value="@LocationCreator.css"/>
+    </stylesheets>
+    <padding>
+        <Insets left="10" right="10" top="5" bottom="5"/>
+    </padding>
+    <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES"/>
+        <ColumnConstraints hgrow="ALWAYS"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints vgrow="SOMETIMES"/>
+        <RowConstraints vgrow="SOMETIMES"/>
+        <RowConstraints vgrow="SOMETIMES"/>
+        <RowConstraints vgrow="SOMETIMES"/>
+        <RowConstraints vgrow="SOMETIMES"/>
+        <RowConstraints vgrow="SOMETIMES"/>
+        <RowConstraints vgrow="SOMETIMES"/>
+        <RowConstraints vgrow="SOMETIMES"/>
+        <RowConstraints vgrow="SOMETIMES"/>
+    </rowConstraints>
+    <children>
+        <Label text="Name: "/>
+        <TextField fx:id="txtName" GridPane.columnIndex="1"/>
+        <Label text="Id: " GridPane.rowIndex="1"/>
+        <TextField fx:id="txtId" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        <Label text="Positional Units: " GridPane.rowIndex="2"/>
+        <HBox alignment="CENTER_LEFT" spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="2">
+            <RadioButton fx:id="rbnLatLng" selected="true" text="Lat/Lng">
+                <toggleGroup>
+                    <ToggleGroup fx:id="locTypeBtnGroup"/>
+                </toggleGroup>
+            </RadioButton>
+            <RadioButton fx:id="rbnUTM" text="UTM" toggleGroup="$locTypeBtnGroup"/>
+        </HBox>
+        <Label fx:id="lblZoneOrLat" text="Zone (1-60): " GridPane.rowIndex="3"/>
+        <TextField fx:id="txtZoneOrLat" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        <Label fx:id="lblLetterOrLng" text="Letter (C-X excluding I and O): " GridPane.rowIndex="4"/>
+        <TextField fx:id="txtLetterOrLng" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        <Label fx:id="lblEasting" text="Easting (0m-1000000m): " GridPane.rowIndex="5"/>
+        <TextField fx:id="txtEasting" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+        <Label fx:id="lblNorthing" text="Northing (0m to 10000000m): " GridPane.rowIndex="6"/>
+        <TextField fx:id="txtNorthing" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+        <Label text="Elevation: " GridPane.rowIndex="7"/>
+        <HBox alignment="CENTER_LEFT" spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="7">
+            <children>
+                <TextField fx:id="txtElevation" HBox.hgrow="ALWAYS"/>
+                <SegmentedButton fx:id="sbnUnits" HBox.hgrow="NEVER">
+                    <buttons>
+                        <ToggleButton fx:id="tbnFeet" mnemonicParsing="false" text="ft"/>
+                        <ToggleButton fx:id="tbnMeters" selected="true" mnemonicParsing="false" text="m"/>
+                    </buttons>
+                </SegmentedButton>
+            </children>
+        </HBox>
+        <HBox alignment="CENTER_RIGHT" spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="8">
+            <children>
+                <Button fx:id="btnConfirm" mnemonicParsing="false" onAction="#confirmPressed" text="Confirm"/>
+                <Button mnemonicParsing="false" onAction="#cancelPressed" text="Cancel"/>
+            </children>
+        </HBox>
+    </children>
+</GridPane>

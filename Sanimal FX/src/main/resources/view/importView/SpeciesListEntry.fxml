@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+<HBox fx:id="mainPane" spacing="5" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.importView.SpeciesListEntryController">
+    <stylesheets>
+        <URL value="@SpeciesListEntry.css"/>
+    </stylesheets>
+    <padding>
+        <Insets bottom="5" left="5" right="5" top="5"/>
+    </padding>
+    <children>
+        <StackPane>
+            <children>
+                <ImageView fx:id="imageView" fitHeight="90" fitWidth="90" pickOnBounds="true"/>
+                <ImageView fx:id="imagePreview" fitHeight="90" fitWidth="90" onMouseClicked="#previewImage" onMouseEntered="#mouseEnteredPreview" onMouseExited="#mouseExitedPreview">
+                    <image>
+                        <Image url="@../../images/importWindow/previewButton.png"/>
+                    </image>
+                </ImageView>
+            </children>
+        </StackPane>
+        <GridPane HBox.hgrow="ALWAYS">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints vgrow="SOMETIMES"/>
+                <RowConstraints vgrow="SOMETIMES"/>
+                <RowConstraints vgrow="SOMETIMES"/>
+            </rowConstraints>
+            <children>
+                <Label fx:id="lblName" styleClass="nameLbl" text="Name" GridPane.rowIndex="0">
+                    <tooltip>
+                        <Tooltip text="Common Species Name"/>
+                    </tooltip>
+                </Label>
+                <Label fx:id="lblScientificName" styleClass="scientificNameLbl" text="Scientific Name" GridPane.rowIndex="1">
+                    <tooltip>
+                        <Tooltip text="Scientific Species Name"/>
+                    </tooltip>
+                </Label>
+                <HBox alignment="CENTER_LEFT" spacing="5" GridPane.rowIndex="2">
+                    <children>
+                        <Button fx:id="btnKeybind" mnemonicParsing="false"/>
+                    </children>
+                </HBox>
+            </children>
+        </GridPane>
+    </children>
+</HBox>

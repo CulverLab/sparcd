@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+<GridPane fx:id="gridBackground" vgap="10" hgap="10" minWidth="450" prefWidth="450.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.importView.SpeciesCreatorController">
+    <stylesheets>
+        <URL value="@SpeciesCreator.css" />
+    </stylesheets>
+    <padding>
+        <Insets left="10" right="10" top="10" bottom="5" />
+    </padding>
+    <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="165.0" minWidth="10.0" prefWidth="133.0" />
+        <ColumnConstraints hgrow="SOMETIMES" />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints vgrow="SOMETIMES"/>
+        <RowConstraints vgrow="SOMETIMES"/>
+        <RowConstraints vgrow="SOMETIMES"/>
+    </rowConstraints>
+    <children>
+        <Label text="Name: " GridPane.rowIndex="0" />
+        <Label text="Scientific Name: " GridPane.rowIndex="1" />
+        <Label text="Icon (Web URL to an image): "  GridPane.rowIndex="2" />
+        <TextField fx:id="txtName" GridPane.columnIndex="1" />
+        <TextField fx:id="txtScientificName" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+        <TextField fx:id="txtImageURL" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <HBox GridPane.columnIndex="1" GridPane.rowIndex="3" spacing="5" alignment="CENTER_RIGHT">
+          <padding>
+              <Insets top="5" bottom="5" />
+          </padding>
+          <children>
+              <Button fx:id="btnConfirm" mnemonicParsing="false" text="Confirm" onAction="#confirmPressed" />
+              <Button mnemonicParsing="false" text="Cancel" onAction="#cancelPressed"/>
+          </children>
+      </HBox>
+    </children>
+</GridPane>

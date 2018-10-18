@@ -1,0 +1,7 @@
+{
+  "dateFormat": "MonthDayYear",
+  "timeFormat": "Time24Hour",
+  "locationFormat": "LatLong",
+  "distanceUnits": "Meters",
+  "drSandersonCompatibility": false
+}

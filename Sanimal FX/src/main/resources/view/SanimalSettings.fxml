@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.scene.control.SplitPane?>
+<?import org.controlsfx.control.PropertySheet?>
+
+
+<?import org.controlsfx.control.TaskProgressView?>
+<SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="700.0" prefWidth="1300.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalSettingsController">
+    <stylesheets>
+        <URL value="@SanimalSettings.css"/>
+    </stylesheets>
+    <items>
+        <PropertySheet fx:id="pstSettings"/>
+    </items>
+</SplitPane>

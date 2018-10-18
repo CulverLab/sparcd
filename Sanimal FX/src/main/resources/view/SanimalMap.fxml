@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.lynden.gmapsfx.GoogleMapView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import java.net.URL?>
+<BorderPane minHeight="500" minWidth="1200" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.SanimalMapController">
+    <stylesheets>
+        <URL value="@SanimalMap.css"/>
+    </stylesheets>
+    <center>
+        <GoogleMapView fx:id="googleMapView" />
+    </center>
+</BorderPane>

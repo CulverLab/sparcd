@@ -1,0 +1,129 @@
+<?import com.panemu.tiwulfx.control.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+<?import org.controlsfx.control.HyperlinkLabel?>
+<?import java.net.URL?>
+<StackPane fx:id="primaryPane" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalViewController">
+    <stylesheets>
+        <URL value="@SanimalView.css"/>
+    </stylesheets>
+    <children>
+        <DetachableTabPane fx:id="tabPane" styleClass="primaryTabPane">
+            <tabs>
+                <DetachableTab detachable="false" text="Home" closable="false">
+                    <graphic>
+                        <ImageView fitWidth="25" fitHeight="25">
+                            <Image url="@../images/mainMenu/paw.png"/>
+                        </ImageView>
+                    </graphic>
+                    <fx:include fx:id="homePane" source="SanimalHome.fxml"/>
+                </DetachableTab>
+                <DetachableTab detachable="false" text="Import" closable="false">
+                    <graphic>
+                        <ImageView fitWidth="25" fitHeight="25">
+                            <Image url="@../images/mainMenu/import.png"/>
+                        </ImageView>
+                    </graphic>
+                    <fx:include source="SanimalImport.fxml"/>
+                </DetachableTab>
+                <DetachableTab detachable="false" text="Collections" closable="false">
+                    <graphic>
+                        <ImageView fitWidth="25" fitHeight="25">
+                            <Image url="@../images/mainMenu/upload.png"/>
+                        </ImageView>
+                    </graphic>
+                    <fx:include source="SanimalUpload.fxml"/>
+                </DetachableTab>
+                <DetachableTab detachable="false" text="Analyze/Query" closable="false">
+                    <graphic>
+                        <ImageView fitWidth="25" fitHeight="25">
+                            <Image url="@../images/mainMenu/analyze.png"/>
+                        </ImageView>
+                    </graphic>
+                    <fx:include source="SanimalAnalysis.fxml"/>
+                </DetachableTab>
+                <DetachableTab detachable="false" text="Map" closable="false">
+                    <graphic>
+                        <ImageView fitWidth="25" fitHeight="25">
+                            <Image url="@../images/mainMenu/map.png"/>
+                        </ImageView>
+                    </graphic>
+                    <fx:include source="SanimalMap.fxml"/>
+                </DetachableTab>
+                <DetachableTab detachable="false" text="Settings" closable="false">
+                    <graphic>
+                        <ImageView fitWidth="25" fitHeight="25">
+                            <Image url="@../images/mainMenu/settings.png"/>
+                        </ImageView>
+                    </graphic>
+                    <fx:include source="SanimalSettings.fxml"/>
+                </DetachableTab>
+            </tabs>
+        </DetachableTabPane>
+        <StackPane minWidth="300" maxWidth="300" minHeight="320" maxHeight="320" fx:id="loginPane"> <!-- Must set login pane size so it doesn't grow too large -->
+            <Rectangle fx:id="rctLoginBackground" arcHeight="15" arcWidth="15" fill="beige" stroke="black" StackPane.alignment="CENTER"/>
+            <GridPane>
+                <columnConstraints>
+                    <ColumnConstraints minWidth="300" maxWidth="300"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints/>
+                    <RowConstraints/>
+                    <RowConstraints/>
+                    <RowConstraints/>
+                    <RowConstraints/>
+                    <RowConstraints/>
+                </rowConstraints>
+                <children>
+                    <ImageView GridPane.halignment="CENTER" GridPane.valignment="CENTER" fitWidth="220" preserveRatio="true">
+                        <GridPane.margin>
+                            <Insets top="10" bottom="10"/>
+                        </GridPane.margin>
+                        <Image url="@../images/mainMenu/cyverse.png" />
+                    </ImageView>
+                    <TextField fx:id="txtUsername" onKeyPressed="#enterPressed" promptText="Username" GridPane.rowIndex="1">
+                        <GridPane.margin>
+                            <Insets left="20" right="20" top="10" bottom="10"/>
+                        </GridPane.margin>
+                        <font>
+                            <Font size="16"/>
+                        </font>
+                    </TextField>
+                    <PasswordField fx:id="txtPassword" onKeyPressed="#enterPressed" promptText="Password" GridPane.rowIndex="3">
+                        <GridPane.margin>
+                            <Insets left="20" right="20" top="10" bottom="10"/>
+                        </GridPane.margin>
+                        <font>
+                            <Font size="16"/>
+                        </font>
+                    </PasswordField>
+                    <CheckBox fx:id="cbxRememberUsername" text="Remember Username" GridPane.rowIndex="4">
+                        <GridPane.margin>
+                            <Insets left="20" right="20" top="10" bottom="10"/>
+                        </GridPane.margin>
+                    </CheckBox>
+                    <HyperlinkLabel fx:id="hypRegisterPassword" text="[Register] | Forgot [Password]?" onAction="#linkPressed" GridPane.rowIndex="5">
+                        <GridPane.margin>
+                            <Insets left="20" right="20" top="10" bottom="10"/>
+                        </GridPane.margin>
+                    </HyperlinkLabel>
+                    <Button fx:id="btnLogin" onAction="#loginPressed" GridPane.halignment="CENTER" text="Sign In" GridPane.rowIndex="6">
+                        <GridPane.margin>
+                            <Insets left="20" right="20" top="10" bottom="10"/>
+                        </GridPane.margin>
+                        <font>
+                            <Font size="16"/>
+                        </font>
+                    </Button>
+                </children>
+            </GridPane>
+        </StackPane>
+    </children>
+</StackPane>

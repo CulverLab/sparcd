@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+<?import javafx.scene.text.Font?>
+<HBox alignment="CENTER_LEFT" fx:id="mainPane" maxHeight="-Infinity" minHeight="100.0" spacing="5" onDragOver="#cellDragOver" onDragEntered="#cellDragEntered" onDragExited="#cellDragExited" onDragDropped="#cellDragDropped" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.uploadView.ImageCollectionListEntryController">
+    <stylesheets>
+        <URL value="@ImageCollectionListEntry.css"/>
+    </stylesheets>
+    <padding>
+        <Insets bottom="5" left="5" right="5" top="5"/>
+    </padding>
+    <children>
+        <ImageView fitHeight="90" fitWidth="90">
+            <Image url="@../../images/uploadWindow/imageCollection.png"/>
+        </ImageView>
+        <StackPane HBox.hgrow="ALWAYS" maxWidth="Infinity">
+            <VBox spacing="5" alignment="CENTER_LEFT" prefWidth="-Infinity">
+                <Label fx:id="lblCollectionName" text="Name" styleClass="collectionNameLbl"/>
+                <Label fx:id="lblCollectionContactInfo" text="Contact Info">
+                    <font>
+                        <Font size="14"/>
+                    </font>
+                </Label>
+                <Label fx:id="lblCollectionOrganization" text="Organization">
+                    <font>
+                        <Font size="14"/>
+                    </font>
+                </Label>
+                <Label fx:id="lblCollectionDescription" wrapText="true" text="Description">
+                    <font>
+                        <Font size="14"/>
+                    </font>
+                </Label>
+            </VBox>
+            <HBox spacing="5" alignment="BOTTOM_RIGHT" StackPane.alignment="BOTTOM_RIGHT" prefWidth="-Infinity">
+                <children>
+                    <ImageView fx:id="imgOwner" styleClass="imgOwner" fitWidth="30" fitHeight="30">
+                        <Image url="@../../images/uploadWindow/ownerIcon.png"/>
+                    </ImageView>
+                    <ImageView fx:id="imgUpload" styleClass="imgUpload" fitWidth="30" fitHeight="30">
+                        <Image url="@../../images/uploadWindow/uploadIcon.png"/>
+                    </ImageView>
+                    <ImageView fx:id="imgRead" styleClass="imgRead" fitWidth="30" fitHeight="30">
+                        <Image url="@../../images/uploadWindow/downloadIcon.png"/>
+                    </ImageView>
+                </children>
+            </HBox>
+            <Button fx:id="btnSettings" minWidth="40" maxWidth="40" maxHeight="40" minHeight="40" onAction="#settingsClicked" StackPane.alignment="TOP_RIGHT">
+                <graphic>
+                    <ImageView fitHeight="30" fitWidth="30">
+                        <Image url="@../../images/uploadWindow/gear.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+        </StackPane>
+    </children>
+</HBox>

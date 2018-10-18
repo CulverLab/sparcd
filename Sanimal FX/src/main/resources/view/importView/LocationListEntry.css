@@ -1,0 +1,25 @@
+.locationBackground {
+    -fx-background-image: url("../../images/importWindow/locationIcon.png");
+    -fx-background-size: 110 110;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-color: rgba(224, 255, 255, 0.65);
+    -fx-border-color: grey;
+    -fx-border-width: 2px;
+    -fx-border-style: solid;
+    -fx-font-weight: bold;
+}
+
+.locationBackground:hover {
+    -fx-font-weight: bolder;
+    -fx-border-color: darkorange;
+}
+
+.largeBold {
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+}
+
+.mediumItalic {
+    -fx-font-style: italic;
+}

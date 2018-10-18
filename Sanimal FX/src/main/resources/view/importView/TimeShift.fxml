@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.SegmentedButton?>
+<?import java.net.URL?>
+<GridPane vgap="10" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.importView.TimeShiftController">
+    <stylesheets>
+        <URL value="@TimeShift.css"/>
+    </stylesheets>
+    <padding>
+        <Insets top="10" bottom="10" left="10" right="10"/>
+    </padding>
+    <columnConstraints>
+        <ColumnConstraints hgrow="ALWAYS"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints/>
+        <RowConstraints vgrow="ALWAYS"/>
+        <RowConstraints/>
+    </rowConstraints>
+    <children>
+        <Label styleClass="font16" fx:id="lblDate" GridPane.halignment="CENTER" GridPane.valignment="CENTER" text="Original Date: "/>
+        <HBox GridPane.halignment="CENTER" GridPane.valignment="CENTER" GridPane.rowIndex="1" alignment="CENTER" >
+            <fx:define>
+                <Insets fx:id="inset20Right" right="20"/>
+            </fx:define>
+            <Label styleClass="font16" text="Year: "/>
+            <Spinner fx:id="spnYear" prefWidth="80" HBox.margin="$inset20Right"/>
+            <Label styleClass="font16" text="Month: "/>
+            <Spinner fx:id="spnMonth" prefWidth="80" HBox.margin="$inset20Right"/>
+            <Label styleClass="font16" text="Day: "/>
+            <Spinner fx:id="spnDay" prefWidth="80" HBox.margin="$inset20Right"/>
+            <Label styleClass="font16" text="Hour: "/>
+            <Spinner fx:id="spnHour" prefWidth="80" HBox.margin="$inset20Right"/>
+            <Label styleClass="font16" text="Minute: "/>
+            <Spinner fx:id="spnMinute" prefWidth="80" HBox.margin="$inset20Right"/>
+            <Label styleClass="font16" text="Second: "/>
+            <Spinner fx:id="spnSecond" prefWidth="80"/>
+        </HBox>
+        <HBox spacing="5" GridPane.rowIndex="2" alignment="CENTER">
+            <children>
+                <Button text="Confirm" onMouseClicked="#confirmPressed"/>
+                <Button text="Cancel" onMouseClicked="#cancelPressed"/>
+            </children>
+        </HBox>
+    </children>
+</GridPane>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import library.ImageViewPane?>
+<?import java.net.URL?>
+<AnchorPane fx:id="mainPane" prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalHomeController">
+    <stylesheets>
+        <URL value="@SanimalHome.css" />
+    </stylesheets>
+    <children>
+        <ImageViewPane AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+            <imageView>
+                <ImageView fx:id="backgroundImage">
+                    <image>
+                        <Image url="@../images/mainMenu/sanimalBackground.JPG" />
+                    </image>
+                </ImageView>
+            </imageView>
+        </ImageViewPane>
+        <StackPane AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+            <children>
+                <ImageView fitHeight="168.0" pickOnBounds="true" preserveRatio="true" StackPane.alignment="TOP_LEFT">
+                    <image>
+                        <Image url="@../images/mainMenu/sanimalTitle.png" />
+                    </image>
+                </ImageView>
+                <Label fx:id="lblUsername" styleClass="usernameLbl" text="Welcome &lt;Username&gt;" textAlignment="RIGHT" GridPane.hgrow="ALWAYS" StackPane.alignment="TOP_LEFT">
+                    <StackPane.margin>
+                        <Insets left="20" top="170" />
+                    </StackPane.margin>
+                </Label>
+                <Button fx:id="btnCredits" minWidth="130" onAction="#creditsPressed" styleClass="creditsBtn" text="Credits" StackPane.alignment="TOP_LEFT">
+                    <StackPane.margin>
+                        <Insets left="20" top="220" />
+                    </StackPane.margin>
+                </Button>
+                <Button fx:id="btnLogout" minWidth="130" onAction="#logoutPressed" styleClass="logoutBtn" text="Logout" StackPane.alignment="TOP_LEFT">
+                    <StackPane.margin>
+                        <Insets left="20" top="270" />
+                    </StackPane.margin>
+                </Button>
+                <Button fx:id="btnExit" minWidth="130" onAction="#exitPressed" styleClass="exitBtn" text="Exit" StackPane.alignment="TOP_LEFT">
+                    <StackPane.margin>
+                        <Insets left="20" top="320" />
+                    </StackPane.margin>
+                </Button>
+            </children>
+        </StackPane>
+        <ImageView fitHeight="80" onMouseClicked="#showCyverseWebsite" preserveRatio="true" styleClass="imgCyverse" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
+            <Image url="@../images/mainMenu/poweredByCyverse.png" />
+        </ImageView>
+        <ImageView fitHeight="80" onMouseClicked="#showSNREWebsite" preserveRatio="true" styleClass="imgSNRE" AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10">
+            <Image url="@../images/mainMenu/snre.PNG" />
+        </ImageView>
+        <ImageView fitHeight="80" onMouseClicked="#showWildcatResearchWebsite" preserveRatio="true" styleClass="imgWildcatResearch" AnchorPane.bottomAnchor="100" AnchorPane.leftAnchor="10">
+            <Image url="@../images/mainMenu/wildcatResearch.png"/>
+        </ImageView>
+        <ImageView fitHeight="80" onMouseClicked="#showCSWebsite" preserveRatio="true" styleClass="imgCS" AnchorPane.bottomAnchor="190" AnchorPane.leftAnchor="10">
+            <Image url="@../images/mainMenu/cs.png" />
+        </ImageView>
+    </children>
+</AnchorPane>

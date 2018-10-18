@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+
+<?import com.panemu.tiwulfx.control.DetachableTabPane?>
+<?import com.panemu.tiwulfx.control.DetachableTab?>
+<?import org.controlsfx.control.RangeSlider?>
+<?import jfxtras.scene.control.LocalDateTimePicker?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import library.ImageViewPane?>
+
+<?import org.controlsfx.control.MaskerPane?>
+<StackPane xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalAnalysisController">
+    <stylesheets>
+        <URL value="@SanimalAnalysis.css"/>
+    </stylesheets>
+    <SplitPane dividerPositions="0.5" orientation="VERTICAL">
+        <padding>
+            <Insets bottom="5" left="5" right="5" top="5"/>
+        </padding>
+        <items>
+            <HBox alignment="CENTER_LEFT">
+                <VBox fx:id="vbxQuery" spacing="5" alignment="TOP_CENTER">
+                    <Label text="Create a Query" VBox.vgrow="NEVER">
+                        <font>
+                            <Font size="16"/>
+                        </font>
+                    </Label>
+                    <Label text="Select filters and add them to the query">
+                        <font>
+                            <Font size="12"/>
+                        </font>
+                    </Label>
+                    <ListView fx:id="lvwFilters" VBox.vgrow="ALWAYS" onMouseClicked="#clickedFilters"/>
+                    <TextField fx:id="txtEventInterval" VBox.vgrow="NEVER" promptText="Event Interval in Minutes">
+                        <font>
+                            <Font size="16"/>
+                        </font>
+                    </TextField>
+                    <Button onAction="#query" VBox.vgrow="NEVER" text="Perform Query">
+                        <font>
+                            <Font size="16"/>
+                        </font>
+                        <graphic>
+                            <ImageView fitWidth="32" fitHeight="32">
+                                <image>
+                                    <Image url="@../images/analysisWindow/queryIcon.png"/>
+                                </image>
+                            </ImageView>
+                        </graphic>
+                        <VBox.margin>
+                            <Insets bottom="5"/>
+                        </VBox.margin>
+                    </Button>
+                </VBox>
+                <ImageViewPane onMouseClicked="#clickedAdd" onMouseEntered="#mouseEnteredArrow" onMouseExited="#mouseExitedArrow">
+                    <imageView>
+                        <ImageView fx:id="imgArrow" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/analysisWindow/arrowDivider.png"/>
+                            </image>
+                        </ImageView>
+                    </imageView>
+                </ImageViewPane>
+                <ListView styleClass="queryConditionsLvw" HBox.hgrow="ALWAYS" fx:id="lvwQueryConditions" orientation="HORIZONTAL"/>
+            </HBox>
+            <DetachableTabPane fx:id="tpnVisualizations">
+                <DetachableTab fx:id="dtbDrSanderson" detachable="false" text="Dr. Sanderson's Output" closable="false">
+                    <fx:include fx:id="visDrSanderson" source="analysisView/VisDrSanderson.fxml"/>
+                </DetachableTab>
+                <DetachableTab detachable="false" text="CSV Output" closable="false">
+                    <fx:include fx:id="visCSV" source="analysisView/VisCSV.fxml"/>
+                </DetachableTab>
+            </DetachableTabPane>
+        </items>
+    </SplitPane>
+    <MaskerPane fx:id="mpnQuerying" text="Performing Query..." progressVisible="true"/>
+</StackPane>

@@ -1,0 +1,153 @@
+<html>
+<head>
+    <script src="http://d3js.org/d3.v4.js"></script>
+    <script src="test_data.js"></script>
+    <script src="full_data.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/js-datepicker/datepicker.css">
+</head>
+<body style="padding: 0; margin: 0">
+    <table width="100%">
+        <tr>
+            <td width="170">
+                <label>Event interval: </label>
+            </td>
+            <td>
+                <input id="eventInterval" title="Event Interval" type="text" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Select Start Date: </label>
+            </td>
+            <td>
+                <input id="startDate" title="Start Date" type="text"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Select End Date: </label>
+            </td>
+            <td>
+                <input id="endDate" title="End Date" type="text"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Filter Species: </label>
+            </td>
+            <td>
+                <form id="species" action=""></form>
+                <button id="selectAllSpecies" style="margin-bottom: 10px">Select All Species</button>
+                <button id="selectNoSpecies" style="margin-bottom: 10px">Select No Species</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Filter Locations: </label>
+            </td>
+            <td>
+                <form id="locations" action=""></form>
+                <button id="selectAllLocations" style="margin-bottom: 10px">Select All Locations</button>
+                <button id="selectNoLocations" style="margin-bottom: 10px">Select No Locations</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>X-Axis: </label>
+            </td>
+            <td>
+                <form id="xAxisChoices" action="">
+                    <label>
+                        <input type="radio" name="xAxis" value="time" checked>24-Hour Time
+                    </label>
+                    <label>
+                        <input type="radio" name="xAxis" value="month">Month of Year
+                    </label>
+                    <label>
+                        <input type="radio" name="xAxis" value="year">Year
+                    </label>
+                    <label>
+                        <input type="radio" name="xAxis" value="day">Day of Year
+                    </label>
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Y-Axis: </label>
+            </td>
+            <td>
+                <form id="yAxisChoices" action="">
+                    <label>
+                        <input type="radio" name="yAxis" value="count" checked>Total Image Count
+                    </label>
+                    <label>
+                        <input type="radio" name="yAxis" value="activity">Activity
+                    </label>
+                    <label>
+                        <input type="radio" name="yAxis" value="abundance">Abundance
+                    </label>
+                    <label>
+                        <input type="radio" name="yAxis" value="period">Period
+                    </label>
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Primary Chart Type:</label>
+            </td>
+            <td>
+                <select id="showBars">
+                    <option value="line">Scatterplot</option>
+                    <option value="bar">Bar Chart</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td colspan="2" align="center">
+                <button id="refreshButton" style="font-size: 16px">Refresh Visualizations</button>
+            </td>
+        </tr>
+        <tr>
+            <td align="center">
+                <button id="saveButton">Save to PNG</button>
+            </td>
+            <td align="center">
+                <button id="saveButton2">Save to PNG</button>
+            </td>
+        </tr>
+        <tr>
+            <td align="center">
+                <label style="font-size: 26px; font-weight: bold">Primary Chart</label>
+            </td>
+            <td align="center">
+                <label style="font-size: 26px; font-weight: bold">Species Accumulation Curve</label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <svg id="svg"></svg>
+            </td>
+            <td>
+                <svg id="svg2"></svg>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <center>
+                    <label style="font-size: 26px">First 10 selected images:</label>
+                </center>
+                <ul id="selectedImages"></ul>
+            </td>
+        </tr>
+    </table>
+    <!--<img id="previewImg" src="" widthPrimary="100" heightPrimary="100">-->
+    <script src="https://rawgit.com/exupero/saveSvgAsPng/gh-pages/saveSvgAsPng.js"></script>
+    <script src="https://unpkg.com/js-datepicker@2.1.5/datepicker.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
+

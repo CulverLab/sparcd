@@ -1,0 +1,10 @@
+.queryConditionsLvw > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
+.queryConditionsLvw > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:focused,
+.queryConditionsLvw > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-background-color: white;
+}
+.queryConditionsLvw > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected .label,
+.queryConditionsLvw > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:focused .label,
+.queryConditionsLvw > .virtual-flow > .clipped-container > .sheet > .list-cell .label {
+    -fx-text-fill: black;
+}
