@@ -1,15 +1,40 @@
 package controller;
 
-import com.lynden.gmapsfx.GoogleMapView;
-import com.lynden.gmapsfx.javascript.event.UIEventType;
-import com.lynden.gmapsfx.javascript.object.*;
+import controller.mapView.LayeredMap;
+import controller.mapView.LocationPopOverController;
+import controller.mapView.MapLayers;
+import fxmapcontrol.ImageFileCache;
+import fxmapcontrol.MapNode;
+import fxmapcontrol.MapTileLayer;
+import fxmapcontrol.TileImageLoader;
+import javafx.beans.binding.Bindings;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.effect.Glow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import library.AlignedMapNode;
 import model.SanimalData;
+import model.constant.MapProviders;
 import model.location.Location;
-import netscape.javascript.JSObject;
+import model.util.FXMLLoaderUtils;
+import org.controlsfx.control.HyperlinkLabel;
+import org.controlsfx.control.PopOver;
+import org.fxmisc.easybind.EasyBind;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,151 +43,210 @@ import java.util.ResourceBundle;
 /**
  * Controller class for the map page
  */
-public class SanimalMapController implements Initializable
+public class SanimalMapController
 {
 	///
 	/// FXML bound fields start
 	///
 
+	// The primary map object to display sites and images on
 	@FXML
-	public GoogleMapView googleMapView;
+	public LayeredMap map;
+
+	// A box containing any map specific settings (not query filters)
+	@FXML
+	public GridPane gpnMapSettings;
+
+	// A combo-box of possible map providers like OSM or Esri
+	@FXML
+	public ComboBox<MapProviders> cbxMapProvider;
+
+	// The label containing any map credits
+	@FXML
+	public HyperlinkLabel lblMapCredits;
+
+	// The map scale label
+	@FXML
+	public Label lblScale;
+	// The map scale box
+	@FXML
+	public HBox hbxScale;
 
 	///
 	/// FXML bound fields end
 	///
 
-	// The map data which will be bound to the google map view
-	private GoogleMap googleMap;
-
-	// A map of location to the marker representing that location
-	private Map<Location, Marker> locationMarkers = new HashMap<>();
-
 	/**
 	 * Initialize sets up the analysis window and bindings
-	 *
-	 * @param location ignored
-	 * @param resources ignored
 	 */
-	@Override
-	public void initialize(URL location, ResourceBundle resources)
+	public void initialize()
 	{
-		// Setup the google map view with the map options class
-		this.googleMapView.addMapInializedListener(() ->
+		///
+		/// Store image tiles inside of the user's home directory
+		///
+
+		TileImageLoader.setCache(new ImageFileCache(SanimalData.getInstance().getTempDirectoryManager().createTempFile("SanimalMapCache").toPath()));//new File(System.getProperty("user.home") + File.separator + "SanimalMapCache").toPath()));
+
+		///
+		/// Setup the tile providers
+		///
+
+		// Add the default tile layer to the background, use OpenStreetMap by default
+		this.map.addChild(MapProviders.OpenStreetMaps.getMapTileProvider(), MapLayers.TILE_PROVIDER);
+		// Setup our map provider combobox, first set the items to be an unmodifiable list of enums
+		this.cbxMapProvider.setItems(FXCollections.unmodifiableObservableList(FXCollections.observableArrayList(MapProviders.values())));
+		// Select OSM as the default map provider
+		this.cbxMapProvider.getSelectionModel().select(MapProviders.OpenStreetMaps);
+		// When we select a new map provider, swap tile providers
+		this.cbxMapProvider.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
 		{
-			// Create a map options class. Center it on tucson
-			LatLong tucson = new LatLong(32.2217, -110.9265);
-			MapOptions mapOptions = new MapOptions();
-			// Set use satellite map view, allow map control, scale control, rotate control, but NO street view
-			mapOptions
-					.center(tucson)
-					.mapType(MapTypeIdEnum.SATELLITE)
-					.overviewMapControl(true)
-					.panControl(true)
-					.rotateControl(true)
-					.scaleControl(true)
-					.streetViewControl(false)
-					.scrollWheel(true)
-					.zoomControl(true)
-					.zoom(12);
+			// This should always be true...
+			if (newValue != null && oldValue != null)
+			{
+				// Grab the old and new tile providers
+				MapTileLayer oldMapTileProvider = oldValue.getMapTileProvider();
+				MapTileLayer newMapTileProvider = newValue.getMapTileProvider();
+				// Remove the old provider, add the new one
+				this.map.removeChild(oldMapTileProvider);
+				this.map.addChild(newMapTileProvider, MapLayers.TILE_PROVIDER);
+			}
+		});
+		// Update the credits label whenever the map provider changes
+		this.lblMapCredits.textProperty().bind(EasyBind.monadic(this.cbxMapProvider.getSelectionModel().selectedItemProperty()).map(mapProvider -> "Map tiles by [" + mapProvider.toString() + "]"));
+		// Update the action to reflect the currently selected map provider
+		this.lblMapCredits.onActionProperty().bind(EasyBind.monadic(this.cbxMapProvider.getSelectionModel().selectedItemProperty()).map(mapProvider -> event -> { try { Desktop.getDesktop().browse(new URI(mapProvider.getCreditURL())); } catch (URISyntaxException | IOException ignored) {} }));
 
-			// Initialize the google map
-			this.googleMap = this.googleMapView.createMap(mapOptions);
+		///
+		/// Setup the map scale indicator on the bottom left
+		///
 
-			// When the location list changes, we put the locations onto the map display
-			SanimalData.getInstance().getLocationList().addListener((ListChangeListener<Location>) c -> {
-				// Iterate over changes
-				while (c.next())
+		EasyBind.subscribe(this.map.zoomLevelProperty(), newValue ->
+		{
+			// The minimum size in pixels of the scale in the bottom left
+			final double MIN_SIZE = 100;
+			// The maximum size in pixels of the scale in the bottom left
+			final double MAX_SIZE = 300;
+			// Pixels per meter to start with here
+			double pixelsPerPowerOf10 = this.map.getProjection().getMapScale(this.map.getCenter()).getY();
+			// Iterate up to 25 times (or 10^25)
+			for (int currentPowerOf10 = 0; currentPowerOf10 < 25; currentPowerOf10++)
+			{
+				// If the pixels per meter is greater than the minimum, we stop and draw it at that size
+				if (pixelsPerPowerOf10 > MIN_SIZE)
 				{
-					// If the item was updated
-					if (c.wasUpdated())
+					// Compute the scale based on the power of 10
+					long scale = Math.round(Math.pow(10, currentPowerOf10));
+					// Test if we want it to use KM or M based on the power of 10.
+					boolean willUseKM = currentPowerOf10 > 3;
+
+					// If the pixels per power of 10 is bigger than our max size, draw it at 1/2 size
+					if (pixelsPerPowerOf10 < MAX_SIZE)
 					{
-						// Loop over updated items
-						for (int i = c.getFrom(); i < c.getTo(); ++i)
+						// Set the text based on if it's KM or M
+						this.lblScale.setText(willUseKM ? Long.toString(scale / 1000) + " km" : Long.toString(scale) + " m");
+						// Force the HBox width
+						this.hbxScale.setMinWidth(pixelsPerPowerOf10);
+						this.hbxScale.setMaxWidth(pixelsPerPowerOf10);
+					}
+					else
+					{
+						// Set the text based on if it's KM or M. We divide by 2 to ensure it's not too large
+						this.lblScale.setText(willUseKM ? Long.toString(scale / 2000) + " km" : Long.toString(scale / 2) + " m");
+						// Force the HBox width
+						this.hbxScale.setMinWidth(pixelsPerPowerOf10 / 2);
+						this.hbxScale.setMaxWidth(pixelsPerPowerOf10 / 2);
+					}
+					return;
+				}
+				// Increment pixels by a power of 10
+				pixelsPerPowerOf10 = pixelsPerPowerOf10 * 10;
+			}
+		});
+
+		///
+		/// Setup the pop-over which is shown if a site pin is clicked
+		///
+
+		// Add a popover that we use to display location specifics
+		PopOver popOver = new PopOver();
+		popOver.setHeaderAlwaysVisible(false);
+		popOver.setArrowLocation(PopOver.ArrowLocation.BOTTOM_CENTER);
+		popOver.setArrowSize(20);
+		popOver.setCloseButtonEnabled(true);
+		// Load the content of the popover from the FXML file once and store it
+		FXMLLoader fxmlLoader = FXMLLoaderUtils.loadFXML("mapView/LocationPopOver.fxml");
+		// Grab the controller for use later
+		LocationPopOverController locationPopOverController = fxmlLoader.getController();
+		// Store the content into the popover
+		popOver.setContentNode(fxmlLoader.getRoot());
+
+		///
+		/// Setup the location icons
+		///
+
+		// Mapping of location to map node pins
+		Map<Location, MapNode> locationToPin = new HashMap<>();
+		// Location pin image
+		Image locationPinImage = new Image("/images/mapWindow/locationPin.png", 64, 64, false, true);
+		// The glow when hovering a location pin
+		Glow hoverGlow = new Glow();
+		// When our location list changes we add a new pin
+		SanimalData.getInstance().getLocationList().addListener((ListChangeListener<Location>) c ->
+		{
+			while (c.next())
+				// If we added locations, add the map pin icon
+				if (c.wasAdded())
+				{
+					// Iterate over locations
+					for (Location location : c.getAddedSubList())
+					{
+						// Create a map pin to render the site's center point when zoomed out
+						MapNode mapPin = new AlignedMapNode(Pos.TOP_CENTER);
+						// Set the pin's center to be the node's center
+						mapPin.setLocation(new fxmapcontrol.Location(location.getLat(), location.getLng()));
+						// Add a new imageview to the pin
+						ImageView pinImageView = new ImageView();
+						// Make sure the image represents if the pin is hovered or not
+						pinImageView.setImage(locationPinImage);
+						// Add the image to the pin
+						mapPin.getChildren().add(pinImageView);
+						// When we click a pin, show the popover
+						mapPin.setOnMouseClicked(event ->
 						{
-							// Get the updated location
-							Location changed = c.getList().get(i);
-							// This also removes the old marker!
-							this.addMarkerForLocation(changed);
-						}
-					}
-					// If the item was removed
-					else if (c.wasRemoved())
-					{
-						// Remove each of the removed location's markers from the map
-						c.getRemoved().forEach(removedLoc -> {
-							if (locationMarkers.containsKey(removedLoc))
-								this.googleMap.removeMarker(locationMarkers.remove(removedLoc));
+							// Call our controller's update method and then show the popup
+							locationPopOverController.updateLocation(location);
+							popOver.show(mapPin);
+							event.consume();
 						});
-					}
-					// If the item was added
-					else if (c.wasAdded())
-					{
-						// Add a marker for each new location element
-						c.getAddedSubList().forEach(this::addMarkerForLocation);
+						// Set the pin to glow when hovered
+						mapPin.setOnMouseEntered(event ->
+						{
+							mapPin.setEffect(hoverGlow);
+							event.consume();
+						});
+						// Set the pin to not glow when hovered
+						mapPin.setOnMouseExited(event ->
+						{
+							mapPin.setEffect(null);
+							event.consume();
+						});
+
+						// Store the mapping of location to pin in our hashmap
+						locationToPin.put(location, mapPin);
+						// Add the pin to our map
+						this.map.addChild(mapPin, MapLayers.LOCATION_PINS);
 					}
 				}
-			});
-
-			///
-			/// Everything after this is temporary for exploring map capabilities
-			///
-
-			/*
-
-
-			// Create a test polygon
-			double startBearing = 0;
-			double endBearing = 30;
-			double radius = 30000;
-
-			MVCArray path = ArcBuilder.buildArcPoints(tucson, startBearing, endBearing, radius);
-			path.push(tucson);
-
-			Polygon arc = new Polygon(new PolygonOptions()
-					.paths(path)
-					.strokeColor("blue")
-					.fillColor("lightBlue")
-					.fillOpacity(0.3)
-					.strokeWeight(2)
-					.editable(false));
-
-			// Add the test polygon
-			this.googleMap.addMapShape(arc);
-			this.googleMap.addUIEventHandler(arc, UIEventType.click, (JSObject obj) -> {
-				arc.setEditable(!arc.getEditable());
-			});
-
-			*/
+				// If a location was removed remove the pin
+				else if (c.wasRemoved())
+				{
+					// For each location...
+					for (Location location : c.getRemoved())
+						// This should always be true....
+						if (locationToPin.containsKey(location))
+							// Remove the pin from the map
+							this.map.removeChild(locationToPin.remove(location));
+				}
 		});
-	}
-
-	/**
-	 * Removes the current marker for the location if it exists, and adds a new one
-	 *
-	 * @param location The location to add/update a marker for
-	 */
-	private void addMarkerForLocation(Location location)
-	{
-		// If we already have a marker for the location, remove it
-		if (locationMarkers.containsKey(location))
-			this.googleMap.removeMarker(locationMarkers.remove(location));
-		// Create the marker options which defines the title and position
-		MarkerOptions options = new MarkerOptions()
-				.title(location.getName())
-				.position(new LatLong(location.getLat(), location.getLng()));
-		Marker marker = new Marker(options);
-		// Add a marker to the map
-		this.googleMap.addMarker(marker);
-		// Create an info window that shows the location details when opened
-		InfoWindowOptions infoWindowOptions = new InfoWindowOptions()
-				.content(location.getName())
-				.position(new LatLong(location.getLat(), location.getLng()));
-		InfoWindow infoWindow = new InfoWindow(infoWindowOptions);
-		// When we click the map marker, open the info window
-		this.googleMap.addUIEventHandler(marker, UIEventType.click, (JSObject obj) -> {
-			infoWindow.open(googleMap, marker);
-		});
-		// Add the marker reference to the map
-		locationMarkers.put(location, marker);
 	}
 }

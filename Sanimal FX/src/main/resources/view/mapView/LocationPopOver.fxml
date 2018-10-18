@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import java.net.URL?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.RowConstraints?>
+<VBox alignment="CENTER" fx:controller="controller.mapView.LocationPopOverController" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+    <padding>
+        <Insets top="10" bottom="10" left="10" right="10"/>
+    </padding>
+    <stylesheets>
+        <URL value="@LocationPopOver.css"/>
+    </stylesheets>
+    <Label fx:id="lblName" textAlignment="CENTER" text="Site Name">
+        <font>
+            <Font size="32"/>
+        </font>
+    </Label>
+    <GridPane hgap="5">
+        <rowConstraints>
+            <RowConstraints vgrow="ALWAYS"/>
+            <RowConstraints vgrow="ALWAYS"/>
+            <RowConstraints vgrow="ALWAYS"/>
+        </rowConstraints>
+        <columnConstraints>
+            <ColumnConstraints hgrow="NEVER"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+        </columnConstraints>
+        <children>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="ID:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="0" fx:id="lblID" text="ID"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="1" text="Latitude:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="1" fx:id="lblLatitude" text="Latitude"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="2" text="Longitude:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="2" fx:id="lblLongitude" text="Longitude"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="3" text="Elevation:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="3" fx:id="lblElevation" text="Elevation"/>
+        </children>
+    </GridPane>
+</VBox>

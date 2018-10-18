@@ -1,13 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.lynden.gmapsfx.GoogleMapView?>
-<?import javafx.scene.layout.BorderPane?>
+<?import controller.mapView.LayeredMap?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.HyperlinkLabel?>
 <?import java.net.URL?>
-<BorderPane minHeight="500" minWidth="1200" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.SanimalMapController">
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.SanimalMapController">
     <stylesheets>
         <URL value="@SanimalMap.css"/>
     </stylesheets>
-    <center>
-        <GoogleMapView fx:id="googleMapView" />
-    </center>
-</BorderPane>
+    <children>
+        <LayeredMap fx:id="map" StackPane.alignment="CENTER" zoomLevel="5" maxZoomLevel="20" center="32.2226, -110.9747"/>
+        <HBox fx:id="hbxScale" StackPane.alignment="BOTTOM_LEFT" alignment="CENTER_LEFT" styleClass="scaleRct" minHeight="30" maxHeight="30" minWidth="100" maxWidth="100">
+            <StackPane.margin>
+                <Insets left="5" bottom="5"/>
+            </StackPane.margin>
+            <Label fx:id="lblScale" GridPane.halignment="LEFT" GridPane.valignment="CENTER" GridPane.rowSpan="2" text="10 m">
+                <HBox.margin>
+                    <Insets left="5"/>
+                </HBox.margin>
+            </Label>
+        </HBox>
+        <GridPane fx:id="gpnMapSettings" StackPane.alignment="TOP_LEFT" vgap="5" hgap="5" styleClass="propertiesPanel" maxWidth="-Infinity" maxHeight="-Infinity">
+            <StackPane.margin>
+                <Insets top="15" left="15" bottom="15"/>
+            </StackPane.margin>
+            <padding>
+                <Insets top="10" left="10" bottom="10" right="10"/>
+            </padding>
+            <rowConstraints>
+                <RowConstraints vgrow="NEVER"/>
+            </rowConstraints>
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+            <children>
+                <ComboBox fx:id="cbxMapProvider" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2" maxWidth="Infinity" />
+            </children>
+        </GridPane>
+        <HyperlinkLabel fx:id="lblMapCredits" StackPane.alignment="BOTTOM_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity">
+            <StackPane.margin>
+                <Insets right="5" bottom="5"/>
+            </StackPane.margin>
+        </HyperlinkLabel>
+    </children>
+</StackPane>

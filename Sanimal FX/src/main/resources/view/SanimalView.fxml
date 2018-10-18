@@ -10,7 +10,7 @@
 <?import javafx.scene.text.Font?>
 <?import org.controlsfx.control.HyperlinkLabel?>
 <?import java.net.URL?>
-<StackPane fx:id="primaryPane" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalViewController">
+<StackPane prefWidth="1920" prefHeight="1080" fx:id="primaryPane" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalViewController">
     <stylesheets>
         <URL value="@SanimalView.css"/>
     </stylesheets>

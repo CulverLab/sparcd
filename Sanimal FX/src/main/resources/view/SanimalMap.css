@@ -1,0 +1,18 @@
+.queryHbx {
+    -fx-background-color: white;
+}
+
+.propertiesPanel {
+    -fx-fill: white;
+    -fx-border-radius: 10px;
+    -fx-border-width: 2px;
+    -fx-border-color: darkgray;
+    -fx-background-radius: 10px;
+    -fx-background-color: white;
+}
+
+.scaleRct {
+    -fx-border-width: 0px 3px 3px 3px;
+    -fx-border-color: darkgray;
+    -fx-background-color: rgba(255, 255, 255, 0.5);
+}
