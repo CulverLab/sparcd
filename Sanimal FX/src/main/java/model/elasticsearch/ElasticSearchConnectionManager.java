@@ -56,7 +56,7 @@ import java.util.stream.Collectors;
 public class ElasticSearchConnectionManager
 {
 	// The IP of the elastic search index
-	private static final String ELASTIC_SEARCH_HOST = "128.196.142.30";
+	private static final String ELASTIC_SEARCH_HOST = "128.196.142.111";
 	// The port of the elastic search index
 	private static final Integer ELASTIC_SEARCH_PORT = 9200;
 	// The scheme used to connect to the elastic search index
