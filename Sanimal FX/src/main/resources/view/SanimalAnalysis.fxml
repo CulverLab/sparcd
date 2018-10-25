@@ -1,20 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import java.net.URL?>
-
-<?import com.panemu.tiwulfx.control.DetachableTabPane?>
 <?import com.panemu.tiwulfx.control.DetachableTab?>
-<?import org.controlsfx.control.RangeSlider?>
-<?import jfxtras.scene.control.LocalDateTimePicker?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.image.ImageView?>
+<?import com.panemu.tiwulfx.control.DetachableTabPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
 <?import library.ImageViewPane?>
-
 <?import org.controlsfx.control.MaskerPane?>
+<?import java.net.URL?>
 <StackPane xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalAnalysisController">
     <stylesheets>
         <URL value="@SanimalAnalysis.css"/>

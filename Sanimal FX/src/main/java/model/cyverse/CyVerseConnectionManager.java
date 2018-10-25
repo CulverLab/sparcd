@@ -789,10 +789,11 @@ public class CyVerseConnectionManager
 	 *
 	 * @param collection The collection to upload to
 	 * @param directoryToWrite The directory to write
+	 * @param description The description of the upload
 	 * @param transferCallback The callback that will receive callbacks if the transfer is in progress
 	 * @param messageCallback Optional message callback that will show what is currently going on
 	 */
-	public void uploadImages(ImageCollection collection, ImageDirectory directoryToWrite, TransferStatusCallbackListener transferCallback, StringProperty messageCallback)
+	public void uploadImages(ImageCollection collection, ImageDirectory directoryToWrite, String description, TransferStatusCallbackListener transferCallback, StringProperty messageCallback)
 	{
 		if (this.sessionManager.openSession())
 		{
@@ -818,7 +819,7 @@ public class CyVerseConnectionManager
 					// Create the JSON file representing the upload
 					Integer imageCount = Math.toIntExact(directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count());
 					Integer imagesWithSpecies = Math.toIntExact(directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry && !((ImageEntry) imageContainer).getSpeciesPresent().isEmpty()).count());
-					CloudUploadEntry uploadEntry = new CloudUploadEntry(SanimalData.getInstance().getUsername(), LocalDateTime.now(), imagesWithSpecies, imageCount, uploadDirName);
+					CloudUploadEntry uploadEntry = new CloudUploadEntry(SanimalData.getInstance().getUsername(), LocalDateTime.now(), imagesWithSpecies, imageCount, uploadDirName, description);
 					// Convert the upload entry to JSON format
 					String json = SanimalData.getInstance().getGson().toJson(uploadEntry);
 					// Create the UploadMeta.json

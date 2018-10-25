@@ -31,6 +31,8 @@ public class CloudUploadEntry
 	private List<String> editComments = new ArrayList<>();
 	// A path to the upload on CyVerse
 	private String uploadIRODSPath;
+	// The description of this upload
+	private String description;
 
 	/**
 	 * Constructor initializes all fields
@@ -38,15 +40,18 @@ public class CloudUploadEntry
 	 * @param uploadUser The user that uploaded the images
 	 * @param uploadDate The date the upload happened on
 	 * @param imagesWithSpecies The number of images with species tagged
+	 * @param imageCount The number of images in the upload
 	 * @param uploadIRODSPath The path to the file on CyVerse
+	 * @param description The description of this upload
 	 */
-	public CloudUploadEntry(String uploadUser, LocalDateTime uploadDate, Integer imagesWithSpecies, Integer imageCount, String uploadIRODSPath)
+	public CloudUploadEntry(String uploadUser, LocalDateTime uploadDate, Integer imagesWithSpecies, Integer imageCount, String uploadIRODSPath, String description)
 	{
 		this.uploadUser = uploadUser;
 		this.uploadDate = uploadDate;
 		this.imagesWithSpecies = imagesWithSpecies;
 		this.imageCount = imageCount;
 		this.uploadIRODSPath = uploadIRODSPath;
+		this.description = description;
 	}
 
 	/**
@@ -104,6 +109,11 @@ public class CloudUploadEntry
 	public String getUploadIRODSPath()
 	{
 		return uploadIRODSPath;
+	}
+
+	public String getDescription()
+	{
+		return description;
 	}
 
 	public void setDownloaded(Boolean downloadedProperty)

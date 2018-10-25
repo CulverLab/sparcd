@@ -168,6 +168,7 @@ public class SanimalUploadController implements Initializable
 			filteredSortedUploads.predicateProperty().bind(Bindings.createObjectBinding(() -> (cloudUploadEntry ->
 					// Allow any cloud upload entry with a username cloud upload entry search text
 					StringUtils.containsIgnoreCase(cloudUploadEntry.getUploadUser(), this.txtUploadSearch.getCharacters()) ||
+					StringUtils.containsIgnoreCase(cloudUploadEntry.getDescription(), this.txtUploadSearch.getCharacters()) ||
 					StringUtils.containsIgnoreCase(SanimalData.getInstance().getSettings().formatDateTime(cloudUploadEntry.getUploadDate(), " "), this.txtUploadSearch.getCharacters()) ||
 					StringUtils.containsIgnoreCase(cloudUploadEntry.getImageCount().toString(), this.txtUploadSearch.getCharacters())), this.txtUploadSearch.textProperty()));
 			return filteredSortedUploads;

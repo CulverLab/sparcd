@@ -236,74 +236,69 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 				if (validDirectory)
 				{
 					// Show an alert to tell the user that they are uploading images at this point
-					Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+					TextInputDialog  confirmation = new TextInputDialog();
 					confirmation.initOwner(this.mainPane.getScene().getWindow());
 					confirmation.setTitle("Upload Images");
-					confirmation.setHeaderText("Uploading to " + this.getItem().getName());
-					confirmation.setContentText("Are you sure you want to upload these " + imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count() + " images to the collection " + this.getItem().getName() + "?");
-					Optional<ButtonType> result = confirmation.showAndWait();
+					confirmation.setHeaderText("Uploading " + imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count() + " image(s) to " + this.getItem().getName() + ". Enter an optional description for this upload or select cancel to stop the upload");
+					Optional<String> result = confirmation.showAndWait();
 
 					// Test the result...
-					result.ifPresent(buttonType ->
+					result.ifPresent(description ->
 					{
-						// OK means upload
-						if (buttonType == ButtonType.OK)
+						// Set the upload to 0% so that we don't edit it anymore
+						imageDirectory.setUploadProgress(0.0);
+						// Create an upload task
+						Task<Void> uploadTask = new ErrorTask<Void>()
 						{
-							// Set the upload to 0% so that we don't edit it anymore
-							imageDirectory.setUploadProgress(0.0);
-							// Create an upload task
-							Task<Void> uploadTask = new ErrorTask<Void>()
+							@Override
+							protected Void call()
 							{
-								@Override
-								protected Void call()
+								// Update the progress
+								this.updateProgress(0, 1);
+
+								// Create a string property used as a callback
+								StringProperty messageCallback = new SimpleStringProperty("");
+								this.updateMessage("Uploading image directory " + imageDirectory.getFile().getName() + " to CyVerse.");
+								messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
+								// Upload images to CyVerse, we give it a transfer status callback so that we can show the progress
+								SanimalData.getInstance().getConnectionManager().uploadImages(ImageCollectionListEntryController.this.getItem(), imageDirectory, description, new TransferStatusCallbackListener()
 								{
-									// Update the progress
-									this.updateProgress(0, 1);
-
-									// Create a string property used as a callback
-									StringProperty messageCallback = new SimpleStringProperty("");
-									this.updateMessage("Uploading image directory " + imageDirectory.getFile().getName() + " to CyVerse.");
-									messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
-									// Upload images to CyVerse, we give it a transfer status callback so that we can show the progress
-									SanimalData.getInstance().getConnectionManager().uploadImages(ImageCollectionListEntryController.this.getItem(), imageDirectory, new TransferStatusCallbackListener()
+									@Override
+									public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus)
 									{
-										@Override
-										public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus)
-										{
-											// Set the upload progress in the directory we get a callback
-											Platform.runLater(() -> imageDirectory.setUploadProgress(transferStatus.getBytesTransfered() / (double) transferStatus.getTotalSize()));
-											// Set the upload progress whenever we get a callback
-											updateProgress((double) transferStatus.getBytesTransfered(), (double) transferStatus.getTotalSize());
-											return FileStatusCallbackResponse.CONTINUE;
-										}
+										// Set the upload progress in the directory we get a callback
+										Platform.runLater(() -> imageDirectory.setUploadProgress(transferStatus.getBytesTransfered() / (double) transferStatus.getTotalSize()));
+										// Set the upload progress whenever we get a callback
+										updateProgress((double) transferStatus.getBytesTransfered(), (double) transferStatus.getTotalSize());
+										return FileStatusCallbackResponse.CONTINUE;
+									}
 
-										// Ignore this status callback
-										@Override
-										public void overallStatusCallback(TransferStatus transferStatus)
-										{
-										}
+									// Ignore this status callback
+									@Override
+									public void overallStatusCallback(TransferStatus transferStatus)
+									{
+									}
 
-										// Ignore this as well
-										@Override
-										public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection)
-										{
-											return CallbackResponse.YES_FOR_ALL;
-										}
-									}, messageCallback);
-									return null;
-								}
-							};
-							// When the upload finishes, we enable the upload button
-							uploadTask.setOnSucceeded(event ->
-							{
-								imageDirectory.setUploadProgress(-1);
-								// Remove the directory because it's uploaded now
-								SanimalData.getInstance().getImageTree().removeChildRecursive(imageDirectory);
-							});
-							uploadTask.setOnCancelled(event -> imageDirectory.setUploadProgress(-1));
-							dragEvent.setDropCompleted(true);
-							SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().addTask(uploadTask);
-						}
+									// Ignore this as well
+									@Override
+									public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection)
+									{
+										return CallbackResponse.YES_FOR_ALL;
+									}
+								}, messageCallback);
+								return null;
+							}
+						};
+						// When the upload finishes, we enable the upload button
+						uploadTask.setOnSucceeded(event ->
+						{
+							imageDirectory.setUploadProgress(-1);
+							// Remove the directory because it's uploaded now
+							SanimalData.getInstance().getImageTree().removeChildRecursive(imageDirectory);
+						});
+						uploadTask.setOnCancelled(event -> imageDirectory.setUploadProgress(-1));
+						dragEvent.setDropCompleted(true);
+						SanimalData.getInstance().getSanimalExecutor().getImmediateExecutor().addTask(uploadTask);
 					});
 				}
 				else

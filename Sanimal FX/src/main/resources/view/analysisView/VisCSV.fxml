@@ -7,7 +7,12 @@
 <?import javafx.scene.layout.VBox?>
 <?import java.net.URL?>
 <?import javafx.scene.control.Button?>
-<SplitPane dividerPositions="0.333333, 0.666666" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.analysisView.VisCSVController" prefWidth="500.0">
+<?import org.controlsfx.control.SegmentedButton?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.control.Spinner?>
+<SplitPane dividerPositions="0.25, 0.5, 0.75" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.analysisView.VisCSVController" prefWidth="500.0">
     <padding>
         <Insets top="5" bottom="5" left="5" right="5"/>
     </padding>
@@ -15,6 +20,39 @@
         <URL value="@VisCSV.css"/>
     </stylesheets>
     <items>
+        <VBox spacing="5" alignment="TOP_CENTER">
+            <Label text="CSV Settings" alignment="CENTER" prefWidth="Infinity"/>
+            <Label text="Show Location:"/>
+            <SegmentedButton>
+                <buttons>
+                    <ToggleButton fx:id="tbnShowLatLon" selected="true" text="Show"/>
+                    <ToggleButton fx:id="tbnRoundLatLon" text="Round"/>
+                    <ToggleButton fx:id="tbnHideLatLon" text="Hide"/>
+                </buttons>
+            </SegmentedButton>
+            <Spinner fx:id="spnDecimalPlaces" min="0" max="20" initialValue="4" amountToStepBy="1"/>
+            <Label text="Show Elevation:"/>
+            <SegmentedButton>
+                <buttons>
+                    <ToggleButton fx:id="tbnShowElevation" selected="true" text="Show"/>
+                    <ToggleButton fx:id="tbnHideElevation" text="Hide"/>
+                </buttons>
+            </SegmentedButton>
+            <Label text="Show Site Code:"/>
+            <SegmentedButton>
+                <buttons>
+                    <ToggleButton fx:id="tbnShowCode" selected="true" text="Show"/>
+                    <ToggleButton fx:id="tbnHideCode" text="Hide"/>
+                </buttons>
+            </SegmentedButton>
+            <Label text="Show Site Name:"/>
+            <SegmentedButton>
+                <buttons>
+                    <ToggleButton fx:id="tbnShowName" selected="true" text="Show"/>
+                    <ToggleButton fx:id="tbnHideName" text="Hide"/>
+                </buttons>
+            </SegmentedButton>
+        </VBox>
         <VBox spacing="5" alignment="CENTER">
             <Label text="Raw CSV" alignment="CENTER" prefWidth="Infinity"/>
             <TextArea VBox.vgrow="ALWAYS" fx:id="txtRawCSV"/>

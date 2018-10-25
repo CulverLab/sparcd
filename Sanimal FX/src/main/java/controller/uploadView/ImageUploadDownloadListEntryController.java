@@ -8,15 +8,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Font;
 import model.SanimalData;
 import model.image.CloudUploadEntry;
 import model.image.ImageDirectory;
 import org.fxmisc.easybind.EasyBind;
-
-import javax.swing.event.ChangeListener;
-import java.text.SimpleDateFormat;
-import java.util.List;
 
 /**
  * Controller for the download entry which allows downloading/saving of image files
@@ -33,11 +28,11 @@ public class ImageUploadDownloadListEntryController extends ListCell<CloudUpload
 
 	// List of labels used to display edits
 	@FXML
-	public Label lblDate;
-	@FXML
-	public Label lblUsername;
+	public Label lblHeader;
 	@FXML
 	public Label lblTagged;
+	@FXML
+	public Label lblDescription;
 	@FXML
 	public ListView<String> lstEdits;
 
@@ -65,12 +60,12 @@ public class ImageUploadDownloadListEntryController extends ListCell<CloudUpload
 		SanimalData.getInstance().getSettings().dateFormatProperty().addListener((observable, oldValue, newValue) ->
 		{
 			if (this.getItem() != null)
-				this.lblDate.setText(SanimalData.getInstance().getSettings().formatDateTime(this.getItem().getUploadDate(), " at "));
+				this.lblHeader.setText(this.getItem().getUploadUser() + " on " + SanimalData.getInstance().getSettings().formatDateTime(this.getItem().getUploadDate(), " at "));
 		});
 		SanimalData.getInstance().getSettings().timeFormatProperty().addListener((observable, oldValue, newValue) ->
 		{
 			if (this.getItem() != null)
-				this.lblDate.setText(SanimalData.getInstance().getSettings().formatDateTime(this.getItem().getUploadDate(), " at "));
+				this.lblHeader.setText(this.getItem().getUploadUser() + " on " + SanimalData.getInstance().getSettings().formatDateTime(this.getItem().getUploadDate(), " at "));
 		});
 	}
 
@@ -97,9 +92,9 @@ public class ImageUploadDownloadListEntryController extends ListCell<CloudUpload
 		else
 		{
 			// Update the labels
-			this.lblUsername.setText(cloudUploadEntry.getUploadUser());
-			this.lblTagged.setText(cloudUploadEntry.getImagesWithSpecies() + "/" + cloudUploadEntry.getImageCount() + " tagged with species.");
-			this.lblDate.setText(SanimalData.getInstance().getSettings().formatDateTime(this.getItem().getUploadDate(), " at "));
+			this.lblHeader.setText(cloudUploadEntry.getUploadUser() + " on " + SanimalData.getInstance().getSettings().formatDateTime(cloudUploadEntry.getUploadDate(), " at "));
+			this.lblTagged.setText(cloudUploadEntry.getImagesWithSpecies() + "/" + cloudUploadEntry.getImageCount() + " images tagged with species.");
+			this.lblDescription.setText(cloudUploadEntry.getDescription().isEmpty() ? "No description given" : cloudUploadEntry.getDescription());
 			// Grab the list of edits and show it
 			this.lstEdits.getItems().clear();
 			this.lstEdits.getItems().addAll(cloudUploadEntry.getEditComments());
