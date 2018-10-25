@@ -138,7 +138,7 @@ public class VisCSVController implements VisControllerBase
 					(this.tbnShowName.isSelected() ? location.getName() : "Omitted") + "," +
 					(this.tbnShowCode.isSelected() ? location.getId() : "Omitted") + ",";
 
-			locationString = locationString + this.formatLatLong(location.getLat(), location.getLng());
+			locationString = locationString + this.formatLatLong(location.getLat(), location.getLng()) + ",";
 
 			// Add elevation
 			SettingsData.DistanceUnits distanceUnits = SanimalData.getInstance().getSettings().getDistanceUnits();
@@ -164,7 +164,7 @@ public class VisCSVController implements VisControllerBase
 				(this.tbnShowName.isSelected() ? location.getName() : "Omitted") + "," +
 				(this.tbnShowCode.isSelected() ? location.getId() : "Omitted") + ",";
 
-			locationString = locationString + this.formatLatLong(location.getLat(), location.getLng());
+			locationString = locationString + this.formatLatLong(location.getLat(), location.getLng()) + ",";
 
 			// Distance units depend on feet or meters
 			SettingsData.DistanceUnits distanceUnits = SanimalData.getInstance().getSettings().getDistanceUnits();
@@ -202,7 +202,7 @@ public class VisCSVController implements VisControllerBase
 			// Add lat/lng
 			locationString = locationString +
 				(this.tbnHideLatLon.isSelected() ? "Omitted" : locationLatitude) + "," +
-				(this.tbnHideLatLon.isSelected() ? "Omitted" : locationLongitude) + ",";
+				(this.tbnHideLatLon.isSelected() ? "Omitted" : locationLongitude);
 		}
 		// If we're using UTM
 		else if (SanimalData.getInstance().getSettings().getLocationFormat() == SettingsData.LocationFormat.UTM)
@@ -213,7 +213,7 @@ public class VisCSVController implements VisControllerBase
 				(this.tbnHideLatLon.isSelected() ? "Omitted" :
 					utmCoord.getZone().toString() + utmCoord.getLetter().toString() + "," +
 					utmCoord.getEasting() + "E," +
-					utmCoord.getNorthing() + "N,");
+					utmCoord.getNorthing() + "N");
 		}
 		return locationString;
 	}
