@@ -212,8 +212,8 @@ public class VisCSVController implements VisControllerBase
 			locationString = locationString +
 				(this.tbnHideLatLon.isSelected() ? "Omitted" :
 					utmCoord.getZone().toString() + utmCoord.getLetter().toString() + "," +
-					utmCoord.getEasting() + "E," +
-					utmCoord.getNorthing() + "N");
+					Math.round(utmCoord.getEasting()) + "E," +
+					Math.round(utmCoord.getNorthing()) + "N");
 		}
 		return locationString;
 	}

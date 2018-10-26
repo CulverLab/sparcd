@@ -22,7 +22,7 @@ public class TempDirectoryManager
 	/**
 	 * Constructor initializes the temporary directory
 	 */
-	public TempDirectoryManager()
+	public TempDirectoryManager(ErrorDisplay errorDisplay)
 	{
 		try
 		{
@@ -32,7 +32,7 @@ public class TempDirectoryManager
 		}
 		catch (IOException e)
 		{
-			SanimalData.getInstance().getErrorDisplay().showPopup(
+			errorDisplay.showPopup(
 					Alert.AlertType.ERROR,
 					null,
 					"Error",

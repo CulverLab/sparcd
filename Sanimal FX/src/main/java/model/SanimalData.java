@@ -79,11 +79,11 @@ public class SanimalData
 	// Preferences used to save the user's username
 	private final Preferences sanimalPreferences = Preferences.userNodeForPackage(SanimalData.class);
 
-	// Manager of all temporary files used by the SANIMAL software
-	private final TempDirectoryManager tempDirectoryManager = new TempDirectoryManager();
-
 	// Class used to display errors as popups
 	private final ErrorDisplay errorDisplay = new ErrorDisplay();
+
+	// Manager of all temporary files used by the SANIMAL software
+	private final TempDirectoryManager tempDirectoryManager = new TempDirectoryManager(errorDisplay);
 
 	// List of sanimal settings
 	private final SettingsData settings = new SettingsData();
