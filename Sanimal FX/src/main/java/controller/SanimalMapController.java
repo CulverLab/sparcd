@@ -13,6 +13,7 @@ import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -23,9 +24,13 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import library.AlignedMapNode;
 import model.SanimalData;
+import model.analysis.SanimalAnalysisUtils;
 import model.constant.MapProviders;
 import model.location.Location;
+import model.location.UTMCoord;
 import model.util.FXMLLoaderUtils;
+import model.util.RoundingUtils;
+import model.util.SettingsData;
 import org.controlsfx.control.HyperlinkLabel;
 import org.controlsfx.control.PopOver;
 import org.fxmisc.easybind.EasyBind;
@@ -71,6 +76,10 @@ public class SanimalMapController
 	// The map scale box
 	@FXML
 	public HBox hbxScale;
+
+	// Current mouse location latitude and longitude
+	@FXML
+	public Label lblMouseLocation;
 
 	///
 	/// FXML bound fields end
@@ -247,6 +256,23 @@ public class SanimalMapController
 							// Remove the pin from the map
 							this.map.removeChild(locationToPin.remove(location));
 				}
+		});
+
+		// When we move the mouse update the bottom label
+		this.map.setOnMouseMoved(event ->
+		{
+			// Get the mouse location
+			fxmapcontrol.Location locationOfMouse = this.map.getProjection().viewportPointToLocation(new Point2D(event.getX(), event.getY()));
+			// Get the format for location
+			SettingsData.LocationFormat locationFormat = SanimalData.getInstance().getSettings().getLocationFormat();
+			// Set the location format text to be in either lat/long or utms
+			if (locationFormat == SettingsData.LocationFormat.LatLong)
+				this.lblMouseLocation.setText(RoundingUtils.round(locationOfMouse.getLatitude(), 5) + ", " + RoundingUtils.round(locationOfMouse.getLongitude(), 5));
+			else if (locationFormat == SettingsData.LocationFormat.UTM)
+			{
+				UTMCoord utmCoord = SanimalAnalysisUtils.Deg2UTM(locationOfMouse.getLatitude(), locationOfMouse.getLongitude());
+				this.lblMouseLocation.setText(utmCoord.getZone().toString() + utmCoord.getLetter().toString() + " - " + Math.round(utmCoord.getEasting()) + "E, " + Math.round(utmCoord.getNorthing()) + "N");
+			}
 		});
 	}
 }

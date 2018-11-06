@@ -53,7 +53,7 @@ public class CyVerseConnectionManager
 	// The directory that each user has as their home directory
 	private static final String HOME_DIRECTORY = "/iplant/home/";
 	// The directory that collections are stored in
-	private static final String COLLECTIONS_DIRECTORY = "/iplant/home/dslovikosky/Sanimal/Collections";
+	private static final String COLLECTIONS_DIRECTORY = "/iplant/home/smalusa/Sanimal/Collections";
 	// Each user is part of the iPlant zone
 	private static final String ZONE = "iplant";
 	// The type used to serialize a list of locations through Gson

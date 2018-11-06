@@ -7,6 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.HyperlinkLabel?>
 <?import java.net.URL?>
+<?import javafx.scene.shape.Rectangle?>
 <StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.SanimalMapController">
     <stylesheets>
         <URL value="@SanimalMap.css"/>
@@ -17,7 +18,7 @@
             <StackPane.margin>
                 <Insets left="5" bottom="5"/>
             </StackPane.margin>
-            <Label fx:id="lblScale" GridPane.halignment="LEFT" GridPane.valignment="CENTER" GridPane.rowSpan="2" text="10 m">
+            <Label fx:id="lblScale" text="10 m">
                 <HBox.margin>
                     <Insets left="5"/>
                 </HBox.margin>
@@ -31,6 +32,7 @@
                 <Insets top="10" left="10" bottom="10" right="10"/>
             </padding>
             <rowConstraints>
+                <RowConstraints vgrow="NEVER"/>
                 <RowConstraints vgrow="NEVER"/>
             </rowConstraints>
             <columnConstraints>
@@ -46,5 +48,15 @@
                 <Insets right="5" bottom="5"/>
             </StackPane.margin>
         </HyperlinkLabel>
+        <HBox StackPane.alignment="BOTTOM_CENTER" alignment="CENTER_LEFT" styleClass="mouseLocationRct" minHeight="30" maxHeight="30" maxWidth="-Infinity">
+            <StackPane.margin>
+                <Insets bottom="5"/>
+            </StackPane.margin>
+            <Label fx:id="lblMouseLocation" text="-242424, 256252562">
+                <HBox.margin>
+                    <Insets left="5" right="5"/>
+                </HBox.margin>
+            </Label>
+        </HBox>
     </children>
 </StackPane>

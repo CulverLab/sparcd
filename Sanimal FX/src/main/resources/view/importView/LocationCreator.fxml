@@ -28,18 +28,18 @@
         <RowConstraints vgrow="SOMETIMES"/>
     </rowConstraints>
     <children>
-        <Label text="Name: "/>
+        <Label text="Place Name: "/>
         <TextField fx:id="txtName" GridPane.columnIndex="1"/>
         <Label text="Id: " GridPane.rowIndex="1"/>
         <TextField fx:id="txtId" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
         <Label text="Positional Units: " GridPane.rowIndex="2"/>
         <HBox alignment="CENTER_LEFT" spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="2">
-            <RadioButton fx:id="rbnLatLng" selected="true" text="Lat/Lng">
+            <RadioButton fx:id="rbnLatLng" selected="true" text="WGS84 Lat/Lng">
                 <toggleGroup>
                     <ToggleGroup fx:id="locTypeBtnGroup"/>
                 </toggleGroup>
             </RadioButton>
-            <RadioButton fx:id="rbnUTM" text="UTM" toggleGroup="$locTypeBtnGroup"/>
+            <RadioButton fx:id="rbnUTM" text="NAD83 UTM" toggleGroup="$locTypeBtnGroup"/>
         </HBox>
         <Label fx:id="lblZoneOrLat" text="Zone (1-60): " GridPane.rowIndex="3"/>
         <TextField fx:id="txtZoneOrLat" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
