@@ -33,9 +33,7 @@ import org.controlsfx.validation.Validator;
 
 import java.awt.*;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -209,6 +207,16 @@ public class SanimalViewController implements Initializable
 
 					if (loginSuccessful)
 					{
+						// Set the authenticator for any HTTP request to use this username and password
+						Authenticator.setDefault(new Authenticator()
+						{
+							@Override
+							protected PasswordAuthentication getPasswordAuthentication()
+							{
+								return new PasswordAuthentication(username, password.toCharArray());
+							}
+						});
+
 						Platform.runLater(() ->
 						{
 							SanimalData.getInstance().setUsername(username);

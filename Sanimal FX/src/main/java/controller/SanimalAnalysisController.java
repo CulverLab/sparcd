@@ -3,6 +3,7 @@ package controller;
 import com.panemu.tiwulfx.control.DetachableTab;
 import com.panemu.tiwulfx.control.DetachableTabPane;
 import controller.analysisView.VisCSVController;
+import controller.analysisView.VisDownloadController;
 import controller.analysisView.VisDrSandersonController;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -48,6 +49,8 @@ public class SanimalAnalysisController implements Initializable
 	public VisDrSandersonController visDrSandersonController;
 	@FXML
 	public VisCSVController visCSVController;
+	@FXML
+	VisDownloadController visDownloadController;
 
 	// The list of query conditions
 	@FXML
@@ -209,6 +212,7 @@ public class SanimalAnalysisController implements Initializable
 					// Hand the analysis over to the visualizations to graph
 					visDrSandersonController.visualize(dataAnalyzer);
 					visCSVController.visualize(dataAnalyzer);
+					visDownloadController.visualize(dataAnalyzer);
 					this.mpnQuerying.setVisible(false);
 				});
 

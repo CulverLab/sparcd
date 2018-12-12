@@ -72,6 +72,9 @@
                 <DetachableTab detachable="false" text="CSV Output" closable="false">
                     <fx:include fx:id="visCSV" source="analysisView/VisCSV.fxml"/>
                 </DetachableTab>
+                <DetachableTab detachable="false" text="Query Download" closable="false">
+                    <fx:include fx:id="visDownload" source="analysisView/VisDownload.fxml"/>
+                </DetachableTab>
             </DetachableTabPane>
         </items>
     </SplitPane>

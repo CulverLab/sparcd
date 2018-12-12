@@ -271,7 +271,7 @@ public class SanimalMapController
 			else if (locationFormat == SettingsData.LocationFormat.UTM)
 			{
 				UTMCoord utmCoord = SanimalAnalysisUtils.Deg2UTM(locationOfMouse.getLatitude(), locationOfMouse.getLongitude());
-				this.lblMouseLocation.setText(utmCoord.getZone().toString() + utmCoord.getLetter().toString() + " - " + Math.round(utmCoord.getEasting()) + "E, " + Math.round(utmCoord.getNorthing()) + "N");
+				this.lblMouseLocation.setText(utmCoord.getZone().toString() + utmCoord.getLetter().toString() + " " + Math.round(utmCoord.getEasting()) + "E, " + Math.round(utmCoord.getNorthing()) + "N");
 			}
 		});
 	}

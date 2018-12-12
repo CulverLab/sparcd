@@ -15,7 +15,10 @@ import model.query.CyVerseQuery;
 import model.species.Species;
 import model.util.RoundingUtils;
 import model.util.SettingsData;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.irods.jargon.core.connection.*;
@@ -35,6 +38,7 @@ import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
 
 import java.io.*;
 import java.lang.reflect.Type;
+import java.net.URL;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -52,6 +56,8 @@ public class CyVerseConnectionManager
 	private static final String CYVERSE_HOST = "data.cyverse.org"; // diana.cyverse.org
 	// The directory that each user has as their home directory
 	private static final String HOME_DIRECTORY = "/iplant/home/";
+	// Base URL used to download files from dav rods
+	private static final String DAVRODS_URL = "https://davrods.cyverse.org/dav";
 	// The directory that collections are stored in
 	private static final String COLLECTIONS_DIRECTORY = "/iplant/home/smalusa/Sanimal/Collections";
 	// Each user is part of the iPlant zone
@@ -1336,6 +1342,45 @@ public class CyVerseConnectionManager
 		}
 
 		return toReturn;
+	}
+
+	/**
+	 * Function used to download a list of iRODS images into a directory specified. Also takes a progress callback as an argument that that can be updated to
+	 * show task progress
+	 *
+	 * @param absoluteIRODSImagePaths A list of absolute iRODS paths to download
+	 * @param dirToSaveTo The directory to download into
+	 * @param progressCallback A callback that can be updated to show download progress
+	 */
+	public void downloadImages(List<String> absoluteIRODSImagePaths, File dirToSaveTo, DoubleProperty progressCallback)
+	{
+		List<String> absoluteLocalFilePaths = absoluteIRODSImagePaths.stream().map(absoluteImagePath -> dirToSaveTo.getAbsolutePath() + File.separator + FilenameUtils.getName(absoluteImagePath)).collect(Collectors.toList());
+		for (int i = 0; i < absoluteIRODSImagePaths.size(); i++)
+		{
+			String absoluteIRODSImagePath = absoluteIRODSImagePaths.get(i);
+			String absoluteLocalFilePath = absoluteLocalFilePaths.get(i);
+			File localFile = new File(absoluteLocalFilePath);
+
+			// While the file exists, we update the path to have a new file name, and then re-create the local file
+			while (localFile.exists())
+			{
+				// Use a random alphabetic character at the end of the file name to make sure the file name is unique
+				absoluteLocalFilePath = absoluteLocalFilePath.replace(".", RandomStringUtils.randomAlphabetic(1) + ".");
+				localFile = new File(absoluteLocalFilePath);
+			}
+			String webPathToDownload = StringEscapeUtils.escapeHtml(DAVRODS_URL + absoluteIRODSImagePath).replace(" ", "%20");
+			try
+			{
+				FileUtils.copyURLToFile(new URL(webPathToDownload), localFile, 30000, 30000);
+			}
+			catch (IOException e)
+			{
+				System.out.println("There was an error downloading the image file, error was:\n" + ExceptionUtils.getStackTrace(e));
+			}
+
+			if (i % 10 == 0)
+				progressCallback.setValue((double) i / absoluteIRODSImagePaths.size());
+		}
 	}
 
 	/**
