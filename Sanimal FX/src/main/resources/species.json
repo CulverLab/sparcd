@@ -2,7 +2,7 @@
   {
     "name": "Badger",
     "scientificName": "Taxidea taxus",
-    "speciesIconURL": "https://arizona.box.com/shared/static/ww741qh4g1iwi3b9zwo2ly212b49kmi7.jpg",
+    "speciesIconURL": "https://arizona.box.com/shared/static/le9xa515z0h4143xtgjlp4z4w5xy3lgy.jpg",
     "keyBinding": null
   },
   {
@@ -38,7 +38,7 @@
   {
     "name": "Coatimundi",
     "scientificName": "Nasua narica",
-    "speciesIconURL": "https://arizona.box.com/shared/static/nl8gaxentgygjn5kieq86dxbcj492gry.jpg",
+    "speciesIconURL": "https://arizona.box.com/shared/static/2q0f04h3tqiqcexugksleqv26jhv015v.jpg",
     "keyBinding": null
   },
   {
@@ -50,7 +50,7 @@
   {
     "name": "Coyote",
     "scientificName": "Canis latrans",
-    "speciesIconURL": "https://arizona.box.com/shared/static/73a2rmgqn4p2z8b9e14my12snhconjla.jpg",
+    "speciesIconURL": "https://arizona.box.com/shared/static/k6zcxzjfymezhjpocmcvl6qrb9dulo0i.jpg",
     "keyBinding": null
   },
   {
@@ -146,7 +146,7 @@
   {
     "name": "Racoon",
     "scientificName": "Procyon lotor",
-    "speciesIconURL": "https://arizona.box.com/shared/static/praycx7c7wcv801ct1n3j9ef4m1l6b8c.jpg",
+    "speciesIconURL": "https://arizona.box.com/shared/static/fy4r198unut8yeaockis3iirt12je7z1.jpg",
     "keyBinding": null
   },
   {
@@ -164,7 +164,7 @@
   {
     "name": "Skunk",
     "scientificName": "Mephitis spp. Spilogale sp. Conepatus sp.",
-    "speciesIconURL": "https://arizona.box.com/shared/static/v4nj85hg51uoc3keizu28rvzh8xqwmeu.jpg",
+    "speciesIconURL": "https://arizona.box.com/shared/static/mysrtwqnazahzp3jyun58y3c7gpz0qm9.jpg",
     "keyBinding": null
   },
   {
@@ -236,7 +236,7 @@
   {
     "name": "Rabbit (Desert Cottontail)",
     "scientificName": "Sylvilagus audubonii",
-    "speciesIconURL": "https://arizona.box.com/shared/static/eb2io77suprekh054ejso5twjifw20g7.jpg",
+    "speciesIconURL": "https://arizona.box.com/shared/static/w2zl2w4j008119ctk1x52aakgroa800f.jpg",
     "keyBinding": null
 	},
 	{
@@ -254,13 +254,19 @@
 	{
     "name": "Hare (Jackrabbits other)",
     "scientificName": "Lepus spp.",
-    "speciesIconURL": "https://arizona.box.com/shared/static/28jmg8n7m1uq4rdeauxdm6x05xgp5bw1.jpg",
+    "speciesIconURL": "https://arizona.box.com/shared/static/yvtfk4554rabw31wspxe0b58f1i0abv4.jpg",
     "keyBinding": null
 	},
 	{
     "name": "Unknown",
     "scientificName": "Incognita",
     "speciesIconURL": "https://arizona.box.com/shared/static/5i52i7uw79cydn8lrbi74qonbqgxmir3.png",
+    "keyBinding": null
+	},
+	{
+    "name": "Owl",
+    "scientificName": "Strigiformes",
+    "speciesIconURL": "https://arizona.box.com/shared/static/m7pnij0v5h21kkhcjifbq9wdb2czn4ck.jpg",
     "keyBinding": null
 	}
 ]
