@@ -1,6 +1,7 @@
-# Scientific Animal Image Analysis (SANIMAL)
+# Scientific Photo Analysis for Research & Conservation 'database (SPARC'd), known during development as Scientific Animal Image Analysis (SANIMAL)
 
-SANIMAL is a program developed for the University of Arizona's School of Natural Resources and the Environment department. It allows users to tag camera trap image data, transfer it onto a database, and then query it.
+SPARC'd is a program developed for the University of Arizona's Jaguar and Ocelot Monitoring Project at the Wild Cat Research and Conservation Center, School of Natural Resources and the Environment Department.
+* **It allows users to tag camera trap image data, transfer it onto a database, and then query it.*
 
 ## Getting Started
 
@@ -81,6 +82,21 @@ java -jar '<directory>/Sanimal FX/target/SanimalFX-1.0-SNAPSHOT-jar-with-depende
 
 * [Maven](https://maven.apache.org/) - Dependency Management
 
+* This Beta Version of “SPARC’d”  is being developed by University of Arizona School of Natural Resources and the Environment (SNRE) and CyVerse. 
+
 ## Authors
 
-* **David Slovikosky** - *Developed the program* - [DavidM1A2](https://github.com/DavidM1A2)
+* **David Slovikosky** - *Lead Developer* - [DavidM1A2](https://github.com/DavidM1A2)
+* **Susan Malusa** - *Project Coordination/Design* - [smalusa](https://github.com/smalusa)
+* **Project Site Documentation* - [smalusa](https://github.com/CulverLab)
+
+## Acknowledgements
+
+* **Co-Principal Investigators** - *Dr. Melanie Culver and Nirav Merchant* 
+* **Technical Advisors** - *Dr. Richard Snodgrass and Carlos Scheidegger* 
+* **CyVerse Support** - *Dr. Blake Joyce, Tony Edgin and Julian Pistorius* 
+* **Support and Ideas** - * The University of Arizona Jaguar & Ocelot Monitoring Team*
+* **The Slovikosky Family* 
+
+
+
