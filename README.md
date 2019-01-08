@@ -88,15 +88,14 @@ java -jar '<directory>/Sanimal FX/target/SanimalFX-1.0-SNAPSHOT-jar-with-depende
 
 * **David Slovikosky** - *Lead Developer* - [DavidM1A2](https://github.com/DavidM1A2)
 * **Susan Malusa** - *Project Coordination/Design* - [smalusa](https://github.com/smalusa)
-* **Project Site Documentation* - [smalusa](https://github.com/CulverLab)
+* **Project Site Documentation** - [smalusa](https://github.com/CulverLab)
 
 ## Acknowledgements
 
 * **Co-Principal Investigators** - *Dr. Melanie Culver and Nirav Merchant* 
 * **Technical Advisors** - *Dr. Richard Snodgrass and Carlos Scheidegger* 
 * **CyVerse Support** - *Dr. Blake Joyce, Tony Edgin and Julian Pistorius* 
-* **Support and Ideas** - * The University of Arizona Jaguar & Ocelot Monitoring Team*
-* **The Slovikosky Family* 
+* **Support and Ideas** - *The University of Arizona Jaguar & Ocelot Monitoring Team, The Slovikosky Family*
 
 
 
