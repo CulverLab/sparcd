@@ -1,0 +1,25 @@
+language: java
+
+addons:
+  apt:
+    packages:
+    - oracle-java8-installer
+
+script:
+  - cd Sanimal\ FX
+  - mvn -U compile package
+
+deploy:
+  provider: releases
+  api_key: "GITHUB OAUTH TOKEN"
+  file: "target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar"
+  skip_cleanup: true
+  on:
+    tags: true
+
+deploy:
+  provider: releases
+  api_key: "GITHUB OAUTH TOKEN"
+  file: "target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar"
+  skip_cleanup: true
+  draft: true
