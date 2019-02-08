@@ -11,18 +11,9 @@ script:
 
 deploy:
   provider: releases
-  api_key: "GITHUB OAUTH TOKEN"
+  api_key: $GITHUB_API_KEY
   file: "target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar"
   skip_cleanup: true
   on:
     tags: true
-    all_branches: true
-
-deploy:
-  provider: releases
-  api_key: "GITHUB OAUTH TOKEN"
-  file: "target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar"
-  skip_cleanup: true
-  draft: true
-  on:
     all_branches: true
