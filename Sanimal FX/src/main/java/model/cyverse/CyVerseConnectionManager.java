@@ -57,7 +57,7 @@ public class CyVerseConnectionManager
 	// The directory that each user has as their home directory
 	private static final String HOME_DIRECTORY = "/iplant/home/";
 	// Base URL used to download files from dav rods
-	private static final String DAVRODS_URL = "https://davrods.cyverse.org/dav";
+	private static final String DAVRODS_URL = "https://data.cyverse.org/dav";
 	// The directory that collections are stored in
 	private static final String COLLECTIONS_DIRECTORY = "/iplant/home/smalusa/Sanimal/Collections";
 	// Each user is part of the iPlant zone
