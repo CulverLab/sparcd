@@ -1,11 +1,10 @@
 language: java
-
-addons:
-  apt:
-    packages:
-    - oracle-java8-installer
+dist: trusty
+jdk:
+  - oraclejdk8
 
 script:
+  - jdk_switcher use oraclejdk8
   - cd Sanimal\ FX
   - mvn -U compile package
 
