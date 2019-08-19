@@ -10,8 +10,7 @@ deploy:
   provider: releases
   draft: true
   skip_cleanup: true
-  api_key:
-    secure: I+c3wLpJjVrNQ/6cM4Z4qqP52ojyX52EImITwH3R7w4RlF5j23rGrUWs+LlaJI0ySfmqrXUsWChiZwXy0fhnFZTFG6+dESIDeGq8NRM9mLPkVkUuzQGS/xrF7dX/AwWS1Is3eZcshSAnXnVPaNC4nho2R9Dskr5ge+Pv182WaY67wWBem0aeFDl6CYnrHbfEeuWrZg8DXBm2ZenEAlXX2RKYNMLUbFBT9HLZX/FcphtKCGYYzJF5PAVE58TRBh49LFiF4igvZt1AeKGtNdOXoq1ufSftKaYR3FvY61wcf8Sm9Tnjd2Hr3JEfr1OPpFf5ZZSUncljUysPM2F1vRIeJBYX7kbecRdEjHvwj1mQndNKRx880Dtmu4ybemfEJNT9NhvQHmJhV9YjZCqJHM8vopKG3zQiHCrcAjBqU8ESIdftHnpA8Qtho2Pehheuas6x9UAkDy2c2GV9KXk/KDqXRG2HzQbvm7bKIx/egPvrFlX2EPI0dcBaaQFHhHVrcjBzEoTeTxz3cP7GbIA4/DYByjm4QLS+mPdDZ0/gd4uue4ZewqRvTeXaB/5OUstHNeSNGxXdFw3rWKlavzBobrpj1Biq50CkFjm9dhTid8O37NJPgMHf9ii0bKCfJ40V4iSATc6Djt8zYOPaFk0N9fCiXrlAMO0KHzxwPhTRI/aRvcI=
+  api_key: "$GITHUB_OAUTH_TOKEN"
   file: target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar
   on:
     repo: CulverLab/sparcd
