@@ -8,7 +8,6 @@ script:
 - mvn -U compile package
 deploy:
   provider: releases
-  draft: true
   skip_cleanup: true
   api_key: "$GITHUB_OAUTH_TOKEN"
   file: target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar
