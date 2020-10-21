@@ -10,6 +10,10 @@
     <name>Scientific Animal Image Analysis</name>
     <packaging>jar</packaging>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -17,8 +21,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>15</source>
+                    <target>15</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -56,11 +60,17 @@
     </build>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.openfx/javafx-controls -->
+	<dependency>
+	    <groupId>org.openjfx</groupId>
+	    <artifactId>javafx-controls</artifactId>
+	    <version>15</version>
+	</dependency>
         <!-- JFXtras to get a time picker -->
         <dependency>
             <groupId>org.jfxtras</groupId>
             <artifactId>jfxtras-controls</artifactId>
-            <version>8.0-r5</version>
+            <version>14-r1-SNAPSHOT</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-imaging -->
         <dependency>
@@ -75,35 +85,34 @@
             <version>1.0.4-SNAPSHOT</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.controlsfx/controlsfx -->
-        <!-- Using RELEASE version causes issues with the progress bar. Maybe this will be fixed later? -->
-        <dependency>
+         <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
-            <version>8.40.14</version>
+            <version>12.0.0-SNAPSHOT</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/commons-validator/commons-validator -->
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>1.5.1</version>
+            <version>1.7</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang -->
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.2.2-SNAPSHOT</version>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
-        <dependency>
+        <!-- <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.5</version>
-        </dependency>
+        </dependency> -->
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.1</version>
+            <version>4.4</version>
         </dependency>
         <!-- https://github.com/google/gson -->
         <dependency>
@@ -115,13 +124,13 @@
         <dependency>
             <groupId>org.hildan.fxgson</groupId>
             <artifactId>fx-gson</artifactId>
-            <version>3.1.0</version>
+            <version>3.1.2</version>
         </dependency>
         <!-- https://github.com/DICE-UNC/jargon -->
         <dependency>
             <groupId>org.irods.jargon</groupId>
             <artifactId>jargon-core</artifactId>
-            <version>4.2.2.1-RELEASE</version>
+            <version>4.3.1.0-RELEASE</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com/panemu/tiwulfx -->
         <dependency>
@@ -133,7 +142,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.17</version>
+            <version>1.20</version>
         </dependency>
         <!-- Allows for a map control -->
         <dependency>
@@ -142,11 +151,11 @@
             <version>-SNAPSHOT</version>
         </dependency>
         <!-- Removes annoying logging messages! -->
-        <dependency>
+        <!-- <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.2.1</version>
-        </dependency>
+        </dependency>-->
     </dependencies>
 
     <repositories>
