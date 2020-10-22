@@ -39,7 +39,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>controller.Sanimal</mainClass>
+                            <mainClass>controller.GUIStarter</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -66,6 +66,17 @@
 	    <artifactId>javafx-controls</artifactId>
 	    <version>15</version>
 	</dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>15</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics </artifactId>
+            <version>12</version>
+            <classifier>mac</classifier>
+        </dependency>
         <!-- JFXtras to get a time picker -->
         <dependency>
             <groupId>org.jfxtras</groupId>
