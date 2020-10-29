@@ -136,7 +136,7 @@ public class SanimalMapController
 			// The maximum size in pixels of the scale in the bottom left
 			final double MAX_SIZE = 300;
 			// Pixels per meter to start with here
-			double pixelsPerPowerOf10 = this.map.getProjection().getMapScale(this.map.getCenter()).getY();
+			double pixelsPerPowerOf10 = this.map.getProjection().getRelativeScale(this.map.getCenter()).getY();
 			// Iterate up to 25 times (or 10^25)
 			for (int currentPowerOf10 = 0; currentPowerOf10 < 25; currentPowerOf10++)
 			{
@@ -262,7 +262,7 @@ public class SanimalMapController
 		this.map.setOnMouseMoved(event ->
 		{
 			// Get the mouse location
-			fxmapcontrol.Location locationOfMouse = this.map.getProjection().viewportPointToLocation(new Point2D(event.getX(), event.getY()));
+			fxmapcontrol.Location locationOfMouse = this.map.viewToLocation(new Point2D(event.getX(), event.getY()));
 			// Get the format for location
 			SettingsData.LocationFormat locationFormat = SanimalData.getInstance().getSettings().getLocationFormat();
 			// Set the location format text to be in either lat/long or utms
