@@ -872,7 +872,6 @@ public class CyVerseConnectionManager
 					// Changing the tar names to prevent conflicts
 					RetryTransferStatusCallbackListener retryListener = new RetryTransferStatusCallbackListener(transferCallback);
 					List<File> newTarNames = new ArrayList<File>();
-					SanimalData.getInstance().getErrorDisplay().printError("Moving files ...");
 					for (Integer tarPart = 0; tarPart < tarsToWrite.length; tarPart++)
 					{
 						File toWrite = tarsToWrite[tarPart];
@@ -991,7 +990,6 @@ public class CyVerseConnectionManager
 								}
 
 								// Sleep for the retry period
-								SanimalData.getInstance().getErrorDisplay().printError("Waiting before retry");
 								keepRetrying = this.retryDelayWait();
 							}
 						}
