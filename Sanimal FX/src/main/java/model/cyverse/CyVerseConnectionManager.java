@@ -1288,30 +1288,34 @@ public class CyVerseConnectionManager
 				IRODSQueryResultSet resultSet = irodsGenQueryExecutor.executeIRODSQuery(query, 0);
 
 				List<String> matchingFilePaths = new ArrayList<>();
-
-				// Iterate while more results exist
-				do
-				{
-					// Grab each row
-					for (IRODSQueryResultRow resultRow : resultSet.getResults())
+				
+				// Don't bother looping unless we have something
+				if (resultSet != null) {
+					// Iterate while more results exist
+					do
 					{
-						// Get the path to the image and the image name, create an absolute path with the info
-						String pathToImage = resultRow.getColumn(0);
-						String imageName = resultRow.getColumn(1);
-						matchingFilePaths.add(pathToImage + "/" + imageName);
-					}
+						// Grab each row
+						for (IRODSQueryResultRow resultRow : resultSet.getResults())
+						{
+							// Get the path to the image and the image name, create an absolute path with the info
+							String pathToImage = resultRow.getColumn(0);
+							String imageName = resultRow.getColumn(1);
+							matchingFilePaths.add(pathToImage + "/" + imageName);
+						}
 
-					// Need this test to avoid NoMoreResultsException
-					if (resultSet.isHasMoreRecords())
-					{
-						// Move the result set on if there's more records
-						IRODSQueryResultSet nextResultSet = irodsGenQueryExecutor.getMoreResults(resultSet);
-						// Close the current result set
-						irodsGenQueryExecutor.closeResults(resultSet);
-						// Advance the "pointer" to the next result set
-						resultSet = nextResultSet;
-					}
-				} while (resultSet.isHasMoreRecords());
+						// Need this test to avoid NoMoreResultsException
+						if (resultSet.isHasMoreRecords())
+						{
+							// Move the result set on if there's more records
+							IRODSQueryResultSet nextResultSet = irodsGenQueryExecutor.getMoreResults(resultSet);
+							// Advance the "pointer" to the next result set
+							resultSet = nextResultSet;
+						}
+					} while (resultSet.isHasMoreRecords());
+
+					// Close the result set
+					irodsGenQueryExecutor.closeResults(resultSet);
+				}
 				this.sessionManager.closeSession();
 				return matchingFilePaths;
 			}
