@@ -1286,14 +1286,21 @@ public class CyVerseConnectionManager
 				// Perform the query, and get a set of results
 				IRODSGenQueryExecutor irodsGenQueryExecutor = this.sessionManager.getCurrentAO().getIRODSGenQueryExecutor(this.authenticatedAccount);
 				IRODSQueryResultSet resultSet = irodsGenQueryExecutor.executeIRODSQuery(query, 0);
+				IRODSQueryResultSet nextResultSet = null;
 
 				List<String> matchingFilePaths = new ArrayList<>();
 				
 				// Don't bother looping unless we have something
 				if (resultSet != null) {
+					// Initialize for first pass through loop
+					nextResultSet = resultSet;
+
 					// Iterate while more results exist
 					do
 					{
+						// Advance the "pointer" to the next result set
+						resultSet = nextResultSet;
+						
 						// Grab each row
 						for (IRODSQueryResultRow resultRow : resultSet.getResults())
 						{
@@ -1307,9 +1314,7 @@ public class CyVerseConnectionManager
 						if (resultSet.isHasMoreRecords())
 						{
 							// Move the result set on if there's more records
-							IRODSQueryResultSet nextResultSet = irodsGenQueryExecutor.getMoreResults(resultSet);
-							// Advance the "pointer" to the next result set
-							resultSet = nextResultSet;
+							nextResultSet = irodsGenQueryExecutor.getMoreResults(resultSet);
 						}
 					} while (resultSet.isHasMoreRecords());
 
