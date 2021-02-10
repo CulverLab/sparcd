@@ -21,14 +21,14 @@ public class FXMLLoaderUtils
 	public static FXMLLoader loadFXML(String FXMLFileName)
 	{
 		// Create the loader
-		FXMLLoader loader = new FXMLLoader(Sanimal.class.getClass().getResource("/view/" + FXMLFileName));
+		FXMLLoader loader = new FXMLLoader(Sanimal.class.getResource("/view/" + FXMLFileName));
 
 		// Attempt to load the file. If we get an error throw an exception
 		try
 		{
 			loader.load();
 		}
-		catch (IOException exception)
+		catch (IOException | IllegalStateException exception)
 		{
 			SanimalData.getInstance().getErrorDisplay().printError("Could not load the FXML file for the file " + FXMLFileName + "!\n" + ExceptionUtils.getStackTrace(exception));
 			System.exit(-1);
