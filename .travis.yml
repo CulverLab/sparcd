@@ -1,11 +1,15 @@
 language: java
 dist: trusty
 jdk:
-- oraclejdk8
+  - openjdk15
+
+cache:
+  directories:
+    - $HOME/.m2
+
 script:
-- jdk_switcher use oraclejdk8
-- cd Sanimal\ FX
-- mvn -U compile package
+  - cd Sanimal\ FX
+  - mvn -U compile package
 
 before_deploy:
   - mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar target/sparcd.jar
@@ -16,5 +20,4 @@ deploy:
   api_key: "$GITHUB_OAUTH_TOKEN"
   file: target/sparcd.jar
   on:
-    repo: CulverLab/sparcd
     tags: true
