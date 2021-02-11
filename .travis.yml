@@ -15,5 +15,4 @@ deploy:
   api_key: "$GITHUB_OAUTH_TOKEN"
   file: target/sparcd.jar
   on:
-    repo: CulverLab/sparcd
     tags: true
