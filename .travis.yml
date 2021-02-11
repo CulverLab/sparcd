@@ -6,6 +6,10 @@ script:
   - cd Sanimal\ FX
   - mvn -U compile package
 
+cache:
+  directories:
+    - $HOME/.m2
+
 before_deploy:
   - mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar target/sparcd.jar
 
