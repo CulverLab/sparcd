@@ -1456,6 +1456,11 @@ public class CyVerseConnectionManager
 					{
 						String speciesScientificName = speciesIDToScientificName.get(key);
 						Integer speciesCount = speciesIDToCount.get(key);
+						if (speciesCount == null) {
+ 						  System.out.println("NULL COUNT: fetchMetadataFor: " + speciesScientificName + "  Count: " + speciesCount);
+						  continue;
+						}
+						
 						// Grab the species based on ID
 						Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(speciesScientificName)).findFirst().get();
 						entry.addSpecies(correctSpecies, speciesCount);
