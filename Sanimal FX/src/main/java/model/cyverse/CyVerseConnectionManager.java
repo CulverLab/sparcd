@@ -9,6 +9,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import model.SanimalData;
 import model.constant.SanimalMetadataFields;
+import model.cyverse.RetryTransferStatusCallbackListener;
 import model.image.*;
 import model.location.Location;
 import model.query.CyVerseQuery;
@@ -24,6 +25,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.irods.jargon.core.connection.*;
 import org.irods.jargon.core.connection.auth.AuthResponse;
 import org.irods.jargon.core.exception.AuthenticationException;
+import org.irods.jargon.core.exception.ChecksumInvalidException;
 import org.irods.jargon.core.exception.InvalidUserException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
@@ -45,6 +47,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -78,6 +81,10 @@ public class CyVerseConnectionManager
 
 	private IRODSAccount authenticatedAccount;
 	private CyVerseSessionManager sessionManager;
+
+	// Retry waiting variables
+	private int retryWaitIndex = 0;
+	private int[] retryWaitSeconds = {5, 30, 70, 180, 300};
 
 	/**
 	 * Given a username and password, this method logs a cyverse user in
@@ -803,6 +810,7 @@ public class CyVerseConnectionManager
 	{
 		if (this.sessionManager.openSession())
 		{
+			this.retryDelayReset();
 			try
 			{
 				// Grab the uploads folder for a given collection
@@ -859,23 +867,142 @@ public class CyVerseConnectionManager
 							e.printStackTrace();
 						}
 						return "";
-					}, 900);
+					}, 50);
 
-					// For each tar part, upload
+					// Changing the tar names to prevent conflicts
+					RetryTransferStatusCallbackListener retryListener = new RetryTransferStatusCallbackListener(transferCallback);
+					List<File> newTarNames = new ArrayList<File>();
 					for (Integer tarPart = 0; tarPart < tarsToWrite.length; tarPart++)
 					{
-						if (messageCallback != null)
-							messageCallback.setValue("Uploading TAR file part (" + (tarPart + 1) + " / " + tarsToWrite.length + ") to CyVerse...");
-
 						File toWrite = tarsToWrite[tarPart];
 						File localToUpload = new File(FilenameUtils.getFullPath(toWrite.getAbsolutePath()) + uploadFolderName + "-" + tarPart.toString() + "." + FilenameUtils.getExtension(toWrite.getAbsolutePath()));
 						toWrite.renameTo(localToUpload);
-						// Upload the tar
-						this.sessionManager.getCurrentAO().getDataTransferOperations(this.authenticatedAccount).putOperation(localToUpload, collectionUploadDir, transferCallback, null);
-
-						localToUpload.delete();
+						newTarNames.add(localToUpload);
 					}
+
+					// Get initial list of files to upload
+					File[] transferFiles = new File[newTarNames.size()];
+					for (Integer tarPart = 0; tarPart < newTarNames.size(); tarPart++)
+					{
+						transferFiles[tarPart] = newTarNames.get(tarPart);
+					}
+
+					// Transfer the tar files with retry attempts
+					boolean keepRetrying = true;
+					do
+					{
+						// Make sure we clear failed file tracking
+						retryListener.resetFailedFiles();
+
+						// Loop through the list of files to upload
+						for (Integer tarPart = 0; tarPart < transferFiles.length; tarPart++)
+						{
+							if (messageCallback != null)
+								messageCallback.setValue("Uploading TAR file part (" + (tarPart + 1) + " / " + transferFiles.length + ") to CyVerse...");
+
+							File toWrite = transferFiles[tarPart];
+
+							// Upload the tar
+							try
+							{
+								this.sessionManager.getCurrentAO().getDataTransferOperations(this.authenticatedAccount)
+											.putOperation(toWrite, collectionUploadDir, retryListener, null);
+							}
+							catch (JargonException ex)
+							{
+								// Check if we're still trying to resend files or giving up because we've tried enough times
+								if (!keepRetrying)
+								{
+									// Give up
+									SanimalData.getInstance().getErrorDisplay().printError("Giving up on UploadImage retries");
+									throw ex;
+								}
+
+								retryListener.addFailedFile(toWrite.getAbsolutePath());
+								messageCallback.setValue("Failed to upload TAR file part "+ (tarPart + 1) + " to CyVerse.");
+
+								// Add remaining files to failed list and break the loop
+								for (Integer rem_part = tarPart + 1; rem_part < transferFiles.length; rem_part++)
+								{
+									retryListener.addFailedFile(transferFiles[rem_part].getAbsolutePath());
+								}
+								break;
+							}
+						}
+
+						// Get list of upload failures so we can handle them
+						List<String> failedTransfers = retryListener.getFailedFiles();
+
+						// For upload non-failures, perform a checksum test
+						for (Integer tarPart = 0; tarPart < transferFiles.length; tarPart++)
+						{
+							File toWrite = transferFiles[tarPart];
+							String localPath = toWrite.getAbsolutePath();
+							if (failedTransfers.indexOf(localPath) < 0)
+							{
+								// Perform a checksum test
+								String destFile = collectionUploadDirStr + "/" + toWrite.getName();
+								try
+								{
+									this.sessionManager.getCurrentAO().getDataObjectChecksumUtilitiesAO(this.authenticatedAccount)
+										.verifyLocalFileAgainstIrodsFileChecksum(localPath, destFile);
+								}
+								catch (ChecksumInvalidException ex)
+								{
+									failedTransfers.add(localPath);
+								}
+								catch (JargonException ex)
+								{
+									// Ignore inability to validate checksums due to serious network issues (assume success)
+									SanimalData.getInstance().getErrorDisplay().printError("Ignoring failed checksum test: " + localPath);
+								}
+							}
+						}
+
+						// If we have failed transfers, retry them
+						if (failedTransfers.size() > 0)
+						{
+							List<File> failedFiles =  new ArrayList<File>();
+
+							if (messageCallback != null)
+								messageCallback.setValue("Retrying " + (failedTransfers.size()) + " files that failed to upload");
+
+							// Find the failed files to make a new transfer list
+							for (Integer tarPart = 0; tarPart < transferFiles.length; tarPart++)
+							{
+								File toWrite = transferFiles[tarPart];
+								String localPath = toWrite.getAbsolutePath();
+								if (failedTransfers.indexOf(localPath) >= 0)
+								{
+									// We have a match, store for trying again
+									failedFiles.add(toWrite);
+								}
+							}
+
+							// If we have failures, try again after a backoff period
+							if (failedFiles.size() > 0)
+							{
+								// Provide the set of files to retry
+								tarsToWrite = new File[failedFiles.size()];
+								for (Integer tarPart = 0; tarPart < failedFiles.size(); tarPart++)
+								{
+									tarsToWrite[tarPart] = failedFiles.get(tarPart);
+								}
+
+								// Sleep for the retry period
+								keepRetrying = this.retryDelayWait();
+							}
+						}
+
+					} while (retryListener.hasFailedFiles());
 					// Let rules do the rest!
+
+					// Remove local files
+					for (Integer tarPart = 0; tarPart < newTarNames.size(); tarPart++)
+					{
+						File toUpload = newTarNames.get(tarPart);
+						toUpload.delete();
+					}
 				}
 			}
 			catch (JargonException | IOException e)
@@ -1159,32 +1286,41 @@ public class CyVerseConnectionManager
 				// Perform the query, and get a set of results
 				IRODSGenQueryExecutor irodsGenQueryExecutor = this.sessionManager.getCurrentAO().getIRODSGenQueryExecutor(this.authenticatedAccount);
 				IRODSQueryResultSet resultSet = irodsGenQueryExecutor.executeIRODSQuery(query, 0);
+				IRODSQueryResultSet nextResultSet = null;
 
 				List<String> matchingFilePaths = new ArrayList<>();
+				
+				// Don't bother looping unless we have something
+				if (resultSet != null) {
+					// Initialize for first pass through loop
+					nextResultSet = resultSet;
 
-				// Iterate while more results exist
-				do
-				{
-					// Grab each row
-					for (IRODSQueryResultRow resultRow : resultSet.getResults())
+					// Iterate while more results exist
+					do
 					{
-						// Get the path to the image and the image name, create an absolute path with the info
-						String pathToImage = resultRow.getColumn(0);
-						String imageName = resultRow.getColumn(1);
-						matchingFilePaths.add(pathToImage + "/" + imageName);
-					}
-
-					// Need this test to avoid NoMoreResultsException
-					if (resultSet.isHasMoreRecords())
-					{
-						// Move the result set on if there's more records
-						IRODSQueryResultSet nextResultSet = irodsGenQueryExecutor.getMoreResults(resultSet);
-						// Close the current result set
-						irodsGenQueryExecutor.closeResults(resultSet);
 						// Advance the "pointer" to the next result set
 						resultSet = nextResultSet;
-					}
-				} while (resultSet.isHasMoreRecords());
+						
+						// Grab each row
+						for (IRODSQueryResultRow resultRow : resultSet.getResults())
+						{
+							// Get the path to the image and the image name, create an absolute path with the info
+							String pathToImage = resultRow.getColumn(0);
+							String imageName = resultRow.getColumn(1);
+							matchingFilePaths.add(pathToImage + "/" + imageName);
+						}
+
+						// Need this test to avoid NoMoreResultsException
+						if (resultSet.isHasMoreRecords())
+						{
+							// Move the result set on if there's more records
+							nextResultSet = irodsGenQueryExecutor.getMoreResults(resultSet);
+						}
+					} while (resultSet.isHasMoreRecords());
+
+					// Close the result set
+					irodsGenQueryExecutor.closeResults(resultSet);
+				}
 				this.sessionManager.closeSession();
 				return matchingFilePaths;
 			}
@@ -1320,6 +1456,11 @@ public class CyVerseConnectionManager
 					{
 						String speciesScientificName = speciesIDToScientificName.get(key);
 						Integer speciesCount = speciesIDToCount.get(key);
+						if (speciesCount == null) {
+ 						  System.out.println("NULL COUNT: fetchMetadataFor: " + speciesScientificName + "  Count: " + speciesCount);
+						  continue;
+						}
+						
 						// Grab the species based on ID
 						Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(speciesScientificName)).findFirst().get();
 						entry.addSpecies(correctSpecies, speciesCount);
@@ -1546,5 +1687,51 @@ public class CyVerseConnectionManager
 					"Error pushing remote file (" + file + ")!\n" + ExceptionUtils.getStackTrace(e),
 					false);
 		}
+	}
+
+	/**
+	 * Resets the retry wait variables
+	 */
+	private void retryDelayReset()
+	{
+		this.retryWaitIndex = 0;
+	}
+
+	/**
+	 * Sleeps for the numbers of seconds specified by the retry index
+	 *
+	 * @return will return false if there are no more timeouts available (probably should stop trying) otherwise true is returned after sleep finishes
+	 */
+	private boolean retryDelayWait()
+	{
+		if (this.retryWaitIndex >= this.retryWaitSeconds.length)
+		{
+			return false;
+		}
+
+		int waitSeconds = this.retryWaitSeconds[this.retryWaitIndex];
+		this.retryWaitIndex++;
+
+		long start_timestamp = 0;
+		long cur_timestamp = 0;
+		do
+		{
+			start_timestamp = System.currentTimeMillis();
+			try
+			{
+				TimeUnit.SECONDS.sleep(waitSeconds);
+			}
+			catch (InterruptedException ex)
+			{
+				// We're ignoring this exception since we handle interruptions by default (by retrying)
+			}
+
+			cur_timestamp = System.currentTimeMillis();
+
+			waitSeconds -= (cur_timestamp - start_timestamp) / 1000;
+
+		} while (waitSeconds > 0);
+
+		return true;
 	}
 }
