@@ -19,7 +19,7 @@ jobs:
           java-version: 15
 
       - name: Build with Maven
-        run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar target/sparcd.jar
+        run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd.jar
 
       - run: "find ."
 
@@ -31,5 +31,5 @@ jobs:
           prerelease: true
           title: "Development Build"
           files: |
-            "./Sanimal FX/target/sparcd.jar"
+            sparcd.jar
         id: "automatic_releases"
