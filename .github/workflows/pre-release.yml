@@ -31,5 +31,5 @@ jobs:
           prerelease: true
           title: "Development Build"
           files: |
-            "Sanimal FX/target/sparcd.jar"
+            "./Sanimal FX/target/sparcd.jar"
         id: "automatic_releases"
