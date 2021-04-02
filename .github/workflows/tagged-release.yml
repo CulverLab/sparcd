@@ -1,13 +1,12 @@
-name: "pre-release"
+name: "tagged-release"
 
 on:
   push:
-    branches: [ Sanimal-No-ES ]
-    tags-ignore:
-      - "*"
+    tags:
+      - "v*"
 
 jobs:
-  gh_pre_release:
+  gh_tagged_release:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
@@ -34,9 +33,9 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "pre-release"
+          automatic_release_tag: "latest"
           prerelease: true
-          title: "Development Build"
+          title: "Release Build"
           files: |
             sparcd.jar
         id: "automatic_releases"
