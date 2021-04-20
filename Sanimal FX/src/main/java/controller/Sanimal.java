@@ -46,7 +46,7 @@ public class Sanimal extends Application
         // Put the scene on the stage
         primaryStage.setScene(scene);
         primaryStage.getIcons().add(new Image("images/mainMenu/paw.png"));
-        primaryStage.setTitle("Scientific Photo Analysis for Research & Conservation database (SPARC'd)");
+        primaryStage.setTitle("IRODS 4.2 TEST - Scientific Photo Analysis for Research & Conservation database (SPARC'd)");
         // When we click exit...
         primaryStage.setOnCloseRequest(event ->
         {

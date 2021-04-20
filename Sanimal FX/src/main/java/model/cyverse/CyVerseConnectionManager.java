@@ -56,15 +56,15 @@ import java.util.stream.Collectors;
 public class CyVerseConnectionManager
 {
 	// The string containing the host address that we connect to
-	private static final String CYVERSE_HOST = "data.cyverse.org"; // diana.cyverse.org
+	private static final String CYVERSE_HOST = "libra.cyverse.org";  // "data.cyverse.org"; // diana.cyverse.org
 	// The directory that each user has as their home directory
-	private static final String HOME_DIRECTORY = "/iplant/home/";
+	private static final String HOME_DIRECTORY = "/cyverse/home/";
 	// Base URL used to download files from dav rods
-	private static final String DAVRODS_URL = "https://data.cyverse.org/dav";
+	private static final String DAVRODS_URL = "https://libra.cyverse.org/dav";  //"https://data.cyverse.org/dav";
 	// The directory that collections are stored in
-	private static final String COLLECTIONS_DIRECTORY = "/iplant/home/smalusa/Sanimal/Collections";
+	private static final String COLLECTIONS_DIRECTORY = "/cyverse/home/smalusa/Sanimal/Collections";
 	// Each user is part of the iPlant zone
-	private static final String ZONE = "iplant";
+	private static final String ZONE = "cyverse";  //"iplant";
 	// The type used to serialize a list of locations through Gson
 	private static final Type LOCATION_LIST_TYPE = new TypeToken<ArrayList<Location>>()
 	{

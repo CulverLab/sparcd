@@ -70,7 +70,7 @@ public class SanimalHomeController implements Initializable
 	public void initialize(URL location, ResourceBundle resources)
 	{
 		// If we're logged in show the logged in person's username
-		this.lblUsername.textProperty().bind(EasyBind.monadic(SanimalData.getInstance().usernameProperty()).map(username -> "Welcome " + username + "!").orElse(""));
+		this.lblUsername.textProperty().bind(EasyBind.monadic(SanimalData.getInstance().usernameProperty()).map(username -> "Welcome " + username + "! IMPORTANT: This is the IRODS 4.2 Test Version of SPARCd").orElse("IMPORTANT: This is the IRODS 4.2 Test Version of SPARCd"));
 
 		// Grab the logged in property
 		ReadOnlyBooleanProperty loggedIn = SanimalData.getInstance().loggedInProperty();

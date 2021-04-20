@@ -2,7 +2,7 @@ name: "pre-release"
 
 on:
   push:
-    branches: [ Sanimal-No-ES ]
+    branches: [ Sanimal-No-ES, test-irods-4.2 ]
     tags-ignore:
       - "*"
 
