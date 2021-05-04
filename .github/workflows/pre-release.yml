@@ -24,7 +24,7 @@ jobs:
           java-version: 15
 
       - name: Build with Maven
-        run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd.jar
+        run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd-${{ matrix.platform }}.jar
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v2.2.2
@@ -43,5 +43,5 @@ jobs:
           prerelease: true
           title: "Development Build"
           files: |
-            sparcd.jar
+            sparcd-${{ matrix.platform }}.jar
         id: "automatic_releases"
