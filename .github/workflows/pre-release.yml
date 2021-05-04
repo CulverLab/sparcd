@@ -31,7 +31,7 @@ jobs:
         with:
           name: sparcd_artifacts
           # A file, directory or wildcard pattern that describes what to upload
-          path: "sparcd.jar"
+          path: "sparcd-${{ matrix.platform }}.jar"
           if-no-files-found: warn
           retention-days: 0
 
