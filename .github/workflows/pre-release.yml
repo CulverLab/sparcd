@@ -8,7 +8,7 @@ on:
 
 jobs:
   gh_pre_release:
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest, windows-latest]
     steps:
       - name: "Checkout source code"
         uses: actions/checkout@v2
