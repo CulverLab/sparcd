@@ -6,8 +6,32 @@ on:
       - "v*"
 
 jobs:
-  gh_tagged_release:
+  create_release:
+    name: Create release
     runs-on: ubuntu-latest
+    # Note this. We are going to use that in further jobs.
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: latest
+          release_name: Release Build
+          draft: false
+          prerelease: false
+
+  gh_tagged_release:
+    needs: create_release
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.platform }}
     steps:
       - name: "Checkout source code"
         uses: actions/checkout@v2
@@ -18,24 +42,19 @@ jobs:
           java-version: 15
 
       - name: Build with Maven
-        run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd.jar
+        run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd-${{ matrix.platform }}.jar
 
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v2.2.2
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: sparcd_artifacts
-          # A file, directory or wildcard pattern that describes what to upload
-          path: "sparcd.jar"
-          if-no-files-found: warn
-          retention-days: 0
-
-      - name: "Upload a release"
-        uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          prerelease: false
-          title: "Release Build"
-          files: |
-            sparcd.jar
-        id: "automatic_releases"
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          # This is how it will be named on the release page. Put whatever name
+          # you like, remember that they need to be different for each platform.
+          asset_name: sparcd-${{ matrix.platform }}.jar
+          # The path to the file you want to upload.
+          asset_path: sparcd-${{ matrix.platform }}.jar
+          # probably you will need to change it, but most likely you are
+          # uploading a binary file
+          asset_content_type: application/java-archive
