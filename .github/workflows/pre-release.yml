@@ -53,7 +53,7 @@ jobs:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
           # This is how it will be named on the release page. Put whatever name
           # you like, remember that they need to be different for each platform.
-          asset_name: sparcd-${{ matrix.platform }}
+          asset_name: sparcd-${{ matrix.platform }}-prerelease.jar
           # The path to the file you want to upload.
           asset_path: sparcd-${{ matrix.platform }}.jar
           # probably you will need to change it, but most likely you are
