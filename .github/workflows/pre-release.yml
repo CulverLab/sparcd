@@ -58,4 +58,4 @@ jobs:
           asset_path: sparcd-${{ matrix.platform }}.jar
           # probably you will need to change it, but most likely you are
           # uploading a binary file
-          asset_content_type: application/octet-stream
+          asset_content_type: application/java-archive
