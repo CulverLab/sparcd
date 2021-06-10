@@ -93,8 +93,8 @@ java -jar '<directory>/Sanimal FX/target/SanimalFX-1.0-SNAPSHOT-jar-with-depende
 ## Acknowledgements
 
 * **Co-Principal Investigators** - *Dr. Melanie Culver and Nirav Merchant* 
-* **Technical Advisors** - *Dr. Richard Snodgrass and Carlos Scheidegger* 
-* **CyVerse Support** - *Dr. Blake Joyce, Tony Edgin and Julian Pistorius* 
+* **Technical Advisors** - *Dr. Richard Snodgrass and Dr. Carlos Scheidegger* 
+* **CyVerse Support** - *Dr. Blake Joyce, Tony Edgin, Julian Pistorius and Chris Schnaufer* 
 * **Support and Ideas** - *The University of Arizona Jaguar & Ocelot Monitoring Team, The Slovikosky Family*
 
 
