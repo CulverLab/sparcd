@@ -12,7 +12,7 @@
 <?import java.net.URL?>
 <StackPane prefWidth="1920" prefHeight="1080" fx:id="primaryPane" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SanimalViewController">
     <stylesheets>
-        <URL value="@SanimalView.css"/>
+        <URL value="@SanimalView.css" />
     </stylesheets>
     <children>
         <DetachableTabPane fx:id="tabPane" styleClass="primaryTabPane">
@@ -67,59 +67,63 @@
                 </DetachableTab>
             </tabs>
         </DetachableTabPane>
-        <StackPane minWidth="300" maxWidth="300" minHeight="320" maxHeight="320" fx:id="loginPane"> <!-- Must set login pane size so it doesn't grow too large -->
-            <Rectangle fx:id="rctLoginBackground" arcHeight="15" arcWidth="15" fill="beige" stroke="black" StackPane.alignment="CENTER"/>
+        <StackPane fx:id="loginPane" maxHeight="320" maxWidth="300" minHeight="320" minWidth="300"> <!-- Must set login pane size so it doesn't grow too large -->
+            <Rectangle fx:id="rctLoginBackground" arcHeight="15" arcWidth="15" fill="beige" stroke="black" StackPane.alignment="CENTER" />
             <GridPane>
                 <columnConstraints>
-                    <ColumnConstraints minWidth="300" maxWidth="300"/>
+                    <ColumnConstraints maxWidth="300" minWidth="300" />
                 </columnConstraints>
                 <rowConstraints>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
-                    <RowConstraints/>
+                    <RowConstraints />
+               <RowConstraints />
+                    <RowConstraints />
+                    <RowConstraints />
+                    <RowConstraints />
+                    <RowConstraints />
+               <RowConstraints />
                 </rowConstraints>
                 <children>
-                    <ImageView GridPane.halignment="CENTER" GridPane.valignment="CENTER" fitWidth="220" preserveRatio="true">
+                    <ImageView fitWidth="220" preserveRatio="true" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
                         <GridPane.margin>
-                            <Insets top="10" bottom="10"/>
+                            <Insets bottom="10" top="10" />
                         </GridPane.margin>
                         <Image url="@../images/mainMenu/cyverse.png" />
                     </ImageView>
-                    <TextField fx:id="txtUsername" onKeyPressed="#enterPressed" promptText="Username" GridPane.rowIndex="1">
+                    <TextField fx:id="txtURL" onKeyPressed="#enterPressed" promptText="URL" GridPane.rowIndex="1">
                         <GridPane.margin>
-                            <Insets left="20" right="20" top="10" bottom="10"/>
+                            <Insets bottom="10" left="20" right="20" top="10" />
                         </GridPane.margin>
                         <font>
-                            <Font size="16"/>
+                            <Font size="16" />
                         </font>
                     </TextField>
-                    <PasswordField fx:id="txtPassword" onKeyPressed="#enterPressed" promptText="Password" GridPane.rowIndex="3">
+                    <TextField fx:id="txtUsername" onKeyPressed="#enterPressed" promptText="Username" GridPane.rowIndex="2">
                         <GridPane.margin>
-                            <Insets left="20" right="20" top="10" bottom="10"/>
+                            <Insets bottom="10" left="20" right="20" top="10" />
                         </GridPane.margin>
                         <font>
-                            <Font size="16"/>
+                            <Font size="16" />
+                        </font>
+                    </TextField>
+                    <PasswordField fx:id="txtPassword" onKeyPressed="#enterPressed" promptText="Password" GridPane.rowIndex="4">
+                        <GridPane.margin>
+                            <Insets bottom="10" left="20" right="20" top="10" />
+                        </GridPane.margin>
+                        <font>
+                            <Font size="16" />
                         </font>
                     </PasswordField>
-                    <CheckBox fx:id="cbxRememberUsername" text="Remember Username" GridPane.rowIndex="4">
+                    <CheckBox fx:id="cbxRememberUsername" text="Remember URL and Username" GridPane.rowIndex="5">
                         <GridPane.margin>
-                            <Insets left="20" right="20" top="10" bottom="10"/>
+                            <Insets bottom="10" left="20" right="20" top="10" />
                         </GridPane.margin>
                     </CheckBox>
-                    <HyperlinkLabel fx:id="hypRegisterPassword" text="[Register] | Forgot [Password]?" onAction="#linkPressed" GridPane.rowIndex="5">
+                    <Button fx:id="btnLogin" onAction="#loginPressed" text="Sign In" GridPane.halignment="CENTER" GridPane.rowIndex="6">
                         <GridPane.margin>
-                            <Insets left="20" right="20" top="10" bottom="10"/>
-                        </GridPane.margin>
-                    </HyperlinkLabel>
-                    <Button fx:id="btnLogin" onAction="#loginPressed" GridPane.halignment="CENTER" text="Sign In" GridPane.rowIndex="6">
-                        <GridPane.margin>
-                            <Insets left="20" right="20" top="10" bottom="10"/>
+                            <Insets bottom="10" left="20" right="20" top="10" />
                         </GridPane.margin>
                         <font>
-                            <Font size="16"/>
+                            <Font size="16" />
                         </font>
                     </Button>
                 </children>

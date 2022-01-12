@@ -48,6 +48,8 @@ public class SanimalViewController implements Initializable
 
 	// The username and password text fields
 	@FXML
+	public TextField txtURL;
+	@FXML
 	public TextField txtUsername;
 	@FXML
 	public PasswordField txtPassword;
@@ -88,6 +90,9 @@ public class SanimalViewController implements Initializable
 	///
 
 	// The preference key which will just be "Username"
+	private static final String URL_PREF = "url";
+
+	// The preference key which will just be "Username"
 	private static final String USERNAME_PREF = "username";
 
 	// Guassian blur is used to hide the other buttons before logging in
@@ -121,6 +126,7 @@ public class SanimalViewController implements Initializable
 		this.loginPane.visibleProperty().bind(loggedIn.not());
 
 		// Register validators for username and password. This simply makes sure that they're both not empty
+		this.USER_PASS_VALIDATOR.registerValidator(this.txtURL, Validator.createEmptyValidator("URL cannot be empty!"));
 		this.USER_PASS_VALIDATOR.registerValidator(this.txtUsername, Validator.createEmptyValidator("Username cannot be empty!"));
 		this.USER_PASS_VALIDATOR.registerValidator(this.txtPassword, Validator.createEmptyValidator("Password cannot be empty!"));
 
@@ -128,11 +134,15 @@ public class SanimalViewController implements Initializable
 		tabPane.tabMinWidthProperty().bind(tabPane.widthProperty().divide(tabPane.getTabs().size()).subtract(25));
 
 		// Grab the stored username if the user had 'remember username' selected
+		String storedUrl = SanimalData.getInstance().getSanimalPreferences().get(URL_PREF, "");
+
+		// Grab the stored username if the user had 'remember username' selected
 		String storedUsername = SanimalData.getInstance().getSanimalPreferences().get(USERNAME_PREF, "");
 
 		// Load default username if it was stored
-		if (!storedUsername.isEmpty())
+		if (!storedUrl.isEmpty() || !storedUsername.isEmpty())
 		{
+			this.txtURL.setText(storedUrl);
 			this.txtUsername.setText(storedUsername);
 			this.cbxRememberUsername.setSelected(true);
 		}
@@ -140,7 +150,10 @@ public class SanimalViewController implements Initializable
 		// If the user deselects the remember username box, remove the stored username
 		this.cbxRememberUsername.selectedProperty().addListener((observable, oldValue, newValue) -> {
 			if (!newValue)
+			{
+				SanimalData.getInstance().getSanimalPreferences().put(URL_PREF, "");
 				SanimalData.getInstance().getSanimalPreferences().put(USERNAME_PREF, "");
+			}
 		});
 	}
 
@@ -180,7 +193,10 @@ public class SanimalViewController implements Initializable
 	{
 		// Save username preference if the box is checked
 		if (this.cbxRememberUsername.isSelected())
+		{
+			SanimalData.getInstance().getSanimalPreferences().put(URL_PREF, this.txtURL.getText());
 			SanimalData.getInstance().getSanimalPreferences().put(USERNAME_PREF, this.txtUsername.getText());
+		}
 
 		// Only login if we're not logged in
 		if (!SanimalData.getInstance().loggedInProperty().getValue())
@@ -191,7 +207,8 @@ public class SanimalViewController implements Initializable
 			this.btnLogin.setGraphic(new ImageView(new Image("/images/mainMenu/loading.gif", 26, 26, true, true)));
 			// Grab our connection manager
 			CyVerseConnectionManager connectionManager = SanimalData.getInstance().getConnectionManager();
-			// Grab the username and password
+			// Grab the url, username and password
+			String url = this.txtURL.getText();
 			String username = this.txtUsername.getText();
 			String password = this.txtPassword.getText();
 			// Thread off logging in...
@@ -276,7 +293,7 @@ public class SanimalViewController implements Initializable
 					Alert invalidAlert = new Alert(Alert.AlertType.INFORMATION);
 					invalidAlert.setTitle("Invalid Credentials");
 					invalidAlert.setHeaderText("");
-					invalidAlert.setContentText("Invalid Username or Password");
+					invalidAlert.setContentText("Invalid URL, Username or Password");
 					invalidAlert.initOwner(this.tabPane.getScene().getWindow());
 					invalidAlert.showAndWait();
 				}
@@ -286,33 +303,6 @@ public class SanimalViewController implements Initializable
 			});
 			// Perform the task
 			SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(loginAttempt);
-		}
-	}
-
-	/**
-	 * When we click a hyperlink, this gets called
-	 *
-	 * @param actionEvent consumed
-	 */
-	public void linkPressed(ActionEvent actionEvent)
-	{
-		try
-		{
-			switch (((Hyperlink) actionEvent.getSource()).getText())
-			{
-				// Either open the register or password page on cyverse's website
-				case "Register":
-					Desktop.getDesktop().browse(new URI("https://user.cyverse.org/register"));
-					actionEvent.consume();
-					break;
-				case "Password":
-					Desktop.getDesktop().browse(new URI("https://user.cyverse.org/password/forgot"));
-					actionEvent.consume();
-					break;
-			}
-		}
-		catch (URISyntaxException | IOException ignored)
-		{
 		}
 	}
 }
