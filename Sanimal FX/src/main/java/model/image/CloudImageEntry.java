@@ -14,7 +14,6 @@ import model.species.Species;
 import model.threading.ErrorTask;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.irods.jargon.core.pub.io.IRODSFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,18 +40,18 @@ public class CloudImageEntry extends ImageEntry
 	// Placeholder file used before the file has been downloaded
 	private static File PLACEHOLDER_FILE = null;
 
-	// The CyVerse file
-	private ObjectProperty<String> cyverseFileProperty = new SimpleObjectProperty<>();
+	// The Cloud file
+	private ObjectProperty<String> cloudFileProperty = new SimpleObjectProperty<>();
 
 	// Transient because we don't want these to be written to disk
 
-	// If the image entry has been downloaded from CyVerse
+	// If the image entry has been downloaded from the cloud
 	private transient final BooleanProperty hasBeenPulledFromCloud = new SimpleBooleanProperty(false);
-	// If the image entry is currently being downloaded from CyVerse
+	// If the image entry is currently being downloaded from the cloud
 	private transient final BooleanProperty isBeingPulledFromCloud = new SimpleBooleanProperty(false);
-	// If the image entry was tagged with species on CyVerse
+	// If the image entry was tagged with species on the cloud
 	private transient final AtomicBoolean wasTaggedWithSpecies = new AtomicBoolean(false);
-	// If the current version of the image is dirty compared to the one on CyVerse
+	// If the current version of the image is dirty compared to the one on the cloud
 	private transient final AtomicBoolean isCloudDirty = new AtomicBoolean(false);
 
 	/**
@@ -208,7 +207,7 @@ public class CloudImageEntry extends ImageEntry
 	}
 
 	/**
-	 * Marks the image entry as dirty meaning it needs to be updated on CyVerse
+	 * Marks the image entry as dirty meaning it needs to be updated on the cloud
 	 *
 	 * @param dirty If the image is dirty
 	 */
@@ -233,7 +232,7 @@ public class CloudImageEntry extends ImageEntry
 	/**
 	 * True if the image is dirty, false otherwise
 	 *
-	 * @return Tells us if the image is dirty (aka different from CyVerse)
+	 * @return Tells us if the image is dirty (aka different from the cloud)
 	 */
 	public Boolean isCloudDirty()
 	{
@@ -265,7 +264,7 @@ public class CloudImageEntry extends ImageEntry
 			@Override
 			protected File call()
 			{
-				this.updateMessage("Downloading the image " + getCyverseFile().getName() + " for editing...");
+				this.updateMessage("Downloading the image " + getCloudFile().getName() + " for editing...");
 				return SanimalData.getInstance().getConnectionManager().remoteToLocalImageFile(getCloudFile());
 			}
 		};
@@ -289,7 +288,7 @@ public class CloudImageEntry extends ImageEntry
 	}
 
 	/**
-	 * Pulls the image file from CyVerse if it has not yet been downloaded
+	 * Pulls the image file from the cloud if it has not yet been downloaded
 	 */
 	public void pullFromCloudIfNotPulled()
 	{

@@ -10,7 +10,6 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.irods.jargon.core.pub.domain.AvuData;
 
 import java.io.File;
 import java.io.FileOutputStream;

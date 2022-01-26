@@ -1,4 +1,4 @@
-package model.cyverse;
+package model.s3;
 
 import javafx.beans.Observable;
 import javafx.beans.property.*;
@@ -9,7 +9,7 @@ import model.image.CloudUploadEntry;
 import java.util.UUID;
 
 /**
- * The image collection class represents a collection of photos on CyVerse
+ * The image collection class represents a collection of photos on S3
  */
 public class ImageCollection
 {

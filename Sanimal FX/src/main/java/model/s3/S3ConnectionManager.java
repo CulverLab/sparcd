@@ -593,7 +593,7 @@ public class S3ConnectionManager
 	 * Sets the file permission for a file on the S3 system
 	 *
 	 * @param bucket The bucket to access
-	 * @param fileName The name of the file to update permissions of
+	 * @param fileName The path of the file to update permissions of
 	 * @param permissions The list of permissions to set
 	 * @param forceReadOnly If the highest level of permission should be READ not WRITE
 	 * @param recursive If the permissions are to be recursive
@@ -609,11 +609,11 @@ public class S3ConnectionManager
 		// If the file is a directory, set the directory permissions
 		if (this.folderExists(bucket, objectName))
 		{
-			objectList = this.listFolderObjects(ROOT_FOLDER, file.getUploadIRODSPath());
+			objectList = this.listFolderObjects(ROOT_FOLDER, fileName);
 		}
 		else if (this.objectExists(objectName))
 		{
-			objectList.add(file.getUploadIRODSPath());
+			objectList.add(fileName);
 		}
 
 		// Set the permissions for all the objects
@@ -667,11 +667,11 @@ public class S3ConnectionManager
 		// Directories are done differently than files, so test this first
 		if (this.folderExists(bucket, objectName))
 		{
-			objectList = this.listFolderObjects(ROOT_FOLDER, file.getUploadIRODSPath());
+			objectList = this.listFolderObjects(ROOT_FOLDER, objectName);
 		}
 		else if (this.objectExists(objectName))
 		{
-			objectList.add(file.getUploadIRODSPath());
+			objectList.add(objectName);
 		}
 
 		// Change the ACL for all objects we have
@@ -742,10 +742,9 @@ public class S3ConnectionManager
 	 * @param collection The collection to upload to
 	 * @param directoryToWrite The directory to write
 	 * @param description The description of the upload
-	 * @param transferCallback The callback that will receive callbacks if the transfer is in progress
 	 * @param messageCallback Optional message callback that will show what is currently going on
 	 */
-	public void uploadImages(ImageCollection collection, ImageDirectory directoryToWrite, String description, TransferStatusCallbackListener transferCallback, StringProperty messageCallback)
+	public void uploadImages(ImageCollection collection, ImageDirectory directoryToWrite, String description, StringProperty messageCallback)
 	{
 		this.retryDelayReset();
 		try
@@ -783,7 +782,7 @@ public class S3ConnectionManager
 				// Create the meta.csv representing the metadata for all images in the tar file
 				String localDirAbsolutePath = directoryToWrite.getFile().getAbsolutePath();
 				String localDirName = directoryToWrite.getFile().getName();
-				AvuData collectionIDTag = new AvuData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
+				MetaData collectionIDTag = new MetaData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
 
 				// List of images to be uploaded
 				List<ImageEntry> imageEntries = directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).collect(Collectors.toList());
@@ -798,7 +797,7 @@ public class S3ConnectionManager
 						// Compute the image's cloud path
 						String fileRelativePath = localDirName + StringUtils.substringAfter(imageEntry.getFile().getAbsolutePath(), localDirAbsolutePath);
 						fileRelativePath = fileRelativePath.replace('\\', '/');
-						List<AvuData> imageMetadata = imageEntry.convertToAVUMetadata();
+						List<MetaData> imageMetadata = imageEntry.convertToMetadata();
 						imageMetadata.add(collectionIDTag);
 						return fileRelativePath + "," + imageMetadata.stream().map(avuData -> avuData.getAttribute() + "," + avuData.getValue() + "," + avuData.getUnit()).collect(Collectors.joining(",")) + "\n";
 					}
@@ -821,7 +820,7 @@ public class S3ConnectionManager
 				transferFiles[fileIndex++] = metaCSV;
 
 				// Transfer the files with retry attempts
-				RetryTransferStatusCallbackListener retryListener = new RetryTransferStatusCallbackListener(transferCallback);
+				RetryTransferStatusCallbackListener retryListener = new RetryTransferStatusCallbackListener();
 				boolean keepRetrying = true;
 				do
 				{
@@ -963,21 +962,21 @@ public class S3ConnectionManager
 							numberOfRetaggedImages++;
 
 						// Save that specific cloud image
-						this.s3Client.putObject(new PutObjectRequest(ROOT_FOLDER, cloudImageEntry.getCyverseFile().toString(), cloudImageEntry.getFile()));
+						this.s3Client.putObject(new PutObjectRequest(ROOT_FOLDER, cloudImageEntry.getCloudFile().toString(), cloudImageEntry.getFile()));
 
 						// Get the absolute path of the uploaded file
-						String fileAbsoluteCyVersePath = cloudImageEntry.getCyverseFile().getAbsolutePath();
+						String fileAbsoluteCloudPath = cloudImageEntry.getCloudFile().getAbsolutePath();
 						// Update the collection tag
-						AvuData collectionIDTag = new AvuData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
+						MetaData collectionIDTag = new MetaData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
 						// Write image metadata to the file
-/* Convert this to JSON and upload updated meta data
-						List<AvuData> imageMetadata = cloudImageEntry.convertToAVUMetadata();
+						List<MetaData> imageMetadata = cloudImageEntry.convertToMetadata();
 						imageMetadata.add(collectionIDTag);
-						imageMetadata.forEach(avuData ->
+/* Convert this to JSON and upload updated meta data
+						imageMetadata.forEach(metaData ->
 						{
 							try
 							{
-								// Set the file AVU data
+								// Set the file Meta data
 								this.sessionManager.getCurrentAO().getDataObjectAO(this.authenticatedAccount).setAVUMetadata(fileAbsoluteCyVersePath, avuData);
 							}
 							catch (Exception e)
@@ -1003,7 +1002,7 @@ public class S3ConnectionManager
 				// Convert the upload entry to JSON format
 				String json = SanimalData.getInstance().getGson().toJson(uploadEntryToSave);
 				// Write the UploadMeta json file to the server
-				this.writeRemoteFile(String.join("/", uploadEntryToSave.getUploadIRODSPath(), UPLOAD_JSON_FILE), json);
+				this.writeRemoteFile(String.join("/", uploadEntryToSave.getUploadPath(), UPLOAD_JSON_FILE), json);
 			}
 		}
 		catch (JargonException e)

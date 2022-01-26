@@ -1,4 +1,4 @@
-package model.cyverse;
+package model.s3;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;

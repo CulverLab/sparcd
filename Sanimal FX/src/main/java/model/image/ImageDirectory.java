@@ -53,7 +53,7 @@ public class ImageDirectory extends ImageContainer
 	// The file representing the directory
 	private ObjectProperty<File> directoryProperty = new SimpleObjectProperty<File>();
 
-	// The progress of the directory upload to CyVerse
+	// The progress of the directory upload to the cloud
 	private transient DoubleProperty uploadProgress = new SimpleDoubleProperty(-1);
 
 	/**

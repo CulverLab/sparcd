@@ -41,7 +41,7 @@ public class CloudUploadEntry
 	 * @param uploadDate The date the upload happened on
 	 * @param imagesWithSpecies The number of images with species tagged
 	 * @param imageCount The number of images in the upload
-	 * @param uploadPath The path to the file on CyVerse
+	 * @param uploadPath The path to the file on the cloud
 	 * @param description The description of this upload
 	 */
 	public CloudUploadEntry(String uploadUser, LocalDateTime uploadDate, Integer imagesWithSpecies, Integer imageCount, String uploadPath, String description)

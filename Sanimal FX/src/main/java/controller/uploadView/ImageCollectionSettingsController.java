@@ -13,8 +13,8 @@ import javafx.util.converter.DefaultStringConverter;
 import library.EditCell;
 import library.TableColumnHeaderUtil;
 import model.SanimalData;
-import model.cyverse.ImageCollection;
-import model.cyverse.Permission;
+import model.s3.ImageCollection;
+import model.s3.Permission;
 import model.threading.ErrorTask;
 import org.fxmisc.easybind.EasyBind;
 
@@ -232,7 +232,7 @@ public class ImageCollectionSettingsController implements Initializable
 	}
 
 	/**
-	 * Updates the current collection settings on CyVerse and the internal program
+	 * Updates the current collection settings on the Cloud and the internal program
 	 *
 	 * @param actionEvent consumed
 	 */
@@ -251,7 +251,7 @@ public class ImageCollectionSettingsController implements Initializable
 				Alert alert = new Alert(Alert.AlertType.WARNING);
 				alert.setTitle("Invalid User");
 				alert.setHeaderText("Username entered invalid");
-				alert.setContentText("The username (" + permission.getUsername() + ") you entered was not found on the CyVerse system. Reminder: permissions are expecting usernames, not real names.");
+				alert.setContentText("The username (" + permission.getUsername() + ") you entered was not found on the Cloud system. Reminder: permissions are expecting usernames, not real names.");
 				alert.showAndWait();
 				btnSave.setDisable(false);
 				// Just return if there is an invalid username
@@ -327,7 +327,7 @@ public class ImageCollectionSettingsController implements Initializable
 					Alert alert = new Alert(Alert.AlertType.WARNING);
 					alert.setTitle("Invalid User");
 					alert.setHeaderText("Username entered invalid");
-					alert.setContentText("The username you entered was not found on the CyVerse system, please try again...");
+					alert.setContentText("The username you entered was not found on the Cloud system, please try again...");
 					alert.showAndWait();
 				}
 			}
