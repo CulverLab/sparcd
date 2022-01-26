@@ -21,8 +21,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import model.SanimalData;
-import model.cyverse.CyVerseConnectionManager;
-import model.cyverse.ImageCollection;
+import model.s3.S3ConnectionManager;
+import model.s3.ImageCollection;
 import model.location.Location;
 import model.species.Species;
 import model.threading.ErrorTask;
@@ -70,7 +70,7 @@ public class SanimalViewController implements Initializable
 	@FXML
 	public Rectangle rctLoginBackground;
 
-	// The login button to connect to CyVerse
+	// The login button to connect to the Cloud
 	@FXML
 	public Button btnLogin;
 
@@ -187,7 +187,7 @@ public class SanimalViewController implements Initializable
 	}
 
 	/**
-	 * Login to the given cyverse account
+	 * Login to the given cloud account
 	 */
 	private void performLogin()
 	{
@@ -206,7 +206,7 @@ public class SanimalViewController implements Initializable
 			// Show the loading icon graphic
 			this.btnLogin.setGraphic(new ImageView(new Image("/images/mainMenu/loading.gif", 26, 26, true, true)));
 			// Grab our connection manager
-			CyVerseConnectionManager connectionManager = SanimalData.getInstance().getConnectionManager();
+			S3ConnectionManager connectionManager = SanimalData.getInstance().getConnectionManager();
 			// Grab the url, username and password
 			String url = this.txtURL.getText();
 			String username = this.txtUsername.getText();

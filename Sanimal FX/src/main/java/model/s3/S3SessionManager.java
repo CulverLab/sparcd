@@ -1,4 +1,4 @@
-package model.cyverse;
+package model.s3;
 
 import javafx.collections.FXCollections;
 import javafx.scene.control.Alert;
@@ -18,22 +18,22 @@ import java.util.Map;
 import java.util.Stack;
 
 /**
- * Class that maintains connections to cyverse
+ * Class that maintains connections to S3
  */
-public class CyVerseSessionManager
+public class S3SessionManager
 {
 	// A map of thread -> session objects, used to keep 1 session per thread
-	private Map<Thread, Pair<IRODSSession, IRODSAccessObjectFactory>> sessions = Collections.synchronizedMap(new HashMap<>());
+	private Map<Thread, String> sessions = Collections.synchronizedMap(new HashMap<>());
 
 	// A reference to the authenticated irods account
-	private IRODSAccount authenticatedAccount;
+	private AmazonS3 authenticatedAccount;
 
 	/**
 	 * Constructor just needs the authenticated irods account
 	 *
 	 * @param authenticatedAccount The account that has been authenticated
 	 */
-	public CyVerseSessionManager(IRODSAccount authenticatedAccount)
+	public S3SessionManager(AmazonS3 authenticatedAccount)
 	{
 		this.authenticatedAccount = authenticatedAccount;
 	}
@@ -56,13 +56,11 @@ public class CyVerseSessionManager
 			try
 			{
 				// Create the session and store it
-				IRODSSession newSession = IRODSSession.instance(IRODSSimpleProtocolManager.instance());
-				IRODSAccessObjectFactory newAccessFactory = IRODSAccessObjectFactoryImpl.instance(newSession);
-				this.sessions.put(current, new Pair<>(newSession, newAccessFactory));
+				this.sessions.put(current, current.toString());
 				return true;
 			}
 			// Print an error and return false
-			catch (JargonException e)
+			catch (Exception e)
 			{
 				SanimalData.getInstance().getErrorDisplay().showPopup(
 						Alert.AlertType.ERROR,
@@ -86,14 +84,12 @@ public class CyVerseSessionManager
 		if (this.sessions.containsKey(current))
 		{
 			// If so, grab the session and close it
-			Pair<IRODSSession, IRODSAccessObjectFactory> session = this.sessions.get(current);
 			try
 			{
 				// Close the session
-				session.getKey().closeSession(this.authenticatedAccount);
 			}
 			// An error occured, ignore it
-			catch (JargonException e)
+			catch (Exception e)
 			{
 				SanimalData.getInstance().getErrorDisplay().showPopup(
 						Alert.AlertType.ERROR,
@@ -112,24 +108,11 @@ public class CyVerseSessionManager
 	 *
 	 * @return A session object or null if no session object is present for this thread
 	 */
-	public IRODSSession getCurrentSession()
+	public String getCurrentSession()
 	{
-		Pair<IRODSSession, IRODSAccessObjectFactory> sessionPair = this.sessions.get(Thread.currentThread());
-		if (sessionPair == null)
+		String session = this.sessions.get(Thread.currentThread());
+		if (session == null)
 			return null;
-		return sessionPair.getKey();
-	}
-
-	/**
-	 * Getter for the current access object this thread is operating on
-	 *
-	 * @return An access object or null if no access object object is present for this thread
-	 */
-	public IRODSAccessObjectFactory getCurrentAO()
-	{
-		Pair<IRODSSession, IRODSAccessObjectFactory> sessionPair = this.sessions.get(Thread.currentThread());
-		if (sessionPair == null)
-			return null;
-		return sessionPair.getValue();
+		return session;
 	}
 }

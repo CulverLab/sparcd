@@ -1,4 +1,4 @@
-package model.cyverse;
+package model.s3;
 
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -9,7 +9,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import model.SanimalData;
 import model.constant.SanimalMetadataFields;
-import model.cyverse.RetryTransferStatusCallbackListener;
+import model.s3.RetryTransferStatusCallbackListener;
 import model.image.*;
 import model.location.Location;
 import model.query.CyVerseQuery;
@@ -393,9 +393,9 @@ public class S3ConnectionManager
 	}
 
 	/**
-	 * Connects to CyVerse and downloads the list of the user's collections
+	 * Connects to the cloud and downloads the list of the user's collections
 	 *
-	 * @return A list of collections stored on the CyVerse system
+	 * @return A list of collections stored on the cloud system
 	 */
 	public List<ImageCollection> pullRemoteCollections()
 	{
@@ -518,8 +518,6 @@ public class S3ConnectionManager
 		{
 			try
 			{
-				IRODSFileFactory fileFactory = this.sessionManager.getCurrentAO().getIRODSFileFactory(this.authenticatedAccount);
-
 				// The name of the collection directory is the UUID of the collection
 				String collectionDirName = String.join("/", COLLECTIONS_FOLDER, collection.getID().toString());
 
@@ -717,10 +715,10 @@ public class S3ConnectionManager
 	}
 
 	/**
-	 * Test to see if the given username is valid on the CyVerse system
+	 * Test to see if the given username is valid on the cloud system
 	 *
 	 * @param username The username to test
-	 * @return True if the username exists on CyVerse, false otherwise
+	 * @return True if the username exists on cloud, false otherwise
 	 */
 	public Boolean isValidUsername(String username)
 	{
@@ -739,7 +737,7 @@ public class S3ConnectionManager
 	}
 
 	/**
-	 * Uploads a set of images to CyVerse
+	 * Uploads a set of images to the cloud
 	 *
 	 * @param collection The collection to upload to
 	 * @param directoryToWrite The directory to write
@@ -797,7 +795,7 @@ public class S3ConnectionManager
 				{
 					try
 					{
-						// Compute the image's "cyverse" path
+						// Compute the image's cloud path
 						String fileRelativePath = localDirName + StringUtils.substringAfter(imageEntry.getFile().getAbsolutePath(), localDirAbsolutePath);
 						fileRelativePath = fileRelativePath.replace('\\', '/');
 						List<AvuData> imageMetadata = imageEntry.convertToAVUMetadata();
@@ -854,7 +852,7 @@ public class S3ConnectionManager
 							}
 
 							retryListener.addFailedFile(toWrite.getAbsolutePath());
-							messageCallback.setValue("Failed to upload TAR file part "+ (filePart + 1) + " to CyVerse.");
+							messageCallback.setValue("Failed to upload file to S3: " + toWrite.getAbsolutePath());
 
 							// Add remaining files to failed list and break the loop
 							for (Integer rem_part = filePart + 1; rem_part < transferFiles.length; rem_part++)
@@ -924,7 +922,7 @@ public class S3ConnectionManager
 	}
 
 	/**
-	 * Save the set of images that were downloaded to CyVerse
+	 * Save the set of images that were downloaded to S3
 	 *
 	 * @param collection The collection to upload to
 	 * @param uploadEntryToSave The directory to write
@@ -1015,7 +1013,7 @@ public class S3ConnectionManager
 					null,
 					"Error",
 					"Saving error",
-					"Could not save the image list to the collection on CyVerse!\n" + ExceptionUtils.getStackTrace(e),
+					"Could not save the image list to the collection on S3!\n" + ExceptionUtils.getStackTrace(e),
 					false);
 		}
 	}
@@ -1219,10 +1217,10 @@ public class S3ConnectionManager
 	}
 
 	/**
-	 * Given a list of CyVerse absolute paths, this fetches the metadata for each image and returns it as an image entry
+	 * Given a list of cloud absolute paths, this fetches the metadata for each image and returns it as an image entry
 	 *
-	 * @param absoluteIRODSPaths The list of absolute iRODS paths on CyVerse
-	 * @return A list of images with metadata on CyVerse
+	 * @param absoluteIRODSPaths The list of absolute paths on the cloud
+	 * @return A list of images with metadata on the cloud
 	 */
 	public List<ImageEntry> fetchMetadataFor(List<String> absoluteIRODSPaths)
 	{
@@ -1411,7 +1409,7 @@ public class S3ConnectionManager
 			File localImageFile = SanimalData.getInstance().getTempDirectoryManager().createTempFile(cloudFile);
 
 			// Download the file locally
-			this.saveRemoteFile(ROOT_FOLDER, cyverseFile, localImageFile);
+			this.saveRemoteFile(ROOT_FOLDER, cloudFile, localImageFile);
 
 			return localImageFile;
 		}
@@ -1422,7 +1420,7 @@ public class S3ConnectionManager
 					null,
 					"Error",
 					"JSON error",
-					"Could not pull the remote file (" + cyverseFile.getName() + ")!\n" + ExceptionUtils.getStackTrace(e),
+					"Could not pull the remote file (" + cloudFile.getName() + ")!\n" + ExceptionUtils.getStackTrace(e),
 					false);
 		}
 
