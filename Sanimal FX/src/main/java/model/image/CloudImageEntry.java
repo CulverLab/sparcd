@@ -42,7 +42,7 @@ public class CloudImageEntry extends ImageEntry
 	private static File PLACEHOLDER_FILE = null;
 
 	// The CyVerse file
-	private ObjectProperty<IRODSFile> cyverseFileProperty = new SimpleObjectProperty<>();
+	private ObjectProperty<String> cyverseFileProperty = new SimpleObjectProperty<>();
 
 	// Transient because we don't want these to be written to disk
 
@@ -60,7 +60,7 @@ public class CloudImageEntry extends ImageEntry
 	 *
 	 * @param cloudFile The file which can be a temporary local file
 	 */
-	public CloudImageEntry(IRODSFile cloudFile)
+	public CloudImageEntry(String cloudFile)
 	{
 		// No local file
 		super(null);
@@ -106,7 +106,7 @@ public class CloudImageEntry extends ImageEntry
 		this.selectedImageProperty.bind(imageBinding);
 
 		this.getFileProperty().setValue(PLACEHOLDER_FILE);
-		this.setCyverseFile(cloudFile);
+		this.setCloudFile(cloudFile);
 	}
 
 	/**
@@ -266,7 +266,7 @@ public class CloudImageEntry extends ImageEntry
 			protected File call()
 			{
 				this.updateMessage("Downloading the image " + getCyverseFile().getName() + " for editing...");
-				return SanimalData.getInstance().getConnectionManager().remoteToLocalImageFile(getCyverseFile());
+				return SanimalData.getInstance().getConnectionManager().remoteToLocalImageFile(getCloudFile());
 			}
 		};
 
@@ -306,26 +306,26 @@ public class CloudImageEntry extends ImageEntry
 	@Override
 	public String toString()
 	{
-		return this.getCyverseFile().getName();
+		return this.getCloudFile().getName();
 	}
 
 	///
 	/// Getters/Setters
 	///
 
-	public IRODSFile getCyverseFile()
+	public String getCloudFile()
 	{
-		return cyverseFileProperty.getValue();
+		return cloudFileProperty.getValue();
 	}
 
-	private void setCyverseFile(IRODSFile file)
+	private void setCloudFile(String file)
 	{
-		this.cyverseFileProperty.setValue(file);
+		this.cloudFileProperty.setValue(file);
 	}
 
-	public ObjectProperty<IRODSFile> cyverseFileProperty()
+	public ObjectProperty<String> cloudFileProperty()
 	{
-		return this.cyverseFileProperty;
+		return this.cloudFileProperty;
 	}
 
 	public Boolean hasBeenPulledFromCloud()

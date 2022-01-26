@@ -29,8 +29,8 @@ public class CloudUploadEntry
 	private Integer imageCount;
 	// A list of edits made to the upload
 	private List<String> editComments = new ArrayList<>();
-	// A path to the upload on CyVerse
-	private String uploadIRODSPath;
+	// A path to the upload on the cloud
+	private String uploadPath;
 	// The description of this upload
 	private String description;
 
@@ -41,16 +41,16 @@ public class CloudUploadEntry
 	 * @param uploadDate The date the upload happened on
 	 * @param imagesWithSpecies The number of images with species tagged
 	 * @param imageCount The number of images in the upload
-	 * @param uploadIRODSPath The path to the file on CyVerse
+	 * @param uploadPath The path to the file on CyVerse
 	 * @param description The description of this upload
 	 */
-	public CloudUploadEntry(String uploadUser, LocalDateTime uploadDate, Integer imagesWithSpecies, Integer imageCount, String uploadIRODSPath, String description)
+	public CloudUploadEntry(String uploadUser, LocalDateTime uploadDate, Integer imagesWithSpecies, Integer imageCount, String uploadPath, String description)
 	{
 		this.uploadUser = uploadUser;
 		this.uploadDate = uploadDate;
 		this.imagesWithSpecies = imagesWithSpecies;
 		this.imageCount = imageCount;
-		this.uploadIRODSPath = uploadIRODSPath;
+		this.uploadPath = uploadPath;
 		this.description = description;
 	}
 
@@ -106,9 +106,9 @@ public class CloudUploadEntry
 		return imageCount;
 	}
 
-	public String getUploadIRODSPath()
+	public String getUploadPath()
 	{
-		return uploadIRODSPath;
+		return uploadPath;
 	}
 
 	public String getDescription()
