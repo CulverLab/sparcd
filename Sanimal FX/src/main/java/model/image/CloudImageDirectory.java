@@ -38,7 +38,7 @@ public class CloudImageDirectory extends ImageDirectory
 	@Override
 	public String toString()
 	{
-		return this.getCloudDirectory().getName();
+		return this.getCloudDirectory();
 	}
 
 	///

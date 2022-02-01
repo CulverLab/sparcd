@@ -60,12 +60,18 @@
     </build>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk</artifactId>
+            <version>1.11.642</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.openfx/javafx-controls -->
-	<dependency>
-	    <groupId>org.openjfx</groupId>
-	    <artifactId>javafx-controls</artifactId>
-	    <version>16</version>
-	</dependency>
+    	<dependency>
+    	    <groupId>org.openjfx</groupId>
+    	    <artifactId>javafx-controls</artifactId>
+    	    <version>16</version>
+    	</dependency>
         <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-fxml -->
         <dependency>
             <groupId>org.openjfx</groupId>

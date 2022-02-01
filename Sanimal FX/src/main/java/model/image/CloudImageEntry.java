@@ -264,7 +264,7 @@ public class CloudImageEntry extends ImageEntry
 			@Override
 			protected File call()
 			{
-				this.updateMessage("Downloading the image " + getCloudFile().getName() + " for editing...");
+				this.updateMessage("Downloading the image " + getCloudFile() + " for editing...");
 				return SanimalData.getInstance().getConnectionManager().remoteToLocalImageFile(getCloudFile());
 			}
 		};
@@ -305,7 +305,7 @@ public class CloudImageEntry extends ImageEntry
 	@Override
 	public String toString()
 	{
-		return this.getCloudFile().getName();
+		return this.getCloudFile();
 	}
 
 	///

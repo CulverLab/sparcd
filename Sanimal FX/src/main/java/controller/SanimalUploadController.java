@@ -380,7 +380,7 @@ public class SanimalUploadController implements Initializable
 					{
 						// Create a string property used as a callback
 						StringProperty messageCallback = new SimpleStringProperty("");
-						this.updateMessage("Saving image directory " + imageDirectory.getCloudDirectory().getName() + " to the Cloud.");
+						this.updateMessage("Saving image directory " + imageDirectory.getCloudDirectory() + " to the Cloud.");
 						messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
 
 						// Save images to the Cloud, we give it a transfer status callback so that we can show the progress

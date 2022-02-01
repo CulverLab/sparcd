@@ -220,7 +220,7 @@ public class SanimalViewController implements Initializable
 					// First login
 					this.updateMessage("Logging in...");
 					this.updateProgress(1, 7);
-					Boolean loginSuccessful = connectionManager.login(username, password);
+					Boolean loginSuccessful = connectionManager.login(url, username, password);
 
 					if (loginSuccessful)
 					{
