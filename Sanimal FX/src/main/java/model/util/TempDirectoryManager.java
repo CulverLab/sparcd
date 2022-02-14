@@ -60,4 +60,20 @@ public class TempDirectoryManager
 		tempFile.deleteOnExit();
 		return tempFile;
 	}
+
+	/**
+	 * The method that create a new temporary folder
+	 * 
+	 * @param folderNane The name of the folder to create
+	 * @return A reference to the temporary folder we created
+	 */
+	public File createTempFolder(String folderName)
+	{
+		// The temporary folder will have the temp directory as a parent and the same name except with 10 random alphanumeric characters tagged onto the end
+		File tempDir = FileUtils.createTempDirectory(String.join("/", this.sanimalTempDir, folderName + RandomStringUtils.randomAlphanumeric(10))).toFile();
+
+		// Delete the file when we exit
+		tempDir.deleteOnExit();
+		return tempDir;
+	}
 }

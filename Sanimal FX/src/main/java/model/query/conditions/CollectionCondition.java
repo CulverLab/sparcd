@@ -5,8 +5,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import model.SanimalData;
-import model.cyverse.ImageCollection;
-import model.query.CyVerseQuery;
+import model.s3.ImageCollection;
+import model.query.S3Query;
 import model.query.IQueryCondition;
 
 import java.util.HashMap;

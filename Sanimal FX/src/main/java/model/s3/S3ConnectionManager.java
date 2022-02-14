@@ -856,9 +856,10 @@ public class S3ConnectionManager
 				List<ImageEntry> imageEntries = directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).map(imageContainer -> (ImageEntry) imageContainer).collect(Collectors.toList());
 
 				// Create the meta data file to upload
-				File metaCSV = SanimalData.getInstance().getTempDirectoryManager().createTempFile("meta.csv");
-				metaCSV.createNewFile();
-				this.createImageMetaFile(metaCSV, imageEntries, imageEntry ->
+				File metaFolder = SanimalData.getInstance().getTempDirectoryManager().createTempFolder("meta");
+				Camtrap metaCSV = new Camtrap();
+//				metaCSV.createNewFile();
+				this.createImageMetaFile(metaCSV, imageEntries, (imageEntry, metaStore) ->
 				{
 					try
 					{
@@ -1039,7 +1040,7 @@ public class S3ConnectionManager
 						// Write image metadata to the file
 						List<MetaData> imageMetadata = cloudImageEntry.convertToMetadata();
 						imageMetadata.add(collectionIDTag);
-/* Convert this to JSON and upload updated meta data
+/* Convert this to JSON, and upload updated meta data after all metadata generated
 						imageMetadata.forEach(metaData ->
 						{
 							try
@@ -1523,8 +1524,6 @@ public class S3ConnectionManager
 	{
 		try
 		{
-//			HeadObjectResponse sanimalSpeciesFile = this.s3Client.headObject(
-//				HeadObjectRequest.builder().bucket(bucket).key(objectName).build());
 			ObjectMetadata objectMetadata = this.s3Client.getObjectMetadata(bucket, objectName);
 			return true;
 		}
@@ -1825,23 +1824,21 @@ public class S3ConnectionManager
 	}
 
 	/**
-	 * Writes the metadata for images to a file
+	 * Formats the metadata for images to a file
 	 * 
-	 * @param outFile The file to write to
+	 * @param meta The file to write to
 	 * @param imageEntries The image entries to write
 	 * @param imageToMetadata The CSV file representing each image's metadata
 	 * @throws FileNotFoundException if the metadata file can't be written
 	 */
-	private void createImageMetaFile(File outFile, List<ImageEntry> imageEntries, Function<ImageEntry, String> imageToMetadata) throws FileNotFoundException
+	private void createImageMetaFile(Camtrap meta, List<ImageEntry> imageEntries, Function<ImageEntry, String> imageToMetadata) throws FileNotFoundException
 	{
 		PrintWriter metaOut = new PrintWriter(outFile);
 		for (ImageEntry imageEntry: imageEntries)
 		{
-			// Write a metadata entry into our meta file
-			metaOut.write(imageToMetadata.apply(imageEntry));
+			// Create a metadata entry into our meta file
+			imageToMetadata.apply(imageEntry, meta);
 		}
-		// Close the writer to the metadata file
-		metaOut.close();
 	}
 
 }
