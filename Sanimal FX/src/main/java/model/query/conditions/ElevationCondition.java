@@ -3,7 +3,7 @@ package model.query.conditions;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import model.query.CyVerseQuery;
+import model.query.S3Query;
 import model.query.IQueryCondition;
 import model.util.SettingsData;
 import org.irods.jargon.core.query.QueryConditionOperators;
@@ -31,7 +31,7 @@ public class ElevationCondition implements IQueryCondition
 	 * @param query The current state of the query before the appending
 	 */
 	@Override
-	public void appendConditionToQuery(CyVerseQuery query)
+	public void appendConditionToQuery(S3Query query)
 	{
 		if (this.comparisonOperator.getValue() != null)
 		{

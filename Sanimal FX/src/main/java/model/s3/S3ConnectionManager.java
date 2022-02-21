@@ -61,9 +61,10 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.security.InvalidParameterException;
 
 /**
  * A class used to wrap the S3 library
@@ -847,7 +848,7 @@ public class S3ConnectionManager
 					out.println(json);
 				}
 
-				// Create the meta.csv representing the metadata for all images in the tar file
+				// Create the meta data files representing the metadata for all images in the tar file
 				String localDirAbsolutePath = directoryToWrite.getFile().getAbsolutePath();
 				String localDirName = directoryToWrite.getFile().getName();
 				MetaData collectionIDTag = new MetaData(SanimalMetadataFields.A_COLLECTION_ID, collection.getID().toString(), "");
@@ -858,8 +859,7 @@ public class S3ConnectionManager
 				// Create the meta data file to upload
 				File metaFolder = SanimalData.getInstance().getTempDirectoryManager().createTempFolder("meta");
 				Camtrap metaCSV = new Camtrap();
-//				metaCSV.createNewFile();
-				this.createImageMetaFile(metaCSV, imageEntries, (imageEntry, metaStore) ->
+				this.createImageMetaEntries(metaCSV, imageEntries, (imageEntry, metaCamtrap) ->
 				{
 					try
 					{
@@ -868,15 +868,17 @@ public class S3ConnectionManager
 						fileRelativePath = fileRelativePath.replace('\\', '/');
 						List<MetaData> imageMetadata = imageEntry.convertToMetadata();
 						imageMetadata.add(collectionIDTag);
-						return fileRelativePath + "," + imageMetadata.stream().map(avuData -> avuData.getAttribute() + "," + avuData.getValue() + "," + avuData.getUnit()).collect(Collectors.joining(",")) + "\n";
+						this.mapMetadataToCamtrap(imageMetadata, fileRelativePath, metaCamtrap);
 					}
 					catch (Exception e)
 					{
 						SanimalData.getInstance().getErrorDisplay().printError("Could not add metadata to image: " + imageEntry.getFile().getAbsolutePath() + ", error was: ");
 						e.printStackTrace();
 					}
-					return "";
 				});
+
+				// Save the meta data to the correct folder
+				metaCSV.saveTo(metaFolder.getAbsolutePath());
 
 				// Get initial list of files to upload
 				File[] transferFiles = new File[imageEntries.size() + 2];
@@ -886,7 +888,10 @@ public class S3ConnectionManager
 					transferFiles[fileIndex] = imageEntries.get(fileIndex).getFile();
 				}
 				transferFiles[fileIndex++] = directoryMetaJSON;
-				transferFiles[fileIndex++] = metaCSV;
+				for (String oneFile: metaCSV.getFilePaths(metaFolder.getAbsolutePath()))
+				{
+					transferFiles[fileIndex++] = new File(oneFile);
+				}
 
 				// Transfer the files with retry attempts
 				RetryTransferStatusCallbackListener retryListener = new RetryTransferStatusCallbackListener();
@@ -974,7 +979,12 @@ public class S3ConnectionManager
 
 				// Remove local files
 				directoryMetaJSON.delete();
-				metaCSV.delete();
+				for (String oneFile: metaCSV.getFilePaths(metaFolder.getAbsolutePath()))
+				{
+					File delFile = new File(oneFile);
+					delFile.delete();
+
+				}
 			}
 		}
 		catch (IOException e)
@@ -990,7 +1000,7 @@ public class S3ConnectionManager
 	}
 
 	/**
-	 * Save the set of images that were downloaded to S3
+	 * Save the set of images that were downloaded from S3
 	 *
 	 * @param collection The collection to upload to
 	 * @param uploadEntryToSave The directory to write
@@ -1008,6 +1018,11 @@ public class S3ConnectionManager
 			{
 				// Grab the image directory to save
 				ImageDirectory imageDirectory = uploadEntryToSave.getCloudImageDirectory();
+				// Make sure we have the metadata associated with this collection
+				if (uploadEntryToSave.getMetadata().getValue() == null)
+				{
+					uploadEntryToSave.setMetadata(this.readRemoteCamtrap(ROOT_FOLDER, collectionSaveDirStr));
+				}
 				// Grab the list of images to upload
 				List<CloudImageEntry> toUpload = imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof CloudImageEntry).map(imageContainer -> (CloudImageEntry) imageContainer).collect(Collectors.toList());
 				Platform.runLater(() -> imageDirectory.setUploadProgress(0.0));
@@ -1040,21 +1055,8 @@ public class S3ConnectionManager
 						// Write image metadata to the file
 						List<MetaData> imageMetadata = cloudImageEntry.convertToMetadata();
 						imageMetadata.add(collectionIDTag);
-/* Convert this to JSON, and upload updated meta data after all metadata generated
-						imageMetadata.forEach(metaData ->
-						{
-							try
-							{
-								// Set the file Meta data
-								this.sessionManager.getCurrentAO().getDataObjectAO(this.authenticatedAccount).setAVUMetadata(fileAbsoluteCyVersePath, avuData);
-							}
-							catch (Exception e)
-							{
-								SanimalData.getInstance().getErrorDisplay().printError("Could not add metadata to image: " + cloudImageEntry.getCyverseFile().getAbsolutePath() + ", error was: ");
-								e.printStackTrace();
-							}
-						});
-*/
+						addUpdateMetadataCamtrap(imageMetadata, fileAbsoluteCloudPath, uploadEntryToSave.getMetadata().getValue());
+
 						// Update the progress every 20 uploads
 						if (i % 20 == 0)
 						{
@@ -1071,7 +1073,14 @@ public class S3ConnectionManager
 				// Convert the upload entry to JSON format
 				String json = SanimalData.getInstance().getGson().toJson(uploadEntryToSave);
 				// Write the UploadMeta json file to the server
-				this.writeRemoteFile(ROOT_FOLDER, String.join("/", uploadEntryToSave.getUploadPath(), UPLOAD_JSON_FILE), json);
+				String uploadPath = uploadEntryToSave.getUploadPath();
+				this.writeRemoteFile(ROOT_FOLDER, String.join("/", uploadPath, UPLOAD_JSON_FILE), json);
+				// Write the metadata file(s)
+				String[] paths = (uploadEntryToSave.getMetadata().getValue()).getFilePaths(uploadPath);
+				for (String oneFile: paths)
+				{
+					this.uploadFile(ROOT_FOLDER, oneFile, oneFile);
+				}
 			}
 		}
 		catch (Exception e)
@@ -1120,6 +1129,9 @@ public class S3ConnectionManager
 							if (uploadEntry != null)
 							{
 								uploadEntry.initFromJSON();
+								// Get the Camtrap data
+								uploadEntry.setMetadata(this.readRemoteCamtrap(ROOT_FOLDER, file));
+
 								Platform.runLater(() -> collection.getUploads().add(uploadEntry));
 							}
 						}
@@ -1584,6 +1596,32 @@ public class S3ConnectionManager
 	}
 
 	/**
+	 * Creates a Camtrap instance initialized from the remote location
+	 * 
+	 * @param bucket the bucket to load the data from
+	 * @param prefix the path prefix for the data location
+	 * @return the initialized instance of the Camtrap data
+	 */
+	private Camtrap readRemoteCamtrap(String bucket, String prefix)
+	{
+		Camtrap metadata = new Camtrap();
+
+		String remotePath = String.join("/", prefix, Camtrap.CAMTRAP_DEPLOYMENTS_FILE);
+		String csvData = this.readRemoteFile(bucket, remotePath);
+		metadata.setDeployments(csvData);
+
+		remotePath = String.join("/", prefix, Camtrap.CAMTRAP_MEDIA_FILE);
+		csvData = this.readRemoteFile(bucket, remotePath);
+		metadata.setMedia(csvData);
+
+		remotePath = String.join("/", prefix, Camtrap.CAMTRAP_OBSERVATIONS_FILE);
+		csvData = this.readRemoteFile(bucket, remotePath);
+		metadata.setObservations(csvData);
+
+		return metadata;
+	}
+
+	/**
 	 * Reads a file from S3 assuming a user is already logged in
 	 *
 	 * @param bucket The bucket to load the object from
@@ -1606,6 +1644,21 @@ public class S3ConnectionManager
 	        outputStream.write(read_buf, 0, read_len);
 	    }
 	    s3is.close();
+	}
+
+	/**
+	 * Uploads a file to the S3 server
+	 * 
+	 * @param bucket The path to the object to write
+	 * @param objectName The name of the object to write
+	 * @param localFilePath The path of the file to upload
+	 */
+	private void uploadFile(String bucket, String objectName, String localFilePath)
+	{
+		File localFile = new File(localFilePath);
+
+        // Upload file
+        this.s3Client.putObject(new PutObjectRequest(bucket, objectName, localFile));
 	}
 
 	/**
@@ -1824,21 +1877,183 @@ public class S3ConnectionManager
 	}
 
 	/**
-	 * Formats the metadata for images to a file
+	 * Formats the metadata for images
 	 * 
 	 * @param meta The file to write to
 	 * @param imageEntries The image entries to write
 	 * @param imageToMetadata The CSV file representing each image's metadata
 	 * @throws FileNotFoundException if the metadata file can't be written
 	 */
-	private void createImageMetaFile(Camtrap meta, List<ImageEntry> imageEntries, Function<ImageEntry, String> imageToMetadata) throws FileNotFoundException
+	private void createImageMetaEntries(Camtrap meta, List<ImageEntry> imageEntries, BiConsumer<ImageEntry, Camtrap> imageToMetadata) throws FileNotFoundException
 	{
-		PrintWriter metaOut = new PrintWriter(outFile);
 		for (ImageEntry imageEntry: imageEntries)
 		{
-			// Create a metadata entry into our meta file
-			imageToMetadata.apply(imageEntry, meta);
+			// Create metadata entries into our meta file
+			imageToMetadata.accept(imageEntry, meta);
 		}
 	}
 
+	/**
+	 * Maps MetaData fields to CamTrap formats
+	 * 
+	 * @param imageMetadata the metadata fields, values, and units
+	 * @param fileRelativePath the relative to the media
+	 * @param metaCamtrap the Camtrap metadata entries
+	 * @throws InvalidParameterException if critical information is missing
+	 */
+	private void mapMetadataToCamtrap(List<MetaData> imageMetadata, String fileRelativePath, Camtrap metaCamtrap)
+	{
+		// Create a new Media instance
+		Media med = new Media();
+
+		med.mediaID = fileRelativePath;
+		med.sequenceID = fileRelativePath;
+		med.filePath = fileRelativePath;
+		med.fileName = FilenameUtils.getBaseName(fileRelativePath) + "." + FilenameUtils.getExtension(fileRelativePath);
+		med.fileMediaType = "image/jpeg";
+
+		// Create a new Observations instance
+		Observations obs = new Observations();
+		String locName = null;
+		String locID = null;
+		Double locLat = null;
+		Double locLon = null;
+		Double locHeight = null;
+		String deploymentID = null;
+
+		obs.mediaID = med.mediaID;
+		for (MetaData oneMeta: imageMetadata)
+		{
+			switch (oneMeta.getAttribute())
+			{
+				case SanimalMetadataFields.A_SANIMAL:
+					obs.deploymentID = "sanimal";
+					break;
+				case SanimalMetadataFields.A_DATE_TIME_TAKEN:
+					obs.timestamp = LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(oneMeta.getValue())),
+                               								TimeZone.getDefault().toZoneId());
+					break;
+				/* Not used since we have the Epoch seconds (see A_DATE_TIME_TAKEN)
+				case SanimalMetadataFields.A_DATE_YEAR_TAKEN:
+					break;
+				case SanimalMetadataFields.A_DATE_MONTH_TAKEN:
+					break;
+				case SanimalMetadataFields.A_DATE_HOUR_TAKEN:
+					break;
+				case SanimalMetadataFields.A_DATE_DAY_OF_YEAR_TAKEN:
+					break;
+				case SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN:
+					break;
+				*/
+				case SanimalMetadataFields.A_LOCATION_NAME:
+					locName = oneMeta.getValue();
+					break;
+				case SanimalMetadataFields.A_LOCATION_ID:
+					locID = oneMeta.getValue();
+					break;
+				case SanimalMetadataFields.A_LOCATION_LATITUDE:
+					locLat = Double.parseDouble(oneMeta.getValue());
+					break;
+				case SanimalMetadataFields.A_LOCATION_LONGITUDE:
+					locLon = Double.parseDouble(oneMeta.getValue());
+					break;
+				case SanimalMetadataFields.A_LOCATION_ELEVATION:
+					locHeight = Double.parseDouble(oneMeta.getValue());
+					break;
+				case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
+					obs.scientificName = oneMeta.getValue();
+					break;
+				case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
+					obs.comments = "[COMMONNAME:" + oneMeta.getValue() + "]";
+					break;
+				case SanimalMetadataFields.A_SPECIES_COUNT:
+					obs.count = Integer.parseInt(oneMeta.getValue());
+					break;
+				case SanimalMetadataFields.A_COLLECTION_ID:
+					deploymentID = oneMeta.getValue();
+					break;
+			}
+		}
+
+		// Make sure we have enough information to continue
+		if (locID == null)
+		{
+			throw new InvalidParameterException("Missing location ID for Camtrap metadata");
+		}
+		if ((locLat == null) || (locLon == null))
+		{
+			throw new InvalidParameterException("Missing location lat-lon for Camtrap metadata");
+		}
+
+		// Look for a deployment that matches our LocationID
+		Deployments ourDep = null;
+		boolean newDep = false;
+		for (Deployments oneDep: metaCamtrap.deployments)
+		{
+			if (oneDep.locationID == locID)
+			{
+				ourDep = oneDep;
+				break;
+			}
+		}
+
+		// Create a new deployment if needed
+		if (ourDep == null)
+		{
+			newDep = true;
+			ourDep = new Deployments();
+			ourDep.deploymentID = deploymentID;
+			ourDep.locationName = locName;
+			ourDep.locationID = locID;
+			ourDep.latitude = locLat;
+			ourDep.longitude = locLon;
+			ourDep.cameraHeight = locHeight;
+		}
+
+		// Assign the deployment ID
+		obs.deploymentID = ourDep.deploymentID;
+
+		// Add new items to the Camtrap metadata store
+		metaCamtrap.media.add(med);
+		metaCamtrap.observations.add(obs);
+		if (newDep == true)
+		{
+			metaCamtrap.deployments.add(ourDep);
+		}
+	}
+
+	/**
+	 * Looks for an entry and updates the metadata if found, otherwise creates a new entry
+	 * 
+	 * @param imageMetadata the metadata fields, values, and units
+	 * @param fileRelativePath the relative to the media
+	 * @param metaCamtrap the Camtrap metadata entries
+	 * @throws InvalidParameterException if critical information is missing
+	 */
+	private void addUpdateMetadataCamtrap(List<MetaData> imageMetadata, String fileRelativePath, Camtrap metaCamtrap)
+	{
+		// Create a Camtrap instance to hold the generated data
+		Camtrap newMeta =  new Camtrap();
+		this.mapMetadataToCamtrap(imageMetadata, fileRelativePath, newMeta);
+
+		// Either replace or add the data
+		Media oldMedia = null;
+		int index = 0;
+		while (index < metaCamtrap.media.size())
+		{
+			// Check for a media match
+			Media curMedia = metaCamtrap.media.get(index);
+			if (curMedia.filePath == fileRelativePath)
+			{
+				oldMedia = curMedia;
+				curMedia = newMeta.media.get(0);
+				break;
+			}
+			index++;
+		}
+		if (index >= metaCamtrap.media.size())
+		{
+			metaCamtrap.media.add(newMeta.media.get(0));
+		}
+	}
 }

@@ -18,6 +18,8 @@ public class CloudUploadEntry
 	private transient BooleanProperty downloadedProperty = new SimpleBooleanProperty(false);
 	// A reference to the cloud image directory that we may download at some point
 	private transient ObjectProperty<CloudImageDirectory> cloudImageDirectoryProperty = new SimpleObjectProperty<>();
+	// A reference to the associated cloud metadata
+	private transient ObjectProperty<Camtrap> camtrapProperty = new SimpleObjectProperty<>();
 
 	// The username of the person that uploaded images
 	private String uploadUser;
@@ -61,6 +63,7 @@ public class CloudUploadEntry
 	{
 		this.downloadedProperty = new SimpleBooleanProperty(false);
 		this.cloudImageDirectoryProperty = new SimpleObjectProperty<>();
+		this.camtrapProperty = new SimpleObjectProperty<>();
 	}
 
 	/**
@@ -144,5 +147,15 @@ public class CloudUploadEntry
 	public ObjectProperty<CloudImageDirectory> cloudImageDirectoryProperty()
 	{
 		return this.cloudImageDirectoryProperty;
+	}
+
+	public void setMetadata(Camtrap metadata)
+	{
+		this.camtrapProperty.setValue(metadata);
+	}
+
+	public ObjectProperty<Camtrap> getMetadata()
+	{
+		return this.camtrapProperty;
 	}
 }

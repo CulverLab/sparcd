@@ -2,7 +2,7 @@ package model.query.conditions;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import model.query.CyVerseQuery;
+import model.query.S3Query;
 import model.query.IQueryCondition;
 
 import java.time.LocalDateTime;
@@ -21,7 +21,7 @@ public class EndDateCondition implements IQueryCondition
 	 * @param query The current state of the query before the appending
 	 */
 	@Override
-	public void appendConditionToQuery(CyVerseQuery query)
+	public void appendConditionToQuery(S3Query query)
 	{
 		query.setEndDate(endDate.getValue());
 	}

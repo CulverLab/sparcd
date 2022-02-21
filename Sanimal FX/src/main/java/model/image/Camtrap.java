@@ -3,11 +3,15 @@ package model.image;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.StringReader;
 import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Vector;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.opencsv.exceptions.CsvValidationException;
 
 /**
  * Representation of Camtrap DP format. See https://tdwg.github.io/camtrap-dp/
@@ -18,13 +22,13 @@ import com.opencsv.CSVWriter;
 public final class Camtrap
 {
     // The name of the deployments file
-    private final static String CAMTRAP_DEPLOYMENTS_FILE = "deployments.csv";
+    public final static String CAMTRAP_DEPLOYMENTS_FILE = "deployments.csv";
 
     // The name of the media file
-    private final static String CAMTRAP_MEDIA_FILE = "media.csv";
+    public final static String CAMTRAP_MEDIA_FILE = "media.csv";
 
     // The name of the observations file
-    private final static String CAMTRAP_OBSERVATIONS_FILE = "observations.csv";
+    public final static String CAMTRAP_OBSERVATIONS_FILE = "observations.csv";
 
     // The collection this data belongs to
     private String collectionID;
@@ -43,9 +47,12 @@ public final class Camtrap
      * 
      * @param folderPath The path of the folder to load
      * @throws InvalidParameterException If the folder path doesn't contain the expected files, or data is invalid
-     * @throws NumberFormatException if a value can't be converted
+     * @throws NumberFormatException If a value can't be converted
+     * @throws FileNotFoundException If a file is not found
+     * @throws IOException If a problem ocurrs when accessing a file
+     * @throws CsvValidationException If there's a problem reading CSV files
      */
-    public static final Camtrap instance(String folderPath)
+    public static final Camtrap instance(String folderPath) throws FileNotFoundException, IOException, CsvValidationException
     {
         Camtrap returnValue = null;
         List<Deployments> deployments = null;
@@ -122,7 +129,7 @@ public final class Camtrap
     /**
      * Constructor
      */
-    private Camtrap()
+    public Camtrap()
     {
         collectionID = "";
         deployments = new Vector<Deployments>();
@@ -131,11 +138,78 @@ public final class Camtrap
     }
 
     /**
+     * Populates the Deployments from the string passed in. Each CSV line is separated by a new line
+     * 
+     * @param csvData a string containing the data to load
+     * @throws IOException if a problem ocurrs while accessing a file
+     * @throws CsvValidationException if there's a problem with the CSV file
+     */
+    public final void setDeployments(String csvData) throws IOException, CsvValidationException
+    {
+        List<Deployments> deployments = new Vector<Deployments>();
+
+        CSVReader reader = new CSVReader(new StringReader(csvData));
+        String[] nextLine;
+
+        while ((nextLine = reader.readNext()) != null)
+        {
+            deployments.add(Deployments.instance(nextLine));
+        }
+
+        this.deployments = deployments;
+    }
+
+    /**
+     * Populates the Media from the string passed in. Each CSV line is separated by a new line
+     * 
+     * @param csvData a string containing the data to load
+     * @throws IOException if a problem ocurrs while accessing a file
+     * @throws CsvValidationException if there's a problem with the CSV file
+     */
+    public final void setMedia(String csvData) throws IOException, CsvValidationException
+    {
+        List<Media> media = new Vector<Media>();
+
+        CSVReader reader = new CSVReader(new StringReader(csvData));
+        String[] nextLine;
+
+        while ((nextLine = reader.readNext()) != null)
+        {
+            media.add(Media.instance(nextLine));
+        }
+
+        this.media = media;
+    }
+
+    /**
+     * Populates the Observations from the string passed in. Each CSV line is separated by a new line
+     * 
+     * @param csvData a string containing the data to load
+     * @throws IOException if a problem ocurrs while accessing a file
+     * @throws CsvValidationException if there's a problem with the CSV file
+     */
+    public final void setObservations(String csvData) throws IOException, CsvValidationException
+    {
+        List<Observations> observations = new Vector<Observations>();
+
+        CSVReader reader = new CSVReader(new StringReader(csvData));
+        String[] nextLine;
+
+        while ((nextLine = reader.readNext()) != null)
+        {
+            observations.add(Observations.instance(nextLine));
+        }
+
+        this.observations = observations;
+    }
+
+    /**
      * Writes Camtrap data to the specified folder, overwriting any existing Camtrap files
      * 
      * @param saveFolder path to the folder to save data to
+     * @throws IOException if a problem ocurrs while accessing a file
      */
-    public final void saveTo(String savePath)
+    public final void saveTo(String savePath) throws IOException
     {
         // Save deployment data
         String outFile = String.join("/", savePath, CAMTRAP_DEPLOYMENTS_FILE);
@@ -166,5 +240,32 @@ public final class Camtrap
             outCsv.writeNext(oneObs.toArray());
         }
         outCsv.close();
+    }
+
+    /**
+     * Returns the paths to the Camtrap files using the given starting path
+     * 
+     * @param savePath path to the folder to use as the base for the file names
+     * @return an array of the files that would be generated. No check is made if the file paths returned actually exist
+     */
+    public String[] getFilePaths(String savePath)
+    {
+        String[] filePaths = new String[3];
+
+        filePaths[0] = String.join("/", savePath, CAMTRAP_DEPLOYMENTS_FILE);
+        filePaths[1] = String.join("/", savePath, CAMTRAP_MEDIA_FILE);
+        filePaths[2] = String.join("/", savePath, CAMTRAP_OBSERVATIONS_FILE);
+
+        return filePaths;
+    }
+
+    /**
+     * Returns whether or not this instance has been populated
+     * 
+     * @return returns true if any entries exist, otherwise false
+     */
+    public boolean isPopulated()
+    {
+        return deployments.size() > 0 || media.size() > 0 || observations.size() > 0;
     }
 }

@@ -2,9 +2,12 @@ package model.query;
 
 
 import model.constant.SanimalMetadataFields;
-import model.cyverse.ImageCollection;
+import model.s3.ImageCollection;
 import model.location.Location;
 import model.species.Species;
+
+import org.irods.jargon.core.query.*;
+
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -35,7 +38,7 @@ public class S3Query
 	private Set<Integer> dayOfWeekQuery = new HashSet<>();
 
 	// The IRODS query builder to append to
-	private IRODSGenQueryBuilder queryBuilder;
+//	private IRODSGenQueryBuilder queryBuilder;
 
 	/**
 	 * Constructor initializes base query fields
@@ -43,21 +46,21 @@ public class S3Query
 	public S3Query()
 	{
 		// We want distinct results
-		this.queryBuilder = new IRODSGenQueryBuilder(true, false, null);
+/*		this.queryBuilder = new IRODSGenQueryBuilder(true, false, null);
 		try
 		{
 			// Path to the collection containing this data item
 			queryBuilder.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_COLL_NAME);
 			// Name of this data object
 			queryBuilder.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_DATA_NAME);
-			/*
+*/			/*
 			queryBuilder.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_D_DATA_ID); // ID of the data item
 			queryBuilder.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_META_DATA_ATTR_ID); // ID of the metadata
 			queryBuilder.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_META_DATA_ATTR_NAME); // Attribute
 			queryBuilder.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_META_DATA_ATTR_VALUE); // Value
 			queryBuilder.addSelectAsGenQueryValue(RodsGenQueryEnum.COL_META_DATA_ATTR_UNITS); // Units
 			*/
-		}
+/*		}
 		catch (GenQueryBuilderException e)
 		{
 			e.printStackTrace();
@@ -65,7 +68,7 @@ public class S3Query
 		// All queries must operate on sanimal data, therefore SANIMAL=true
 		appendQueryElement(AVUQueryElement.AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL, SanimalMetadataFields.A_SANIMAL);
 		appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.EQUAL, "true");
-	}
+*/	}
 
 	/**
 	 * Adds a given species to the query
@@ -170,11 +173,11 @@ public class S3Query
 	}
 
 	/**
-	 * Finalizes the query and returns it as an IRODS query builder objects
+	 * Finalizes the query and returns it as an S3 query builder objects
 	 *
-	 * @return The iRODS query ready to be executed
+	 * @return The S3 query ready to be executed
 	 */
-	public IRODSGenQueryBuilder build()
+	public String/*IRODSGenQueryBuilder*/ build()
 	{
 		// To test if a species is in a list, we is the "IN" operator. We need to create a formatted string like: ('spec1','spec2')
 		String speciesInStr = "(" + this.speciesQuery.stream().map(species -> "'" + species.getScientificName() + "'").collect(Collectors.joining(",")) + ")";
@@ -224,7 +227,7 @@ public class S3Query
 			appendQueryElement(AVUQueryElement.AVUQueryPart.VALUE, QueryConditionOperators.IN, dayOfWeekInStr);
 		}
 
-		return this.queryBuilder;
+		return "Invalid";//this.queryBuilder;
 	}
 
 	/**
@@ -311,7 +314,7 @@ public class S3Query
 	 */
 	private void appendQueryElement(RodsGenQueryEnum column, QueryConditionOperators operator, String value)
 	{
-		this.queryBuilder.addConditionAsGenQueryField(column, operator, value);
+//		this.queryBuilder.addConditionAsGenQueryField(column, operator, value);
 	}
 
 	/**
@@ -323,7 +326,7 @@ public class S3Query
 	 */
 	private void appendQueryElement(RodsGenQueryEnum column, QueryConditionOperators operator, int value)
 	{
-		this.queryBuilder.addConditionAsGenQueryField(column, operator, value);
+//		this.queryBuilder.addConditionAsGenQueryField(column, operator, value);
 	}
 
 	/**
@@ -335,6 +338,6 @@ public class S3Query
 	 */
 	private void appendQueryElement(RodsGenQueryEnum column, QueryConditionOperators operator, long value)
 	{
-		this.queryBuilder.addConditionAsGenQueryField(column, operator, value);
+//		this.queryBuilder.addConditionAsGenQueryField(column, operator, value);
 	}
 }

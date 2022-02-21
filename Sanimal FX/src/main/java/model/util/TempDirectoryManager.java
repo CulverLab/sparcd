@@ -66,11 +66,12 @@ public class TempDirectoryManager
 	 * 
 	 * @param folderNane The name of the folder to create
 	 * @return A reference to the temporary folder we created
+	 * @throws IOException If a problem ocurrs when accessing the folder
 	 */
-	public File createTempFolder(String folderName)
+	public File createTempFolder(String folderName) throws IOException
 	{
 		// The temporary folder will have the temp directory as a parent and the same name except with 10 random alphanumeric characters tagged onto the end
-		File tempDir = FileUtils.createTempDirectory(String.join("/", this.sanimalTempDir, folderName + RandomStringUtils.randomAlphanumeric(10))).toFile();
+		File tempDir = Files.createTempDirectory(String.join("/", this.sanimalTempDir.getAbsolutePath(), folderName + RandomStringUtils.randomAlphanumeric(10))).toFile();
 
 		// Delete the file when we exit
 		tempDir.deleteOnExit();

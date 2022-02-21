@@ -7,7 +7,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import model.SanimalData;
 import model.location.Location;
-import model.query.CyVerseQuery;
+import model.query.S3Query;
 import model.query.IQueryCondition;
 import model.species.Species;
 
@@ -48,7 +48,7 @@ public class LocationFilterCondition implements IQueryCondition
 	 * @param query The current state of the query before the appending
 	 */
 	@Override
-	public void appendConditionToQuery(CyVerseQuery query)
+	public void appendConditionToQuery(S3Query query)
 	{
 		for (Location location : this.getLocationList())
 			if (locationToSelected.containsKey(location) && locationToSelected.get(location).getValue())

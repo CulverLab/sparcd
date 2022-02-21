@@ -46,7 +46,7 @@ public class CollectionCondition implements IQueryCondition
 	 * @param query The current state of the query before the appending
 	 */
 	@Override
-	public void appendConditionToQuery(CyVerseQuery query)
+	public void appendConditionToQuery(S3Query query)
 	{
 		for (ImageCollection imageCollection : this.getImageCollections())
 			if (imageCollectionToSelected.containsKey(imageCollection) && imageCollectionToSelected.get(imageCollection).getValue())
