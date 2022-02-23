@@ -10,6 +10,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * Class used in managing temporary files created by SANIMAL
@@ -71,7 +72,8 @@ public class TempDirectoryManager
 	public File createTempFolder(String folderName) throws IOException
 	{
 		// The temporary folder will have the temp directory as a parent and the same name except with 10 random alphanumeric characters tagged onto the end
-		File tempDir = Files.createTempDirectory(String.join("/", this.sanimalTempDir.getAbsolutePath(), folderName + RandomStringUtils.randomAlphanumeric(10))).toFile();
+		String tempPath = String.join("/", this.sanimalTempDir.getAbsolutePath(), folderName + RandomStringUtils.randomAlphanumeric(10));
+		File tempDir = Files.createDirectory(Paths.get(tempPath)).toFile();
 
 		// Delete the file when we exit
 		tempDir.deleteOnExit();
