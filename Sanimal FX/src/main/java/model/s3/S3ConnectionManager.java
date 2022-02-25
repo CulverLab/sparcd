@@ -965,7 +965,7 @@ public class S3ConnectionManager
 						// Upload the file
 						try
 						{
-							String remotePath = String.join("/", uploadFolderName, FilenameUtils.getName(toWrite.getAbsolutePath()));
+							String remotePath = String.join("/", uploadDirName, FilenameUtils.getName(toWrite.getAbsolutePath()));
 							this.uploadFile(ROOT_BUCKET, remotePath, toWrite);
 						}
 						catch (Exception e)
