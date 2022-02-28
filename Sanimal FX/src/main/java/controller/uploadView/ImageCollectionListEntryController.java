@@ -151,7 +151,8 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 		// Set the scene of the stage, and show it!
 		dialogStage.setScene(scene);
 		dialogStage.showAndWait();
-		actionEvent.consume();
+		if (actionEvent != null)
+			actionEvent.consume();
 	}
 
 	/**

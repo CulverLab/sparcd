@@ -339,6 +339,7 @@ public class S3ConnectionManager
 		String json = SanimalData.getInstance().getGson().toJson(newLocations);
 
 		// Write the locations.json file to the server
+		System.out.println("pushLocalLocations: '" + LOCATION_FILE_PATH + "'");
 		this.writeRemoteFile(ROOT_BUCKET, LOCATION_FILE_PATH, json);
 	}
 
@@ -771,6 +772,7 @@ public class S3ConnectionManager
 	 */
 	private boolean canWriteFolder(String bucket, String folderName)
 	{
+		System.out.println("canWriteFolder(): BEGIN");
 		if (this.folderExists(bucket, folderName))
 		{
 			// Current set of ACLs
@@ -796,6 +798,7 @@ public class S3ConnectionManager
 	 */
 	private boolean canReadFolder(String bucket, String folderName)
 	{
+		System.out.println("canReadFolder(): BEGIN");
 		if (this.folderExists(bucket, folderName))
 		{
 			// Current set of ACLs
@@ -846,7 +849,7 @@ public class S3ConnectionManager
 	public void uploadImages(ImageCollection collection, ImageDirectory directoryToWrite, String description, StringProperty messageCallback)
 	{
 		this.retryDelayReset();
-		System.out.println("uploadImages(): BEGIN");
+		System.out.println("uploadImages(): BEGIN -> description: '" + description + "'");
 		try
 		{
 			// Grab the uploads folder for a given collection
@@ -910,6 +913,7 @@ public class S3ConnectionManager
 						// Compute the image's cloud path
 						String fileRelativePath = localDirName + StringUtils.substringAfter(imageEntry.getFile().getAbsolutePath(), localDirAbsolutePath);
 						fileRelativePath = fileRelativePath.replace('\\', '/');
+						System.out.println("    fileRelativePath: '" + fileRelativePath + "'");
 						List<MetaData> imageMetadata = imageEntry.convertToMetadata();
 						imageMetadata.add(collectionIDTag);
 						this.mapMetadataToCamtrap(imageMetadata, fileRelativePath, metaCamtrap);
@@ -965,7 +969,16 @@ public class S3ConnectionManager
 						// Upload the file
 						try
 						{
-							String remotePath = String.join("/", uploadDirName, FilenameUtils.getName(toWrite.getAbsolutePath()));
+							String remotePath;
+							if (toWrite.getAbsolutePath().startsWith(localDirAbsolutePath))
+							{
+								remotePath = String.join("/", uploadDirName, localDirName, FilenameUtils.getName(toWrite.getAbsolutePath()));
+							}
+							else
+							{
+								remotePath = String.join("/", uploadDirName, FilenameUtils.getName(toWrite.getAbsolutePath()));
+							}
+							System.out.println("    remotePath: " + remotePath);
 							this.uploadFile(ROOT_BUCKET, remotePath, toWrite);
 						}
 						catch (Exception e)
@@ -1074,17 +1087,22 @@ public class S3ConnectionManager
 	{
 		try
 		{
+			System.out.println("saveImages(): BEGIN");
+
 			// Grab the save folder for a given collection
 			String collectionSaveDirStr = String.join("/", COLLECTIONS_FOLDER_NAME, collection.getID().toString(), UPLOADS_FOLDER_NAME);
+			System.out.println("saveImages(): collectionSaveDirStr -> '" + collectionSaveDirStr + "'");
 
 			// If the save directory exists and we can write to it, save
 			if (this.folderExists(ROOT_BUCKET, collectionSaveDirStr))
 			{
 				// Grab the image directory to save
 				ImageDirectory imageDirectory = uploadEntryToSave.getCloudImageDirectory();
+				System.out.println("saveImages(): imageDirectory -> " + imageDirectory);
 				// Make sure we have the metadata associated with this collection
 				if (uploadEntryToSave.getMetadata().getValue() == null)
 				{
+					System.out.println("saveImages(): Reading camtrap data -> '" + collectionSaveDirStr + "'");
 					uploadEntryToSave.setMetadata(this.readRemoteCamtrap(ROOT_BUCKET, collectionSaveDirStr));
 				}
 				// Grab the list of images to upload
@@ -1097,19 +1115,23 @@ public class S3ConnectionManager
 				Integer numberOfDetaggedImages = 0;
 				Integer numberOfRetaggedImages = 0;
 				// Begin saving
+				System.out.println("saveImages(): number of images -> " + numberOfImagesToUpload);
 				for (int i = 0; i < toUpload.size(); i++)
 				{
 					// Grab the cloud image entry to upload
 					CloudImageEntry cloudImageEntry = toUpload.get(i);
 					// If it has been pulled save it
+					System.out.println("saveImages(): current entry -> " + cloudImageEntry.getCloudFile().toString());
 					if (cloudImageEntry.hasBeenPulledFromCloud() && cloudImageEntry.isCloudDirty())
 					{
+						System.out.println("    -> been pulled and is cloud dirty");
 						if (cloudImageEntry.getSpeciesPresent().isEmpty() && cloudImageEntry.wasTaggedWithSpecies())
 							numberOfDetaggedImages++;
 						else if (!cloudImageEntry.getSpeciesPresent().isEmpty() && !cloudImageEntry.wasTaggedWithSpecies())
 							numberOfRetaggedImages++;
 
 						// Save that specific cloud image
+						System.out.println("saveImages(): upload file -> '" + cloudImageEntry.getCloudFile().toString() + "' '" + cloudImageEntry.getFile().getAbsolutePath() + "'");
 						this.uploadFile(ROOT_BUCKET, cloudImageEntry.getCloudFile().toString(), cloudImageEntry.getFile());
 
 						// Get the absolute path of the uploaded file
@@ -1119,7 +1141,7 @@ public class S3ConnectionManager
 						// Write image metadata to the file
 						List<MetaData> imageMetadata = cloudImageEntry.convertToMetadata();
 						imageMetadata.add(collectionIDTag);
-						addUpdateMetadataCamtrap(imageMetadata, fileAbsoluteCloudPath, uploadEntryToSave.getMetadata().getValue());
+						this.addUpdateMetadataCamtrap(imageMetadata, fileAbsoluteCloudPath, uploadEntryToSave.getMetadata().getValue());
 
 						// Update the progress every 20 uploads
 						if (i % 20 == 0)
@@ -1138,12 +1160,17 @@ public class S3ConnectionManager
 				String json = SanimalData.getInstance().getGson().toJson(uploadEntryToSave);
 				// Write the UploadMeta json file to the server
 				String uploadPath = uploadEntryToSave.getUploadPath();
+				System.out.println("saveImages(): write remote file -> '" + String.join("/", uploadPath, UPLOAD_JSON_FILE) + "'");
 				this.writeRemoteFile(ROOT_BUCKET, String.join("/", uploadPath, UPLOAD_JSON_FILE), json);
 				// Write the metadata file(s)
-				String[] paths = (uploadEntryToSave.getMetadata().getValue()).getFilePaths(uploadPath);
+				File metaFolder = SanimalData.getInstance().getTempDirectoryManager().createTempFolder("meta");
+				(uploadEntryToSave.getMetadata().getValue()).saveTo(metaFolder.getAbsolutePath());
+				String[] paths = (uploadEntryToSave.getMetadata().getValue()).getFilePaths(metaFolder.getAbsolutePath());
 				for (String oneFile: paths)
 				{
-					this.uploadFile(ROOT_BUCKET, oneFile, oneFile);
+					String remoteFilePath = String.join("/", uploadPath, FilenameUtils.getName(oneFile));
+					System.out.println("saveImages(): write Camtrap file -> '" + remoteFilePath + "' '" + oneFile + "'");
+					this.uploadFile(ROOT_BUCKET, remoteFilePath, oneFile);
 				}
 			}
 		}
@@ -1169,6 +1196,8 @@ public class S3ConnectionManager
 	{
 		try
 		{
+			System.out.println("retrieveAndInsertUploadList(): BEGIN");
+
 			// Clear the current collection uploads
 			Platform.runLater(() -> collection.getUploads().clear());
 			// Grab the uploads folder for a given collection
@@ -1176,25 +1205,29 @@ public class S3ConnectionManager
 			// If the uploads directory exists and we can read it, read
 			if (this.folderExists(ROOT_BUCKET, collectionUploadDirStr))
 			{
-				List<String> files = this.listFolderObjects(ROOT_BUCKET, collectionUploadDirStr);
-				double totalFiles = files.size();
+				List<String> folders = this.listFolders(ROOT_BUCKET, collectionUploadDirStr);
+				double totalFolders = folders.size();
 				int numDone = 0;
-				for (String file : files)
+				System.out.println("retrieveAndInsertUploadList(): folder count: " + folders.size() + " '" + collectionUploadDirStr + "'");
+				for (String folder : folders)
 				{
-					progressProperty.setValue(++numDone / totalFiles);
+					progressProperty.setValue(++numDone / totalFolders);
 					// We recognize uploads by their UploadMeta json file
-					String contents = this.readRemoteFile(ROOT_BUCKET, String.join("/", file, UPLOAD_JSON_FILE));
+					System.out.println("retrieveAndInsertUploadList(): Reading folder -> '" + folder + "'");
+					String contents = this.readRemoteFile(ROOT_BUCKET, String.join("/", folder, UPLOAD_JSON_FILE));
 					if (contents != null)
 					{
 						try
 						{
 							// Download the cloud upload entry
 							CloudUploadEntry uploadEntry = SanimalData.getInstance().getGson().fromJson(contents, CloudUploadEntry.class);
+							System.out.println("retrieveAndInsertUploadList(): check upload entry from JSON ->" + contents);
 							if (uploadEntry != null)
 							{
+								System.out.println("    not null");
 								uploadEntry.initFromJSON();
 								// Get the Camtrap data
-								uploadEntry.setMetadata(this.readRemoteCamtrap(ROOT_BUCKET, file));
+								uploadEntry.setMetadata(this.readRemoteCamtrap(ROOT_BUCKET, folder));
 
 								Platform.runLater(() -> collection.getUploads().add(uploadEntry));
 							}
@@ -1207,10 +1240,11 @@ public class S3ConnectionManager
 									null,
 									"Error",
 									"JSON upload error",
-									"Could not read the upload metadata for the upload " + file + "!\n" + ExceptionUtils.getStackTrace(e),
+									"Could not read the upload metadata for the upload " + folder + "!\n" + ExceptionUtils.getStackTrace(e),
 									false);
 						}
 					}
+else System.out.println("    Empty");
 				}
 			}
 		}
@@ -1224,6 +1258,7 @@ public class S3ConnectionManager
 					"Could not download the list of uploads to the collection from S3!\n" + ExceptionUtils.getStackTrace(e),
 					false);
 		}
+		System.out.println("retrieveAndInsertUploadList(): DONE");
 	}
 
 	/**
@@ -1236,13 +1271,20 @@ public class S3ConnectionManager
 	{
 		try
 		{
+			System.out.println("downloadUploadDirectory(): BEGIN");
 			// Grab the uploads folder for a given collection
 			String cloudDirectoryStr = uploadEntry.getUploadPath();
+			System.out.println("downloadUploadDirectory(): cloud directorry string: '" + cloudDirectoryStr + "'");
 			CloudImageDirectory cloudImageDirectory = new CloudImageDirectory(cloudDirectoryStr);
+			System.out.println("downloadUploadDirectory(): createDirectoryAndImageTree()");
 			this.createDirectoryAndImageTree(cloudImageDirectory);
 
-			// We need to make sure we remove the UploadMeta json "image entry"
+			// We need to make sure we remove the UploadMeta json "image entry" and all CSV files
+			System.out.println("downloadUploadDirectory(): children removeIf");
 			cloudImageDirectory.getChildren().removeIf(imageContainer -> imageContainer instanceof CloudImageEntry && ((CloudImageEntry) imageContainer).getCloudFile().contains(UPLOAD_JSON_FILE));
+			cloudImageDirectory.getChildren().removeIf(imageContainer -> imageContainer instanceof CloudImageEntry && ((CloudImageEntry) imageContainer).getCloudFile().endsWith(".csv"));
+			System.out.println("downloadUploadDirectory(): cloudImageDirectory children count -> " + cloudImageDirectory.getChildren().size());
+			System.out.println("downloadUploadDirectory(): DONE");
 			return cloudImageDirectory;
 		}
 		catch (Exception e)
@@ -1267,21 +1309,27 @@ public class S3ConnectionManager
 	 */
 	private void createDirectoryAndImageTree(CloudImageDirectory current)
 	{
-		List<String> subFiles = this.listObjects(ROOT_BUCKET, current.getCloudDirectory());
+		System.out.println("createDirectoryAndImageTree(): -> " + current.getCloudDirectory());
+		List<String> subFiles = this.listAllObjects(ROOT_BUCKET, current.getCloudDirectory());
 
+		System.out.println("createDirectoryAndImageTree(): object count: " + subFiles.size());
 		if (subFiles.size() > 0)
 		{
 			// Get all files in the directory
 			for (String file : subFiles)
 			{
+				System.out.println("createDirectoryAndImageTree(): Checking object: " + file);
 				// Add all image files to the directory
 				if (!this.folderExists(ROOT_BUCKET, file))
 				{
+					System.out.println("    new cloud image: '" + file + "'");
 					current.addImage(new CloudImageEntry(file));
 				}
 				// Add all subdirectories to the directory
 				else
 				{
+					System.out.println("    new folder: '" + file + "'");
+
 					CloudImageDirectory subDirectory = new CloudImageDirectory(file);
 					current.addChild(subDirectory);
 					this.createDirectoryAndImageTree(subDirectory);
@@ -1510,6 +1558,7 @@ public class S3ConnectionManager
 	 */
 	public void downloadImages(List<String> absoluteImagePaths, File dirToSaveTo, DoubleProperty progressCallback)
 	{
+		System.out.println("downloadImages(): BEGIN");
 		List<String> absoluteLocalFilePaths = absoluteImagePaths.stream().map(absoluteImagePath -> dirToSaveTo.getAbsolutePath() + File.separator + FilenameUtils.getName(absoluteImagePath)).collect(Collectors.toList());
 		for (int i = 0; i < absoluteImagePaths.size(); i++)
 		{
@@ -1548,6 +1597,7 @@ public class S3ConnectionManager
 	{
 		try
 		{
+			System.out.println("remoteToLocalImageFile(): BEGIN");
 			// Create a temporary file to write to with the same name
 			File localImageFile = SanimalData.getInstance().getTempDirectoryManager().createTempFile(cloudFile);
 
@@ -1877,13 +1927,15 @@ public class S3ConnectionManager
 	 * @param prefix Additional path information for the search
 	 * @return returns the list of found Objects 
 	 */
-	private List<String> listObjects(String bucket, String prefix)
+	private List<String> listAllObjects(String bucket, String prefix)
 	{
+		System.out.println("listAllObjects(): '" + bucket + "' '" + prefix + "'");
 	    String delimiter = "/";
 	    if (!prefix.endsWith(delimiter)) {
-	        prefix += prefix;
+	        prefix += delimiter;
 	    }
 
+		System.out.println("listAllObjects(): prefix -> '" + prefix + "'");
 	    ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
 											            .withBucketName(bucket)
 											            .withPrefix(prefix)
@@ -1891,41 +1943,29 @@ public class S3ConnectionManager
 	    ObjectListing objects = this.s3Client.listObjects(listObjectsRequest);
 
 	    List<String> results = new ArrayList();
+
+	    // All folders
+	    for (String onePrefix: objects.getCommonPrefixes())
+	    {
+			System.out.println("listAllObjects(): folder -> '" + onePrefix + "'");
+	    	if (onePrefix.endsWith(delimiter))
+	    	{
+	    		results.add(onePrefix.substring(0, onePrefix.length() - 1));
+	    	}
+	    	else
+	    	{
+	    		results.add(onePrefix);
+	    	}
+	    }
+	    // All other objects
 		for (S3ObjectSummary oneSummary: objects.getObjectSummaries())
 		{
+			System.out.println("listAllObjects(): object -> '" + oneSummary.getKey() + "'");
 			results.add(oneSummary.getKey());
 		}
 
+		System.out.println("listAllObjects(): DONE");
 	    return results;
-	}
-
-	/**
-	 * Returns a list of folder-type objects in the prefix path of the bucket
-	 * 
-	 * @param bucket The path to the bucket to search
-	 * @param prefix Additional path information for the search
-	 * @return returns the list of found folder-like Objects 
-	 */
-	private List<String> listFolderObjects(String bucket, String prefix)
-	{
-	    String delimiter = "/";
-	    if (!prefix.endsWith(delimiter))
-	    {
-	        prefix += delimiter;
-	    }
-
-		List<String> allObjects = this.listObjects(bucket, prefix);
-
-		List<String> folderObjects = new ArrayList<String>();
-		for (String oneObject: allObjects)
-		{
-			if (oneObject.lastIndexOf(delimiter) > prefix.length())
-			{
-				folderObjects.add(oneObject);
-			}
-		}
-
-		return folderObjects;
 	}
 
 	/**
