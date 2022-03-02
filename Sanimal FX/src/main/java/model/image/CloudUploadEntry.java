@@ -5,7 +5,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class CloudUploadEntry
 	// The username of the person that uploaded images
 	private String uploadUser;
 	// The date the upload happened on
-	private LocalDateTime uploadDate;
+	private ZonedDateTime uploadDate;
 	// The number of species imagesWithSpecies images
 	private Integer imagesWithSpecies;
 	// The number of images in this upload
@@ -46,7 +46,7 @@ public class CloudUploadEntry
 	 * @param uploadPath The path to the file on the cloud
 	 * @param description The description of this upload
 	 */
-	public CloudUploadEntry(String uploadUser, LocalDateTime uploadDate, Integer imagesWithSpecies, Integer imageCount, String uploadPath, String description)
+	public CloudUploadEntry(String uploadUser, ZonedDateTime uploadDate, Integer imagesWithSpecies, Integer imageCount, String uploadPath, String description)
 	{
 		this.uploadUser = uploadUser;
 		this.uploadDate = uploadDate;
@@ -89,7 +89,7 @@ public class CloudUploadEntry
 		return uploadUser;
 	}
 
-	public LocalDateTime getUploadDate()
+	public ZonedDateTime getUploadDate()
 	{
 		return uploadDate;
 	}

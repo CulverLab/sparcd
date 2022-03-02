@@ -3,10 +3,10 @@ package model.query.conditions;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import model.query.S3Query;
 import model.query.IQueryCondition;
+import model.query.S3Query;
+import model.query.S3QueryConditionOperators;
 import model.util.SettingsData;
-import org.irods.jargon.core.query.QueryConditionOperators;
 
 /**
  * Data model used by the "Elevation filter" query condition
@@ -106,14 +106,14 @@ public class ElevationCondition implements IQueryCondition
 	 */
 	public enum ElevationComparisonOperators
 	{
-		Equal("Equal To", QueryConditionOperators.NUMERIC_EQUAL),
-		GreaterThan("Greater Than", QueryConditionOperators.NUMERIC_GREATER_THAN),
-		GreaterThanOrEqual("Greater Than or Equal To", QueryConditionOperators.NUMERIC_GREATER_THAN_OR_EQUAL_TO),
-		LessThan("Less Than", QueryConditionOperators.NUMERIC_LESS_THAN),
-		LessThanOrEqual("Less Than or Equal To", QueryConditionOperators.NUMERIC_LESS_THAN_OR_EQUAL_TO);
+		Equal("Equal To", S3QueryConditionOperators.NUMERIC_EQUAL),
+		GreaterThan("Greater Than", S3QueryConditionOperators.NUMERIC_GREATER_THAN),
+		GreaterThanOrEqual("Greater Than or Equal To", S3QueryConditionOperators.NUMERIC_GREATER_THAN_OR_EQUAL_TO),
+		LessThan("Less Than", S3QueryConditionOperators.NUMERIC_LESS_THAN),
+		LessThanOrEqual("Less Than or Equal To", S3QueryConditionOperators.NUMERIC_LESS_THAN_OR_EQUAL_TO);
 
 		private String displayName;
-		private QueryConditionOperators operator;
+		private S3QueryConditionOperators operator;
 
 		/**
 		 * Constructor takes the name to display and an operator that is the query condition operator equivelant
@@ -121,7 +121,7 @@ public class ElevationCondition implements IQueryCondition
 		 * @param displayName The name to visually display
 		 * @param operator The query condition operator equivalent
 		 */
-		ElevationComparisonOperators(String displayName, QueryConditionOperators operator)
+		ElevationComparisonOperators(String displayName, S3QueryConditionOperators operator)
 		{
 			this.displayName = displayName;
 			this.operator = operator;

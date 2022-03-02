@@ -12,7 +12,10 @@ import model.constant.SanimalMetadataFields;
 import model.s3.RetryTransferStatusCallbackListener;
 import model.image.*;
 import model.location.Location;
-import model.query.CyVerseQuery;
+import model.query.S3Query;
+import model.query.S3QueryExecute;
+import model.query.S3QueryResultRow;
+import model.query.S3QueryResultSet;
 import model.species.Species;
 import model.util.RoundingUtils;
 import model.util.SettingsData;
@@ -875,7 +878,7 @@ public class S3ConnectionManager
 				Integer imageCount = Math.toIntExact(directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count());
 				Integer imagesWithSpecies = Math.toIntExact(directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry && !((ImageEntry) imageContainer).getSpeciesPresent().isEmpty()).count());
 				System.out.println("  imageCount: " + imageCount + "   with species: " + imagesWithSpecies);
-				CloudUploadEntry uploadEntry = new CloudUploadEntry(SanimalData.getInstance().getUsername(), LocalDateTime.now(), imagesWithSpecies, imageCount, uploadDirName, description);
+				CloudUploadEntry uploadEntry = new CloudUploadEntry(SanimalData.getInstance().getUsername(), ZonedDateTime.now(), imagesWithSpecies, imageCount, uploadDirName, description);
 				System.out.println("uploadImages(): Post Cloud Upload Entry");
 
 				// Folder for storing the metadata
@@ -1244,7 +1247,6 @@ public class S3ConnectionManager
 									false);
 						}
 					}
-else System.out.println("    Empty");
 				}
 			}
 		}
@@ -1274,16 +1276,12 @@ else System.out.println("    Empty");
 			System.out.println("downloadUploadDirectory(): BEGIN");
 			// Grab the uploads folder for a given collection
 			String cloudDirectoryStr = uploadEntry.getUploadPath();
-			System.out.println("downloadUploadDirectory(): cloud directorry string: '" + cloudDirectoryStr + "'");
 			CloudImageDirectory cloudImageDirectory = new CloudImageDirectory(cloudDirectoryStr);
-			System.out.println("downloadUploadDirectory(): createDirectoryAndImageTree()");
 			this.createDirectoryAndImageTree(cloudImageDirectory);
 
 			// We need to make sure we remove the UploadMeta json "image entry" and all CSV files
-			System.out.println("downloadUploadDirectory(): children removeIf");
 			cloudImageDirectory.getChildren().removeIf(imageContainer -> imageContainer instanceof CloudImageEntry && ((CloudImageEntry) imageContainer).getCloudFile().contains(UPLOAD_JSON_FILE));
 			cloudImageDirectory.getChildren().removeIf(imageContainer -> imageContainer instanceof CloudImageEntry && ((CloudImageEntry) imageContainer).getCloudFile().endsWith(".csv"));
-			System.out.println("downloadUploadDirectory(): cloudImageDirectory children count -> " + cloudImageDirectory.getChildren().size());
 			System.out.println("downloadUploadDirectory(): DONE");
 			return cloudImageDirectory;
 		}
@@ -1339,60 +1337,36 @@ else System.out.println("    Empty");
 	}
 
 	/**
-	 * Performs a query given a cyverseQuery object and returns a list of image paths that correspond with the query
+	 * Performs a query given an S3Query object and returns a list of image paths that correspond with the query
 	 *
-	 * @param queryBuilder The query builder with all specified options
+	 * @param queryBuilder query builder with all specified options
+	 * @param collections list of collections to query
 	 * @return A list of image CyVerse paths instead of local paths
 	 */
-	public List<String> performQuery(CyVerseQuery queryBuilder)
+	public List<String> performQuery(S3Query queryBuilder, final List<ImageCollection> collections)
 	{
-// Make this local to the JSON file
-/*		try
+		try
 		{
-			// Convert the query builder to a query generator
-			IRODSGenQueryFromBuilder query = queryBuilder.build().exportIRODSQueryFromBuilder(this.sessionManager.getCurrentAO().getJargonProperties().getMaxFilesAndDirsQueryMax());
-			// Perform the query, and get a set of results
-			IRODSGenQueryExecutor irodsGenQueryExecutor = this.sessionManager.getCurrentAO().getIRODSGenQueryExecutor(this.authenticatedAccount);
-			IRODSQueryResultSet resultSet = irodsGenQueryExecutor.executeIRODSQuery(query, 0);
-			IRODSQueryResultSet nextResultSet = null;
+			S3QueryResultSet resultSet = S3QueryExecute.executeQuery(queryBuilder.build(), collections);
 
 			List<String> matchingFilePaths = new ArrayList<>();
 			
 			// Don't bother looping unless we have something
-			if (resultSet != null) {
-				// Initialize for first pass through loop
-				nextResultSet = resultSet;
-
-				// Iterate while more results exist
-				do
+			if (resultSet != null)
+			{					
+				// Grab each row
+				for (S3QueryResultRow resultRow : resultSet.getResults())
 				{
-					// Advance the "pointer" to the next result set
-					resultSet = nextResultSet;
-					
-					// Grab each row
-					for (IRODSQueryResultRow resultRow : resultSet.getResults())
-					{
-						// Get the path to the image and the image name, create an absolute path with the info
-						String pathToImage = resultRow.getColumn(0);
-						String imageName = resultRow.getColumn(1);
-						matchingFilePaths.add(pathToImage + "/" + imageName);
-					}
+					// Get the path to the image and the image name, create an absolute path with the info
+					String pathToImage = resultRow.get(0);
+					String imageName = resultRow.get(1);
 
-					// Need this test to avoid NoMoreResultsException
-					if (resultSet.isHasMoreRecords())
-					{
-						// Move the result set on if there's more records
-						nextResultSet = irodsGenQueryExecutor.getMoreResults(resultSet);
-					}
-				} while (resultSet.isHasMoreRecords());
-
-				// Close the result set
-				irodsGenQueryExecutor.closeResults(resultSet);
+					matchingFilePaths.add(pathToImage + "/" + imageName);
+				}
 			}
-			this.sessionManager.closeSession();
 			return matchingFilePaths;
 		}
-		catch (JargonQueryException | JargonException | NumberFormatException | GenQueryBuilderException e)
+		catch (Exception e)
 		{
 			e.printStackTrace();
 			SanimalData.getInstance().getErrorDisplay().showPopup(
@@ -1403,24 +1377,24 @@ else System.out.println("    Empty");
 					"Query caused an exception!",
 					false);
 		}
-*/
+
 		return Collections.emptyList();
 	}
 
 	/**
 	 * Given a list of cloud absolute paths, this fetches the metadata for each image and returns it as an image entry
 	 *
-	 * @param absoluteIRODSPaths The list of absolute paths on the cloud
+	 * @param absoluteRemotePaths The list of absolute paths on the cloud
 	 * @return A list of images with metadata on the cloud
 	 */
-	public List<ImageEntry> fetchMetadataFor(List<String> absoluteIRODSPaths)
+	public List<ImageEntry> fetchMetadataFor(List<String> absoluteRemotePaths)
 	{
-// Read from JSON file
 		List<ImageEntry> toReturn = new ArrayList<>();
-/*
+
 		// A unique list of species and locations is used to ensure images with identical locations don't create two locations
 		List<Location> uniqueLocations = new LinkedList<>();
 		List<Species> uniqueSpecies = new LinkedList<>();
+
 		try
 		{
 			// We will fill in these various fields from the image metadata
@@ -1430,15 +1404,16 @@ else System.out.println("    Empty");
 			Double locationLatitude;
 			Double locationLongitude;
 			Double locationElevation;
+
 			// Map species IDs to metadata entries
 			Map<Integer, String> speciesIDToCommonName = new HashMap<>();
 			Map<Integer, String> speciesIDToScientificName = new HashMap<>();
 			Map<Integer, Integer> speciesIDToCount = new HashMap<>();
 			UUID collectionID = null;
 
-			for (String irodsAbsolutePath : absoluteIRODSPaths)
+			for (String remoteAbsolutePath : absoluteRemotePaths)
 			{
-				localDateTime = LocalDateTime.MIN;
+				localDateTime = LocalDateTime.now();
 				locationName = "";
 				locationID = "";
 				locationLatitude = 0D;
@@ -1449,41 +1424,41 @@ else System.out.println("    Empty");
 				speciesIDToCount.clear();
 
 				// Perform a second query that returns ALL metadata from a given image
-				for (MetaDataAndDomainData fileDataField : this.sessionManager.getCurrentAO().getDataObjectAO(this.authenticatedAccount).findMetadataValuesForDataObject(irodsAbsolutePath))
+				for (MetaDataAndDomainData fileDataField : this.findMetadataValuesForDataObject(remoteAbsolutePath))
 				{
 					// Test what type of attribute we got, if it's important store the result for later
-					switch (fileDataField.getAvuAttribute())
+					switch (fileDataField.getAttribute())
 					{
 						case SanimalMetadataFields.A_DATE_TIME_TAKEN:
-							Long timeTaken = Long.parseLong(fileDataField.getAvuValue());
+							Long timeTaken = Long.parseLong(fileDataField.getValue());
 							localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timeTaken), ZoneId.systemDefault());
 							break;
 						case SanimalMetadataFields.A_LOCATION_NAME:
-							locationName = fileDataField.getAvuValue();
+							locationName = fileDataField.getValue();
 							break;
 						case SanimalMetadataFields.A_LOCATION_ID:
-							locationID = fileDataField.getAvuValue();
+							locationID = fileDataField.getValue();
 							break;
 						case SanimalMetadataFields.A_LOCATION_LATITUDE:
-							locationLatitude = Double.parseDouble(fileDataField.getAvuValue());
+							locationLatitude = Double.parseDouble(fileDataField.getValue());
 							break;
 						case SanimalMetadataFields.A_LOCATION_LONGITUDE:
-							locationLongitude = Double.parseDouble(fileDataField.getAvuValue());
+							locationLongitude = Double.parseDouble(fileDataField.getValue());
 							break;
 						case SanimalMetadataFields.A_LOCATION_ELEVATION:
-							locationElevation = Double.parseDouble(fileDataField.getAvuValue());
+							locationElevation = Double.parseDouble(fileDataField.getValue());
 							break;
 						case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
-							speciesIDToCommonName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getAvuValue());
+							speciesIDToCommonName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getValue());
 							break;
 						case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
-							speciesIDToScientificName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getAvuValue());
+							speciesIDToScientificName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getValue());
 							break;
 						case SanimalMetadataFields.A_SPECIES_COUNT:
-							speciesIDToCount.put(Integer.parseInt(fileDataField.getAvuUnit()), Integer.parseInt(fileDataField.getAvuValue()));
+							speciesIDToCount.put(Integer.parseInt(fileDataField.getAvuUnit()), Integer.parseInt(fileDataField.getValue()));
 							break;
 						case SanimalMetadataFields.A_COLLECTION_ID:
-							collectionID = UUID.fromString(fileDataField.getAvuValue());
+							collectionID = UUID.fromString(fileDataField.getValue());
 							break;
 						default:
 							break;
@@ -1512,7 +1487,7 @@ else System.out.println("    Empty");
 				// Grab the correct location for the image entry
 				Location correctLocation = uniqueLocations.stream().filter(location -> location.getId().equals(finalLocationID)).findFirst().get();
 				// Create the image entry
-				ImageEntry entry = new ImageEntry(new File(irodsAbsolutePath));
+				ImageEntry entry = new ImageEntry(new File(remoteAbsolutePath));
 				// Set the location and date taken
 				entry.setLocationTaken(correctLocation);
 				entry.setDateTaken(localDateTime);
@@ -1533,7 +1508,7 @@ else System.out.println("    Empty");
 				toReturn.add(entry);
 			}
 		}
-		catch (Exception | NumberFormatException e)
+		catch (Exception e)
 		{
 			e.printStackTrace();
 			SanimalData.getInstance().getErrorDisplay().showPopup(
@@ -1544,7 +1519,7 @@ else System.out.println("    Empty");
 					"Query caused an exception!",
 					false);
 		}
-*/
+
 		return toReturn;
 	}
 
@@ -2116,6 +2091,10 @@ else System.out.println("    Empty");
 	 */
 	private void mapMetadataToCamtrap(List<MetaData> imageMetadata, String fileRelativePath, Camtrap metaCamtrap)
 	{
+		/*
+		 * NOTE: Changing the information stored here may have an impact on the S3QueryExecute class
+		 */
+
 		// Create a new Media instance
 		Media med = new Media();
 

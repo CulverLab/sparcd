@@ -23,7 +23,7 @@ import javafx.scene.layout.VBox;
 import model.SanimalData;
 import model.analysis.DataAnalyzer;
 import model.image.ImageEntry;
-import model.query.CyVerseQuery;
+import model.query.S3Query;
 import model.query.IQueryCondition;
 import model.query.QueryEngine;
 import model.threading.ErrorTask;
@@ -157,7 +157,7 @@ public class SanimalAnalysisController implements Initializable
 		catch (NumberFormatException ignored) {}
 
 		// Create a query
-		CyVerseQuery query = new CyVerseQuery();
+		S3Query query = new S3Query();
 		// For each condition listed in the listview, apply that to the overall query
 		for (IQueryCondition queryCondition : SanimalData.getInstance().getQueryEngine().getQueryConditions())
 			queryCondition.appendConditionToQuery(query);
@@ -169,7 +169,7 @@ public class SanimalAnalysisController implements Initializable
 			{
 				this.updateMessage("Performing query...");
 				// Grab the result of the query
-				return SanimalData.getInstance().getConnectionManager().performQuery(query);
+				return SanimalData.getInstance().getConnectionManager().performQuery(query, SanimalData.getInstance().getCollectionList());
 			}
 		};
 		Integer finalEventInterval = eventInterval;
