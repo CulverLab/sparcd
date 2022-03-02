@@ -12,6 +12,7 @@ import model.constant.SanimalMetadataFields;
 import model.s3.RetryTransferStatusCallbackListener;
 import model.image.*;
 import model.location.Location;
+import model.query.S3MetaDataAndDomainData;
 import model.query.S3Query;
 import model.query.S3QueryExecute;
 import model.query.S3QueryResultRow;
@@ -1385,9 +1386,10 @@ public class S3ConnectionManager
 	 * Given a list of cloud absolute paths, this fetches the metadata for each image and returns it as an image entry
 	 *
 	 * @param absoluteRemotePaths The list of absolute paths on the cloud
+	 * @param collections list of collections to query
 	 * @return A list of images with metadata on the cloud
 	 */
-	public List<ImageEntry> fetchMetadataFor(List<String> absoluteRemotePaths)
+	public List<ImageEntry> fetchMetadataFor(List<String> absoluteRemotePaths, final List<ImageCollection> collections)
 	{
 		List<ImageEntry> toReturn = new ArrayList<>();
 
@@ -1424,7 +1426,7 @@ public class S3ConnectionManager
 				speciesIDToCount.clear();
 
 				// Perform a second query that returns ALL metadata from a given image
-				for (MetaDataAndDomainData fileDataField : this.findMetadataValuesForDataObject(remoteAbsolutePath))
+				for (S3MetaDataAndDomainData fileDataField : this.findMetadataValuesForDataObject(remoteAbsolutePath, collections))
 				{
 					// Test what type of attribute we got, if it's important store the result for later
 					switch (fileDataField.getAttribute())
@@ -1449,13 +1451,13 @@ public class S3ConnectionManager
 							locationElevation = Double.parseDouble(fileDataField.getValue());
 							break;
 						case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
-							speciesIDToCommonName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getValue());
+							speciesIDToCommonName.put(Integer.parseInt(fileDataField.getUnit()), fileDataField.getValue());
 							break;
 						case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
-							speciesIDToScientificName.put(Integer.parseInt(fileDataField.getAvuUnit()), fileDataField.getValue());
+							speciesIDToScientificName.put(Integer.parseInt(fileDataField.getUnit()), fileDataField.getValue());
 							break;
 						case SanimalMetadataFields.A_SPECIES_COUNT:
-							speciesIDToCount.put(Integer.parseInt(fileDataField.getAvuUnit()), Integer.parseInt(fileDataField.getValue()));
+							speciesIDToCount.put(Integer.parseInt(fileDataField.getUnit()), Integer.parseInt(fileDataField.getValue()));
 							break;
 						case SanimalMetadataFields.A_COLLECTION_ID:
 							collectionID = UUID.fromString(fileDataField.getValue());
@@ -2247,5 +2249,130 @@ public class S3ConnectionManager
 		{
 			metaCamtrap.media.add(newMeta.media.get(0));
 		}
+	}
+
+	/**
+	 * Returns the set of metadata associated with the remote path
+	 * 
+	 * @param remotePath the path to return the metadata for
+	 * @param collections the list of collections to search
+	 * @return list of metadata associated with the path
+	 */
+	private List<S3MetaDataAndDomainData> findMetadataValuesForDataObject(final String remotePath, final List<ImageCollection> collections)
+	{
+		List<S3MetaDataAndDomainData> imageMetaData = new ArrayList<S3MetaDataAndDomainData>();
+
+		// Loop through the collections and find the file
+		for (ImageCollection oneCollection: collections)
+		{
+            if (!oneCollection.uploadsWereSynced())
+            {
+                // TODO: Fetch remote -> see SanimalUploadController.java:210-234
+            }
+
+            // Find the meta data associated with the path
+            List<CloudUploadEntry> uploads = oneCollection.getUploads();
+            for (CloudUploadEntry oneEntry: uploads)
+            {
+                Camtrap metaData = oneEntry.getMetadata().getValue();
+
+                for (Media med: metaData.media)
+                {
+                	if (med.filePath.equals(remotePath))
+                	{
+                		Observations obs = this.findObservation(med, metaData);
+                		Deployments dep = this.findDeployment(med, metaData);
+
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_SANIMAL, SanimalMetadataFields.A_SANIMAL));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_TIME_TAKEN, 
+										Long.toString(obs.timestamp.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_YEAR_TAKEN, 
+										Long.toString(obs.timestamp.getYear())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_MONTH_TAKEN, 
+										Long.toString(obs.timestamp.getMonth().getValue())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_HOUR_TAKEN, 
+										Long.toString(obs.timestamp.getHour())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_DAY_OF_YEAR_TAKEN, 
+										Long.toString(obs.timestamp.getDayOfYear())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN, 
+										Long.toString(obs.timestamp.getDayOfWeek().getValue())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_NAME, dep.locationName));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_ID, dep.locationID));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_LATITUDE, Double.toString(dep.latitude)));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, Double.toString(dep.longitude)));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_ELEVATION, Double.toString(dep.cameraHeight)));
+						imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, obs.scientificName));
+						imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_COMMON_NAME, this.getCommonName(obs.comments)));
+						imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_COUNT, Long.toString(obs.count)));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_COLLECTION_ID, dep.deploymentID));
+                	}
+                }
+            }
+		}
+
+        return imageMetaData;
+	}
+
+	/**
+	 * Finds the observation associated with the media
+	 * 
+	 * @param med the media to find the observation for
+	 * @param metadata the complete set of metadata to search
+	 * @return the found observation
+	 */
+	private Observations findObservation(Media med, Camtrap metadata)
+	{
+		for (Observations obs: metadata.observations)
+		{
+			if (obs.mediaID.equals(med.mediaID))
+			{
+				return obs;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Finds the deployment associated with the media
+	 * 
+	 * @param med the media to find the deployment for
+	 * @param metadata the complete set of metadata to search
+	 * @return the found deployment
+	 */
+	private Deployments findDeployment(Media med, Camtrap metadata)
+	{
+		for (Deployments dep: metadata.deployments)
+		{
+			if (dep.deploymentID.equals(med.deploymentID))
+			{
+				return dep;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the string of the common name from the observation comments
+	 * 
+	 * @param observationComments the comments to try and extract the common name from
+	 * @return the found common name
+	 */
+	private String getCommonName(final String observationComments)
+	{
+        final String commonNameTag = "[COMMONNAME:";
+        final String commonNameEndTag = "]";
+
+	    if (observationComments.startsWith(commonNameTag))
+	    {
+	        int endIndex = observationComments.indexOf(commonNameEndTag);
+	        if (endIndex > -1)
+	        {
+	            return observationComments.substring(commonNameTag.length(), endIndex);
+	        }
+	    }
+
+		return "";
 	}
 }

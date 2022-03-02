@@ -339,7 +339,8 @@ public class S3QueryExecute
                         newMedia = S3QueryExecute.filterString(curValue.getOperator(), curValue.getValue(), caseInsensitive, mediaList, metadata,
                             (media, curMetadata) -> 
                             {
-                                String commonNameTag = "[COMMONNAME:";
+                                final String commonNameTag = "[COMMONNAME:";
+                                final String commonNameEndTag = "]";
 
                                 for (Observations obs: curMetadata.observations)
                                 {
@@ -348,7 +349,7 @@ public class S3QueryExecute
                                         // Check if the comment has the common name information
                                         if (obs.comments.startsWith(commonNameTag))
                                         {
-                                            int endIndex = obs.comments.indexOf("]");
+                                            int endIndex = obs.comments.indexOf(commonNameEndTag);
                                             if (endIndex > -1)
                                             {
                                                 return obs.comments.substring(commonNameTag.length(), endIndex);

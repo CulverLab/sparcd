@@ -200,7 +200,7 @@ public class SanimalAnalysisController implements Initializable
 					{
 						this.updateMessage("Performing image query...");
 						// Grab the result of the image query
-						return SanimalData.getInstance().getConnectionManager().fetchMetadataFor(irodsAbsolutePaths);
+						return SanimalData.getInstance().getConnectionManager().fetchMetadataFor(irodsAbsolutePaths, SanimalData.getInstance().getCollectionList());
 					}
 				};
 
