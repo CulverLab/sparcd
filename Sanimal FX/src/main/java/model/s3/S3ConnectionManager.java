@@ -56,6 +56,8 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.opencsv.exceptions.CsvValidationException;
 
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.DoubleProperty;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.URL;
@@ -65,13 +67,13 @@ import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.security.InvalidParameterException;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * A class used to wrap the S3 library
@@ -79,7 +81,7 @@ import java.security.InvalidParameterException;
 public class S3ConnectionManager
 {
 	// String of our base folder
-	private static final String ROOT_BUCKET = "sanimal";
+	private static final String ROOT_BUCKET = "sparcd";
 	// The name of the collections folder
 	private static final String COLLECTIONS_FOLDER_NAME = "Collections";
 	// The name of the Uploads folder
@@ -879,7 +881,7 @@ public class S3ConnectionManager
 				Integer imageCount = Math.toIntExact(directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count());
 				Integer imagesWithSpecies = Math.toIntExact(directoryToWrite.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry && !((ImageEntry) imageContainer).getSpeciesPresent().isEmpty()).count());
 				System.out.println("  imageCount: " + imageCount + "   with species: " + imagesWithSpecies);
-				CloudUploadEntry uploadEntry = new CloudUploadEntry(SanimalData.getInstance().getUsername(), ZonedDateTime.now(), imagesWithSpecies, imageCount, uploadDirName, description);
+				CloudUploadEntry uploadEntry = new CloudUploadEntry(SanimalData.getInstance().getUsername(), LocalDateTime.now(), imagesWithSpecies, imageCount, uploadDirName, description);
 				System.out.println("uploadImages(): Post Cloud Upload Entry");
 
 				// Folder for storing the metadata
@@ -1224,6 +1226,7 @@ public class S3ConnectionManager
 						try
 						{
 							// Download the cloud upload entry
+							System.out.println("retrieveAndInsertUploadList(): converting from JSON");
 							CloudUploadEntry uploadEntry = SanimalData.getInstance().getGson().fromJson(contents, CloudUploadEntry.class);
 							System.out.println("retrieveAndInsertUploadList(): check upload entry from JSON ->" + contents);
 							if (uploadEntry != null)
@@ -1239,6 +1242,7 @@ public class S3ConnectionManager
 						catch (JsonSyntaxException e)
 						{
 							// If the JSON file is incorrectly formatted, throw an error
+							System.out.println("retrieveAndInsertUploadList(): EXCEPTION -> " + e.getMessage());
 							SanimalData.getInstance().getErrorDisplay().showPopup(
 									Alert.AlertType.ERROR,
 									null,
@@ -1248,11 +1252,13 @@ public class S3ConnectionManager
 									false);
 						}
 					}
+else System.out.println("    CONTENTS ARE NULL");
 				}
 			}
 		}
 		catch (Exception e)
 		{
+			System.out.println("retrieveAndInsertUploadList(): OUTER EXCEPTION -> " + e.getMessage());
 			SanimalData.getInstance().getErrorDisplay().showPopup(
 					Alert.AlertType.ERROR,
 					null,
@@ -1348,7 +1354,20 @@ public class S3ConnectionManager
 	{
 		try
 		{
+			System.out.println("performQuery(): checking collections for synch and metadata");
+			for (ImageCollection oneCollection: collections)
+			{
+	            if (!oneCollection.uploadsWereSynced())
+	            {
+	                DoubleProperty progress = new SimpleDoubleProperty(0.0);
+	                this.retrieveAndInsertUploadList(oneCollection, progress);
+					oneCollection.setUploadsWereSynced(true);
+	            }
+			}
+
+			System.out.println("performQuery(): num collections: " + collections.size());
 			S3QueryResultSet resultSet = S3QueryExecute.executeQuery(queryBuilder.build(), collections);
+			System.out.println("performQuery(): query result: " + resultSet);
 
 			List<String> matchingFilePaths = new ArrayList<>();
 			
@@ -1361,10 +1380,12 @@ public class S3ConnectionManager
 					// Get the path to the image and the image name, create an absolute path with the info
 					String pathToImage = resultRow.get(0);
 					String imageName = resultRow.get(1);
+					System.out.println("performQuery(): row: '" + pathToImage + "' '" + imageName + "'");
 
 					matchingFilePaths.add(pathToImage + "/" + imageName);
 				}
 			}
+			System.out.println("performQuery(): DONE -> matchingFilePaths count: " + matchingFilePaths.size());
 			return matchingFilePaths;
 		}
 		catch (Exception e)
@@ -1379,6 +1400,7 @@ public class S3ConnectionManager
 					false);
 		}
 
+		System.out.println("performQuery(): DONE -> returning empty set");
 		return Collections.emptyList();
 	}
 
@@ -1734,6 +1756,7 @@ public class S3ConnectionManager
 	private Camtrap readRemoteCamtrap(String bucket, String prefix) throws IOException, CsvValidationException
 	{
 		Camtrap metadata = new Camtrap();
+		System.out.println("readRemoteCamtrap(): BEGIN");
 
 		String remotePath = String.join("/", prefix, Camtrap.CAMTRAP_DEPLOYMENTS_FILE);
 		String csvData = this.readRemoteFile(bucket, remotePath);
@@ -1747,6 +1770,7 @@ public class S3ConnectionManager
 		csvData = this.readRemoteFile(bucket, remotePath);
 		metadata.setObservations(csvData);
 
+		System.out.println("readRemoteCamtrap(): DONE");
 		return metadata;
 	}
 
@@ -2017,7 +2041,7 @@ public class S3ConnectionManager
 	 */
 	private String formatNowTimestamp(String format)
 	{
-		return ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern(FOLDER_TIMESTAMP_FORMAT)).toString();
+		return LocalDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern(FOLDER_TIMESTAMP_FORMAT)).toString();
 	}
 
 	/**
@@ -2124,8 +2148,10 @@ public class S3ConnectionManager
 					obs.deploymentID = "sanimal";
 					break;
 				case SanimalMetadataFields.A_DATE_TIME_TAKEN:
-					obs.timestamp = LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(oneMeta.getValue())),
+					System.out.println("mapMetadataToCamtrap(): TIMESTAMP -> " + oneMeta.getValue());
+					obs.timestamp = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(oneMeta.getValue())),
                                								TimeZone.getDefault().toZoneId());
+					System.out.println("    -> " + obs.timestamp);
 					break;
 				/* Not used since we have the Epoch seconds (see A_DATE_TIME_TAKEN)
 				case SanimalMetadataFields.A_DATE_YEAR_TAKEN:
@@ -2257,8 +2283,11 @@ public class S3ConnectionManager
 	 * @param remotePath the path to return the metadata for
 	 * @param collections the list of collections to search
 	 * @return list of metadata associated with the path
+	 * @throws NoSuchAlgorithmException when raised
+	 * @throws UnsupportedEncodingException when raised
 	 */
 	private List<S3MetaDataAndDomainData> findMetadataValuesForDataObject(final String remotePath, final List<ImageCollection> collections)
+		throws NoSuchAlgorithmException, UnsupportedEncodingException
 	{
 		List<S3MetaDataAndDomainData> imageMetaData = new ArrayList<S3MetaDataAndDomainData>();
 

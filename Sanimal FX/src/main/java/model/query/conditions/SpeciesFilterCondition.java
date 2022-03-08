@@ -52,9 +52,16 @@ public class SpeciesFilterCondition implements IQueryCondition
 	@Override
 	public void appendConditionToQuery(S3Query query)
 	{
+		System.out.println("SpeciesFilterCondition:appendConditionToQuery(): species count -> " + this.getSpeciesList().size());
 		for (Species species : this.getSpeciesList())
+		{
+			System.out.println("SpeciesFilterCondition:appendConditionToQuery(): checking -> '" + species.getScientificName() + "'");
 			if (speciesToSelected.containsKey(species) && speciesToSelected.get(species).getValue())
+			{
+				System.out.println("    adding");
 				query.addSpecies(species);
+			}
+		}
 	}
 
 	/**

@@ -1,5 +1,6 @@
 package model.query;
 
+import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +11,47 @@ public class S3QueryResultSet
 {
     // The list of rows
     List<S3QueryResultRow> rows = new ArrayList<S3QueryResultRow>();
+
+    /**
+     * Formats the instance to string
+     */
+    @Override
+    public String toString()
+    {
+        int numRows = this.rows.size();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("S3QueryResultSet");
+        sb.append("\n\t number of rows:");
+        sb.append(this.rows.size());
+        if (numRows <= 0)
+            sb.append("\n\t no data");
+        else
+        {
+            int idx = 0;
+            while (idx < numRows && idx < 5)
+            {
+                S3QueryResultRow curRow = rows.get(idx);
+                sb.append("\n\t Row: ");
+                sb.append(idx + 1);
+                sb.append("\n\t\t 0: '");
+                sb.append(curRow.get(0));
+                sb.append("'\t 1: '");
+                sb.append(curRow.get(1));
+                sb.append("'");
+
+                idx++;
+            }
+            if (numRows >= 5)
+            {
+                sb.append("\n\t  addtional ");
+                sb.append(numRows - 5 + 1);
+                sb.append(" rows");
+            }
+        }
+
+        return sb.toString();
+    }
 
     /**
      * Adds a new row to the result set

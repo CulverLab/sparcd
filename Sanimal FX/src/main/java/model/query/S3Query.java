@@ -52,6 +52,7 @@ public class S3Query
 	 */
 	public void addSpecies(Species species)
 	{
+		System.out.println("S3Query:addSpecies(): adding '" + species.getScientificName() + "'");
 		this.speciesQuery.add(species);
 	}
 
