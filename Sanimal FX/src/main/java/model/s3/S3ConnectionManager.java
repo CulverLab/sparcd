@@ -155,6 +155,12 @@ public class S3ConnectionManager
                 .withClientConfiguration(clientConfiguration)
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .build();
+
+            // Do something to ensure we can connect
+			if (this.s3Client.doesBucketExistV2(ROOT_BUCKET) == false)
+			{
+				// We're OK if an exception isn't thrown
+			}
 		}
 		// If the authentication failed, print a message, and logout in case the login partially completed
 		// Not really sure how this happens, probably if the server incorrectly responds or is down
