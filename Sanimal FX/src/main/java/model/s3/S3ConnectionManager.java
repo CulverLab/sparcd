@@ -149,10 +149,26 @@ public class S3ConnectionManager
 			ClientConfiguration clientConfiguration = new ClientConfiguration();
 			clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
+			// Check if we're connecting to AWS (convert the URL for easier matching)
+			Regions ourRegion = Regions.US_EAST_1;
+			String lowerCaseUrl = url.toLowerCase().replace("-", "_");
+			if (lowerCaseUrl.indexOf(".amazonaws.com") > 0)
+			{
+				for (Regions oneRegion: Regions.values())
+				{
+					if (lowerCaseUrl.indexOf(oneRegion.name().toLowerCase()) >= 0)
+					{
+						ourRegion = oneRegion;
+						break;
+					}
+				}
+			}
+
 			// Create a new S3 client instance
+			System.out.println("LOGIN: url '" + url + "'  Region: '" + ourRegion.getName() + "'");
 			this.s3Client = AmazonS3ClientBuilder
 				.standard()
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(url, Regions.US_EAST_1.name()))
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(url, ourRegion.getName()))
                 .withPathStyleAccessEnabled(true)
                 .withClientConfiguration(clientConfiguration)
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
@@ -168,6 +184,7 @@ public class S3ConnectionManager
 		// Not really sure how this happens, probably if the server incorrectly responds or is down
 		catch (AmazonServiceException e)
 		{
+			System.out.println("login exception: " + e.getMessage());
 			SanimalData.getInstance().getErrorDisplay().showPopup(
 					Alert.AlertType.ERROR,
 					null,
