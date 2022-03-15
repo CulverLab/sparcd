@@ -40,6 +40,8 @@ public class CloudImageEntry extends ImageEntry
 	// Placeholder file used before the file has been downloaded
 	private static File PLACEHOLDER_FILE = null;
 
+	// The Cloud bucket
+	private ObjectProperty<String> cloudBucket = new SimpleObjectProperty<>();
 	// The Cloud file
 	private ObjectProperty<String> cloudFileProperty = new SimpleObjectProperty<>();
 
@@ -253,8 +255,10 @@ public class CloudImageEntry extends ImageEntry
 
 	/**
 	 * Pulls the given image from the cloud
+	 * 
+	 * @param bucket the bucket to pull the entry from
 	 */
-	private void pullFromCloud()
+	private void pullFromCloud(String bucket)
 	{
 		// Set a flag that we're pulling from the cloud
 		this.isBeingPulledFromCloud.setValue(true);
@@ -265,7 +269,7 @@ public class CloudImageEntry extends ImageEntry
 			protected File call()
 			{
 				this.updateMessage("Downloading the image " + getCloudFile() + " for editing...");
-				return SanimalData.getInstance().getConnectionManager().remoteToLocalImageFile(getCloudFile());
+				return SanimalData.getInstance().getConnectionManager().remoteToLocalImageFile(bucket, getCloudFile());
 			}
 		};
 
@@ -294,7 +298,7 @@ public class CloudImageEntry extends ImageEntry
 	{
 		// Make sure we didnt already or are not already pulling
 		if (!this.hasBeenPulledFromCloud.getValue() && !this.isBeingPulledFromCloud.getValue())
-			this.pullFromCloud();
+			this.pullFromCloud(this.getBucket());
 	}
 
 	/**
@@ -311,6 +315,16 @@ public class CloudImageEntry extends ImageEntry
 	///
 	/// Getters/Setters
 	///
+
+	public String getBucket()
+	{
+		return this.cloudBucket.getValue();
+	}
+
+	public void setCloudBucket(String bucket)
+	{
+		this.cloudBucket.setValue(bucket);
+	}
 
 	public String getCloudFile()
 	{

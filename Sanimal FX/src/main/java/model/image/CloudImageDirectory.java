@@ -14,19 +14,23 @@ public class CloudImageDirectory extends ImageDirectory
 
 	// The file representing the directory
 	private ObjectProperty<String> cloudDirectoryProperty = new SimpleObjectProperty<>();
+	// The bucket
+	private ObjectProperty<String> cloudBucket = new SimpleObjectProperty<>();
 
 	/**
 	 * Construct a cloud Directory
 	 *
+	 * @param bucket The bucket name
 	 * @param cloudDirectory The file that represents the cloudDirectoryProperty
 	 */
-	public CloudImageDirectory(String cloudDirectory)
+	public CloudImageDirectory(String bucket, String cloudDirectory)
 	{
 		// No local file
 		super(null);
 
 		// Initialize values
 		DEFAULT_DIRECTORY_ICON.setValue(DEFAULT_CLOUD_DIR_IMAGE);
+		this.cloudBucket.setValue(bucket);
 		this.cloudDirectoryProperty.setValue(cloudDirectory);
 	}
 
@@ -38,12 +42,22 @@ public class CloudImageDirectory extends ImageDirectory
 	@Override
 	public String toString()
 	{
-		return this.getCloudDirectory();
+		return this.getCloudBucket() + ":" + this.getCloudDirectory();
 	}
 
 	///
 	/// Setters/Getters
 	///
+
+	public String getCloudBucket()
+	{
+		return cloudBucket.getValue();
+	}
+
+	public void setCloudBucket(String bucket)
+	{
+		this.cloudBucket.setValue(bucket);
+	}
 
 	public String getCloudDirectory()
 	{

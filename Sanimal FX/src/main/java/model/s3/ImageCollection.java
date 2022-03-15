@@ -13,6 +13,8 @@ import java.util.UUID;
  */
 public class ImageCollection
 {
+	// The bucket name
+	private StringProperty bucketProperty = new SimpleStringProperty("");
 	// The collection name, does not need to be unique
 	private StringProperty nameProperty = new SimpleStringProperty("");
 	// The organization that owns the collection
@@ -63,6 +65,16 @@ public class ImageCollection
 	///
 	/// Getters/Setters
 	///
+
+	public void setBucket(String bucket)
+	{
+		this.bucketProperty.setValue(bucket);
+	}
+
+	public String getBucket()
+	{
+		return this.bucketProperty.getValue();
+	}
 
 	public void setName(String name)
 	{

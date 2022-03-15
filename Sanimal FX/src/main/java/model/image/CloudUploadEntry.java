@@ -31,6 +31,8 @@ public class CloudUploadEntry
 	private Integer imageCount;
 	// A list of edits made to the upload
 	private List<String> editComments = new ArrayList<>();
+	// The bucket on the cloud
+	private String bucket;
 	// A path to the upload on the cloud
 	private String uploadPath;
 	// The description of this upload
@@ -43,15 +45,17 @@ public class CloudUploadEntry
 	 * @param uploadDate The date the upload happened on
 	 * @param imagesWithSpecies The number of images with species tagged
 	 * @param imageCount The number of images in the upload
+	 * @param bucket The bucket the file belongs to
 	 * @param uploadPath The path to the file on the cloud
 	 * @param description The description of this upload
 	 */
-	public CloudUploadEntry(String uploadUser, LocalDateTime uploadDate, Integer imagesWithSpecies, Integer imageCount, String uploadPath, String description)
+	public CloudUploadEntry(String uploadUser, LocalDateTime uploadDate, Integer imagesWithSpecies, Integer imageCount, String bucket, String uploadPath, String description)
 	{
 		this.uploadUser = uploadUser;
 		this.uploadDate = uploadDate;
 		this.imagesWithSpecies = imagesWithSpecies;
 		this.imageCount = imageCount;
+		this.bucket = bucket;
 		this.uploadPath = uploadPath;
 		this.description = description;
 	}
@@ -107,6 +111,11 @@ public class CloudUploadEntry
 	public Integer getImageCount()
 	{
 		return imageCount;
+	}
+
+	public String getBucket()
+	{
+		return bucket;
 	}
 
 	public String getUploadPath()

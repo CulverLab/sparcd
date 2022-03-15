@@ -3,6 +3,7 @@ package model.query;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.*;
+import java.util.Objects;
 
 /**
  * Class containing metadata from the query
@@ -26,7 +27,8 @@ public class S3MetaDataAndDomainData
     }
 
     /**
-     * Creates an initialized instance of the class
+     * Creates an initialized instance of the class with the valueID as the hash of the attribute 
+     * represented as the string of a long integer
      * 
      * @param attribute the attribute associated with the data
      * @param value the value of the attribute
@@ -44,7 +46,7 @@ public class S3MetaDataAndDomainData
         byte[] digest = md.digest();
         BigInteger bigInt = new BigInteger(1, digest);
 
-        String valueID = bigInt.toString(10);
+        String valueID = Objects.toString(bigInt.longValue());
 
         return new S3MetaDataAndDomainData(attribute, value, valueID);
     }

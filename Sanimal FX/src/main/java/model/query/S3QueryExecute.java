@@ -69,7 +69,7 @@ public class S3QueryExecute
                 if ((matches != null) && (matches.size() > 0))
                 {
                     System.out.println("executeQuery(): adding matches");
-                    S3QueryExecute.addMatchesToResults(resultSet, matches, isDistinct);
+                    S3QueryExecute.addMatchesToResults(resultSet, oneEntry.getBucket(), matches, isDistinct);
                     System.out.println("    after adding matches");
                 }
             }
@@ -1266,15 +1266,16 @@ public class S3QueryExecute
      * Adds found matches to the result set
      * 
      * @param curResults the current result set
+     * @param bucket the bucket the results belong to
      * @param matches the potential matches to add
      * @param isDistinct whether to ensure the reset set is distinct (no duplicates)
      */
-    private static void addMatchesToResults(S3QueryResultSet curResults, final List<String> matches, boolean isDistinct)
+    private static void addMatchesToResults(S3QueryResultSet curResults, final String bucket, final List<String> matches, boolean isDistinct)
     {
         // Iterate through the matches
         for (String oneMatch: matches)
         {
-            String path = FilenameUtils.getPath(oneMatch);
+            String path = bucket + "::" +FilenameUtils.getPath(oneMatch);
             String name = FilenameUtils.getName(oneMatch);
 
             if (!isDistinct || !curResults.findRow(path, name))
