@@ -42,7 +42,7 @@ public class S3QueryExecute
         System.out.println("executeQuery(): BEGIN");
 
         // Check that we have something to work with
-        if ((conditions.size() <= 0) || (collections.size() <= 0))
+        if (collections.size() <= 0)
         {
             System.out.println("executeQuery(): no collections");
             return null;
@@ -94,6 +94,7 @@ public class S3QueryExecute
         S3QueryBuilderCondition lastValue = null;
         List<String> results = new ArrayList<String>();
 
+        // This loop is for debugging only
         System.out.println("queryMatches(): CONDITIONS");
         for (S3QueryBuilderCondition oneCondition: conditions)
         {
@@ -103,386 +104,390 @@ public class S3QueryExecute
                 System.out.println("   v: " + oneCondition.getValue() + "  " + oneCondition.getOperator());
         }
 
+        // Perform the query
         System.out.println("queryMatches(): conditions count -> " + conditions.size());
-        for (S3QueryBuilderCondition oneCondition: conditions)
+        if (conditions.size() > 0)
         {
-            if (oneCondition.getPart() == S3QueryPart.ATTRIBUTE)
-                lastAttribute = oneCondition;
-            if (oneCondition.getPart() == S3QueryPart.VALUE)
-                lastValue = oneCondition;
-
-            if ((lastAttribute != null) && (lastValue != null))
+            for (S3QueryBuilderCondition oneCondition: conditions)
             {
-                System.out.println("queryMatches(): attr: '" + lastAttribute.getValue() + "'  value: '" + lastValue.getValue() + "'");
-                List<Media> newMedia = null;
+                if (oneCondition.getPart() == S3QueryPart.ATTRIBUTE)
+                    lastAttribute = oneCondition;
+                if (oneCondition.getPart() == S3QueryPart.VALUE)
+                    lastValue = oneCondition;
 
-                // Store local values and reset the attribute-value pair
-                S3QueryBuilderCondition curAttribute = lastAttribute;
-                S3QueryBuilderCondition curValue = lastValue;
-                lastAttribute = null;
-                lastValue = null;
-
-                switch (curAttribute.getValue())
+                if ((lastAttribute != null) && (lastValue != null))
                 {
-                    case SanimalMetadataFields.A_DATE_TIME_TAKEN:
-                        System.out.println("queryMatches(): DATE TIME check");
-                        newMedia = S3QueryExecute.filterDate(curValue.getOperator(), 
-                            S3QueryExecute.getDateValuesArray(curValue.getValue()),
-                            mediaList, metadata,
-                            (media, curMetadata) ->
-                            {
-                                for (Observations obs: curMetadata.observations)
+                    System.out.println("queryMatches(): attr: '" + lastAttribute.getValue() + "'  value: '" + lastValue.getValue() + "'");
+                    List<Media> newMedia = null;
+
+                    // Store local values and reset the attribute-value pair
+                    S3QueryBuilderCondition curAttribute = lastAttribute;
+                    S3QueryBuilderCondition curValue = lastValue;
+                    lastAttribute = null;
+                    lastValue = null;
+
+                    switch (curAttribute.getValue())
+                    {
+                        case SanimalMetadataFields.A_DATE_TIME_TAKEN:
+                            System.out.println("queryMatches(): DATE TIME check");
+                            newMedia = S3QueryExecute.filterDate(curValue.getOperator(), 
+                                S3QueryExecute.getDateValuesArray(curValue.getValue()),
+                                mediaList, metadata,
+                                (media, curMetadata) ->
                                 {
-                                    if (obs.mediaID.equals(media.mediaID))
+                                    for (Observations obs: curMetadata.observations)
                                     {
-                                        return obs.timestamp;
-                                    }
-                                }
-
-                                return null;
-                            }
-                            );
-                        break;
-
-                    case SanimalMetadataFields.A_DATE_YEAR_TAKEN:
-                        System.out.println("queryMatches(): DATE YEAR check");
-                        newMedia = S3QueryExecute.filterLong(curValue.getOperator(), 
-                            S3QueryExecute.getLongValuesArray(curValue.getValue()),
-                            mediaList, metadata,
-                            (media, curMetadata) ->
-                            {
-                                for (Observations obs: curMetadata.observations)
-                                {
-                                    if (obs.mediaID.equals(media.mediaID))
-                                    {
-                                        System.out.println("   timestamp: " + obs.timestamp + "  year: " + obs.timestamp.getYear());
-                                        return Long.valueOf(obs.timestamp.getYear());
-                                    }
-                                }
-
-                                return null;
-                            }
-                            );
-                        break;
-
-                    case SanimalMetadataFields.A_DATE_MONTH_TAKEN:
-                        System.out.println("queryMatches(): DATE MONTH check");
-                        newMedia = S3QueryExecute.filterLong(curValue.getOperator(), 
-                            S3QueryExecute.getLongValuesArray(curValue.getValue()), 
-                            mediaList, metadata,
-                            (media, curMetadata) ->
-                            {
-                                for (Observations obs: curMetadata.observations)
-                                {
-                                    if (obs.mediaID.equals(media.mediaID))
-                                    {
-                                        return Long.valueOf(obs.timestamp.getMonth().getValue());
-                                    }
-                                }
-
-                                return null;
-                            }
-                            );
-                        break;
-
-                    case SanimalMetadataFields.A_DATE_HOUR_TAKEN:
-                        System.out.println("queryMatches(): DATE HOUR check");
-                        newMedia = S3QueryExecute.filterLong(curValue.getOperator(), 
-                            S3QueryExecute.getLongValuesArray(curValue.getValue()),
-                            mediaList, metadata,
-                            (media, curMetadata) ->
-                            {
-                                for (Observations obs: curMetadata.observations)
-                                {
-                                    if (obs.mediaID.equals(media.mediaID))
-                                    {
-                                        return Long.valueOf(obs.timestamp.getHour());
-                                    }
-                                }
-
-                                return null;
-                            }
-                            );
-                        break;
-
-                    case SanimalMetadataFields.A_DATE_DAY_OF_YEAR_TAKEN:
-                        System.out.println("queryMatches(): DATE DAY OF YEAR check");
-                        newMedia = S3QueryExecute.filterLong(curValue.getOperator(), 
-                            S3QueryExecute.getLongValuesArray(curValue.getValue()), 
-                            mediaList, metadata,
-                            (media, curMetadata) -> 
-                            {
-                                for (Observations obs: curMetadata.observations)
-                                {
-                                    if (obs.mediaID.equals(media.mediaID))
-                                    {
-                                        return Long.valueOf(obs.timestamp.getDayOfYear());
-                                    }
-                                }
-
-                                return null;
-                            }
-                            );
-                        break;
-
-                    case SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN:
-                        System.out.println("queryMatches(): DATE DDAY OF WEEK check");
-                        newMedia = S3QueryExecute.filterLong(curValue.getOperator(), 
-                            S3QueryExecute.getLongValuesArray(curValue.getValue()), 
-                            mediaList, metadata,
-                            (media, curMetadata) -> 
-                            {
-                                for (Observations obs: curMetadata.observations)
-                                {
-                                    if (obs.mediaID.equals(media.mediaID))
-                                    {
-                                        return Long.valueOf(obs.timestamp.getDayOfWeek().getValue());
-                                    }
-                                }
-
-                                return null;
-                            }
-                            );
-                        break;
-
-                    case SanimalMetadataFields.A_LOCATION_NAME:
-                        System.out.println("queryMatches(): LOCATION NAME check");
-                        newMedia = S3QueryExecute.filterString(curValue.getOperator(),
-                            S3QueryExecute.getStringValuesArray(curValue.getValue()),
-                            caseInsensitive, mediaList, metadata,
-                            (media, curMetadata) ->
-                            {
-                                for (Observations obs: curMetadata.observations)
-                                {
-                                    if (obs.mediaID.equals(media.mediaID))
-                                    {
-                                        for (Deployments dep: curMetadata.deployments)
+                                        if (obs.mediaID.equals(media.mediaID))
                                         {
-                                            if (obs.deploymentID.equals(dep.deploymentID))
+                                            return obs.timestamp;
+                                        }
+                                    }
+
+                                    return null;
+                                }
+                                );
+                            break;
+
+                        case SanimalMetadataFields.A_DATE_YEAR_TAKEN:
+                            System.out.println("queryMatches(): DATE YEAR check");
+                            newMedia = S3QueryExecute.filterLong(curValue.getOperator(), 
+                                S3QueryExecute.getLongValuesArray(curValue.getValue()),
+                                mediaList, metadata,
+                                (media, curMetadata) ->
+                                {
+                                    for (Observations obs: curMetadata.observations)
+                                    {
+                                        if (obs.mediaID.equals(media.mediaID))
+                                        {
+                                            System.out.println("   timestamp: " + obs.timestamp + "  year: " + obs.timestamp.getYear());
+                                            return Long.valueOf(obs.timestamp.getYear());
+                                        }
+                                    }
+
+                                    return null;
+                                }
+                                );
+                            break;
+
+                        case SanimalMetadataFields.A_DATE_MONTH_TAKEN:
+                            System.out.println("queryMatches(): DATE MONTH check");
+                            newMedia = S3QueryExecute.filterLong(curValue.getOperator(), 
+                                S3QueryExecute.getLongValuesArray(curValue.getValue()), 
+                                mediaList, metadata,
+                                (media, curMetadata) ->
+                                {
+                                    for (Observations obs: curMetadata.observations)
+                                    {
+                                        if (obs.mediaID.equals(media.mediaID))
+                                        {
+                                            return Long.valueOf(obs.timestamp.getMonth().getValue());
+                                        }
+                                    }
+
+                                    return null;
+                                }
+                                );
+                            break;
+
+                        case SanimalMetadataFields.A_DATE_HOUR_TAKEN:
+                            System.out.println("queryMatches(): DATE HOUR check");
+                            newMedia = S3QueryExecute.filterLong(curValue.getOperator(), 
+                                S3QueryExecute.getLongValuesArray(curValue.getValue()),
+                                mediaList, metadata,
+                                (media, curMetadata) ->
+                                {
+                                    for (Observations obs: curMetadata.observations)
+                                    {
+                                        if (obs.mediaID.equals(media.mediaID))
+                                        {
+                                            return Long.valueOf(obs.timestamp.getHour());
+                                        }
+                                    }
+
+                                    return null;
+                                }
+                                );
+                            break;
+
+                        case SanimalMetadataFields.A_DATE_DAY_OF_YEAR_TAKEN:
+                            System.out.println("queryMatches(): DATE DAY OF YEAR check");
+                            newMedia = S3QueryExecute.filterLong(curValue.getOperator(), 
+                                S3QueryExecute.getLongValuesArray(curValue.getValue()), 
+                                mediaList, metadata,
+                                (media, curMetadata) -> 
+                                {
+                                    for (Observations obs: curMetadata.observations)
+                                    {
+                                        if (obs.mediaID.equals(media.mediaID))
+                                        {
+                                            return Long.valueOf(obs.timestamp.getDayOfYear());
+                                        }
+                                    }
+
+                                    return null;
+                                }
+                                );
+                            break;
+
+                        case SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN:
+                            System.out.println("queryMatches(): DATE DDAY OF WEEK check");
+                            newMedia = S3QueryExecute.filterLong(curValue.getOperator(), 
+                                S3QueryExecute.getLongValuesArray(curValue.getValue()), 
+                                mediaList, metadata,
+                                (media, curMetadata) -> 
+                                {
+                                    for (Observations obs: curMetadata.observations)
+                                    {
+                                        if (obs.mediaID.equals(media.mediaID))
+                                        {
+                                            return Long.valueOf(obs.timestamp.getDayOfWeek().getValue());
+                                        }
+                                    }
+
+                                    return null;
+                                }
+                                );
+                            break;
+
+                        case SanimalMetadataFields.A_LOCATION_NAME:
+                            System.out.println("queryMatches(): LOCATION NAME check");
+                            newMedia = S3QueryExecute.filterString(curValue.getOperator(),
+                                S3QueryExecute.getStringValuesArray(curValue.getValue()),
+                                caseInsensitive, mediaList, metadata,
+                                (media, curMetadata) ->
+                                {
+                                    for (Observations obs: curMetadata.observations)
+                                    {
+                                        if (obs.mediaID.equals(media.mediaID))
+                                        {
+                                            for (Deployments dep: curMetadata.deployments)
                                             {
-                                                return dep.locationName;
+                                                if (obs.deploymentID.equals(dep.deploymentID))
+                                                {
+                                                    return dep.locationName;
+                                                }
                                             }
                                         }
                                     }
+
+                                    return null;
                                 }
+                                );
+                            break;
 
-                                return null;
-                            }
-                            );
-                        break;
-
-                    case SanimalMetadataFields.A_LOCATION_ID:
-                        System.out.println("queryMatches(): LOCATION ID check");
-                        newMedia = S3QueryExecute.filterString(curValue.getOperator(),
-                            S3QueryExecute.getStringValuesArray(curValue.getValue()),
-                            caseInsensitive, mediaList, metadata,
-                            (media, curMetadata) -> 
-                            {
-                                for (Observations obs: curMetadata.observations)
+                        case SanimalMetadataFields.A_LOCATION_ID:
+                            System.out.println("queryMatches(): LOCATION ID check");
+                            newMedia = S3QueryExecute.filterString(curValue.getOperator(),
+                                S3QueryExecute.getStringValuesArray(curValue.getValue()),
+                                caseInsensitive, mediaList, metadata,
+                                (media, curMetadata) -> 
                                 {
-                                    if (obs.mediaID.equals(media.mediaID))
+                                    for (Observations obs: curMetadata.observations)
                                     {
-                                        for (Deployments dep: curMetadata.deployments)
+                                        if (obs.mediaID.equals(media.mediaID))
                                         {
-                                            if (obs.deploymentID.equals(dep.deploymentID))
+                                            for (Deployments dep: curMetadata.deployments)
                                             {
-                                                return dep.locationID;
+                                                if (obs.deploymentID.equals(dep.deploymentID))
+                                                {
+                                                    return dep.locationID;
+                                                }
                                             }
                                         }
                                     }
+
+                                    return null;
                                 }
+                                );
+                            break;
 
-                                return null;
-                            }
-                            );
-                        break;
-
-                    case SanimalMetadataFields.A_LOCATION_LATITUDE:
-                        System.out.println("queryMatches(): LATITUDE check");
-                        newMedia = S3QueryExecute.filterDouble(curValue.getOperator(), 
-                            S3QueryExecute.getDoubleValuesArray(curValue.getValue()),
-                            LOCATION_DECIMAL_MAX_DIFFERENCE, mediaList, metadata,
-                            (media, curMetadata) -> 
-                            {
-                                for (Observations obs: curMetadata.observations)
+                        case SanimalMetadataFields.A_LOCATION_LATITUDE:
+                            System.out.println("queryMatches(): LATITUDE check");
+                            newMedia = S3QueryExecute.filterDouble(curValue.getOperator(), 
+                                S3QueryExecute.getDoubleValuesArray(curValue.getValue()),
+                                LOCATION_DECIMAL_MAX_DIFFERENCE, mediaList, metadata,
+                                (media, curMetadata) -> 
                                 {
-                                    if (obs.mediaID.equals(media.mediaID))
+                                    for (Observations obs: curMetadata.observations)
                                     {
-                                        for (Deployments dep: curMetadata.deployments)
+                                        if (obs.mediaID.equals(media.mediaID))
                                         {
-                                            if (obs.deploymentID.equals(dep.deploymentID))
+                                            for (Deployments dep: curMetadata.deployments)
                                             {
-                                                return dep.latitude;
+                                                if (obs.deploymentID.equals(dep.deploymentID))
+                                                {
+                                                    return dep.latitude;
+                                                }
                                             }
                                         }
                                     }
+
+                                    return null;
                                 }
+                                );
+                            break;
 
-                                return null;
-                            }
-                            );
-                        break;
-
-                    case SanimalMetadataFields.A_LOCATION_LONGITUDE:
-                        System.out.println("queryMatches(): LONGITUDE check");
-                        newMedia = S3QueryExecute.filterDouble(curValue.getOperator(), 
-                            S3QueryExecute.getDoubleValuesArray(curValue.getValue()),
-                            LOCATION_DECIMAL_MAX_DIFFERENCE, mediaList, metadata,
-                            (media, curMetadata) -> 
-                            {
-                                for (Observations obs: curMetadata.observations)
+                        case SanimalMetadataFields.A_LOCATION_LONGITUDE:
+                            System.out.println("queryMatches(): LONGITUDE check");
+                            newMedia = S3QueryExecute.filterDouble(curValue.getOperator(), 
+                                S3QueryExecute.getDoubleValuesArray(curValue.getValue()),
+                                LOCATION_DECIMAL_MAX_DIFFERENCE, mediaList, metadata,
+                                (media, curMetadata) -> 
                                 {
-                                    if (obs.mediaID.equals(media.mediaID))
+                                    for (Observations obs: curMetadata.observations)
                                     {
-                                        for (Deployments dep: curMetadata.deployments)
+                                        if (obs.mediaID.equals(media.mediaID))
                                         {
-                                            if (obs.deploymentID.equals(dep.deploymentID))
+                                            for (Deployments dep: curMetadata.deployments)
                                             {
-                                                return dep.longitude;
+                                                if (obs.deploymentID.equals(dep.deploymentID))
+                                                {
+                                                    return dep.longitude;
+                                                }
                                             }
                                         }
                                     }
+
+                                    return null;
                                 }
+                                );
+                            break;
 
-                                return null;
-                            }
-                            );
-                        break;
-
-                    case SanimalMetadataFields.A_LOCATION_ELEVATION:
-                        System.out.println("queryMatches(): ELEVATION check");
-                        newMedia = S3QueryExecute.filterDouble(curValue.getOperator(), 
-                            S3QueryExecute.getDoubleValuesArray(curValue.getValue()), 
-                            LOCATION_DECIMAL_MAX_DIFFERENCE, mediaList, metadata,
-                            (media, curMetadata) -> 
-                            {
-                                for (Observations obs: curMetadata.observations)
+                        case SanimalMetadataFields.A_LOCATION_ELEVATION:
+                            System.out.println("queryMatches(): ELEVATION check");
+                            newMedia = S3QueryExecute.filterDouble(curValue.getOperator(), 
+                                S3QueryExecute.getDoubleValuesArray(curValue.getValue()), 
+                                LOCATION_DECIMAL_MAX_DIFFERENCE, mediaList, metadata,
+                                (media, curMetadata) -> 
                                 {
-                                    if (obs.mediaID.equals(media.mediaID))
+                                    for (Observations obs: curMetadata.observations)
                                     {
-                                        for (Deployments dep: curMetadata.deployments)
+                                        if (obs.mediaID.equals(media.mediaID))
                                         {
-                                            if (obs.deploymentID.equals(dep.deploymentID))
+                                            for (Deployments dep: curMetadata.deployments)
                                             {
-                                                return dep.cameraHeight;
+                                                if (obs.deploymentID.equals(dep.deploymentID))
+                                                {
+                                                    return dep.cameraHeight;
+                                                }
                                             }
                                         }
                                     }
+
+                                    return null;
                                 }
+                                );
+                            break;
 
-                                return null;
-                            }
-                            );
-                        break;
-
-                    case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
-                        System.out.println("queryMatches(): SPECIES check");
-                        newMedia = S3QueryExecute.filterString(curValue.getOperator(),
-                            S3QueryExecute.getStringValuesArray(curValue.getValue()),
-                            caseInsensitive, mediaList, metadata,
-                            (media, curMetadata) -> 
-                            {
-                                System.out.println("   compare find media -> '" + media.mediaID + "' obs count: " + curMetadata.observations.size());
-                                for (Observations obs: curMetadata.observations)
+                        case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
+                            System.out.println("queryMatches(): SPECIES check");
+                            newMedia = S3QueryExecute.filterString(curValue.getOperator(),
+                                S3QueryExecute.getStringValuesArray(curValue.getValue()),
+                                caseInsensitive, mediaList, metadata,
+                                (media, curMetadata) -> 
                                 {
-                                    System.out.println("    media compare to: '" + obs.mediaID + "'");
-                                    if (obs.mediaID.equals(media.mediaID))
+                                    System.out.println("   compare find media -> '" + media.mediaID + "' obs count: " + curMetadata.observations.size());
+                                    for (Observations obs: curMetadata.observations)
                                     {
-                                        System.out.println("    FOUND '" + obs.scientificName + "'");
-                                        return obs.scientificName;
-                                    }
-                                }
-
-                                return null;
-                            }
-                            );
-                        break;
-
-                    case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
-                        System.out.println("queryMatches(): COMMON NAME check");
-                        newMedia = S3QueryExecute.filterString(curValue.getOperator(),
-                            S3QueryExecute.getStringValuesArray(curValue.getValue()),
-                            caseInsensitive, mediaList, metadata,
-                            (media, curMetadata) -> 
-                            {
-                                final String commonNameTag = "[COMMONNAME:";
-                                final String commonNameEndTag = "]";
-
-                                for (Observations obs: curMetadata.observations)
-                                {
-                                    if (obs.mediaID.equals(media.mediaID))
-                                    {
-                                        // Check if the comment has the common name information
-                                        if (obs.comments.startsWith(commonNameTag))
+                                        System.out.println("    media compare to: '" + obs.mediaID + "'");
+                                        if (obs.mediaID.equals(media.mediaID))
                                         {
-                                            int endIndex = obs.comments.indexOf(commonNameEndTag);
-                                            if (endIndex > -1)
+                                            System.out.println("    FOUND '" + obs.scientificName + "'");
+                                            return obs.scientificName;
+                                        }
+                                    }
+
+                                    return null;
+                                }
+                                );
+                            break;
+
+                        case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
+                            System.out.println("queryMatches(): COMMON NAME check");
+                            newMedia = S3QueryExecute.filterString(curValue.getOperator(),
+                                S3QueryExecute.getStringValuesArray(curValue.getValue()),
+                                caseInsensitive, mediaList, metadata,
+                                (media, curMetadata) -> 
+                                {
+                                    final String commonNameTag = "[COMMONNAME:";
+                                    final String commonNameEndTag = "]";
+
+                                    for (Observations obs: curMetadata.observations)
+                                    {
+                                        if (obs.mediaID.equals(media.mediaID))
+                                        {
+                                            // Check if the comment has the common name information
+                                            if (obs.comments.startsWith(commonNameTag))
                                             {
-                                                return obs.comments.substring(commonNameTag.length(), endIndex);
+                                                int endIndex = obs.comments.indexOf(commonNameEndTag);
+                                                if (endIndex > -1)
+                                                {
+                                                    return obs.comments.substring(commonNameTag.length(), endIndex);
+                                                }
                                             }
                                         }
                                     }
+
+                                    return null;
                                 }
+                                );
+                            break;
 
-                                return null;
-                            }
-                            );
-                        break;
-
-                    case SanimalMetadataFields.A_SPECIES_COUNT:
-                        System.out.println("queryMatches(): SPECIES COUNT check");
-                        newMedia = S3QueryExecute.filterInteger(curValue.getOperator(), 
-                            S3QueryExecute.getIntegerValuesArray(curValue.getValue()), 
-                            mediaList, metadata,
-                            (media, curMetadata) -> 
-                            {
-                                for (Observations obs: curMetadata.observations)
+                        case SanimalMetadataFields.A_SPECIES_COUNT:
+                            System.out.println("queryMatches(): SPECIES COUNT check");
+                            newMedia = S3QueryExecute.filterInteger(curValue.getOperator(), 
+                                S3QueryExecute.getIntegerValuesArray(curValue.getValue()), 
+                                mediaList, metadata,
+                                (media, curMetadata) -> 
                                 {
-                                    if (obs.mediaID.equals(media.mediaID))
+                                    for (Observations obs: curMetadata.observations)
                                     {
-                                        return obs.count;
-                                    }
-                                }
-
-                                return null;
-                            }
-                            );
-                        break;
-
-                    case SanimalMetadataFields.A_COLLECTION_ID:
-                        System.out.println("queryMatches(): COLLECTION ID check");
-                        newMedia = S3QueryExecute.filterString(curValue.getOperator(),
-                            S3QueryExecute.getStringValuesArray(curValue.getValue()),
-                            caseInsensitive, mediaList, metadata,
-                            (media, curMetadata) -> 
-                            {
-                                for (Observations obs: curMetadata.observations)
-                                {
-                                    if (obs.mediaID.equals(media.mediaID))
-                                    {
-                                        int index = obs.deploymentID.indexOf(":");
-                                        if (index < 0)
+                                        if (obs.mediaID.equals(media.mediaID))
                                         {
-                                            return obs.deploymentID;
-                                        }
-                                        else
-                                        {
-                                            return obs.deploymentID.substring(0, index);
+                                            return obs.count;
                                         }
                                     }
+
+                                    return null;
                                 }
+                                );
+                            break;
 
-                                return null;
-                            }
-                            );
+                        case SanimalMetadataFields.A_COLLECTION_ID:
+                            System.out.println("queryMatches(): COLLECTION ID check");
+                            newMedia = S3QueryExecute.filterString(curValue.getOperator(),
+                                S3QueryExecute.getStringValuesArray(curValue.getValue()),
+                                caseInsensitive, mediaList, metadata,
+                                (media, curMetadata) -> 
+                                {
+                                    for (Observations obs: curMetadata.observations)
+                                    {
+                                        if (obs.mediaID.equals(media.mediaID))
+                                        {
+                                            int index = obs.deploymentID.indexOf(":");
+                                            if (index < 0)
+                                            {
+                                                return obs.deploymentID;
+                                            }
+                                            else
+                                            {
+                                                return obs.deploymentID.substring(0, index);
+                                            }
+                                        }
+                                    }
+
+                                    return null;
+                                }
+                                );
+                            break;
+                    }
+
+                    mediaList = newMedia;
+                    if (mediaList.size() <= 0)
+                    {
+                        System.out.println("queryMatches(): breaking out due to no more matches");
                         break;
-                }
-
-                mediaList = newMedia;
-                if (mediaList.size() <= 0)
-                {
-                    System.out.println("queryMatches(): breaking out due to no more matches");
-                    break;
+                    }
                 }
             }
         }
