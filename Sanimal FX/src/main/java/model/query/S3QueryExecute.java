@@ -460,7 +460,15 @@ public class S3QueryExecute
                                 {
                                     if (obs.mediaID.equals(media.mediaID))
                                     {
-                                        return obs.deploymentID;
+                                        int index = obs.deploymentID.indexOf(":");
+                                        if (index < 0)
+                                        {
+                                            return obs.deploymentID;
+                                        }
+                                        else
+                                        {
+                                            return obs.deploymentID.substring(0, index);
+                                        }
                                     }
                                 }
 

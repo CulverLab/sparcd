@@ -32,23 +32,33 @@ public class S3MetaDataAndDomainData
      * 
      * @param attribute the attribute associated with the data
      * @param value the value of the attribute
+     * @param units the units of the attribute
      * @return an initialized instance
+     */
+    public static S3MetaDataAndDomainData instanceWithUnits(final String attribute, final String value, final String units)
+    {
+        return new S3MetaDataAndDomainData(attribute, value, units);
+    }
+
+    /**
+     * Used to generate a hash value from the string
+     * 
+     * @param source the string to hash
+     * @return the hash value as a string
      * @throws NoSuchAlgorithmException if the hashing algorithm is not supported
      * @throws UnsupportedEncodingException if the UTF-8 encoding is not supported
      */
-    public static S3MetaDataAndDomainData instanceWithUnits(final String attribute, final String value)
+    public static String generateHashValue(final String source)
             throws NoSuchAlgorithmException, UnsupportedEncodingException
     {
         MessageDigest md = MessageDigest.getInstance("MD5");
         md.reset();
-        md.update(value.getBytes("UTF-8"));
+        md.update(source.getBytes("UTF-8"));
 
         byte[] digest = md.digest();
         BigInteger bigInt = new BigInteger(1, digest);
 
-        String valueID = Objects.toString(bigInt.longValue());
-
-        return new S3MetaDataAndDomainData(attribute, value, valueID);
+        return Objects.toString(bigInt.longValue());
     }
 
     /**

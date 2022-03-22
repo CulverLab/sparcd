@@ -1553,6 +1553,7 @@ else System.out.println("    CONTENTS ARE NULL");
 							speciesIDToScientificName.put(Long.parseLong(fileDataField.getUnit()), fileDataField.getValue());
 							break;
 						case SanimalMetadataFields.A_SPECIES_COUNT:
+							System.out.println("fetchMetadataFor(): A_SPECIES_COUNT: '" + fileDataField.getValue() + "' -> " + Integer.parseInt(fileDataField.getValue()));
 							speciesIDToCount.put(Long.parseLong(fileDataField.getUnit()), Integer.parseInt(fileDataField.getValue()));
 							break;
 						case SanimalMetadataFields.A_COLLECTION_ID:
@@ -1585,16 +1586,19 @@ else System.out.println("    CONTENTS ARE NULL");
 				// Grab the correct location for the image entry
 				Location correctLocation = uniqueLocations.stream().filter(location -> location.getId().equals(finalLocationID)).findFirst().get();
 				// Create the image entry
-				System.out.println("=> fetchMetadataFor: ImageEntry -> '" + bucket + bucketSeparator + remotePath + "'");
+				System.out.println("fetchMetadataFor(): ImageEntry -> '" + bucket + bucketSeparator + remotePath + "'");
 				ImageEntry entry = new ImageEntry(new File(bucket + bucketSeparator + remotePath));
 				// Set the location and date taken
 				entry.setLocationTaken(correctLocation);
 				entry.setDateTaken(localDateTime);
 				// Add the species to the image entries
+				System.out.println("fetchMetadataFor(): species setting -> " + speciesIDToScientificName.size());
 				for (Long key : speciesIDToScientificName.keySet())
 				{
 					String speciesScientificName = speciesIDToScientificName.get(key);
+					System.out.println("fetchMetadataFor(): species  -> '" + speciesScientificName + "'  key: '" + key + "'");
 					Integer speciesCount = speciesIDToCount.get(key);
+					System.out.println("    count  -> " + speciesCount);
 					if (speciesCount == null) {
 						  System.out.println("NULL COUNT: fetchMetadataFor: " + speciesScientificName + "  Count: " + speciesCount);
 					  continue;
@@ -1602,6 +1606,7 @@ else System.out.println("    CONTENTS ARE NULL");
 					
 					// Grab the species based on ID
 					Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(speciesScientificName)).findFirst().get();
+					System.out.println("fetchMetadataFor(): correct species  -> " + correctSpecies.getName() + "");
 					entry.addSpecies(correctSpecies, speciesCount);
 				}
 				toReturn.add(entry);
@@ -2344,7 +2349,9 @@ else System.out.println("    CONTENTS ARE NULL");
 					obs.comments = "[COMMONNAME:" + oneMeta.getValue() + "]";
 					break;
 				case SanimalMetadataFields.A_SPECIES_COUNT:
+					System.out.println("mapMetadataToCamtrap(): SPECIES COUNT -> '" + oneMeta.getValue() + "'");
 					obs.count = Integer.parseInt(oneMeta.getValue());
+					System.out.println("    as int: " + obs.count);
 					break;
 				case SanimalMetadataFields.A_COLLECTION_ID:
 					deploymentID = oneMeta.getValue();
@@ -2379,7 +2386,7 @@ else System.out.println("    CONTENTS ARE NULL");
 		{
 			newDep = true;
 			ourDep = new Deployments();
-			ourDep.deploymentID = deploymentID;
+			ourDep.deploymentID = deploymentID + ":" + locID;
 			ourDep.locationName = locName;
 			ourDep.locationID = locID;
 			ourDep.latitude = locLat;
@@ -2559,10 +2566,20 @@ else System.out.println("    CONTENTS ARE NULL");
 					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_LATITUDE, Double.toString(dep.latitude)));
 					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, Double.toString(dep.longitude)));
 					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_ELEVATION, Double.toString(dep.cameraHeight)));
-					imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, obs.scientificName));
-					imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_COMMON_NAME, this.getCommonName(obs.comments)));
-					imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_COUNT, Long.toString(obs.count)));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_COLLECTION_ID, dep.deploymentID));
+					String unitsValue = S3MetaDataAndDomainData.generateHashValue(obs.scientificName);
+					imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, obs.scientificName, unitsValue));
+					imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_COMMON_NAME, this.getCommonName(obs.comments), unitsValue));
+					imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_COUNT, Long.toString(obs.count), unitsValue));
+					System.out.println("  Species count: " + obs.count + "  -> '" + Long.toString(obs.count) + "'");
+
+					String collectionID = dep.deploymentID;
+					int index = dep.deploymentID.indexOf(":");
+					if (index >= 0)
+					{
+						collectionID = dep.deploymentID.substring(0, index);
+					}
+			        System.out.println("    collection ID: '" + collectionID + "'");
+					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_COLLECTION_ID, collectionID));
 	        	}
 	        }
 	    }
