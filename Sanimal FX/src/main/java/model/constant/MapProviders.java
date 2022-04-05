@@ -9,7 +9,6 @@ public enum MapProviders
 {
 	OpenStreetMaps("Open Street Map", "https://www.openstreetmap.org/", MapTileLayer.getOpenStreetMapLayer()),
 	OpenTopoMap("Open Topo Map", "https://opentopomap.org/about", new MapTileLayer("OpenTopoMap", "https://{c}.tile.opentopomap.org/{z}/{x}/{y}.png", 0, 17)),
-	OpenMapSurferRoads("Open Map Surfer - Roads", "http://korona.geog.uni-heidelberg.de/", new MapTileLayer("OpenMapSurferRoads", "https://korona.geog.uni-heidelberg.de/tiles/roads/x={x}&y={y}&z={z}", 0, 20)),
 	EsriWorldStreetMap("Esri World Street Map", "https://www.esri.com/en-us/home", new MapTileLayer("EsriWorldStreetMap", "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", 0, 19)),
 	EsriWorldTopoMap("Esri World Topo Map", "https://www.esri.com/en-us/home", new MapTileLayer("EsriWorldTopoMap", "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}", 0, 19)),
 	EsriWorldImagery("Esri World Imagery", "https://www.esri.com/en-us/home", new MapTileLayer("EsriWorldImagery", "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", 0, 19));
