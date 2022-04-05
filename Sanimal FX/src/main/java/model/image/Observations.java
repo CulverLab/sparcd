@@ -140,9 +140,7 @@ public final class Observations
 
         if ((values[4] != null) && (values[4].length() > 0))
         {
-            System.out.println("Observations:instance(): timestamp (values[4] -> " + values[4]);
             obs.timestamp = LocalDateTime.parse(values[4], DateTimeFormatter.ISO_DATE_TIME);
-            System.out.println("    " + obs.timestamp);
         }
         else
             obs.timestamp = null;
