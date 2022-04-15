@@ -23,7 +23,7 @@ import javafx.scene.layout.VBox;
 import model.SanimalData;
 import model.analysis.DataAnalyzer;
 import model.image.ImageEntry;
-import model.query.CyVerseQuery;
+import model.query.S3Query;
 import model.query.IQueryCondition;
 import model.query.QueryEngine;
 import model.threading.ErrorTask;
@@ -157,7 +157,7 @@ public class SanimalAnalysisController implements Initializable
 		catch (NumberFormatException ignored) {}
 
 		// Create a query
-		CyVerseQuery query = new CyVerseQuery();
+		S3Query query = new S3Query();
 		// For each condition listed in the listview, apply that to the overall query
 		for (IQueryCondition queryCondition : SanimalData.getInstance().getQueryEngine().getQueryConditions())
 			queryCondition.appendConditionToQuery(query);
@@ -169,7 +169,7 @@ public class SanimalAnalysisController implements Initializable
 			{
 				this.updateMessage("Performing query...");
 				// Grab the result of the query
-				return SanimalData.getInstance().getConnectionManager().performQuery(query);
+				return SanimalData.getInstance().getConnectionManager().performQuery(query, SanimalData.getInstance().getCollectionList());
 			}
 		};
 		Integer finalEventInterval = eventInterval;
@@ -178,7 +178,7 @@ public class SanimalAnalysisController implements Initializable
 		queryTask.setOnSucceeded(event ->
 		{
 			// Get the result of the first query
-			List<String> irodsAbsolutePaths = queryTask.getValue();
+			List<String> cloudAbsolutePaths = queryTask.getValue();
 
 			// Ask the user if they would like to continue to part 2 of the query where we retrieve metadata. This takes a while
 			Optional<ButtonType> buttonTypeOpt = SanimalData.getInstance().getErrorDisplay().showPopup(
@@ -186,7 +186,7 @@ public class SanimalAnalysisController implements Initializable
 					this.lvwFilters.getScene().getWindow(),
 					"Query Count",
 					null,
-					"This query will return " + irodsAbsolutePaths.size() + " results at approximately 6 results per second, continue?",
+					"This query will return " + cloudAbsolutePaths.size() + " results at approximately 6 results per second, continue?",
 					true);
 
 			// If they press OK, query, otherwise just jump out
@@ -200,7 +200,7 @@ public class SanimalAnalysisController implements Initializable
 					{
 						this.updateMessage("Performing image query...");
 						// Grab the result of the image query
-						return SanimalData.getInstance().getConnectionManager().fetchMetadataFor(irodsAbsolutePaths);
+						return SanimalData.getInstance().getConnectionManager().fetchMetadataFor(cloudAbsolutePaths, SanimalData.getInstance().getCollectionList());
 					}
 				};
 

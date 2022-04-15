@@ -2,7 +2,7 @@ package model.query;
 
 public interface IQueryCondition
 {
-	void appendConditionToQuery(CyVerseQuery query);
+	void appendConditionToQuery(S3Query query);
 
 	String getFXMLConditionEditor();
 }

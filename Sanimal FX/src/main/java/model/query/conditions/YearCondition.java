@@ -2,7 +2,7 @@ package model.query.conditions;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import model.query.CyVerseQuery;
+import model.query.S3Query;
 import model.query.IQueryCondition;
 
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ public class YearCondition implements IQueryCondition
 	 * @param query The current state of the query before the appending
 	 */
 	@Override
-	public void appendConditionToQuery(CyVerseQuery query)
+	public void appendConditionToQuery(S3Query query)
 	{
 		query.setStartAndEndYear(startYear.getValue(), endYear.getValue());
 	}

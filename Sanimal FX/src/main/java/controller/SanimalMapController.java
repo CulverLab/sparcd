@@ -101,11 +101,11 @@ public class SanimalMapController
 		///
 
 		// Add the default tile layer to the background, use OpenStreetMap by default
-		this.map.addChild(MapProviders.OpenStreetMaps.getMapTileProvider(), MapLayers.TILE_PROVIDER);
+		this.map.addChild(MapProviders.EsriWorldTopoMap.getMapTileProvider(), MapLayers.TILE_PROVIDER);
 		// Setup our map provider combobox, first set the items to be an unmodifiable list of enums
 		this.cbxMapProvider.setItems(FXCollections.unmodifiableObservableList(FXCollections.observableArrayList(MapProviders.values())));
 		// Select OSM as the default map provider
-		this.cbxMapProvider.getSelectionModel().select(MapProviders.OpenStreetMaps);
+		this.cbxMapProvider.getSelectionModel().select(MapProviders.EsriWorldTopoMap);
 		// When we select a new map provider, swap tile providers
 		this.cbxMapProvider.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
 		{

@@ -5,8 +5,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import model.SanimalData;
-import model.cyverse.ImageCollection;
-import model.query.CyVerseQuery;
+import model.s3.ImageCollection;
+import model.query.S3Query;
 import model.query.IQueryCondition;
 
 import java.util.HashMap;
@@ -46,7 +46,7 @@ public class CollectionCondition implements IQueryCondition
 	 * @param query The current state of the query before the appending
 	 */
 	@Override
-	public void appendConditionToQuery(CyVerseQuery query)
+	public void appendConditionToQuery(S3Query query)
 	{
 		for (ImageCollection imageCollection : this.getImageCollections())
 			if (imageCollectionToSelected.containsKey(imageCollection) && imageCollectionToSelected.get(imageCollection).getValue())

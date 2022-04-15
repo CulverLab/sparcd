@@ -12,6 +12,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import model.SanimalData;
 import model.constant.SanimalMetadataFields;
+import model.image.MetaData;
 import model.location.Location;
 import model.species.Species;
 import model.species.SpeciesEntry;
@@ -25,8 +26,6 @@ import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.domain.AvuData;
 
 import java.io.File;
 import java.io.IOException;
@@ -90,6 +89,9 @@ public class ImageEntry extends ImageContainer
 
 	/**
 	 * Reads the file metadata and initializes fields
+	 * 
+	 * @param knownLocations The {@code List} of known locations
+	 * @param knownSpecies The {@code List} of known species
 	 */
 	public void readFileMetadataIntoImage(List<Location> knownLocations, List<Species> knownSpecies)
 	{
@@ -302,44 +304,44 @@ public class ImageEntry extends ImageContainer
 	}
 
 	/**
-	 * Writes the image entry's metadata to CyVerse's AVU format
+	 * Writes the image entry's metadata to MetaData format
 	 *
-	 * @return A list of AVU entries representing the metadata
-	 * @throws JargonException If anything goes wrong
+	 * @return A list of entries representing the metadata
+	 * @throws Exception If anything goes wrong
 	 */
-	public List<AvuData> convertToAVUMetadata() throws JargonException
+	public List<MetaData> convertToMetadata() throws Exception
 	{
 		// Create a list to return
-		List<AvuData> metadata = new LinkedList<>();
+		List<MetaData> metadata = new LinkedList<>();
 
 		// Grab the location taken
 		Location locationTaken = this.getLocationTaken();
 
 		// Flag saying this image was tagged by sanimal
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_SANIMAL, "true", ""));
+		metadata.add(MetaData.instance(SanimalMetadataFields.A_SANIMAL, "true", ""));
 
 		// Metadata of the image's date taken
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_TIME_TAKEN, Long.toString(this.getDateTaken().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_YEAR_TAKEN, Integer.toString(this.getDateTaken().getYear()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_MONTH_TAKEN, Integer.toString(this.getDateTaken().getMonthValue()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_HOUR_TAKEN, Integer.toString(this.getDateTaken().getHour()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_DAY_OF_YEAR_TAKEN, Integer.toString(this.getDateTaken().getDayOfYear()), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN, Integer.toString(this.getDateTaken().getDayOfWeek().getValue()), ""));
+		metadata.add(MetaData.instance(SanimalMetadataFields.A_DATE_TIME_TAKEN, Long.toString(this.getDateTaken().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()), ""));
+		metadata.add(MetaData.instance(SanimalMetadataFields.A_DATE_YEAR_TAKEN, Integer.toString(this.getDateTaken().getYear()), ""));
+		metadata.add(MetaData.instance(SanimalMetadataFields.A_DATE_MONTH_TAKEN, Integer.toString(this.getDateTaken().getMonthValue()), ""));
+		metadata.add(MetaData.instance(SanimalMetadataFields.A_DATE_HOUR_TAKEN, Integer.toString(this.getDateTaken().getHour()), ""));
+		metadata.add(MetaData.instance(SanimalMetadataFields.A_DATE_DAY_OF_YEAR_TAKEN, Integer.toString(this.getDateTaken().getDayOfYear()), ""));
+		metadata.add(MetaData.instance(SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN, Integer.toString(this.getDateTaken().getDayOfWeek().getValue()), ""));
 
 		// Location metadata
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_NAME, locationTaken.getName(), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_ID, locationTaken.getId(), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LATITUDE, locationTaken.getLat().toString(), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, locationTaken.getLng().toString(), ""));
-		metadata.add(AvuData.instance(SanimalMetadataFields.A_LOCATION_ELEVATION, locationTaken.getElevation().toString(), "meters"));
+		metadata.add(MetaData.instance(SanimalMetadataFields.A_LOCATION_NAME, locationTaken.getName(), ""));
+		metadata.add(MetaData.instance(SanimalMetadataFields.A_LOCATION_ID, locationTaken.getId(), ""));
+		metadata.add(MetaData.instance(SanimalMetadataFields.A_LOCATION_LATITUDE, locationTaken.getLat().toString(), ""));
+		metadata.add(MetaData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, locationTaken.getLng().toString(), ""));
+		metadata.add(MetaData.instance(SanimalMetadataFields.A_LOCATION_ELEVATION, locationTaken.getElevation().toString(), "meters"));
 
-		// Species metadata uses the AVU Unit as a foreign key to link a list of entries together
+		// Species metadata uses the Meta Unit as a foreign key to link a list of entries together
 		Integer entryID = 0;
 		for (SpeciesEntry speciesEntry : this.getSpeciesPresent())
 		{
-			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, speciesEntry.getSpecies().getScientificName(), entryID.toString()));
-			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_COMMON_NAME, speciesEntry.getSpecies().getName(), entryID.toString()));
-			metadata.add(AvuData.instance(SanimalMetadataFields.A_SPECIES_COUNT, speciesEntry.getAmount().toString(), entryID.toString()));
+			metadata.add(MetaData.instance(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, speciesEntry.getSpecies().getScientificName(), entryID.toString()));
+			metadata.add(MetaData.instance(SanimalMetadataFields.A_SPECIES_COMMON_NAME, speciesEntry.getSpecies().getName(), entryID.toString()));
+			metadata.add(MetaData.instance(SanimalMetadataFields.A_SPECIES_COUNT, speciesEntry.getAmount().toString(), entryID.toString()));
 			entryID++;
 		}
 		return metadata;

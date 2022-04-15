@@ -9,14 +9,14 @@ Clone the repository and build it using maven. All dependencies will be automati
 
 ### Prerequisites
 
-Java 8:<br />
-http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html<br />
+Java 15:<br />
+https://www.oracle.com/java/technologies/javase/jdk15-archive-downloads.html<br />
 Maven:<br />
 https://maven.apache.org/install.html
 
 ### Prebuilt executable
 
-If you want to run the software without needing to build from source, prebuilt executables can be found in the [Version History directory](./Version%20History/)<br>
+If you want to run the software without needing to build from source, prebuilt executables can be found in the [Version History directory](https://github.com/CulverLab/sparcd/tree/master/Version%20History)<br>
 
 Sanimal X.Y.Z.jar is the original legacy software written in Swing which was the predecessor to SanimalFX.<br>
 Sanimal FX X.Y.jar is the current latest build of Sanimal FX including all dependencies.<br>

@@ -18,6 +18,8 @@ public class CloudUploadEntry
 	private transient BooleanProperty downloadedProperty = new SimpleBooleanProperty(false);
 	// A reference to the cloud image directory that we may download at some point
 	private transient ObjectProperty<CloudImageDirectory> cloudImageDirectoryProperty = new SimpleObjectProperty<>();
+	// A reference to the associated cloud metadata
+	private transient ObjectProperty<Camtrap> camtrapProperty = new SimpleObjectProperty<>();
 
 	// The username of the person that uploaded images
 	private String uploadUser;
@@ -29,8 +31,10 @@ public class CloudUploadEntry
 	private Integer imageCount;
 	// A list of edits made to the upload
 	private List<String> editComments = new ArrayList<>();
-	// A path to the upload on CyVerse
-	private String uploadIRODSPath;
+	// The bucket on the cloud
+	private String bucket;
+	// A path to the upload on the cloud
+	private String uploadPath;
 	// The description of this upload
 	private String description;
 
@@ -41,16 +45,18 @@ public class CloudUploadEntry
 	 * @param uploadDate The date the upload happened on
 	 * @param imagesWithSpecies The number of images with species tagged
 	 * @param imageCount The number of images in the upload
-	 * @param uploadIRODSPath The path to the file on CyVerse
+	 * @param bucket The bucket the file belongs to
+	 * @param uploadPath The path to the file on the cloud
 	 * @param description The description of this upload
 	 */
-	public CloudUploadEntry(String uploadUser, LocalDateTime uploadDate, Integer imagesWithSpecies, Integer imageCount, String uploadIRODSPath, String description)
+	public CloudUploadEntry(String uploadUser, LocalDateTime uploadDate, Integer imagesWithSpecies, Integer imageCount, String bucket, String uploadPath, String description)
 	{
 		this.uploadUser = uploadUser;
 		this.uploadDate = uploadDate;
 		this.imagesWithSpecies = imagesWithSpecies;
 		this.imageCount = imageCount;
-		this.uploadIRODSPath = uploadIRODSPath;
+		this.bucket = bucket;
+		this.uploadPath = uploadPath;
 		this.description = description;
 	}
 
@@ -61,6 +67,7 @@ public class CloudUploadEntry
 	{
 		this.downloadedProperty = new SimpleBooleanProperty(false);
 		this.cloudImageDirectoryProperty = new SimpleObjectProperty<>();
+		this.camtrapProperty = new SimpleObjectProperty<>();
 	}
 
 	/**
@@ -106,9 +113,14 @@ public class CloudUploadEntry
 		return imageCount;
 	}
 
-	public String getUploadIRODSPath()
+	public String getBucket()
 	{
-		return uploadIRODSPath;
+		return bucket;
+	}
+
+	public String getUploadPath()
+	{
+		return uploadPath;
 	}
 
 	public String getDescription()
@@ -144,5 +156,15 @@ public class CloudUploadEntry
 	public ObjectProperty<CloudImageDirectory> cloudImageDirectoryProperty()
 	{
 		return this.cloudImageDirectoryProperty;
+	}
+
+	public void setMetadata(Camtrap metadata)
+	{
+		this.camtrapProperty.setValue(metadata);
+	}
+
+	public ObjectProperty<Camtrap> getMetadata()
+	{
+		return this.camtrapProperty;
 	}
 }

@@ -17,15 +17,13 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.SanimalData;
-import model.cyverse.ImageCollection;
-import model.cyverse.Permission;
+import model.s3.ImageCollection;
+import model.s3.Permission;
 import model.image.CloudImageDirectory;
 import model.image.ImageDirectory;
 import model.image.ImageEntry;
 import model.threading.ErrorTask;
 import model.util.FXMLLoaderUtils;
-import org.irods.jargon.core.transfer.TransferStatus;
-import org.irods.jargon.core.transfer.TransferStatusCallbackListener;
 
 import java.io.File;
 import java.util.Optional;
@@ -153,7 +151,8 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 		// Set the scene of the stage, and show it!
 		dialogStage.setScene(scene);
 		dialogStage.showAndWait();
-		actionEvent.consume();
+		if (actionEvent != null)
+			actionEvent.consume();
 	}
 
 	/**
@@ -258,34 +257,10 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 
 								// Create a string property used as a callback
 								StringProperty messageCallback = new SimpleStringProperty("");
-								this.updateMessage("Uploading image directory " + imageDirectory.getFile().getName() + " to CyVerse.");
+								this.updateMessage("Uploading image directory " + imageDirectory.getFile().getName() + " to the Cloud.");
 								messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
-								// Upload images to CyVerse, we give it a transfer status callback so that we can show the progress
-								SanimalData.getInstance().getConnectionManager().uploadImages(ImageCollectionListEntryController.this.getItem(), imageDirectory, description, new TransferStatusCallbackListener()
-								{
-									@Override
-									public FileStatusCallbackResponse statusCallback(TransferStatus transferStatus)
-									{
-										// Set the upload progress in the directory we get a callback
-										Platform.runLater(() -> imageDirectory.setUploadProgress(transferStatus.getBytesTransfered() / (double) transferStatus.getTotalSize()));
-										// Set the upload progress whenever we get a callback
-										updateProgress((double) transferStatus.getBytesTransfered(), (double) transferStatus.getTotalSize());
-										return FileStatusCallbackResponse.CONTINUE;
-									}
-
-									// Ignore this status callback
-									@Override
-									public void overallStatusCallback(TransferStatus transferStatus)
-									{
-									}
-
-									// Ignore this as well
-									@Override
-									public CallbackResponse transferAsksWhetherToForceOperation(String irodsAbsolutePath, boolean isCollection)
-									{
-										return CallbackResponse.YES_FOR_ALL;
-									}
-								}, messageCallback);
+								// Upload images to the cloud, we give it a transfer status callback so that we can show the progress
+								SanimalData.getInstance().getConnectionManager().uploadImages(ImageCollectionListEntryController.this.getItem(), imageDirectory, description, messageCallback);
 								return null;
 							}
 						};

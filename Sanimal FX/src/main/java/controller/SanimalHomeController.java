@@ -37,7 +37,7 @@ public class SanimalHomeController implements Initializable
 	// The credits button
 	@FXML
 	public Button btnCredits;
-	// The logout button to disconnect from CyVerse
+	// The logout button to disconnect from the Cloud
 	@FXML
 	public Button btnLogout;
 	// The exit button to close the program

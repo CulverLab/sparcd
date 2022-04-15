@@ -14,7 +14,6 @@ import model.species.Species;
 import model.threading.ErrorTask;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.irods.jargon.core.pub.io.IRODSFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,18 +40,20 @@ public class CloudImageEntry extends ImageEntry
 	// Placeholder file used before the file has been downloaded
 	private static File PLACEHOLDER_FILE = null;
 
-	// The CyVerse file
-	private ObjectProperty<IRODSFile> cyverseFileProperty = new SimpleObjectProperty<>();
+	// The Cloud bucket
+	private ObjectProperty<String> cloudBucket = new SimpleObjectProperty<>();
+	// The Cloud file
+	private ObjectProperty<String> cloudFileProperty = new SimpleObjectProperty<>();
 
 	// Transient because we don't want these to be written to disk
 
-	// If the image entry has been downloaded from CyVerse
+	// If the image entry has been downloaded from the cloud
 	private transient final BooleanProperty hasBeenPulledFromCloud = new SimpleBooleanProperty(false);
-	// If the image entry is currently being downloaded from CyVerse
+	// If the image entry is currently being downloaded from the cloud
 	private transient final BooleanProperty isBeingPulledFromCloud = new SimpleBooleanProperty(false);
-	// If the image entry was tagged with species on CyVerse
+	// If the image entry was tagged with species on the cloud
 	private transient final AtomicBoolean wasTaggedWithSpecies = new AtomicBoolean(false);
-	// If the current version of the image is dirty compared to the one on CyVerse
+	// If the current version of the image is dirty compared to the one on the cloud
 	private transient final AtomicBoolean isCloudDirty = new AtomicBoolean(false);
 
 	/**
@@ -60,7 +61,7 @@ public class CloudImageEntry extends ImageEntry
 	 *
 	 * @param cloudFile The file which can be a temporary local file
 	 */
-	public CloudImageEntry(IRODSFile cloudFile)
+	public CloudImageEntry(String cloudFile)
 	{
 		// No local file
 		super(null);
@@ -106,7 +107,7 @@ public class CloudImageEntry extends ImageEntry
 		this.selectedImageProperty.bind(imageBinding);
 
 		this.getFileProperty().setValue(PLACEHOLDER_FILE);
-		this.setCyverseFile(cloudFile);
+		this.setCloudFile(cloudFile);
 	}
 
 	/**
@@ -208,7 +209,7 @@ public class CloudImageEntry extends ImageEntry
 	}
 
 	/**
-	 * Marks the image entry as dirty meaning it needs to be updated on CyVerse
+	 * Marks the image entry as dirty meaning it needs to be updated on the cloud
 	 *
 	 * @param dirty If the image is dirty
 	 */
@@ -233,7 +234,7 @@ public class CloudImageEntry extends ImageEntry
 	/**
 	 * True if the image is dirty, false otherwise
 	 *
-	 * @return Tells us if the image is dirty (aka different from CyVerse)
+	 * @return Tells us if the image is dirty (aka different from the cloud)
 	 */
 	public Boolean isCloudDirty()
 	{
@@ -254,8 +255,10 @@ public class CloudImageEntry extends ImageEntry
 
 	/**
 	 * Pulls the given image from the cloud
+	 * 
+	 * @param bucket the bucket to pull the entry from
 	 */
-	private void pullFromCloud()
+	private void pullFromCloud(String bucket)
 	{
 		// Set a flag that we're pulling from the cloud
 		this.isBeingPulledFromCloud.setValue(true);
@@ -265,8 +268,8 @@ public class CloudImageEntry extends ImageEntry
 			@Override
 			protected File call()
 			{
-				this.updateMessage("Downloading the image " + getCyverseFile().getName() + " for editing...");
-				return SanimalData.getInstance().getConnectionManager().remoteToLocalImageFile(getCyverseFile());
+				this.updateMessage("Downloading the image " + getCloudFile() + " for editing...");
+				return SanimalData.getInstance().getConnectionManager().remoteToLocalImageFile(bucket, getCloudFile());
 			}
 		};
 
@@ -289,13 +292,13 @@ public class CloudImageEntry extends ImageEntry
 	}
 
 	/**
-	 * Pulls the image file from CyVerse if it has not yet been downloaded
+	 * Pulls the image file from the cloud if it has not yet been downloaded
 	 */
 	public void pullFromCloudIfNotPulled()
 	{
 		// Make sure we didnt already or are not already pulling
 		if (!this.hasBeenPulledFromCloud.getValue() && !this.isBeingPulledFromCloud.getValue())
-			this.pullFromCloud();
+			this.pullFromCloud(this.getBucket());
 	}
 
 	/**
@@ -306,26 +309,36 @@ public class CloudImageEntry extends ImageEntry
 	@Override
 	public String toString()
 	{
-		return this.getCyverseFile().getName();
+		return this.getCloudFile();
 	}
 
 	///
 	/// Getters/Setters
 	///
 
-	public IRODSFile getCyverseFile()
+	public String getBucket()
 	{
-		return cyverseFileProperty.getValue();
+		return this.cloudBucket.getValue();
 	}
 
-	private void setCyverseFile(IRODSFile file)
+	public void setCloudBucket(String bucket)
 	{
-		this.cyverseFileProperty.setValue(file);
+		this.cloudBucket.setValue(bucket);
 	}
 
-	public ObjectProperty<IRODSFile> cyverseFileProperty()
+	public String getCloudFile()
 	{
-		return this.cyverseFileProperty;
+		return cloudFileProperty.getValue();
+	}
+
+	private void setCloudFile(String file)
+	{
+		this.cloudFileProperty.setValue(file);
+	}
+
+	public ObjectProperty<String> cloudFileProperty()
+	{
+		return this.cloudFileProperty;
 	}
 
 	public Boolean hasBeenPulledFromCloud()

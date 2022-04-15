@@ -17,8 +17,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import library.TreeViewAutomatic;
 import model.SanimalData;
-import model.cyverse.ImageCollection;
-import model.cyverse.Permission;
+import model.s3.ImageCollection;
+import model.s3.Permission;
 import model.image.*;
 import model.threading.ErrorTask;
 import model.util.FXMLLoaderUtils;
@@ -271,13 +271,13 @@ public class SanimalUploadController implements Initializable
 			alert.initOwner(this.collectionListView.getScene().getWindow());
 			alert.setTitle("Confirmation");
 			alert.setHeaderText("Are you sure you want to delete this collection?");
-			alert.setContentText("Deleting this collection will result in the permanent removal of all images uploaded to CyVerse to this collection. Are you sure you want to continue?");
+			alert.setContentText("Deleting this collection will result in the permanent removal of all images uploaded to the Cloud to this collection. Are you sure you want to continue?");
 			Optional<ButtonType> buttonType = alert.showAndWait();
 			if (buttonType.isPresent())
 			{
 				if (buttonType.get() == ButtonType.OK)
 				{
-					// Remove the collection on the CyVerse system
+					// Remove the collection on the cloud system
 					SanimalData.getInstance().getConnectionManager().removeCollection(selected);
 
 					// Remove the selected collection
@@ -322,7 +322,7 @@ public class SanimalUploadController implements Initializable
 				{
 					this.updateMessage("Downloading directory for editing...");
 					// Download the directory and add it to our tree structure
-					CloudImageDirectory cloudDirectory = SanimalData.getInstance().getConnectionManager().downloadUploadDirectory(uploadEntry);
+					CloudImageDirectory cloudDirectory = SanimalData.getInstance().getConnectionManager().downloadUploadDirectory(uploadEntry.getBucket(), uploadEntry);
 					Platform.runLater(() ->
 					{
 						uploadEntry.setCloudImageDirectory(cloudDirectory);
@@ -380,10 +380,10 @@ public class SanimalUploadController implements Initializable
 					{
 						// Create a string property used as a callback
 						StringProperty messageCallback = new SimpleStringProperty("");
-						this.updateMessage("Saving image directory " + imageDirectory.getCyverseDirectory().getName() + " to CyVerse.");
+						this.updateMessage("Saving image directory " + imageDirectory.getCloudDirectory() + " to the Cloud.");
 						messageCallback.addListener((observable, oldValue, newValue) -> this.updateMessage(newValue));
 
-						// Save images to CyVerse, we give it a transfer status callback so that we can show the progress
+						// Save images to the Cloud, we give it a transfer status callback so that we can show the progress
 						SanimalData.getInstance().getConnectionManager().saveImages(selectedCollection.getValue(), uploadEntry, messageCallback);
 						return null;
 					}
