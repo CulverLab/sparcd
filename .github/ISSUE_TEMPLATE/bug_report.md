@@ -20,18 +20,13 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+**OS and Environment (please complete the following information):**
+ - OS: [e.g. Windows, MacOS, Linux]
+ - OS Version [e.g. Windows 11, Catalina etc.]
+ - Java Version [e.g. 15]
+ - SPARCd Application Version [e.g. v2021-05-25]
 
 **Additional context**
 Add any other context about the problem here.
 
-Add links to discussion on Slack (or Discourse).
+Add links to discussion on Slack if applicable.
