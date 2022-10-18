@@ -104,15 +104,15 @@ public class SanimalHomeController implements Initializable
 	}
 
 	/**
-	 * When the user clicks the cyverse logo
+	 * When the user clicks the CCT logo
 	 *
 	 * @param mouseEvent consumed
 	 */
-	public void showCyverseWebsite(MouseEvent mouseEvent)
+	public void showCCTWebsite(MouseEvent mouseEvent)
 	{
 		try
 		{
-			Desktop.getDesktop().browse(new URI("http://www.cyverse.org"));
+			Desktop.getDesktop().browse(new URI("https://datascience.cals.arizona.edu/"));
 		}
 		catch (IOException | URISyntaxException ignored)
 		{

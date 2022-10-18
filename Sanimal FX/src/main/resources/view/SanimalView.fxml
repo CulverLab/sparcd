@@ -87,7 +87,7 @@
                         <GridPane.margin>
                             <Insets bottom="10" top="10" />
                         </GridPane.margin>
-                        <Image url="@../images/mainMenu/cyverse.png" />
+                        <Image url="@../images/mainMenu/wildcatResearch.png" />
                     </ImageView>
                     <TextField fx:id="txtURL" onKeyPressed="#enterPressed" promptText="URL" GridPane.rowIndex="1">
                         <GridPane.margin>

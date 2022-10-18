@@ -50,8 +50,8 @@
                 </Button>
             </children>
         </StackPane>
-        <ImageView fitHeight="80" onMouseClicked="#showCyverseWebsite" preserveRatio="true" styleClass="imgCyverse" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
-            <Image url="@../images/mainMenu/poweredByCyverse.png" />
+        <ImageView fitHeight="80" onMouseClicked="#showCCTWebsite" preserveRatio="true" styleClass="imgCCT" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10">
+            <Image url="@../images/mainMenu/CCTlogo.png" />
         </ImageView>
         <ImageView fitHeight="80" onMouseClicked="#showSNREWebsite" preserveRatio="true" styleClass="imgSNRE" AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10">
             <Image url="@../images/mainMenu/snre.PNG" />
