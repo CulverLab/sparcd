@@ -34,11 +34,11 @@
 }
 
 
-.imgCyverse {
+.imgCCT {
     -fx-effect: dropshadow(gaussian, black, 15, .1, 0, 0);
 }
 
-.imgCyverse:hover {
+.imgCCT:hover {
     -fx-effect: dropshadow(gaussian, yellow, 15, .5, 0, 0);
 }
 
