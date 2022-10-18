@@ -5,6 +5,7 @@ on:
     branches: [ Sanimal-No-ES, test-irods-4.2 ]
     tags-ignore:
       - "*"
+  workflow_dispatch:
 
 jobs:
   create_release:
