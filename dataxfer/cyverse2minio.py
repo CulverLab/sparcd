@@ -110,13 +110,13 @@ def get_params() -> tuple:
     parser.add_argument('-pw', required=True, help='Password for minio endpoint')
     parser.add_argument('json_file', type=argparse.FileType('r'),
                         help='The json file with CyVerse entries')
-    parser.add_argument('mapping_id', type=str,
-                        help='MinIO collection ID to upload to (use - to skip)')
+    parser.add_argument('uuid_id', type=str,
+                        help='MinIO collection UUID to upload to (use - to skip)')
 
     args = parser.parse_args()
 
     return args.json_file.name, \
-           args.mapping_id if args.mapping_id != "-" else None, \
+           args.uuid_id if args.uuid_id != "-" else None, \
            args.user, \
            args.pw
 
