@@ -12,10 +12,10 @@ import subprocess
 import sys
 import tempfile
 import uuid
-from minio import Minio
+from minio import Minio, S3Error
 
 # The endpoint to upload to
-MINIO_ENDPOINT = "https://admin-sandbox.sparcd.arizona.edu/"
+MINIO_ENDPOINT = "sandbox.sparcd.arizona.edu:443"
 # JSON key where the files to move are found
 UPLOADS_KEYWORD = "Uploads"
 # JSON key where the base CyVerse path is found
@@ -64,12 +64,15 @@ class ImageTrack:
         self.minio_bucket = minio_bucket
         self.minio_basepath = minio_basepath
         self.image_name = image_data["RelativePath"]
+        self.progress = []
+        print(f"ImageTrack new {self.image_name}" + str(len(self.progress)))
 
     def add_progress(self, msg: str) -> None:
         """Adds a progress string to the results
         Arguments:
             msg - the string to add
         """
+        print(f"ImageTrack add: " + str(len(self.progress)))
         self.progress.append(msg)
 
     def complete(self, folder_path: str = None, msg: str = None) -> None:
@@ -78,6 +81,7 @@ class ImageTrack:
             folder_path - the path to write the entry to
             msg - a final message to write
         """
+        print(f"ImageTrack complete: " + str(len(self.progress)))
         if msg:
             self.progress.append(msg)
 
@@ -113,6 +117,8 @@ def get_params() -> tuple:
     parser.add_argument('uuid_id', type=str,
                         help='MinIO collection UUID to upload to (use - to skip)')
 
+    parser.epilog = "Assumes that iRODS commands have been installed and configured"
+
     args = parser.parse_args()
 
     return args.json_file.name, \
@@ -137,6 +143,23 @@ def write_error(msg: str) -> None:
     print(msg, file=sys.stderr)
 
 
+def exists_minio(minio: Minio, bucket: str, minio_path: str) -> bool:
+    """Checks if an object exists on Minio
+    Arguments:
+        minio - the MinIO client instance to use
+        bucket - the destination bucket
+        minio_path - the destination path
+    """
+    try:
+        if minio.stat_object(bucket, minio_path):
+            return True
+    except S3Error as ex:
+        if ex.code != "NoSuchKey":
+            raise ex
+
+    return False
+
+
 def transfer_file(minio: Minio, cyverse_path: str, bucket: str, minio_path: str,
                   print_errs: bool = False) -> bool:
     """Attempts to transfer a file from CyVerse to MinIO
@@ -149,11 +172,12 @@ def transfer_file(minio: Minio, cyverse_path: str, bucket: str, minio_path: str,
     """
     basename = os.path.basename(cyverse_path)
 
-    cmd = ['iget', '-K', f"'{cyverse_path}'"]
+    cmd = ['iget', '-K', "-f", cyverse_path]
     res = subprocess.run(cmd, capture_output=True, check=False)
     if res.returncode != 0:
         if print_errs:
             write_error(f"Failed to retrieve file '{cyverse_path}")
+            print(res)
         return False
 
     if not os.path.exists(basename):
@@ -162,6 +186,8 @@ def transfer_file(minio: Minio, cyverse_path: str, bucket: str, minio_path: str,
         return False
 
     minio.fput_object(bucket, minio_path, basename)
+
+    os.unlink(basename)
     return True
 
 
@@ -204,7 +230,8 @@ def upload_json(the_json: dict, minio: Minio, bucket: str, minio_path: str) -> b
         minio_path - path of file on server
     """
     # Upload the JSON
-    minio.put_object(bucket, minio_path, io.BytesIO(str.encode(json.dumps(the_json, indent=4))))
+    data = io.BytesIO(str.encode(json.dumps(the_json, indent=4)))
+    minio.put_object(bucket, minio_path, data, len(data.getvalue()))
 
     return True
 
@@ -220,7 +247,12 @@ def download_minio_files(minio: Minio, bucket: str, files: list, local_dir: str)
     success = 0
     for one_file in files:
         dest_file = os.path.join(local_dir, os.path.basename(one_file))
-        minio.fget_object(bucket, one_file, dest_file)
+        try:
+            minio.fget_object(bucket, one_file, dest_file)
+        except S3Error as ex:
+            if ex.code != "NoSuchKey":
+                raise ex
+
         if os.path.exists(dest_file):
             success = success + 1
 
@@ -280,16 +312,16 @@ def add_camtrap_deployment(camtrap: dict, image_path: str, image_data: dict) -> 
                              image_data["locationName"],
                              image_data["locationLongitude"],
                              image_data["locationLatitude"],
-                             0,  # coordinateUncertainty
+                             "0",# coordinateUncertainty
                              "", # deployment start
                              "", # deployment end
                              "", # setup by
                              "", # camera ID
                              "", # camera model
-                             0,  # camera interval
+                             "0",# camera interval
                              image_data["locationElevation"],
-                             0.0,# camera tilt
-                             0,  # camera heading
+                             "0.0",# camera tilt
+                             "0",# camera heading
                              "false", # timestamp issues
                              "", # bait use
                              "", # session
@@ -319,7 +351,7 @@ def add_camtrap_media(camtrap: dict, image_path: str, image_data: dict) -> str:
 
     found_media = None
     for one_media in cur_media:
-        if one_media.startsWith(image_path):
+        if one_media.startswith(image_path):
             found_media = one_media
             break
 
@@ -369,13 +401,13 @@ def add_camtrap_observation(camtrap: dict, image_path: str, image_data: dict) ->
             depl_id,
             "",         # sequence ID
             image_path,
-            timestamp,
+            timestamp.isoformat(),
             "",         # observation type
             "false",    # camera setup
             "",         # taxon ID
             common_name,
             image_data["metaSpeciesCount"],
-            0,          # count new
+            "0",        # count new
             "",         # life stage
             "",         # sex
             "",         # behavior
@@ -383,7 +415,7 @@ def add_camtrap_observation(camtrap: dict, image_path: str, image_data: dict) ->
             "",         # classification method
             "",         # classified by
             "",         # classification timestamp
-            1.0,        # classification confidence
+            "1.0",      # classification confidence
             f"[COMMONNAME:{common_name}]"
         ))
         cur_obs.append(found_obs)
@@ -402,7 +434,7 @@ def update_camtrap(camtrap: dict, minio_path: str, image_md: tuple) -> None:
     # Reformat the image data to be more easily accessible
     image_data = {}
     for one_md in image_md:
-        image_data[one_md.Attribute] =  one_md.Value
+        image_data[one_md["Attribute"]] = one_md["Value"]
 
     add_camtrap_deployment(camtrap, minio_path, image_data)
     add_camtrap_media(camtrap, minio_path, image_data)
@@ -476,14 +508,16 @@ def upload_update_image(minio: Minio, cyverse_basepath: str, bucket: str, minio_
     relative_path = image_data["RelativePath"]
     minio_path = os.path.join(minio_basepath, relative_path)
     if image_found_camtrap(minio_path, camtrap):
-        write_error(f"Image '{relative_path}' was found in CamTrap data")
+        write_error(f"'{relative_path}' was found in CamTrap data")
         track.add_progress("Found in CamTrap data - not uploading")
         return False
-    if minio.stat_object(bucket, minio_path):
-        write_error(f"Image '{relative_path}' was found on destination (but not in CamTrap data")
+    if exists_minio(minio, bucket, minio_path):
+        write_error(f"'{relative_path}' was found on destination (but not CamTrap data - adding data)")
+        update_camtrap(camtrap, minio_path, image_data["Metadata"])
         track.add_progress("Already on MinIO - not uploading")
         return False
 
+    print(f"'{relative_path}' upload")
     cyverse_path = os.path.join(cyverse_basepath, relative_path)
     track.add_progress("Transferring from CyVerse to MinIO")
     track.add_progress(f"  from '{cyverse_path}' to '{bucket}:{minio_path}'")
@@ -513,6 +547,7 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
     dest_coll_base = os.path.join("Collections", minio_id)
 
     # Check if the collection already exists and create it if not
+    print(f"  Checking if bucket '{dest_bucket}' exists")
     if not minio.bucket_exists(dest_bucket):
         print(f" ... creating destination bucket {dest_bucket}")
         minio.make_bucket(dest_bucket)
@@ -520,6 +555,7 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
         print(f" ... using bucket {dest_bucket}")
 
     # Upload collection.json and permissions.json
+    # TODO clean up failed new buckets?
     print(f" ... transferring {COLL_COLLECTION_FILE} and {COLL_PERMISSIONS_FILE} from CyVerse")
     if not transfer_file(minio, os.path.join(cyverse_basepath, COLL_COLLECTION_FILE),
                          dest_bucket, os.path.join(dest_coll_base, COLL_COLLECTION_FILE)):
@@ -539,13 +575,11 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
                                             replace('-', '.'))
 
     # Get UploadMeta.json from CyVerse and upload to MinIO
-    cyverse_basepath = os.path.join(cyverse_basepath, "Uploads",
-                                    coll_subpath.replace(' ', '.', 1).replace(' ', '_').
-                                            replace('-', '.'))
+    cyverse_basepath = os.path.join(cyverse_basepath, "Uploads", coll_subpath)
     cyverse_path = os.path.join(cyverse_basepath, COLL_UPLOADMETA_FILE)
     dest_path = os.path.join(dest_uploads_base, COLL_UPLOADMETA_FILE)
     print(f" ... transferring upload {COLL_UPLOADMETA_FILE} from CyVerse")
-    if not transfer_file(minio, cyverse_path, dest_bucket, dest_path):
+    if not transfer_file(minio, cyverse_path, dest_bucket, dest_path, True):
         write_error(f"{COLL_UPLOADMETA_FILE} not transferred from " +
                     f"'{cyverse_path}' to '{dest_path}'")
 
@@ -564,11 +598,13 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
         img_track = ImageTrack(cyverse_basepath, dest_bucket, dest_uploads_base, one_image)
         upload_update_image(minio, cyverse_basepath, dest_bucket, dest_uploads_base, one_image,
                             camtrap, img_track)
-        img_track.complete(msg = "Done")
+        img_track.complete(msg="Done")
 
     # Write the CamTrap data and upload the CSV files
     print(" ... uploading camtrap files")
     write_camtrap(camtrap, work_dir)
+    for one_file in [os.path.join(work_dir, fn) for fn in MINIO_CAMTRAP_FILES]:
+        s = os.path.getsize(one_file)
     upload_local_files([os.path.join(work_dir, fn) for fn in MINIO_CAMTRAP_FILES], minio,
                        dest_bucket, dest_uploads_base)
 
@@ -600,6 +636,7 @@ def move_data(json_file: str, minio_id: str, user: str, pw: str) -> None:
         return
 
     # Create the MinIO Client instance
+    print(f"Connecting to MinIO as user {user} '{MINIO_ENDPOINT}'")
     minio = Minio(MINIO_ENDPOINT, access_key=user, secret_key=pw)
 
     # Get the source collection ID
@@ -611,20 +648,25 @@ def move_data(json_file: str, minio_id: str, user: str, pw: str) -> None:
     else:
         use_minio_id = minio_id
 
+    # Tracking how many uploads we're doing
+    total_uploads = len(from_json[UPLOADS_KEYWORD])
+
     # Print out what we're doing
     print(f"Processing file '{json_file}'")
     print(f"    MinIO endpoint is {MINIO_ENDPOINT}")
     print(f"    CyVerse collection {cyverse_id} to {use_minio_id}" +
           (" (new)" if use_minio_id != minio_id else ""))
-    print( "    Processing " + str(len(from_json[UPLOADS_KEYWORD])) + " uploads")
+    print(f"    Processing {total_uploads} uploads")
     print(f"    CyVerse path: '{from_json[BASEPATH_KEYWORD]}'")
 
     # Loop through the entries
+    cur_upload = 1
     for one_entry in from_json[UPLOADS_KEYWORD]:
-        print(f"  Current upload: {one_entry[COLL_UPLOAD_KEYWORD]} with " +
+        print(f"  Upload {cur_upload} of {total_uploads}: {one_entry[COLL_UPLOAD_KEYWORD]} with " +
               str(len(one_entry[COLL_IMAGES_KEYWORD])) + " images")
         move_images(minio, from_json[BASEPATH_KEYWORD], one_entry[COLL_UPLOAD_KEYWORD],
                     use_minio_id, one_entry[COLL_IMAGES_KEYWORD])
+        cur_upload = cur_upload + 1
     print("Done")
 
 
