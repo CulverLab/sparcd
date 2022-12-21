@@ -65,14 +65,12 @@ class ImageTrack:
         self.minio_basepath = minio_basepath
         self.image_name = image_data["RelativePath"]
         self.progress = []
-        print(f"ImageTrack new {self.image_name}" + str(len(self.progress)))
 
     def add_progress(self, msg: str) -> None:
         """Adds a progress string to the results
         Arguments:
             msg - the string to add
         """
-        print(f"ImageTrack add: " + str(len(self.progress)))
         self.progress.append(msg)
 
     def complete(self, folder_path: str = None, msg: str = None) -> None:
@@ -81,7 +79,6 @@ class ImageTrack:
             folder_path - the path to write the entry to
             msg - a final message to write
         """
-        print(f"ImageTrack complete: " + str(len(self.progress)))
         if msg:
             self.progress.append(msg)
 
@@ -90,15 +87,15 @@ class ImageTrack:
         else:
             filename = os.path.join(os.getcwd(), UPLOAD_LOG_FILENAME)
 
-        open_flags = "w+"
+        open_flags = "a"
         if not os.path.exists(filename):
             open_flags = "w"
 
         with open(filename, open_flags, encoding="utf-8") as o_file:
             if open_flags == "w":
-                o_file.write(",".join(("Image","CyVerse path", "Bucket", "MinIO path", "Progress")))
+                o_file.write(",".join(("Image", "CyVerse path", "Bucket", "MinIO path", "Progress")) + "\n")
             o_file.write(",".join((self.image_name, self.cyverse_basepath, self.minio_bucket,
-                                  self.minio_basepath, "\n".join(self.progress))))
+                                  self.minio_basepath, '"' + "\r".join(self.progress) + '"')) + "\n")
 
 
 def get_params() -> tuple:
@@ -160,8 +157,24 @@ def exists_minio(minio: Minio, bucket: str, minio_path: str) -> bool:
     return False
 
 
+def get_cyverse_file(cyverse_path: str, print_errs: bool = False) -> bool:
+    """Tries to pull down a CyVerse file to the current folder
+    Arguments:
+        cyverse_path - the CyVerse path to the file
+        print_errs - flag to indicate errors should be reported
+    """
+    cmd = ['iget', '-K', "-f", cyverse_path]
+    res = subprocess.run(cmd, capture_output=True, check=False)
+    if res.returncode != 0:
+        if print_errs:
+            print(res)
+        return False
+
+    return True
+
+
 def transfer_file(minio: Minio, cyverse_path: str, bucket: str, minio_path: str,
-                  print_errs: bool = False) -> bool:
+                  print_errs: bool = False, content_type: str = None) -> bool:
     """Attempts to transfer a file from CyVerse to MinIO
     Arguments:
         minio - the MinIO client instance to use
@@ -172,12 +185,9 @@ def transfer_file(minio: Minio, cyverse_path: str, bucket: str, minio_path: str,
     """
     basename = os.path.basename(cyverse_path)
 
-    cmd = ['iget', '-K', "-f", cyverse_path]
-    res = subprocess.run(cmd, capture_output=True, check=False)
-    if res.returncode != 0:
+    if not get_cyverse_file(cyverse_path, print_errs):
         if print_errs:
             write_error(f"Failed to retrieve file '{cyverse_path}")
-            print(res)
         return False
 
     if not os.path.exists(basename):
@@ -185,9 +195,76 @@ def transfer_file(minio: Minio, cyverse_path: str, bucket: str, minio_path: str,
             write_error(f"Not able to find downloaded file {basename}")
         return False
 
-    minio.fput_object(bucket, minio_path, basename)
+    if content_type is None:
+        content_type = "application/octet-stream"
+    minio.fput_object(bucket, minio_path, basename, content_type=content_type)
 
     os.unlink(basename)
+    return True
+
+
+def transfer_collection_file(minio: Minio, minio_id: str, cyverse_path: str, bucket: str,
+                             minio_path: str, print_errs: bool = False) -> bool:
+    """Transfers a collection file from CyVerse to MinIO
+    Arguments:
+        minio - the MinIO client instance to use
+        minio_id - ID associated with this collection
+        cyverse_path - the CyVerse path to the collection file
+        bucket - the destination bucket
+        minio_path - the destination path
+        print_errs - flag to indicate errors should be reported
+    """
+    basename = os.path.basename(cyverse_path)
+    if not get_cyverse_file(cyverse_path, print_errs):
+        if print_errs:
+            write_error(f"Not able to find downloaded file {basename}")
+        return False
+
+    with open(basename, "r", encoding="utf-8") as in_file:
+        coll_json = json.load(in_file)
+
+    coll_json["idProperty"] = minio_id
+    if "bucketProperty" not in coll_json:
+        coll_json["bucketProperty"] = bucket
+        return upload_json(coll_json, minio, bucket, minio_path)
+
+    upload_local_files([basename], minio, bucket, os.path.dirname(minio_path))
+    return True
+
+
+def transfer_uploadmeta_file(minio: Minio, cyverse_path: str, bucket: str,
+                             minio_path: str, print_errs: bool = True) -> bool:
+    """Transfers a MetaData file from CyVerse to MinIO
+    Arguments:
+        minio - the MinIO client instance to use
+        cyverse_path - the CyVerse path to the collection file
+        bucket - the destination bucket
+        minio_path - the destination path
+        print_errs - flag to indicate errors should be reported
+    """
+    basename = os.path.basename(cyverse_path)
+    if not get_cyverse_file(cyverse_path, print_errs):
+        if print_errs:
+            write_error(f"Not able to find downloaded file {basename}")
+        return False
+
+    with open(basename, "r", encoding="utf-8") as in_file:
+        meta_json = json.load(in_file)
+
+    modified = False
+    if "bucket" not in meta_json:
+        meta_json["bucket"] = bucket
+        modified = True
+
+    if "uploadIRODSPath" in meta_json:
+        del meta_json["uploadIRODSPath"]
+        meta_json["uploadPath"] = os.path.dirname(minio_path)
+        modified = True
+
+    if modified:
+        return upload_json(meta_json, minio, bucket, minio_path)
+
+    upload_local_files([basename], minio, bucket, os.path.dirname(minio_path))
     return True
 
 
@@ -231,7 +308,8 @@ def upload_json(the_json: dict, minio: Minio, bucket: str, minio_path: str) -> b
     """
     # Upload the JSON
     data = io.BytesIO(str.encode(json.dumps(the_json, indent=4)))
-    minio.put_object(bucket, minio_path, data, len(data.getvalue()))
+    minio.put_object(bucket, minio_path, data, len(data.getvalue()),
+                     content_type="application/json")
 
     return True
 
@@ -259,19 +337,21 @@ def download_minio_files(minio: Minio, bucket: str, files: list, local_dir: str)
     return success == len(files)
 
 
-def upload_local_files(files: list, minio: Minio, bucket: str, dest_basepath: str) -> None:
+def upload_local_files(files: list, minio: Minio, bucket: str, dest_basepath: str,
+                       content_type: str = "application/json") -> None:
     """Uploads files to MinIO
     Arguments:
         files - the list of local files to load
         minio - the MinIO client instance to use
         bucket - the bucket to upload to
         dest_basepath - the base path to load files to
+        content_type - the content type these uploads represent
     Notes:
         The files are loaded in a flat hierarchy regardless of how they are stored locally
     """
     for one_file in files:
         dest_path = os.path.join(dest_basepath, os.path.basename(one_file))
-        minio.fput_object(bucket, dest_path, one_file)
+        minio.fput_object(bucket, dest_path, one_file, content_type=content_type)
 
 
 def image_found_camtrap(image_path: str, camtrap: dict) -> bool:
@@ -333,6 +413,7 @@ def add_camtrap_deployment(camtrap: dict, image_path: str, image_data: dict) -> 
                              ))
         cur_depl.append(found_depl)
         camtrap[CAMTRAP_DEPLOYMENT] = cur_depl
+        camtrap["modified"] = True
 
     return found_depl
 
@@ -371,6 +452,7 @@ def add_camtrap_media(camtrap: dict, image_path: str, image_data: dict) -> str:
                 ))
         cur_media.append(found_media)
         camtrap[CAMTRAP_MEDIA] = cur_media
+        camtrap["modified"] = True
 
     return found_media
 
@@ -420,6 +502,7 @@ def add_camtrap_observation(camtrap: dict, image_path: str, image_data: dict) ->
         ))
         cur_obs.append(found_obs)
         camtrap[CAMTRAP_OBSERVATIONS] = cur_obs
+        camtrap["modified"] = True
 
     return found_obs
 
@@ -456,39 +539,45 @@ def load_camtrap(folder: str) -> dict:
     cur_path = os.path.join(folder, DEPLOYMENT_CSV)
     if os.path.exists(cur_path):
         with open(cur_path, "r", encoding="utf-8") as in_file:
-            depl = in_file.readlines()
+            depl = [med.strip("\n") for med in in_file.readlines()]
     else:
         depl = []
 
     cur_path = os.path.join(folder, MEDIA_CSV)
     if os.path.exists(cur_path):
         with open(cur_path, "r", encoding="utf-8") as in_file:
-            media = in_file.readlines()
+            media = [med.strip("\n") for med in in_file.readlines()]
     else:
         media = []
 
     cur_path = os.path.join(folder, OBSERVATIONS_CSV)
     if os.path.exists(cur_path):
         with open(cur_path, "r", encoding="utf-8") as in_file:
-            obs = in_file.readlines()
+            obs = [med.strip("\n") for med in in_file.readlines()]
     else:
         obs = []
 
-    return {CAMTRAP_DEPLOYMENT: depl, CAMTRAP_MEDIA: media, CAMTRAP_OBSERVATIONS: obs}
+    return {CAMTRAP_DEPLOYMENT: depl,
+            CAMTRAP_MEDIA: media,
+            CAMTRAP_OBSERVATIONS: obs,
+            "modified": False}
 
 
 def write_camtrap(camtrap: dict, folder: str) -> None:
     """Writes CamTrap data to the specified folder
     Arguments:
-        camtrap - the camtrap dict to write
+        camtrap - the CamTrap dict to write
         folder - the folder to write
     """
     with open(os.path.join(folder, DEPLOYMENT_CSV), "w", encoding="utf-8") as out_file:
-        out_file.writelines(camtrap[CAMTRAP_DEPLOYMENT])
+        for one_line in camtrap[CAMTRAP_DEPLOYMENT]:
+            out_file.writelines(f"{one_line}\n")
     with open(os.path.join(folder, MEDIA_CSV), "w", encoding="utf-8") as out_file:
-        out_file.writelines(camtrap[CAMTRAP_MEDIA])
+        for one_line in camtrap[CAMTRAP_MEDIA]:
+            out_file.writelines(f"{one_line}\n")
     with open(os.path.join(folder, OBSERVATIONS_CSV), "w", encoding="utf-8") as out_file:
-        out_file.writelines(camtrap[CAMTRAP_OBSERVATIONS])
+        for one_line in camtrap[CAMTRAP_OBSERVATIONS]:
+            out_file.writelines(f"{one_line}\n")
 
 
 def upload_update_image(minio: Minio, cyverse_basepath: str, bucket: str, minio_basepath: str,
@@ -521,7 +610,8 @@ def upload_update_image(minio: Minio, cyverse_basepath: str, bucket: str, minio_
     cyverse_path = os.path.join(cyverse_basepath, relative_path)
     track.add_progress("Transferring from CyVerse to MinIO")
     track.add_progress(f"  from '{cyverse_path}' to '{bucket}:{minio_path}'")
-    if not transfer_file(minio, cyverse_path, bucket, minio_path, True):
+    if not transfer_file(minio, cyverse_path, bucket, minio_path, True,
+                         content_type="image/jpeg"):
         write_error(f"Unable to transfer image from '{cyverse_path}' to '{minio_path}'")
         track.add_progress("Transfer failed")
     else:
@@ -554,20 +644,29 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
     else:
         print(f" ... using bucket {dest_bucket}")
 
+    # Get a temporary folder to work within
+    work_dir = tempfile.mkdtemp(prefix="dsparcd_")
+
     # Upload collection.json and permissions.json
-    # TODO clean up failed new buckets?
+    dest_path = os.path.join(dest_coll_base, COLL_COLLECTION_FILE)
     print(f" ... transferring {COLL_COLLECTION_FILE} and {COLL_PERMISSIONS_FILE} from CyVerse")
-    if not transfer_file(minio, os.path.join(cyverse_basepath, COLL_COLLECTION_FILE),
-                         dest_bucket, os.path.join(dest_coll_base, COLL_COLLECTION_FILE)):
-        if not upload_new_collection_json(minio, dest_bucket,
-                                          os.path.join(dest_coll_base,COLL_COLLECTION_FILE),
-                                          minio_id):
-            write_error(f"Unable to upload new {COLL_COLLECTION_FILE} to {minio_id}")
-    if not transfer_file(minio, os.path.join(cyverse_basepath, COLL_PERMISSIONS_FILE),
-                         dest_bucket, os.path.join(dest_coll_base, COLL_PERMISSIONS_FILE)):
-        if not upload_empty_json(minio, dest_bucket,
-                                 os.path.join(dest_coll_base, COLL_PERMISSIONS_FILE)):
-            write_error(f"Unable to upload new {COLL_PERMISSIONS_FILE} to {minio_id}")
+    if exists_minio(minio, dest_bucket, dest_path):
+        print(f"   ... {COLL_COLLECTION_FILE} already exists - skipping update")
+    else:
+        if not transfer_collection_file(minio, minio_id,
+                                        os.path.join(cyverse_basepath, COLL_COLLECTION_FILE),
+                                        dest_bucket, dest_path):
+            if not upload_new_collection_json(minio, dest_bucket, dest_path, minio_id):
+                write_error(f"Unable to upload new {COLL_COLLECTION_FILE} to {minio_id}")
+
+    dest_path = os.path.join(dest_coll_base, COLL_PERMISSIONS_FILE)
+    if exists_minio(minio, dest_bucket, dest_path):
+        print(f"   ... {COLL_PERMISSIONS_FILE} already exists - skipping update")
+    else:
+        if not transfer_file(minio, os.path.join(cyverse_basepath, COLL_PERMISSIONS_FILE),
+                             dest_bucket, dest_path, content_type="application/json"):
+            if not upload_empty_json(minio, dest_bucket, dest_path):
+                write_error(f"Unable to upload new {COLL_PERMISSIONS_FILE} to {minio_id}")
 
     # Create valid MinIO subpath under Uploads folder
     dest_uploads_base = os.path.join(dest_coll_base, "Uploads",
@@ -579,15 +678,15 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
     cyverse_path = os.path.join(cyverse_basepath, COLL_UPLOADMETA_FILE)
     dest_path = os.path.join(dest_uploads_base, COLL_UPLOADMETA_FILE)
     print(f" ... transferring upload {COLL_UPLOADMETA_FILE} from CyVerse")
-    if not transfer_file(minio, cyverse_path, dest_bucket, dest_path, True):
-        write_error(f"{COLL_UPLOADMETA_FILE} not transferred from " +
-                    f"'{cyverse_path}' to '{dest_path}'")
-
-    # Get a temporary folder to work within
-    work_dir = tempfile.mkdtemp(prefix="dsparcd_")
+    if exists_minio(minio, dest_bucket, dest_path):
+        print(f"   ... {COLL_UPLOADMETA_FILE} already exists - skipping update")
+    else:
+        if not transfer_uploadmeta_file(minio, cyverse_path, dest_bucket, dest_path, True):
+            write_error(f"{COLL_UPLOADMETA_FILE} not transferred from " +
+                        f"'{cyverse_path}' to '{dest_path}'")
 
     # Get the deployments.csv, media.csv, and observations.csv files, and load them
-    print(f" ... pulling camtrap files to '{work_dir}'")
+    print(f" ... pulling camtrap files from '{work_dir}'")
     download_minio_files(minio, dest_bucket,
                          [os.path.join(dest_uploads_base, fn) for fn in MINIO_CAMTRAP_FILES],
                          work_dir)
@@ -601,12 +700,13 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
         img_track.complete(msg="Done")
 
     # Write the CamTrap data and upload the CSV files
-    print(" ... uploading camtrap files")
-    write_camtrap(camtrap, work_dir)
-    for one_file in [os.path.join(work_dir, fn) for fn in MINIO_CAMTRAP_FILES]:
-        s = os.path.getsize(one_file)
-    upload_local_files([os.path.join(work_dir, fn) for fn in MINIO_CAMTRAP_FILES], minio,
-                       dest_bucket, dest_uploads_base)
+    if camtrap["modified"]:
+        print(" ... uploading camtrap files")
+        write_camtrap(camtrap, work_dir)
+        upload_local_files([os.path.join(work_dir, fn) for fn in MINIO_CAMTRAP_FILES], minio,
+                           dest_bucket, dest_uploads_base, content_type="text/csv")
+    else:
+        print(" ... camtrap files not modified - skipping upload")
 
     # Clean up the temporary folder
     print(f" ... removing working folder {work_dir}")
@@ -662,7 +762,7 @@ def move_data(json_file: str, minio_id: str, user: str, pw: str) -> None:
     # Loop through the entries
     cur_upload = 1
     for one_entry in from_json[UPLOADS_KEYWORD]:
-        print(f"  Upload {cur_upload} of {total_uploads}: {one_entry[COLL_UPLOAD_KEYWORD]} with " +
+        print(f"Upload {cur_upload} of {total_uploads}: {one_entry[COLL_UPLOAD_KEYWORD]} with " +
               str(len(one_entry[COLL_IMAGES_KEYWORD])) + " images")
         move_images(minio, from_json[BASEPATH_KEYWORD], one_entry[COLL_UPLOAD_KEYWORD],
                     use_minio_id, one_entry[COLL_IMAGES_KEYWORD])
