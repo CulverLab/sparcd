@@ -15,7 +15,7 @@ import uuid
 from minio import Minio, S3Error
 
 # The endpoint to upload to
-MINIO_ENDPOINT = "sandbox.sparcd.arizona.edu:443"
+MINIO_ENDPOINT = "wildcats.sparcd.arizona.edu:443"
 # JSON key where the files to move are found
 UPLOADS_KEYWORD = "Uploads"
 # JSON key where the base CyVerse path is found
