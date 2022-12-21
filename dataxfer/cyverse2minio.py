@@ -222,6 +222,7 @@ def transfer_collection_file(minio: Minio, minio_id: str, cyverse_path: str, buc
 
     with open(basename, "r", encoding="utf-8") as in_file:
         coll_json = json.load(in_file)
+    os.unlink(basename)
 
     coll_json["idProperty"] = minio_id
     if "bucketProperty" not in coll_json:
@@ -250,6 +251,7 @@ def transfer_uploadmeta_file(minio: Minio, cyverse_path: str, bucket: str,
 
     with open(basename, "r", encoding="utf-8") as in_file:
         meta_json = json.load(in_file)
+    os.unlink(basename)
 
     modified = False
     if "bucket" not in meta_json:
