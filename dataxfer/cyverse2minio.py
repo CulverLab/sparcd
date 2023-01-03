@@ -479,7 +479,12 @@ def add_camtrap_observation(camtrap: dict, image_path: str, image_data: dict) ->
 
     if not found_obs:
         timestamp = datetime.datetime.fromtimestamp(int(image_data["dateTimeTaken"])/1000.0)
-        common_name = image_data["metaSpeciesCommonName"]
+        if "metaSpeciesCommonName" in image_data:
+            common_name = image_data["metaSpeciesCommonName"]
+            common_name_comment = f"[COMMONNAME:{common_name}]"
+        else:
+            common_name = ""
+            common_name_comment = ""
         found_obs = ",".join((
             "",         # observation ID
             depl_id,
@@ -490,7 +495,7 @@ def add_camtrap_observation(camtrap: dict, image_path: str, image_data: dict) ->
             "false",    # camera setup
             "",         # taxon ID
             common_name,
-            image_data["metaSpeciesCount"],
+            image_data["metaSpeciesCount"] if "metaSpeciesCount" in image_data else "0",
             "0",        # count new
             "",         # life stage
             "",         # sex
@@ -500,7 +505,7 @@ def add_camtrap_observation(camtrap: dict, image_path: str, image_data: dict) ->
             "",         # classified by
             "",         # classification timestamp
             "1.0",      # classification confidence
-            f"[COMMONNAME:{common_name}]"
+            common_name_comment
         ))
         cur_obs.append(found_obs)
         camtrap[CAMTRAP_OBSERVATIONS] = cur_obs
@@ -619,9 +624,12 @@ def upload_update_image(minio: Minio, cyverse_basepath: str, bucket: str, minio_
     else:
         track.add_progress("Image transferred")
 
-    track.add_progress("Updating CamTrap data")
-    update_camtrap(camtrap, minio_path, image_data["Metadata"])
-    track.add_progress("Image transferred and CamTrap data updated")
+    if "Metadata" in image_data and len(image_data["Metadata"]) > 0:
+        track.add_progress("Updating CamTrap data")
+        update_camtrap(camtrap, minio_path, image_data["Metadata"])
+        track.add_progress("Image transferred and CamTrap data updated")
+    else:
+        track.add_progress("Missing metadata, image only transferred")
     return True
 
 
