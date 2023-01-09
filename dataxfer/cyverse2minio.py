@@ -124,12 +124,13 @@ def get_params() -> tuple:
            args.pw
 
 
-def get_deployment_id(image_data: dict) -> str:
+def get_deployment_id(collection_id: str, image_data: dict) -> str:
     """Returns the deployment ID for this image
     Arguments:
+        collection_id - the ID of the collection
         image_data - the image's data
     """
-    return image_data["collectionID"] + ':' + image_data["locationID"]
+    return collection_id + ':' + image_data["locationID"]
 
 
 def write_error(msg: str) -> None:
@@ -137,7 +138,7 @@ def write_error(msg: str) -> None:
     Arguments:
         msg - the message to write
     """
-    print(msg, file=sys.stderr)
+    print(msg, file=sys.stderr, flush=True)
 
 
 def exists_minio(minio: Minio, bucket: str, minio_path: str) -> bool:
@@ -167,7 +168,7 @@ def get_cyverse_file(cyverse_path: str, print_errs: bool = False) -> bool:
     res = subprocess.run(cmd, capture_output=True, check=False)
     if res.returncode != 0:
         if print_errs:
-            print(res)
+            print(res, flush=True)
         return False
 
     return True
@@ -369,18 +370,19 @@ def image_found_camtrap(image_path: str, camtrap: dict) -> bool:
     return False
 
 
-def add_camtrap_deployment(camtrap: dict, image_path: str, image_data: dict) -> str:
+def add_camtrap_deployment(camtrap: dict, collection_id: str, image_path: str, image_data: dict) -> str:
     # pylint: disable=unused-argument
     """Adds the image data for camtrap deployment as a single CSV line
     Arguments:
         camtrap - the CamTrap data
+        collection_id - the collection ID
         image_path - the path of the image's data
         image_data - the image's data
     Return:
         The formatted CSV entry
     """
     cur_depl = camtrap[CAMTRAP_DEPLOYMENT]
-    depl_id = get_deployment_id(image_data)
+    depl_id = get_deployment_id(collection_id, image_data)
 
     found_depl = None
     for one_depl in cur_depl:
@@ -420,17 +422,18 @@ def add_camtrap_deployment(camtrap: dict, image_path: str, image_data: dict) -> 
     return found_depl
 
 
-def add_camtrap_media(camtrap: dict, image_path: str, image_data: dict) -> str:
+def add_camtrap_media(camtrap: dict, collection_id: str, image_path: str, image_data: dict) -> str:
     """Adds the image data for camtrap media as a single CSV line
     Arguments:
         camtrap - the CamTrap data
+        collection_id - the collection ID
         image_path - the path of the image's data
         image_data - the image's data
     Return:
         The formatted CSV entry
     """
     cur_media = camtrap[CAMTRAP_MEDIA]
-    depl_id = get_deployment_id(image_data)
+    depl_id = get_deployment_id(collection_id, image_data)
 
     found_media = None
     for one_media in cur_media:
@@ -459,17 +462,18 @@ def add_camtrap_media(camtrap: dict, image_path: str, image_data: dict) -> str:
     return found_media
 
 
-def add_camtrap_observation(camtrap: dict, image_path: str, image_data: dict) -> str:
+def add_camtrap_observation(camtrap: dict, collection_id: str, image_path: str, image_data: dict) -> str:
     """Adds the image data for camtrap observation as a single CSV line
     Arguments:
         camtrap - the CamTrap data
+        collection_id - the collection ID
         image_path - the path of the image's data
         image_data - the image's data
     Return:
         The formatted CSV entry
     """
     cur_obs = camtrap[CAMTRAP_OBSERVATIONS]
-    depl_id = get_deployment_id(image_data)
+    depl_id = get_deployment_id(collection_id, image_data)
 
     found_obs = None
     for one_obs in cur_obs:
@@ -478,7 +482,14 @@ def add_camtrap_observation(camtrap: dict, image_path: str, image_data: dict) ->
             break
 
     if not found_obs:
-        timestamp = datetime.datetime.fromtimestamp(int(image_data["dateTimeTaken"])/1000.0)
+        if "dateTimeTaken" in image_data:
+            timestamp = datetime.datetime.fromtimestamp(int(image_data["dateTimeTaken"])/1000.0)
+        else:
+            timestamp = datetime.datetime(int(image_data["dateYearTaken"]), 1, 1) + \
+                        datetime.timedelta(int(image_data["dateDayOfYearTaken"]))
+            if "dateHourTaken" in image_data:
+                timestamp = timestamp.replace(hour=int(image_data["dateHourTaken"]))
+
         if "metaSpeciesCommonName" in image_data:
             common_name = image_data["metaSpeciesCommonName"]
             common_name_comment = f"[COMMONNAME:{common_name}]"
@@ -514,10 +525,11 @@ def add_camtrap_observation(camtrap: dict, image_path: str, image_data: dict) ->
     return found_obs
 
 
-def update_camtrap(camtrap: dict, minio_path: str, image_md: tuple) -> None:
+def update_camtrap(camtrap: dict, collection_id: str, minio_path: str, image_md: tuple) -> None:
     """Updates the camtrap data with the image's data
     Arguments:
         camtrap - the CamTrap data
+        collection_id - the collection ID
         minio_path - the path to the image on MinIO
         image_md - the metadata associated with the image
     """
@@ -526,9 +538,9 @@ def update_camtrap(camtrap: dict, minio_path: str, image_md: tuple) -> None:
     for one_md in image_md:
         image_data[one_md["Attribute"]] = one_md["Value"]
 
-    add_camtrap_deployment(camtrap, minio_path, image_data)
-    add_camtrap_media(camtrap, minio_path, image_data)
-    add_camtrap_observation(camtrap, minio_path, image_data)
+    add_camtrap_deployment(camtrap, collection_id, minio_path, image_data)
+    add_camtrap_media(camtrap, collection_id, minio_path, image_data)
+    add_camtrap_observation(camtrap, collection_id, minio_path, image_data)
 
 
 def load_camtrap(folder: str) -> dict:
@@ -587,6 +599,42 @@ def write_camtrap(camtrap: dict, folder: str) -> None:
             out_file.writelines(f"{one_line}\n")
 
 
+def fix_camtrap(camtrap: dict, cyverse_id: str, minio_id: str) -> dict:
+    """Fixes previous problems with generated CamTrap data
+    Arguments:
+        camtrap - the camtrap data to fix
+        cyverse_id - the CyVerse ID to look for
+        minio_id - the MinIO ID of collection
+    """
+    changed = False
+
+    def update_id(id_str: str):
+        """Local function with side effect
+        Arguments:
+            id_str - the string to check
+        """
+        nonlocal changed
+        if cyverse_id in id_str:
+            changed = True
+            return id_str.replace(cyverse_id, minio_id)
+
+        return id_str
+
+    print("     ... checking camtrap data for old IDs", flush=True)
+    updated_deployment = [update_id(dep) for dep in camtrap[CAMTRAP_DEPLOYMENT]]
+    updated_media = [update_id(med) for med in camtrap[CAMTRAP_MEDIA]]
+    updated_observations = [update_id(obs) for obs in camtrap[CAMTRAP_OBSERVATIONS]]
+
+    if changed:
+        print("       ... found old IDs in camtrap data", flush=True)
+        camtrap[CAMTRAP_DEPLOYMENT] = updated_deployment
+        camtrap[CAMTRAP_MEDIA] = updated_media
+        camtrap[CAMTRAP_OBSERVATIONS] = updated_observations
+        camtrap["modified"] = True
+
+    return camtrap
+
+
 def upload_update_image(minio: Minio, cyverse_basepath: str, bucket: str, minio_basepath: str,
                         image_data: dict, camtrap: dict, track: ImageTrack) -> bool:
     # pylint: disable=too-many-arguments
@@ -600,41 +648,47 @@ def upload_update_image(minio: Minio, cyverse_basepath: str, bucket: str, minio_
         camtrap - the camtrap data to append the image to
         track - used to track image upload progress
     """
+    metadata_valid = "Metadata" in image_data and len(image_data["Metadata"]) > 0
+
     # Don't overwrite data
     relative_path = image_data["RelativePath"]
     minio_path = os.path.join(minio_basepath, relative_path)
     if image_found_camtrap(minio_path, camtrap):
-        write_error(f"'{relative_path}' was found in CamTrap data")
+        print(f"'{relative_path}' was found in CamTrap data", flush=True)
         track.add_progress("Found in CamTrap data - not uploading")
         return False
     if exists_minio(minio, bucket, minio_path):
-        write_error(f"'{relative_path}' was found on destination (but not CamTrap data - adding data)")
-        update_camtrap(camtrap, minio_path, image_data["Metadata"])
-        track.add_progress("Already on MinIO - not uploading")
+        print(f"'{relative_path}' was found on destination (but not CamTrap data - adding data)", flush=True)
+        if metadata_valid:
+            update_camtrap(camtrap, bucket, minio_path, image_data["Metadata"])
+            track.add_progress("Already on MinIO - not uploading image")
+        else:
+            print("  ... Missing or invalid metadata - CamTrap data not updated", flush=True)
+            track.add_progress("Error: Missing or invalid image metadata")
         return False
 
-    print(f"'{relative_path}' upload")
+    print(f"'{relative_path}' upload", flush=True)
     cyverse_path = os.path.join(cyverse_basepath, relative_path)
     track.add_progress("Transferring from CyVerse to MinIO")
     track.add_progress(f"  from '{cyverse_path}' to '{bucket}:{minio_path}'")
     if not transfer_file(minio, cyverse_path, bucket, minio_path, True,
                          content_type="image/jpeg"):
         write_error(f"Unable to transfer image from '{cyverse_path}' to '{minio_path}'")
-        track.add_progress("Transfer failed")
+        track.add_progress("Error: Transfer failed")
     else:
         track.add_progress("Image transferred")
 
-    if "Metadata" in image_data and len(image_data["Metadata"]) > 0:
+    if metadata_valid:
         track.add_progress("Updating CamTrap data")
-        update_camtrap(camtrap, minio_path, image_data["Metadata"])
+        update_camtrap(camtrap, bucket, minio_path, image_data["Metadata"])
         track.add_progress("Image transferred and CamTrap data updated")
     else:
-        track.add_progress("Missing metadata, image only transferred")
+        track.add_progress("Error: Missing metadata, only image transferred")
     return True
 
 
 def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id: str,
-                images: list) -> None:
+                images: list, cyverse_id: str) -> None:
     """Moves images from CyVerse to MinIO
     Arguments:
         minio - the MinIO client instance to use
@@ -642,26 +696,27 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
         coll_subpath - the upload subpath for images
         minio_id - the collection ID on MinIO to upload to
         images - the list of images to upload
+        cyverse_id - used to correct previous CamTrap issues
     """
     dest_bucket = "sparcd-" + minio_id
     dest_coll_base = os.path.join("Collections", minio_id)
 
     # Check if the collection already exists and create it if not
-    print(f"  Checking if bucket '{dest_bucket}' exists")
+    print(f"  Checking if bucket '{dest_bucket}' exists", flush=True)
     if not minio.bucket_exists(dest_bucket):
-        print(f" ... creating destination bucket {dest_bucket}")
+        print(f" ... creating destination bucket {dest_bucket}", flush=True)
         minio.make_bucket(dest_bucket)
     else:
-        print(f" ... using bucket {dest_bucket}")
+        print(f" ... using bucket {dest_bucket}", flush=True)
 
     # Get a temporary folder to work within
     work_dir = tempfile.mkdtemp(prefix="dsparcd_")
 
     # Upload collection.json and permissions.json
     dest_path = os.path.join(dest_coll_base, COLL_COLLECTION_FILE)
-    print(f" ... transferring {COLL_COLLECTION_FILE} and {COLL_PERMISSIONS_FILE} from CyVerse")
+    print(f" ... transferring {COLL_COLLECTION_FILE} and {COLL_PERMISSIONS_FILE} from CyVerse", flush=True)
     if exists_minio(minio, dest_bucket, dest_path):
-        print(f"   ... {COLL_COLLECTION_FILE} already exists - skipping update")
+        print(f"   ... {COLL_COLLECTION_FILE} already exists - skipping update", flush=True)
     else:
         if not transfer_collection_file(minio, minio_id,
                                         os.path.join(cyverse_basepath, COLL_COLLECTION_FILE),
@@ -671,7 +726,7 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
 
     dest_path = os.path.join(dest_coll_base, COLL_PERMISSIONS_FILE)
     if exists_minio(minio, dest_bucket, dest_path):
-        print(f"   ... {COLL_PERMISSIONS_FILE} already exists - skipping update")
+        print(f"   ... {COLL_PERMISSIONS_FILE} already exists - skipping update", flush=True)
     else:
         if not transfer_file(minio, os.path.join(cyverse_basepath, COLL_PERMISSIONS_FILE),
                              dest_bucket, dest_path, content_type="application/json"):
@@ -684,42 +739,43 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
                                             replace('-', '.'))
 
     # Get UploadMeta.json from CyVerse and upload to MinIO
-    cyverse_basepath = os.path.join(cyverse_basepath, "Uploads", coll_subpath)
-    cyverse_path = os.path.join(cyverse_basepath, COLL_UPLOADMETA_FILE)
+    cyverse_coll_basepath = os.path.join(cyverse_basepath, "Uploads", coll_subpath)
+    cyverse_path = os.path.join(cyverse_coll_basepath, COLL_UPLOADMETA_FILE)
     dest_path = os.path.join(dest_uploads_base, COLL_UPLOADMETA_FILE)
-    print(f" ... transferring upload {COLL_UPLOADMETA_FILE} from CyVerse")
+    print(f" ... transferring upload {COLL_UPLOADMETA_FILE} from CyVerse", flush=True)
     if exists_minio(minio, dest_bucket, dest_path):
-        print(f"   ... {COLL_UPLOADMETA_FILE} already exists - skipping update")
+        print(f"   ... {COLL_UPLOADMETA_FILE} already exists - skipping update", flush=True)
     else:
         if not transfer_uploadmeta_file(minio, cyverse_path, dest_bucket, dest_path, True):
             write_error(f"{COLL_UPLOADMETA_FILE} not transferred from " +
                         f"'{cyverse_path}' to '{dest_path}'")
 
     # Get the deployments.csv, media.csv, and observations.csv files, and load them
-    print(f" ... pulling camtrap files from '{work_dir}'")
+    print(f" ... pulling camtrap files to '{work_dir}'", flush=True)
     download_minio_files(minio, dest_bucket,
                          [os.path.join(dest_uploads_base, fn) for fn in MINIO_CAMTRAP_FILES],
                          work_dir)
     camtrap = load_camtrap(work_dir)
+    camtrap = fix_camtrap(camtrap, cyverse_id, minio_id)
 
     # Upload each of the images and update CSV data
     for one_image in images:
-        img_track = ImageTrack(cyverse_basepath, dest_bucket, dest_uploads_base, one_image)
-        upload_update_image(minio, cyverse_basepath, dest_bucket, dest_uploads_base, one_image,
+        img_track = ImageTrack(cyverse_coll_basepath, dest_bucket, dest_uploads_base, one_image)
+        upload_update_image(minio, cyverse_coll_basepath, dest_bucket, dest_uploads_base, one_image,
                             camtrap, img_track)
         img_track.complete(msg="Done")
 
     # Write the CamTrap data and upload the CSV files
     if camtrap["modified"]:
-        print(" ... uploading camtrap files")
+        print(" ... uploading camtrap files", flush=True)
         write_camtrap(camtrap, work_dir)
         upload_local_files([os.path.join(work_dir, fn) for fn in MINIO_CAMTRAP_FILES], minio,
                            dest_bucket, dest_uploads_base, content_type="text/csv")
     else:
-        print(" ... camtrap files not modified - skipping upload")
+        print(" ... camtrap files not modified - skipping upload", flush=True)
 
     # Clean up the temporary folder
-    print(f" ... removing working folder {work_dir}")
+    print(f" ... removing working folder {work_dir}", flush=True)
     shutil.rmtree(work_dir)
 
 
@@ -746,7 +802,7 @@ def move_data(json_file: str, minio_id: str, user: str, pw: str) -> None:
         return
 
     # Create the MinIO Client instance
-    print(f"Connecting to MinIO as user {user} '{MINIO_ENDPOINT}'")
+    print(f"Connecting to MinIO as user {user} '{MINIO_ENDPOINT}'", flush=True)
     minio = Minio(MINIO_ENDPOINT, access_key=user, secret_key=pw)
 
     # Get the source collection ID
@@ -762,22 +818,22 @@ def move_data(json_file: str, minio_id: str, user: str, pw: str) -> None:
     total_uploads = len(from_json[UPLOADS_KEYWORD])
 
     # Print out what we're doing
-    print(f"Processing file '{json_file}'")
-    print(f"    MinIO endpoint is {MINIO_ENDPOINT}")
+    print(f"Processing file '{json_file}'", flush=True)
+    print(f"    MinIO endpoint is {MINIO_ENDPOINT}", flush=True)
     print(f"    CyVerse collection {cyverse_id} to {use_minio_id}" +
-          (" (new)" if use_minio_id != minio_id else ""))
-    print(f"    Processing {total_uploads} uploads")
-    print(f"    CyVerse path: '{from_json[BASEPATH_KEYWORD]}'")
+          (" (new)" if use_minio_id != minio_id else ""), flush=True)
+    print(f"    Processing {total_uploads} uploads", flush=True)
+    print(f"    CyVerse path: '{from_json[BASEPATH_KEYWORD]}'", flush=True)
 
     # Loop through the entries
     cur_upload = 1
     for one_entry in from_json[UPLOADS_KEYWORD]:
         print(f"Upload {cur_upload} of {total_uploads}: {one_entry[COLL_UPLOAD_KEYWORD]} with " +
-              str(len(one_entry[COLL_IMAGES_KEYWORD])) + " images")
+              str(len(one_entry[COLL_IMAGES_KEYWORD])) + " images", flush=True)
         move_images(minio, from_json[BASEPATH_KEYWORD], one_entry[COLL_UPLOAD_KEYWORD],
-                    use_minio_id, one_entry[COLL_IMAGES_KEYWORD])
+                    use_minio_id, one_entry[COLL_IMAGES_KEYWORD], cyverse_id)
         cur_upload = cur_upload + 1
-    print("Done")
+    print("Done", flush=True)
 
 
 if __name__ == '__main__':
