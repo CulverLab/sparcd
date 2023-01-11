@@ -229,7 +229,6 @@ def fix_collection_file(minio: Minio, minio_id: str, bucket: str,
     if minio_id not in coll_json["descriptionProperty"]:
         coll_json["descriptionProperty"] = f"\nCollection ID  {minio_id}"
         upload_json(coll_json, minio, bucket, minio_path)
-        print("HACK: Updating descriptionProperty to '" + coll_json["descriptionProperty"] + "'")
 
     return True
 
