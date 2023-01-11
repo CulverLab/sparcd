@@ -204,6 +204,36 @@ def transfer_file(minio: Minio, cyverse_path: str, bucket: str, minio_path: str,
     return True
 
 
+def fix_collection_file(minio: Minio, minio_id: str, bucket: str,
+                        minio_path: str, local_dir: str, print_errs: bool = False) -> bool:
+    """Fixes up the collection file that exists on MinIO
+    Arguments:
+        minio - the MinIO client instance to use
+        minio_id - ID associated with this collection
+        bucket - the destination bucket
+        minio_path - the destination path
+        local_dir - local folder for storing data
+        print_errs - flag to indicate errors should be reported
+    """
+    basename = os.path.basename(minio_path)
+    if not download_minio_files(minio, bucket, [minio_path], local_dir):
+        if print_errs:
+            write_error(f"Not able to find downloaded collection file {minio_path}")
+        return False
+
+    local_path = os.path.join(local_dir, basename)
+    with open(local_path, "r", encoding="utf-8") as in_file:
+        coll_json = json.load(in_file)
+    os.unlink(local_path)
+
+    if minio_id not in coll_json["descriptionProperty"]:
+        coll_json["descriptionProperty"] = f"\nCollection ID  {minio_id}"
+        upload_json(coll_json, minio, bucket, minio_path)
+        print("HACK: Updating descriptionProperty to '" + coll_json["descriptionProperty"] + "'")
+
+    return True
+
+
 def transfer_collection_file(minio: Minio, minio_id: str, cyverse_path: str, bucket: str,
                              minio_path: str, print_errs: bool = False) -> bool:
     """Transfers a collection file from CyVerse to MinIO
@@ -226,11 +256,12 @@ def transfer_collection_file(minio: Minio, minio_id: str, cyverse_path: str, buc
     os.unlink(basename)
 
     coll_json["idProperty"] = minio_id
+    coll_json["descriptionProperty"] = f"\nCollection ID  {minio_id}"
     if "bucketProperty" not in coll_json:
         coll_json["bucketProperty"] = bucket
         return upload_json(coll_json, minio, bucket, minio_path)
 
-    upload_local_files([basename], minio, bucket, os.path.dirname(minio_path))
+    upload_json(coll_json, minio, bucket, minio_path)
     return True
 
 
@@ -716,7 +747,9 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
     dest_path = os.path.join(dest_coll_base, COLL_COLLECTION_FILE)
     print(f" ... transferring {COLL_COLLECTION_FILE} and {COLL_PERMISSIONS_FILE} from CyVerse", flush=True)
     if exists_minio(minio, dest_bucket, dest_path):
-        print(f"   ... {COLL_COLLECTION_FILE} already exists - skipping update", flush=True)
+        print(f"   ... {COLL_COLLECTION_FILE} already exists - checking for fixes", flush=True)
+        if not fix_collection_file(minio, minio_id, dest_bucket, dest_path, work_dir):
+            write_error(f"Unable to update {COLL_COLLECTION_FILE} to {minio_id}")
     else:
         if not transfer_collection_file(minio, minio_id,
                                         os.path.join(cyverse_basepath, COLL_COLLECTION_FILE),
