@@ -553,7 +553,7 @@ public class S3ConnectionManager
 							null,
 							"Error",
 							"Collection error",
-							"Collections folder not found on S3!\n",
+							"Collections folder not found on S3! '" + oneBucket + "'\n",
 							false);
 				}
 			}
