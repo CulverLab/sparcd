@@ -122,7 +122,7 @@ public final class Observations
         // Check that we have enough fields
         if (values.length < 20)
         {
-            throw new InvalidParameterException("Missing elements for Captrap Observations specification");
+            throw new InvalidParameterException("Missing elements for Camtrap Observations specification");
         }
 
         // Create a new instance

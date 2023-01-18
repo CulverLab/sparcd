@@ -524,8 +524,12 @@ def add_camtrap_observation(camtrap: dict, collection_id: str, image_path: str, 
             common_name = image_data["metaSpeciesCommonName"]
             common_name_comment = f"[COMMONNAME:{common_name}]"
         else:
-            common_name = ""
             common_name_comment = ""
+
+        if "speciesScientificName" in image_data:
+            scientific_name = image_data["speciesScientificName"]
+        else:
+            scientific_name = ""
         found_obs = ",".join((
             "",         # observation ID
             depl_id,
@@ -535,7 +539,7 @@ def add_camtrap_observation(camtrap: dict, collection_id: str, image_path: str, 
             "",         # observation type
             "false",    # camera setup
             "",         # taxon ID
-            common_name,
+            scientific_name,
             image_data["metaSpeciesCount"] if "metaSpeciesCount" in image_data else "0",
             "0",        # count new
             "",         # life stage
@@ -663,6 +667,48 @@ def fix_camtrap(camtrap: dict, cyverse_id: str, minio_id: str) -> dict:
         camtrap["modified"] = True
 
     return camtrap
+
+
+def fix_image_camtrap(camtrap: dict, image_data: dict) -> bool:
+    """Fixes issues with CamTrap image-based data
+    Arguments:
+        camtrap - the camtrap data to append the image to
+        image_data - dict containing the information on the image
+    """
+
+    image_rel_path = image_data["RelativePath"]
+
+    image_md = image_data["Metadata"]
+    image_attr = {}
+    for one_md in image_md:
+        image_attr[one_md["Attribute"]] = one_md["Value"]
+
+    cur_obs = camtrap[CAMTRAP_OBSERVATIONS]
+    for idx in range(0, len(cur_obs)):
+        one_obs = cur_obs[idx]
+        if one_obs.find(image_rel_path) >= 0 and \
+                "metaSpeciesCommonName" in image_attr and "speciesScientificName" in image_attr:
+            check_name = ',"' + image_attr["metaSpeciesCommonName"] + '",'
+            replace_name = ',"' + image_attr["speciesScientificName"] + '",'
+            if one_obs.find(check_name) >= 0:
+                new_obs = one_obs.replace(check_name, replace_name, 1)
+                cur_obs[idx] = new_obs
+                camtrap[CAMTRAP_OBSERVATIONS] = cur_obs
+                camtrap["modified"] = True
+                return True
+
+            check_name = ',' + image_attr["metaSpeciesCommonName"] + ','
+            replace_name = ',' + image_attr["speciesScientificName"] + ','
+            if one_obs.find(check_name) >= 0:
+                new_obs = one_obs.replace(check_name, replace_name, 1)
+                cur_obs[idx] = new_obs
+                camtrap[CAMTRAP_OBSERVATIONS] = cur_obs
+                camtrap["modified"] = True
+                return True
+
+            return False
+
+    return False
 
 
 def upload_update_image(minio: Minio, cyverse_basepath: str, bucket: str, minio_basepath: str,
@@ -793,6 +839,7 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
     # Upload each of the images and update CSV data
     for one_image in images:
         img_track = ImageTrack(cyverse_coll_basepath, dest_bucket, dest_uploads_base, one_image)
+        fix_image_camtrap(camtrap, one_image)
         upload_update_image(minio, cyverse_coll_basepath, dest_bucket, dest_uploads_base, one_image,
                             camtrap, img_track)
         img_track.complete(msg="Done")

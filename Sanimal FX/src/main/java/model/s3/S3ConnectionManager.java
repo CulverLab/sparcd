@@ -1187,13 +1187,13 @@ public class S3ConnectionManager
 	 */
 	public void retrieveAndInsertUploadList(ImageCollection collection, DoubleProperty progressProperty)
 	{
+        // Grab the uploads folder for a given collection
+        String collectionBucket = collection.getBucket();
+        String collectionUploadDirStr = String.join("/", COLLECTIONS_FOLDER_NAME, collection.getID().toString(), UPLOADS_FOLDER_NAME);
 		try
 		{
 			// Clear the current collection uploads
 			Platform.runLater(() -> collection.getUploads().clear());
-			// Grab the uploads folder for a given collection
-			String collectionBucket = collection.getBucket();
-			String collectionUploadDirStr = String.join("/", COLLECTIONS_FOLDER_NAME, collection.getID().toString(), UPLOADS_FOLDER_NAME);
 			// If the uploads directory exists and we can read it, read
 			if (this.folderExists(collectionBucket, collectionUploadDirStr))
 			{
@@ -1242,7 +1242,7 @@ public class S3ConnectionManager
 					null,
 					"Error",
 					"Upload retrieval error",
-					"Could not download the list of uploads to the collection from S3!\n" + ExceptionUtils.getStackTrace(e),
+					"Could not download the list of uploads to the collection from S3 " + collectionUploadDirStr + "\n" + ExceptionUtils.getStackTrace(e),
 					false);
 		}
 	}
@@ -1461,7 +1461,10 @@ public class S3ConnectionManager
 							speciesIDToCount.put(Long.parseLong(fileDataField.getUnit()), Integer.parseInt(fileDataField.getValue()));
 							break;
 						case SanimalMetadataFields.A_COLLECTION_ID:
-							collectionID = UUID.fromString(fileDataField.getValue());
+                            String uuid = fileDataField.getValue();
+                            if (uuid.startsWith("sparcd-"))
+                                uuid = uuid.replace("sparcd-", "");
+                            collectionID = UUID.fromString(uuid);
 							break;
 						default:
 							break;
