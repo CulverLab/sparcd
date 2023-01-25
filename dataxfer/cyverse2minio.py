@@ -577,6 +577,43 @@ def update_camtrap(camtrap: dict, collection_id: str, minio_path: str, image_md:
     add_camtrap_observation(camtrap, collection_id, minio_path, image_data)
 
 
+def update_camtrap_unprocessed(camtrap: dict, collection_id: str, image_match_path: str,
+                               minio_path: str, unprocessed_csv: tuple) -> bool:
+    """Attempts to update the image's metadata from unprocessed CyVerse CSV files
+    Arguments:
+        camtrap - the CamTrap data
+        collection_id - the collection ID
+        image_match_path - the image path to match
+        minio_path - the path to the image on MinIO
+        unprocessed_csv - tuple containing found unprocessed image metadata
+    Return:
+        True is returned if the image's CamTrap data was updated, and False otherwise
+    """
+    found_line = None
+    for one_line in unprocessed_csv:
+        if one_line.find(image_match_path) >= 0:
+            found_line = one_line
+            break
+
+    # If not found, return
+    if not found_line:
+        return False
+
+    # Process the CSV file into a form we can work with
+    parts = found_line.split(',')
+    idx = 1
+    image_data = {}
+    while idx < len(parts):
+        image_data[parts[idx]] = parts[idx + 1]
+        idx += 3
+
+    add_camtrap_deployment(camtrap, collection_id, minio_path, image_data)
+    add_camtrap_media(camtrap, collection_id, minio_path, image_data)
+    add_camtrap_observation(camtrap, collection_id, minio_path, image_data)
+
+    return True
+
+
 def load_camtrap(folder: str) -> dict:
     """Loads camtrap data from local folder
     Arguments:
@@ -669,6 +706,36 @@ def fix_camtrap(camtrap: dict, cyverse_id: str, minio_id: str) -> dict:
     return camtrap
 
 
+def get_cyverse_meta_csv(cyverse_path: str, print_errs: bool = True) -> tuple:
+    """Downloads meta CSV files from CyVerse and loads the contents
+    Arguments:
+        cyverse_path - the folder to look for CSV files
+    Return:
+        A tuple of any loaded CSV files with one string per CSV file row (unprocessed)
+    """
+    loaded_csv = []
+
+    cmd = ['ils', cyverse_path]
+    res = subprocess.run(cmd, capture_output=True, check=False, text=True)
+    if res.returncode != 0:
+        if print_errs:
+            print(res, flush=True)
+        return tuple(loaded_csv)
+
+    for one_line in res.stdout.split("\n"):
+        one_line = one_line.rstrip().lstrip()
+        if one_line.startswith("meta-") and one_line.endswith(".csv"):
+            meta_filename = one_line.strip("\n")
+            meta_path = os.path.join(cyverse_path, meta_filename)
+            if get_cyverse_file(meta_path, print_errs):
+                with open(meta_filename, "r", encoding="utf-8") as infile:
+                    cur_csv = [line.rstrip() for line in infile]
+                    loaded_csv = loaded_csv + cur_csv
+                os.unlink(meta_filename)
+
+    return tuple(loaded_csv)
+
+
 def fix_image_camtrap(camtrap: dict, image_data: dict) -> bool:
     """Fixes issues with CamTrap image-based data
     Arguments:
@@ -712,7 +779,7 @@ def fix_image_camtrap(camtrap: dict, image_data: dict) -> bool:
 
 
 def upload_update_image(minio: Minio, cyverse_basepath: str, bucket: str, minio_basepath: str,
-                        image_data: dict, camtrap: dict, track: ImageTrack) -> bool:
+                        image_data: dict, camtrap: dict, unprocessed_csv: tuple, track: ImageTrack) -> bool:
     # pylint: disable=too-many-arguments
     """Upload the image to minio and update the camtrap data
     Arguments:
@@ -722,6 +789,7 @@ def upload_update_image(minio: Minio, cyverse_basepath: str, bucket: str, minio_
         minio_basepath - the base path to upload the images to
         image_data - dict containing the information on the image
         camtrap - the camtrap data to append the image to
+        unprocessed_csv - unprocessed metadata found on CyVerse
         track - used to track image upload progress
     """
     metadata_valid = "Metadata" in image_data and len(image_data["Metadata"]) > 0
@@ -738,6 +806,8 @@ def upload_update_image(minio: Minio, cyverse_basepath: str, bucket: str, minio_
         if metadata_valid:
             update_camtrap(camtrap, bucket, minio_path, image_data["Metadata"])
             track.add_progress("Already on MinIO - not uploading image")
+        elif update_camtrap_unprocessed(camtrap, bucket, relative_path, minio_path, unprocessed_csv):
+            track.add_progress("Updated image metadata from unprocessed CyVerse CSV")
         else:
             print("  ... Missing or invalid metadata - CamTrap data not updated", flush=True)
             track.add_progress("Error: Missing or invalid image metadata")
@@ -836,12 +906,15 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
     camtrap = load_camtrap(work_dir)
     camtrap = fix_camtrap(camtrap, cyverse_id, minio_id)
 
+    # Load any extra CSV files that may be around
+    unprocessed_csv = get_cyverse_meta_csv(cyverse_coll_basepath)
+
     # Upload each of the images and update CSV data
     for one_image in images:
         img_track = ImageTrack(cyverse_coll_basepath, dest_bucket, dest_uploads_base, one_image)
         fix_image_camtrap(camtrap, one_image)
         upload_update_image(minio, cyverse_coll_basepath, dest_bucket, dest_uploads_base, one_image,
-                            camtrap, img_track)
+                            camtrap, unprocessed_csv, img_track)
         img_track.complete(msg="Done")
 
     # Write the CamTrap data and upload the CSV files
