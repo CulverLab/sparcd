@@ -710,6 +710,7 @@ def get_cyverse_meta_csv(cyverse_path: str, print_errs: bool = True) -> tuple:
     """Downloads meta CSV files from CyVerse and loads the contents
     Arguments:
         cyverse_path - the folder to look for CSV files
+        print_errs - flag to indicate errors should be reported
     Return:
         A tuple of any loaded CSV files with one string per CSV file row (unprocessed)
     """
@@ -776,6 +777,110 @@ def fix_image_camtrap(camtrap: dict, image_data: dict) -> bool:
             return False
 
     return False
+
+
+def check_upload_tar_files(minio: Minio, cyverse_upload_path: str, upload_name: str, bucket: str,
+                           minio_basepath: str, camtrap: dict, work_dir: str, print_errs: bool = True) -> None:
+    """Checks CyVerse for matching upload TAR files and tries to resolve discrepancies
+    Arguments:
+        minio - the MinIO client instance to use
+        cyverse_upload_path - the path on CyVerse to the collection's Upload folder
+        bucket - the MinIO bucket to upload the images/data to
+        minio_basepath - the base path to upload the images/data to
+        camtrap - the camtrap data to append the image to
+        work_dir - the working folder
+        print_errs - flag to indicate errors should be reported
+    """
+    cmd = ['ils', cyverse_upload_path]
+    res = subprocess.run(cmd, capture_output=True, check=False, text=True)
+    if res.returncode != 0:
+        if print_errs:
+            print(res, flush=True)
+        return
+
+    # Get a temporary folder to work within
+    tar_dir = tempfile.mkdtemp(prefix="tar_", dir=work_dir)
+    cur_dir = os.getcwd()
+
+    # Define a cleanup function
+    def cleanup_files() -> None:
+        """Embedded function to clean up files
+        """
+        for one_file in os.listdir(tar_dir):
+            file_path = os.path.join(tar_dir, one_file)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as ex:
+                print('Failed to delete %s. Reason: %s' % (file_path, ex))
+
+    # Process TAR files (if there are any relevant ones)
+    os.chdir(tar_dir)
+    for one_line in res.stdout.split("\n"):
+        one_line = one_line.rstrip().lstrip()
+        print(f"HACK: CHECKING TAR NAME {one_line}", flush=True)
+        if one_line.startswith(upload_name + "-") and one_line.endswith(".tar"):
+            cyverse_tar_path = os.path.join(cyverse_upload_path, one_line)
+            print(f"HACK: GETTING TAR FROM {cyverse_tar_path}", flush=True)
+            if get_cyverse_file(cyverse_tar_path, print_errs):
+                print(f"HACK: LOCAL TAR FILE \"{one_line}\"", flush=True)
+                print("   cwd: " + os.getcwd(), flush=True)
+                for x in os.listdir(os.getcwd()):
+                    print(f"      {x}", flush=True)
+                cmd = ['tar', "-xf", f"{one_line}"]
+                print(cmd, flush=True)
+                res = subprocess.run(cmd, capture_output=True, check=False, text=True)
+                if res.returncode != 0:
+                    if print_errs:
+                        print(res, flush=True)
+                    cleanup_files()
+                    continue
+
+                # Loop through looking for CSV files and image folders
+                loaded_csv = []
+                upload_folder = None
+                for one_file in os.listdir(tar_dir):
+                    if one_file.startswith("meta-") and one_file.endswith(".csv"):
+                        csv_filename = os.path.join(tar_dir, one_file)
+                        with open(csv_filename, "r", encoding="utf-8") as infile:
+                            cur_csv = [line.rstrip() for line in infile]
+                            loaded_csv = loaded_csv + cur_csv
+                    elif os.path.isdir(one_file):
+                        upload_folder = one_file
+                if not loaded_csv:
+                    print(f"ERROR: NO CSV FILES IN TAR : {cyverse_tar_path}", flush=True)
+                    cleanup_files()
+                    continue
+                if not upload_folder:
+                    print(f"ERROR: NO IMAGE FOLDER IN TAR : {cyverse_tar_path}", flush=True)
+                    cleanup_files()
+                    continue
+
+                # Loop through the images and upload any missing (that have metadata)
+                images_dir = os.path.join(tar_dir, upload_folder)
+                for one_file in os.listdir(images_dir):
+                    image_file = os.path.join(images_dir, one_file)
+                    print(f"HACK: FOUND IMAGE FILE: {image_file}", flush=True)
+                    found_meta = None
+                    meta_check = os.path.join(upload_folder, one_file)
+                    for csv_line in loaded_csv:
+                        if csv_line.startswith(meta_check):
+                            found_meta = csv_line
+                            break
+                    if not found_meta:
+                        print(f"ERROR: NO METADATA {meta_check}", flush=True)
+                        continue
+                    print("     ... FOUND METADATA", flush=True)
+
+            cleanup_files()
+            exit(1)
+
+    os.chdir(cur_dir)
+    shutil.rmtree(tar_dir)
+
+    print("HACK: DONE", flush=True)
 
 
 def upload_update_image(minio: Minio, cyverse_basepath: str, bucket: str, minio_basepath: str,
@@ -916,6 +1021,10 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
         upload_update_image(minio, cyverse_coll_basepath, dest_bucket, dest_uploads_base, one_image,
                             camtrap, unprocessed_csv, img_track)
         img_track.complete(msg="Done")
+
+    # Check for .tar files associated with this upload and perform any updates needed
+    check_upload_tar_files(minio, os.path.join(cyverse_basepath, "Uploads"), coll_subpath,
+                           dest_bucket, dest_uploads_base, camtrap, work_dir)
 
     # Write the CamTrap data and upload the CSV files
     if camtrap["modified"]:
