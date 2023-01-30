@@ -780,13 +780,15 @@ def fix_image_camtrap(camtrap: dict, image_data: dict) -> bool:
 
 
 def check_upload_tar_files(minio: Minio, cyverse_upload_path: str, upload_name: str, bucket: str,
-                           minio_basepath: str, camtrap: dict, work_dir: str, print_errs: bool = True) -> None:
+                           minio_basepath: str, collection_id: str, camtrap: dict,
+                           work_dir: str, print_errs: bool = True) -> None:
     """Checks CyVerse for matching upload TAR files and tries to resolve discrepancies
     Arguments:
         minio - the MinIO client instance to use
         cyverse_upload_path - the path on CyVerse to the collection's Upload folder
         bucket - the MinIO bucket to upload the images/data to
         minio_basepath - the base path to upload the images/data to
+        collection_id - the ID of the collection
         camtrap - the camtrap data to append the image to
         work_dir - the working folder
         print_errs - flag to indicate errors should be reported
@@ -874,8 +876,37 @@ def check_upload_tar_files(minio: Minio, cyverse_upload_path: str, upload_name: 
                         continue
                     print("     ... FOUND METADATA", flush=True)
 
+                    parts = found_meta.split(',')
+                    idx = 1
+                    image_data = {}
+                    while idx < len(parts):
+                        image_data[parts[idx]] = parts[idx + 1]
+                        idx += 3
+
+                    # Check if the image is already on MinIO, continue if it is
+                    minio_path = os.path.join(minio_basepath, upload_folder, one_file)
+                    print(f"    MINIO PATH: {minio_path}", flush=True)
+                    if exists_minio(minio, bucket, minio_path):
+                        print("     ... already exists on minio", flush=True)
+                        # Check if the metadata can be found for the image and add it if not
+                        if not image_found_camtrap(minio_path, camtrap):
+                            print("     METADATA NOT FOUND - ADDING NOW", flush=True)
+                            add_camtrap_deployment(camtrap, collection_id, minio_path, image_data)
+                            add_camtrap_media(camtrap, collection_id, minio_path, image_data)
+                            add_camtrap_observation(camtrap, collection_id, minio_path, image_data)
+                        continue
+
+                    # Upload the image and update CamTrap data
+                    print("       NEED TO UPLOAD AND UPDATE", flush=True)
+
+                    minio.fput_object(bucket, minio_path, image_file, content_type="image/jpeg")
+
+                    add_camtrap_deployment(camtrap, collection_id, minio_path, image_data)
+                    add_camtrap_media(camtrap, collection_id, minio_path, image_data)
+                    add_camtrap_observation(camtrap, collection_id, minio_path, image_data)
+
             cleanup_files()
-            exit(1)
+            #exit(1)
 
     os.chdir(cur_dir)
     shutil.rmtree(tar_dir)
@@ -1024,7 +1055,7 @@ def move_images(minio: Minio, cyverse_basepath: str, coll_subpath: str, minio_id
 
     # Check for .tar files associated with this upload and perform any updates needed
     check_upload_tar_files(minio, os.path.join(cyverse_basepath, "Uploads"), coll_subpath,
-                           dest_bucket, dest_uploads_base, camtrap, work_dir)
+                           dest_bucket, dest_uploads_base, minio_id, camtrap, work_dir)
 
     # Write the CamTrap data and upload the CSV files
     if camtrap["modified"]:
