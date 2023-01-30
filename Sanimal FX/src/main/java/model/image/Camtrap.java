@@ -141,7 +141,7 @@ public final class Camtrap
      * Populates the Deployments from the string passed in. Each CSV line is separated by a new line
      * 
      * @param csvData a string containing the data to load
-     * @throws IOException if a problem ocurrs while accessing a file
+     * @throws IOException if a problem occurs while accessing a file
      * @throws CsvValidationException if there's a problem with the CSV file
      */
     public final void setDeployments(String csvData) throws IOException, CsvValidationException
@@ -163,7 +163,7 @@ public final class Camtrap
      * Populates the Media from the string passed in. Each CSV line is separated by a new line
      * 
      * @param csvData a string containing the data to load
-     * @throws IOException if a problem ocurrs while accessing a file
+     * @throws IOException if a problem occurs while accessing a file
      * @throws CsvValidationException if there's a problem with the CSV file
      */
     public final void setMedia(String csvData) throws IOException, CsvValidationException
@@ -185,7 +185,7 @@ public final class Camtrap
      * Populates the Observations from the string passed in. Each CSV line is separated by a new line
      * 
      * @param csvData a string containing the data to load
-     * @throws IOException if a problem ocurrs while accessing a file
+     * @throws IOException if a problem occurs while accessing a file
      * @throws CsvValidationException if there's a problem with the CSV file
      */
     public final void setObservations(String csvData) throws IOException, CsvValidationException
@@ -207,7 +207,7 @@ public final class Camtrap
      * Writes Camtrap data to the specified folder, overwriting any existing Camtrap files
      * 
      * @param saveFolder path to the folder to save data to
-     * @throws IOException if a problem ocurrs while accessing a file
+     * @throws IOException if a problem occurs while accessing a file
      */
     public final void saveTo(String savePath) throws IOException
     {
