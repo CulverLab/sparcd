@@ -6,7 +6,7 @@ import java.io.FileWriter;
 import java.io.StringReader;
 import java.security.InvalidParameterException;
 import java.util.List;
-import java.util.Vector;
+import java.util.ArrayList;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import com.opencsv.CSVReader;
@@ -68,7 +68,7 @@ public final class Camtrap
             CSVReader reader = new CSVReader(new FileReader(inFile));
             String[] nextLine;
 
-            deployments = new Vector<Deployments>();
+            deployments = new ArrayList<Deployments>(Math.toIntExact(reader.getLinesRead()));
             while ((nextLine = reader.readNext()) != null)
             {
                 deployments.add(Deployments.instance(nextLine));
@@ -87,7 +87,7 @@ public final class Camtrap
             CSVReader reader = new CSVReader(new FileReader(inFile));
             String[] nextLine;
 
-            media = new Vector<Media>();
+            media = new ArrayList<Media>(Math.toIntExact(reader.getLinesRead()));
             while ((nextLine = reader.readNext()) != null)
             {
                 media.add(Media.instance(nextLine));
@@ -106,7 +106,7 @@ public final class Camtrap
             CSVReader reader = new CSVReader(new FileReader(inFile));
             String[] nextLine;
 
-            observations = new Vector<Observations>();
+            observations = new ArrayList<Observations>(Math.toIntExact(reader.getLinesRead()));
             while ((nextLine = reader.readNext()) != null)
             {
                 observations.add(Observations.instance(nextLine));
@@ -132,9 +132,9 @@ public final class Camtrap
     public Camtrap()
     {
         collectionID = "";
-        deployments = new Vector<Deployments>();
-        media = new Vector<Media>();
-        observations = new Vector<Observations>();
+        deployments = new ArrayList<Deployments>();
+        media = new ArrayList<Media>();
+        observations = new ArrayList<Observations>();
     }
 
     /**
@@ -146,11 +146,10 @@ public final class Camtrap
      */
     public final void setDeployments(String csvData) throws IOException, CsvValidationException
     {
-        List<Deployments> deployments = new Vector<Deployments>();
-
         CSVReader reader = new CSVReader(new StringReader(csvData));
         String[] nextLine;
 
+        List<Deployments> deployments = new ArrayList<Deployments>(Math.toIntExact(reader.getLinesRead()));
         while ((nextLine = reader.readNext()) != null)
         {
             deployments.add(Deployments.instance(nextLine));
@@ -168,11 +167,10 @@ public final class Camtrap
      */
     public final void setMedia(String csvData) throws IOException, CsvValidationException
     {
-        List<Media> media = new Vector<Media>();
-
         CSVReader reader = new CSVReader(new StringReader(csvData));
         String[] nextLine;
 
+        List<Media> media = new ArrayList<Media>(Math.toIntExact(reader.getLinesRead()));
         while ((nextLine = reader.readNext()) != null)
         {
             media.add(Media.instance(nextLine));
@@ -190,11 +188,10 @@ public final class Camtrap
      */
     public final void setObservations(String csvData) throws IOException, CsvValidationException
     {
-        List<Observations> observations = new Vector<Observations>();
-
         CSVReader reader = new CSVReader(new StringReader(csvData));
         String[] nextLine;
 
+        List<Observations> observations = new ArrayList<Observations>(Math.toIntExact(reader.getLinesRead()));
         while ((nextLine = reader.readNext()) != null)
         {
             observations.add(Observations.instance(nextLine));

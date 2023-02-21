@@ -9,6 +9,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,6 +74,21 @@ public class S3Query
 	public void addImageCollection(ImageCollection imageCollection)
 	{
 		this.collectionQuery.add(imageCollection);
+	}
+
+	/**
+	 * Returns the list of configured image collections to search in
+	 */
+	public List<String> getCollectionIDs()
+	{
+	    List<String> returnIDs = new ArrayList<String>();
+
+        for (ImageCollection oneCol: this.collectionQuery)
+        {
+            returnIDs.add(oneCol.getName());
+        }
+
+	    return returnIDs;
 	}
 
 	/**
