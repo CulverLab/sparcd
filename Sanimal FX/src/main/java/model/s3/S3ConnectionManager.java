@@ -70,6 +70,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.security.InvalidParameterException;
@@ -1328,6 +1329,7 @@ public class S3ConnectionManager
 		try
 		{
     		List<String> collFilterIDs = queryBuilder.getCollectionIDs();
+    		List<CompletableFuture<Void>> allFutures = new ArrayList<CompletableFuture<Void>>();
     		long collFilterIDLen = collFilterIDs.size();
 			for (ImageCollection oneCollection: collections)
 			{
@@ -1336,11 +1338,22 @@ public class S3ConnectionManager
                     boolean loadColl = (collFilterIDLen == 0) || collFilterIDs.contains(oneCollection.getName());
                     if (loadColl)
                     {
-                        DoubleProperty progress = new SimpleDoubleProperty(0.0);
-                        this.retrieveAndInsertUploadList(oneCollection, progress);
-                        oneCollection.setUploadsWereSynced(true);
+                        CompletableFuture<Void> getFuture = CompletableFuture.supplyAsync(() -> {
+                            DoubleProperty progress = new SimpleDoubleProperty(0.0);
+                            this.retrieveAndInsertUploadList(oneCollection, progress);
+                            oneCollection.setUploadsWereSynced(true);
+                            return null;
+                        }
+                        );
+                        allFutures.add(getFuture);
                     }
 	            }
+			}
+
+			if (allFutures.size() > 0)
+			{
+			    CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(allFutures.toArray(new CompletableFuture[allFutures.size()]));
+			    combinedFuture.get();
 			}
 
 			S3QueryResultSet resultSet = S3QueryExecute.executeQuery(queryBuilder.build(), collections);
