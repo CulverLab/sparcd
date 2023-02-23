@@ -70,6 +70,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.security.InvalidParameterException;
@@ -1214,6 +1215,7 @@ public class S3ConnectionManager
 							if (uploadEntry != null)
 							{
 								uploadEntry.initFromJSON();
+
 								// Get the Camtrap data
 								uploadEntry.setMetadata(this.readRemoteCamtrap(collectionBucket, folder));
 
@@ -1326,14 +1328,32 @@ public class S3ConnectionManager
 	{
 		try
 		{
+    		List<String> collFilterIDs = queryBuilder.getCollectionIDs();
+    		List<CompletableFuture<Void>> allFutures = new ArrayList<CompletableFuture<Void>>();
+    		long collFilterIDLen = collFilterIDs.size();
 			for (ImageCollection oneCollection: collections)
 			{
 	            if (!oneCollection.uploadsWereSynced())
 	            {
-	                DoubleProperty progress = new SimpleDoubleProperty(0.0);
-	                this.retrieveAndInsertUploadList(oneCollection, progress);
-					oneCollection.setUploadsWereSynced(true);
+                    boolean loadColl = (collFilterIDLen == 0) || collFilterIDs.contains(oneCollection.getName());
+                    if (loadColl)
+                    {
+                        CompletableFuture<Void> getFuture = CompletableFuture.supplyAsync(() -> {
+                            DoubleProperty progress = new SimpleDoubleProperty(0.0);
+                            this.retrieveAndInsertUploadList(oneCollection, progress);
+                            oneCollection.setUploadsWereSynced(true);
+                            return null;
+                        }
+                        );
+                        allFutures.add(getFuture);
+                    }
 	            }
+			}
+
+			if (allFutures.size() > 0)
+			{
+			    CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(allFutures.toArray(new CompletableFuture[allFutures.size()]));
+			    combinedFuture.get();
 			}
 
 			S3QueryResultSet resultSet = S3QueryExecute.executeQuery(queryBuilder.build(), collections);
@@ -1744,10 +1764,23 @@ public class S3ConnectionManager
 	 */
 	private String readRemoteFile(String bucket, String objectName)
 	{
+	    return this.readRemoteFile(bucket, objectName, true);
+	}
+
+	/**
+	 * Reads a file from S3 assuming a user is already logged in
+	 *
+	 * @param bucket The bucket to load the object from
+	 * @param objectName The name of the Object to read
+	 * @param checkExists Flag for performing an existence check before getting th object
+	 * @return The contents of the file on S3's system as a string
+	 */
+	private String readRemoteFile(String bucket, String objectName, boolean checkExists)
+	{
 		try
 		{
 			// Ensure it exists
-			if (this.objectExists(bucket, objectName))
+			if (!checkExists || (checkExists && this.objectExists(bucket, objectName)))
 			{
 	            return s3Client.getObjectAsString(bucket, objectName);
 			}
@@ -1791,15 +1824,15 @@ public class S3ConnectionManager
 		Camtrap metadata = new Camtrap();
 
 		String remotePath = String.join("/", prefix, Camtrap.CAMTRAP_DEPLOYMENTS_FILE);
-		String csvData = this.readRemoteFile(bucket, remotePath);
+		String csvData = this.readRemoteFile(bucket, remotePath, false);
 		metadata.setDeployments(csvData);
 
 		remotePath = String.join("/", prefix, Camtrap.CAMTRAP_MEDIA_FILE);
-		csvData = this.readRemoteFile(bucket, remotePath);
+		csvData = this.readRemoteFile(bucket, remotePath, false);
 		metadata.setMedia(csvData);
 
 		remotePath = String.join("/", prefix, Camtrap.CAMTRAP_OBSERVATIONS_FILE);
-		csvData = this.readRemoteFile(bucket, remotePath);
+		csvData = this.readRemoteFile(bucket, remotePath, false);
 		metadata.setObservations(csvData);
 
 		return metadata;

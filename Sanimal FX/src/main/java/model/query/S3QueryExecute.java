@@ -12,6 +12,8 @@ import model.SanimalData;
 import org.apache.commons.io.FilenameUtils;
 import java.util.function.BiFunction;
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.List;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -32,7 +34,7 @@ public class S3QueryExecute
      * @param collections the list of collections to check
      * @return the result set of found images
      */
-    public static S3QueryResultSet executeQuery(S3QueryBuilder queryBuilder, final List<ImageCollection> collections)
+    public static S3QueryResultSet executeQuery(S3QueryBuilder queryBuilder, final List<ImageCollection> collections) throws  InterruptedException, ExecutionException
     {
         S3QueryResultSet resultSet = new S3QueryResultSet();
         List<S3QueryBuilderCondition> conditions = queryBuilder.getConditions();
@@ -45,7 +47,15 @@ public class S3QueryExecute
             return null;
         }
 
+        // Define class to hold search results
+        class InternalResults
+        {
+            public String bucket;
+            public List<String> matches;
+        }
+
         // Iterate through the collections and look at the metadata
+        List<CompletableFuture<List<InternalResults>>> allFutures = new ArrayList<CompletableFuture<List<InternalResults>>>();
         for (ImageCollection oneCollection: collections)
         {
             if (!oneCollection.uploadsWereSynced())
@@ -53,14 +63,42 @@ public class S3QueryExecute
                 System.out.println("executeQuery(): non-synched collection '" + oneCollection.getName() + "'");
             }
 
-            List<CloudUploadEntry> uploads = oneCollection.getUploads();
-            for (CloudUploadEntry oneEntry: uploads)
-            {
-                Camtrap metaData = oneEntry.getMetadata().getValue();
-                List<String> matches = S3QueryExecute.queryMatches(conditions, metaData, isCaseInsensitive);
-                if ((matches != null) && (matches.size() > 0))
+            CompletableFuture<List<InternalResults>> queryFuture = CompletableFuture.supplyAsync(() -> {
+                List<InternalResults> allMatches = new ArrayList<InternalResults>();
+                List<CloudUploadEntry> uploads = oneCollection.getUploads();
+                for (CloudUploadEntry oneEntry: uploads)
                 {
-                    S3QueryExecute.addMatchesToResults(resultSet, oneEntry.getBucket(), matches, isDistinct);
+                    Camtrap metaData = oneEntry.getMetadata().getValue();
+                    List<String> matches = S3QueryExecute.queryMatches(conditions, metaData, isCaseInsensitive);
+                    if ((matches != null) && (matches.size() > 0))
+                    {
+                        InternalResults res = new InternalResults();
+                        res.bucket = oneEntry.getBucket();
+                        res.matches = matches;
+                        allMatches.add(res);
+                    }
+                }
+
+                return allMatches;
+            }
+            );
+
+            allFutures.add(queryFuture);
+        }
+
+        if (allFutures.size() > 0)
+        {
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(allFutures.toArray(new CompletableFuture[allFutures.size()]));
+            combinedFuture.get();
+
+            for (CompletableFuture<List<InternalResults>> oneFuture: allFutures)
+            {
+                for (InternalResults allMatches: oneFuture.get())
+                {
+                    if ((allMatches.matches != null) && (allMatches.matches.size() > 0))
+                    {
+                        S3QueryExecute.addMatchesToResults(resultSet, allMatches.bucket, allMatches.matches, isDistinct);
+                    }
                 }
             }
         }
