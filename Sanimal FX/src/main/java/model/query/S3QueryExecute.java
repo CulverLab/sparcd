@@ -58,11 +58,6 @@ public class S3QueryExecute
         List<CompletableFuture<List<InternalResults>>> allFutures = new ArrayList<CompletableFuture<List<InternalResults>>>();
         for (ImageCollection oneCollection: collections)
         {
-            if (!oneCollection.uploadsWereSynced())
-            {
-                System.out.println("executeQuery(): non-synched collection '" + oneCollection.getName() + "'");
-            }
-
             CompletableFuture<List<InternalResults>> queryFuture = CompletableFuture.supplyAsync(() -> {
                 List<InternalResults> allMatches = new ArrayList<InternalResults>();
                 List<CloudUploadEntry> uploads = oneCollection.getUploads();
