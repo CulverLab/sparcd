@@ -71,6 +71,8 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.locks.*;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.security.InvalidParameterException;
@@ -131,6 +133,8 @@ public class S3ConnectionManager
 	// Retry waiting variables
 	private int retryWaitIndex = 0;
 	private int[] retryWaitSeconds = {5, 30, 70, 180, 300};
+	private int maxFutureMetaFetch = 500;
+	private int maxMetaSemaphores = 10;
 
 	/**
 	 * Given a URL, username and password, this method logs a S3 user in
@@ -1406,132 +1410,206 @@ public class S3ConnectionManager
 		List<Location> uniqueLocations = new LinkedList<>();
 		List<Species> uniqueSpecies = new LinkedList<>();
 
+        // Coordination mechanism for changeable variables
+        Semaphore semLocations = new Semaphore(maxMetaSemaphores, true);
+        Semaphore semSpecies = new Semaphore(maxMetaSemaphores, true);
+        Lock lockLocations = new ReentrantLock();
+        Lock lockSpecies = new ReentrantLock();
+
+        List<CompletableFuture<List<ImageEntry>>> allFutures = new ArrayList<CompletableFuture<List<ImageEntry>>>();
+
 		try
 		{
-			// We will fill in these various fields from the image metadata
-			LocalDateTime localDateTime;
-			String locationName;
-			String locationID;
-			Double locationLatitude;
-			Double locationLongitude;
-			Double locationElevation;
+            int numPaths = absoluteRemotePaths.size();
+            int curPathIdx = 0;
+            while (curPathIdx < numPaths)
+            {
+                final int myStartIdx = curPathIdx;
+                final int endPathIdx = curPathIdx + maxFutureMetaFetch <= numPaths ? curPathIdx + maxFutureMetaFetch : numPaths;
+                CompletableFuture<List<ImageEntry>> fetchFuture = CompletableFuture.supplyAsync(() -> {
+                    List<ImageEntry> curReturns = new ArrayList<>();
+                    try
+                    {
+                        // We will fill in these various fields from the image metadata
+                        LocalDateTime localDateTime;
+                        String locationName;
+                        String locationID;
+                        Double locationLatitude;
+                        Double locationLongitude;
+                        Double locationElevation;
 
-			// Map species IDs to metadata entries
-			Map<Long, String> speciesIDToCommonName = new HashMap<>();
-			Map<Long, String> speciesIDToScientificName = new HashMap<>();
-			Map<Long, Integer> speciesIDToCount = new HashMap<>();
-			UUID collectionID = null;
+                        // Map species IDs to metadata entries
+                        Map<Long, String> speciesIDToCommonName = new HashMap<>();
+                        Map<Long, String> speciesIDToScientificName = new HashMap<>();
+                        Map<Long, Integer> speciesIDToCount = new HashMap<>();
+                        UUID collectionID = null;
 
-			for (String remoteAbsolutePath : absoluteRemotePaths)
-			{
-				localDateTime = LocalDateTime.now();
-				locationName = "";
-				locationID = "";
-				locationLatitude = 0D;
-				locationLongitude = 0D;
-				locationElevation = 0D;
-				speciesIDToCommonName.clear();
-				speciesIDToScientificName.clear();
-				speciesIDToCount.clear();
+                        for (int curIdx = myStartIdx; curIdx < endPathIdx; curIdx++)
+                        {
+                            String remoteAbsolutePath = absoluteRemotePaths.get(curIdx);
+                            localDateTime = LocalDateTime.now();
+                            locationName = "";
+                            locationID = "";
+                            locationLatitude = 0D;
+                            locationLongitude = 0D;
+                            locationElevation = 0D;
+                            speciesIDToCommonName.clear();
+                            speciesIDToScientificName.clear();
+                            speciesIDToCount.clear();
 
-				// Find the bucket of the entry
-				String bucketSeparator = "::";
-				String bucket = null;
-				String remotePath = remoteAbsolutePath;
-				int bucketEnd = remoteAbsolutePath.indexOf(bucketSeparator);
-				if (bucketEnd >= 0)
-				{
-					bucket = remoteAbsolutePath.substring(0, bucketEnd);
-					remotePath = remoteAbsolutePath.substring(bucketEnd + bucketSeparator.length());
-				}
+                            // Find the bucket of the entry
+                            String bucketSeparator = "::";
+                            String bucket = null;
+                            String remotePath = remoteAbsolutePath;
+                            int bucketEnd = remoteAbsolutePath.indexOf(bucketSeparator);
+                            if (bucketEnd >= 0)
+                            {
+                                bucket = remoteAbsolutePath.substring(0, bucketEnd);
+                                remotePath = remoteAbsolutePath.substring(bucketEnd + bucketSeparator.length());
+                            }
 
-				// Perform a second query that returns ALL metadata from a given image
-				ImageCollection collection = this.findCollectionByPath(bucket, remotePath, collections);
-				for (S3MetaDataAndDomainData fileDataField : this.getMetadataValuesForDataObject(bucket, remotePath, collection))
-				{
-					// Test what type of attribute we got, if it's important store the result for later
-					switch (fileDataField.getAttribute())
-					{
-						case SanimalMetadataFields.A_DATE_TIME_TAKEN:
-							Long timeTaken = Long.parseLong(fileDataField.getValue());
-							localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timeTaken), ZoneId.systemDefault());
-							break;
-						case SanimalMetadataFields.A_LOCATION_NAME:
-							locationName = fileDataField.getValue();
-							break;
-						case SanimalMetadataFields.A_LOCATION_ID:
-							locationID = fileDataField.getValue();
-							break;
-						case SanimalMetadataFields.A_LOCATION_LATITUDE:
-							locationLatitude = Double.parseDouble(fileDataField.getValue());
-							break;
-						case SanimalMetadataFields.A_LOCATION_LONGITUDE:
-							locationLongitude = Double.parseDouble(fileDataField.getValue());
-							break;
-						case SanimalMetadataFields.A_LOCATION_ELEVATION:
-							locationElevation = Double.parseDouble(fileDataField.getValue());
-							break;
-						case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
-							speciesIDToCommonName.put(Long.parseLong(fileDataField.getUnit()), fileDataField.getValue());
-							break;
-						case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
-							speciesIDToScientificName.put(Long.parseLong(fileDataField.getUnit()), fileDataField.getValue());
-							break;
-						case SanimalMetadataFields.A_SPECIES_COUNT:
-							speciesIDToCount.put(Long.parseLong(fileDataField.getUnit()), Integer.parseInt(fileDataField.getValue()));
-							break;
-						case SanimalMetadataFields.A_COLLECTION_ID:
-                            String uuid = fileDataField.getValue();
-                            if (uuid.startsWith("sparcd-"))
-                                uuid = uuid.replace("sparcd-", "");
-                            collectionID = UUID.fromString(uuid);
-							break;
-						default:
-							break;
-					}
-				}
+                            // Perform a second query that returns ALL metadata from a given image
+                            ImageCollection collection = this.findCollectionByPath(bucket, remotePath, collections);
+                            for (S3MetaDataAndDomainData fileDataField : this.getMetadataValuesForDataObject(bucket, remotePath, collection))
+                            {
+                                // Test what type of attribute we got, if it's important store the result for later
+                                switch (fileDataField.getAttribute())
+                                {
+                                    case SanimalMetadataFields.A_DATE_TIME_TAKEN:
+                                        Long timeTaken = Long.parseLong(fileDataField.getValue());
+                                        localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timeTaken), ZoneId.systemDefault());
+                                        break;
+                                    case SanimalMetadataFields.A_LOCATION_NAME:
+                                        locationName = fileDataField.getValue();
+                                        break;
+                                    case SanimalMetadataFields.A_LOCATION_ID:
+                                        locationID = fileDataField.getValue();
+                                        break;
+                                    case SanimalMetadataFields.A_LOCATION_LATITUDE:
+                                        locationLatitude = Double.parseDouble(fileDataField.getValue());
+                                        break;
+                                    case SanimalMetadataFields.A_LOCATION_LONGITUDE:
+                                        locationLongitude = Double.parseDouble(fileDataField.getValue());
+                                        break;
+                                    case SanimalMetadataFields.A_LOCATION_ELEVATION:
+                                        locationElevation = Double.parseDouble(fileDataField.getValue());
+                                        break;
+                                    case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
+                                        speciesIDToCommonName.put(Long.parseLong(fileDataField.getUnit()), fileDataField.getValue());
+                                        break;
+                                    case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
+                                        speciesIDToScientificName.put(Long.parseLong(fileDataField.getUnit()), fileDataField.getValue());
+                                        break;
+                                    case SanimalMetadataFields.A_SPECIES_COUNT:
+                                        speciesIDToCount.put(Long.parseLong(fileDataField.getUnit()), Integer.parseInt(fileDataField.getValue()));
+                                        break;
+                                    case SanimalMetadataFields.A_COLLECTION_ID:
+                                        String uuid = fileDataField.getValue();
+                                        if (uuid.startsWith("sparcd-"))
+                                            uuid = uuid.replace("sparcd-", "");
+                                        collectionID = UUID.fromString(uuid);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
 
-				// Compute a new location if we need to
-				String finalLocationID = locationID;
-				Boolean locationForImagePresent = uniqueLocations.stream().anyMatch(location -> location.getId().equals(finalLocationID));
-				// Do we have the location?
-				if (!locationForImagePresent)
-					uniqueLocations.add(new Location(locationName, locationID, locationLatitude, locationLongitude, locationElevation));
-				// Compute a new species (s) if we need to
-				for (Long key : speciesIDToScientificName.keySet())
-				{
-					// Grab the scientific name of the species
-					String speciesScientificName = speciesIDToScientificName.get(key);
-					// Grab the common name of the species
-					String speciesName = speciesIDToCommonName.get(key);
-					// Test if the species is present, if not add it
-					Boolean speciesForImagePresent = uniqueSpecies.stream().anyMatch(species -> species.getScientificName().equalsIgnoreCase(speciesScientificName));
-					if (!speciesForImagePresent)
-						uniqueSpecies.add(new Species(speciesName, speciesScientificName, Species.DEFAULT_ICON));
-				}
+                            // Compute a new location if we need to
+                            String finalLocationID = locationID;
+                            semLocations.acquire();
+                            Boolean locationForImagePresent = uniqueLocations.stream().anyMatch(location -> location.getId().equals(finalLocationID));
+                            semLocations.release();
+                            // Do we have the location?
+                            if (!locationForImagePresent)
+                            {
+                                try
+                                {
+                                    lockLocations.lock();
+                                    semLocations.acquireUninterruptibly(maxMetaSemaphores);
+                                    uniqueLocations.add(new Location(locationName, locationID, locationLatitude, locationLongitude, locationElevation));
+                                    semLocations.release(maxMetaSemaphores);
+                                }
+                                finally
+                                {
+                                    lockLocations.unlock();
+                                }
+                            }
+                            // Compute a new species (s) if we need to
+                            for (Long key : speciesIDToScientificName.keySet())
+                            {
+                                // Grab the scientific name of the species
+                                String speciesScientificName = speciesIDToScientificName.get(key);
+                                // Test if the species is present, if not add it
+                                semSpecies.acquire();
+                                Boolean speciesForImagePresent = uniqueSpecies.stream().anyMatch(species -> species.getScientificName().equalsIgnoreCase(speciesScientificName));
+                                semSpecies.release();
+                                if (!speciesForImagePresent)
+                                {
+                                    try
+                                    {
+                                        // Save the common name of the species
+                                        lockSpecies.lock();
+                                        semSpecies.acquireUninterruptibly(maxMetaSemaphores);
+                                        uniqueSpecies.add(new Species(speciesIDToCommonName.get(key),
+                                                            speciesScientificName,Species.DEFAULT_ICON));
+                                        semSpecies.release(maxMetaSemaphores);
+                                    }
+                                    finally
+                                    {
+                                        lockSpecies.unlock();
+                                    }
+                                }
+                            }
 
-				// Grab the correct location for the image entry
-				Location correctLocation = uniqueLocations.stream().filter(location -> location.getId().equals(finalLocationID)).findFirst().get();
-				// Create the image entry
-				ImageEntry entry = new ImageEntry(new File(bucket + bucketSeparator + remotePath));
-				// Set the location and date taken
-				entry.setLocationTaken(correctLocation);
-				entry.setDateTaken(localDateTime);
-				// Add the species to the image entries
-				for (Long key : speciesIDToScientificName.keySet())
-				{
-					String speciesScientificName = speciesIDToScientificName.get(key);
-					Integer speciesCount = speciesIDToCount.get(key);
-					if (speciesCount == null) {
-					  continue;
-					}
-					
-					// Grab the species based on ID
-					Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(speciesScientificName)).findFirst().get();
-					entry.addSpecies(correctSpecies, speciesCount);
-				}
-				toReturn.add(entry);
-			}
+                            // Grab the correct location for the image entry
+                            semLocations.acquire();
+                            Location correctLocation = uniqueLocations.stream().filter(location -> location.getId().equals(finalLocationID)).findFirst().get();
+                            semLocations.release();
+                            // Create the image entry
+                            ImageEntry entry = new ImageEntry(new File(bucket + bucketSeparator + remotePath));
+                            // Set the location and date taken
+                            entry.setLocationTaken(correctLocation);
+                            entry.setDateTaken(localDateTime);
+                            // Add the species to the image entries
+                            for (Long key : speciesIDToScientificName.keySet())
+                            {
+                                String speciesScientificName = speciesIDToScientificName.get(key);
+                                Integer speciesCount = speciesIDToCount.get(key);
+                                if (speciesCount == null) {
+                                  continue;
+                                }
+
+                                // Grab the species based on ID
+                                semSpecies.acquire();
+                                Species correctSpecies = uniqueSpecies.stream().filter(species -> species.getScientificName().equals(speciesScientificName)).findFirst().get();
+                                semSpecies.release();
+                                entry.addSpecies(correctSpecies, speciesCount);
+                            }
+                            curReturns.add(entry);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        System.out.println("EXCEPtION:");
+                    }
+                    return curReturns;
+                });
+                allFutures.add(fetchFuture);
+                curPathIdx += maxFutureMetaFetch;
+            }
+
+            // Gather all the results
+            if (allFutures.size() > 0)
+            {
+                CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(allFutures.toArray(new CompletableFuture[allFutures.size()]));
+                combinedFuture.get();
+
+                // Merge all the returns
+                for (CompletableFuture<List<ImageEntry>> oneFuture: allFutures)
+                {
+                    toReturn.addAll(oneFuture.get());
+                }
+            }
 		}
 		catch (Exception e)
 		{
