@@ -43,19 +43,17 @@
                 <RowConstraints/>
                 <RowConstraints/>
             </rowConstraints>
-            <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="Co-Principal Investigators:"/>
-            <Label GridPane.columnIndex="1" GridPane.rowIndex="0" text="Dr. Melanie Culver and Nirav Merchant"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="Principal Investigators:"/>
+            <Label GridPane.columnIndex="1" GridPane.rowIndex="0" text="Dr. Melanie Culver"/>
             <Label GridPane.columnIndex="0" GridPane.rowIndex="1" text="Project Coordination/Design:"/>
             <Label GridPane.columnIndex="1" GridPane.rowIndex="1" text="Susan Malusa"/>
             <Label GridPane.columnIndex="0" GridPane.rowIndex="2" text="Lead Software Developer:"/>
             <Label GridPane.columnIndex="1" GridPane.rowIndex="2" text="David Slovikosky"/>
-            <Label GridPane.columnIndex="0" GridPane.rowIndex="3" text="Lead Software Developer:"/>
-            <Label GridPane.columnIndex="1" GridPane.rowIndex="3" text="David Slovikosky"/>
-            <Label GridPane.columnIndex="0" GridPane.rowIndex="4" text="Software Contributor: "/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="4" text="Software Contributor:"/>
             <Label GridPane.columnIndex="1" GridPane.rowIndex="4" text="Chris Schnaufer"/>
-            <Label GridPane.columnIndex="0" GridPane.rowIndex="5" text="Software Contributor: "/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="5" text="Software Contributor:"/>
             <Label GridPane.columnIndex="1" GridPane.rowIndex="5" text="Julian Pistorius"/>
-            <Label GridPane.columnIndex="0" GridPane.rowIndex="6" text="Adapted output analyses source code"/>
+            <Label GridPane.columnIndex="0" GridPane.rowIndex="6" text="Adapted output analyses source code:"/>
             <Label GridPane.columnIndex="1" GridPane.rowIndex="6" text="Dr. James Sanderson"/>
         </GridPane>
     </center>
