@@ -1,4 +1,4 @@
-# Scientific Photo Analysis for Research & Conservation 'database (SPARCd), known during development as Scientific Animal Image Analysis (SANIMAL)
+# Scientific Photo Analysis for Research & Conservation database (SPARCd), known during development as Scientific Animal Image Analysis (SANIMAL)
 
 SPARC'd is a program developed for the University of Arizona's Jaguar and Ocelot Monitoring Project at the Wild Cat Research and Conservation Center, School of Natural Resources and the Environment Department.
 * **It allows users to tag camera trap image data, transfer it onto a database, and then query it.*
