@@ -89,6 +89,7 @@ public class CloudImageEntry extends ImageEntry
 			}
 		}
 
+        System.out.println("CloudImageEntry    binding");
 		// Bind the image property to a conditional expression.
 		// The image is checked if the location is valid and the species present list is not empty
 		Binding<Image> imageBinding = Bindings.createObjectBinding(() ->
@@ -106,8 +107,11 @@ public class CloudImageEntry extends ImageEntry
 		}, this.locationTakenProperty(), this.getSpeciesPresent(), this.hasBeenPulledFromCloud);
 		this.selectedImageProperty.bind(imageBinding);
 
+        System.out.println("CloudImageEntry     placeholder");
 		this.getFileProperty().setValue(PLACEHOLDER_FILE);
+        System.out.println("CloudImageEntry     before set cloud file");
 		this.setCloudFile(cloudFile);
+        System.out.println("CloudImageEntry DONE");
 	}
 
 	/**

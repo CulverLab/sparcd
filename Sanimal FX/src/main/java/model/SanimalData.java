@@ -1,6 +1,6 @@
 package model;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -25,6 +25,7 @@ import model.util.*;
 import org.hildan.fxgson.FxGson;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
@@ -71,7 +72,7 @@ public class SanimalData
 	private SanimalExecutor sanimalExecutor = new SanimalExecutor();
 
 	// GSon object used to serialize data
-	private final Gson gson = FxGson.fullBuilder().setPrettyPrinting().serializeNulls().create();
+	private final Gson gson;
 
 	// The connection manager used to authenticate the cloud user
 	private S3ConnectionManager connectionManager = new S3ConnectionManager();
@@ -121,6 +122,14 @@ public class SanimalData
 
 		// When the settings change, we sync them
 		this.setupAutoSettingsSync();
+
+		this.gson = FxGson.fullBuilder()
+					.registerTypeAdapter(
+						LocalDateTime.class, 
+						new LocalDateTimeTypeAdapter())
+					.setPrettyPrinting()
+			        .serializeNulls()
+					.create();
 	}
 
 	/**

@@ -330,16 +330,22 @@ public class SanimalImportController implements Initializable
 		// Also bind the disable button's disable property if an adjustable image is selected
 		this.btnResetImage.disableProperty().bind(currentlySelectedImage.isNull());
 		// Finally bind the date taken's disable property if an adjustable image is selected
-		this.txtDateTaken.textProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::dateTakenProperty).map(localDateTime -> SanimalData.getInstance().getSettings().formatDateTime(localDateTime, " at ")).orElse(""));
-		// Bind the image preview to the selected image from the right side tree view
-		this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::getFileProperty).map(file -> new Image(file.toURI().toString(), SanimalData.getInstance().getSettings().getBackgroundImageLoading())));
+		if (currentlySelectedImage.isNull() == null)
+		{
+		    this.txtDateTaken.textProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::dateTakenProperty).map(localDateTime -> SanimalData.getInstance().getSettings().formatDateTime(localDateTime, " at ")).orElse(""));
+    		// Bind the image preview to the selected image from the right side tree view
+			this.imagePreview.imageProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::getFileProperty).map(file -> new Image(file.toURI().toString(), SanimalData.getInstance().getSettings().getBackgroundImageLoading())));
+    	}
 		this.imagePreview.imageProperty().addListener((observable, oldValue, newValue) -> this.resetImageView(null));
 		// Bind the species entry list view items to the selected image species present
-		this.speciesEntryListView.itemsProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getSpeciesPresent));
-		// Bind the species entry location name to the selected image's location
-		this.lblLocation.textProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::locationTakenProperty).map(Location::getName));
-		// Hide the location panel when no location is selected
-		this.hbxLocation.visibleProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::locationTakenProperty).map(location -> true).orElse(false));
+		if (currentlySelectedImage.isNull() == null)
+		{
+    		this.speciesEntryListView.itemsProperty().bind(EasyBind.monadic(currentlySelectedImage).map(ImageEntry::getSpeciesPresent));
+		    // Bind the species entry location name to the selected image's location
+		    this.lblLocation.textProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::locationTakenProperty).map(Location::getName));
+	    	// Hide the location panel when no location is selected
+    		this.hbxLocation.visibleProperty().bind(EasyBind.monadic(currentlySelectedImage).selectProperty(ImageEntry::locationTakenProperty).map(location -> true).orElse(false));
+    	}
 		// Hide the progress bar when no tasks remain
 		this.sbrTaskProgress.visibleProperty().bind(SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().taskRunningProperty());
 		// Bind the progress bar's text property to tasks remaining
