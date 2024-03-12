@@ -64,49 +64,49 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
-            <version>1.11.642</version>
+            <version>1.12.676</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>2.2.12</version>
+            <version>2.2.2</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.opencsv/opencsv -->
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
-            <version>5.1</version>
+            <version>5.9</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.openfx/javafx-controls -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>16</version>
+            <version>23-ea+3</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-fxml -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>16</version>
+            <version>23-ea+3</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics </artifactId>
-            <version>16</version>
+            <artifactId>javafx-graphics</artifactId>
+            <version>23-ea+3</version>
             <classifier>mac</classifier>
         </dependency>
         <!-- JFXtras to get a time picker -->
         <dependency>
             <groupId>org.jfxtras</groupId>
             <artifactId>jfxtras-controls</artifactId>
-            <version>11.0-r1-SNAPSHOT</version>
+            <version>17-r1</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-imaging -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-imaging</artifactId>
-            <version>1.0-alpha2</version>
+            <version>1.0-alpha3</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.fxmisc.easybind/easybind -->
         <dependency>
@@ -118,15 +118,15 @@
          <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
-            <version>12.0.0-SNAPSHOT</version>
+            <version>11.2.1</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/commons-validator/commons-validator -->
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>1.7</version>
+            <version>1.8.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang -->
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
@@ -160,7 +160,7 @@
         <dependency>
             <groupId>com.panemu</groupId>
             <artifactId>tiwulfx</artifactId>
-            <version>2.0</version>
+            <version>3.4.1</version>
         </dependency>
         <!-- https://github.com/DICE-UNC/jargon -->
         <dependency>
@@ -172,7 +172,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.21</version>
+            <version>1.26.1</version>
         </dependency>
         <!-- Allows for a map control -->
         <dependency>
@@ -184,7 +184,12 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.1</version>
+            <version>1.5.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>2.0.9</version>
         </dependency>
     </dependencies>
 
