@@ -163,11 +163,11 @@
             <version>3.4.1</version>
         </dependency>
         <!-- https://github.com/DICE-UNC/jargon -->
-        <dependency>
+        <!-- <dependency>
             <groupId>org.irods.jargon</groupId>
             <artifactId>jargon-core</artifactId>
             <version>4.3.1.0-RELEASE</version>
-        </dependency>
+        </dependency> -->
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
         <dependency>
             <groupId>org.apache.commons</groupId>
