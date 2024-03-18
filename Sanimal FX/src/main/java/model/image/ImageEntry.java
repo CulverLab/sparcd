@@ -514,8 +514,47 @@ public class ImageEntry extends ImageContainer
 				directory.add(SanimalMetadataFields.LOCATION_ENTRY, this.getLocationTaken().getName(), this.getLocationTaken().getElevation().toString(), this.getLocationTaken().getId());
 			}
 
-			// Write the metadata
-			MetadataUtils.writeOutputSet(outputSet, this);
+
+			Integer exceptionCount = 0;
+			Boolean writeDone = false;
+			Exception caughtException = null;
+
+			while (writeDone == false)
+			{
+				try
+				{
+					// Write the metadata
+					MetadataUtils.writeOutputSet(outputSet, this);
+					writeDone = true;
+				}
+				catch (IOException | ImageWriteException e)
+				{
+					exceptionCount++;
+					try
+					{
+						Thread.sleep(1000);
+					}
+					catch(InterruptedException ex)
+					{
+					}
+					
+					if (exceptionCount >= 3)
+					{
+						writeDone = true;
+						caughtException = e;
+					}
+				}
+			}
+			if (caughtException != null)
+			{
+				if (caughtException instanceof IOException)
+				{ 
+					throw (IOException)caughtException;
+				} else {
+					throw (ImageWriteException)caughtException;
+				}
+			}
+
 
 			this.markDiskDirty(false);
 		}

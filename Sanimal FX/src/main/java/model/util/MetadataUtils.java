@@ -73,10 +73,15 @@ public class MetadataUtils
 		// Then we create an output stream to that file
 		if (tempToWriteTo.exists())
 		{
+			boolean success = false;
 			try (OutputStream outputStream = new FileOutputStream(tempToWriteTo))
 			{
 				// And perform the write to the temporary file
 				new ExifRewriter().updateExifMetadataLossless(imageEntry.getFile(), outputStream, outputSet);
+				success = true;
+			}
+			if (success == true) 
+			{
 				// Then copy the temporary file over top of the current file to update it
 				FileUtils.forceDelete(imageEntry.getFile());
 				FileUtils.moveFile(tempToWriteTo, imageEntry.getFile());
