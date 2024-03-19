@@ -1590,7 +1590,8 @@ public class S3ConnectionManager
                     }
                     catch (Exception e)
                     {
-                        System.out.println("EXCEPtION:");
+                        System.out.println("EXCEPTION:");
+                        e.printStackTrace(System.out);
                     }
                     return curReturns;
                 });
@@ -2274,6 +2275,9 @@ public class S3ConnectionManager
 		Double locLon = null;
 		Double locHeight = null;
 		String deploymentID = null;
+		List<String> sciNames = new ArrayList<String>();
+		List<String> comNames = new ArrayList<String>();
+		List<Integer> speCount = new ArrayList<Integer>();
 
 		obs.mediaID = med.mediaID;
 		for (MetaData oneMeta: imageMetadata)
@@ -2315,13 +2319,34 @@ public class S3ConnectionManager
 					locHeight = Double.parseDouble(oneMeta.getValue());
 					break;
 				case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
-					obs.scientificName = oneMeta.getValue();
+					{
+						Integer idx =  Integer.parseInt(oneMeta.getUnit());
+						while (sciNames.size() < idx + 1)
+						{
+							sciNames.add(null);
+						}
+						sciNames.set(idx, oneMeta.getValue());
+					}
 					break;
 				case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
-					obs.comments = "[COMMONNAME:" + oneMeta.getValue() + "]";
+					{
+						Integer idx =  Integer.parseInt(oneMeta.getUnit());
+						while (comNames.size() < idx + 1)
+						{
+							comNames.add(null);
+						}
+						comNames.set(idx, "[COMMONNAME:" + oneMeta.getValue() + "]");
+					}
 					break;
 				case SanimalMetadataFields.A_SPECIES_COUNT:
-					obs.count = Integer.parseInt(oneMeta.getValue());
+					{
+						Integer idx =  Integer.parseInt(oneMeta.getUnit());
+						while (speCount.size() < idx + 1)
+						{
+							speCount.add(-1);
+						}
+						speCount.set(idx, Integer.parseInt(oneMeta.getValue()));
+					}
 					break;
 				case SanimalMetadataFields.A_COLLECTION_ID:
 					deploymentID = oneMeta.getValue();
@@ -2337,6 +2362,10 @@ public class S3ConnectionManager
 		if ((locLat == null) || (locLon == null))
 		{
 			throw new InvalidParameterException("Missing location lat-lon for Camtrap metadata");
+		}
+		if (sciNames.size() != comNames.size() || comNames.size() != speCount.size())
+		{
+			throw new InvalidParameterException("Unequal number of species scientific and common names, with counts");
 		}
 
 		// Look for a deployment that matches our LocationID
@@ -2370,7 +2399,17 @@ public class S3ConnectionManager
 
 		// Add new items to the Camtrap metadata store
 		metaCamtrap.media.add(med);
-		metaCamtrap.observations.add(obs);
+		for (Integer idx = 0; idx < sciNames.size(); idx++)
+		{
+			Observations curObs = new Observations();
+			curObs.deploymentID = obs.deploymentID;
+			curObs.mediaID = obs.mediaID;
+			curObs.timestamp = obs.timestamp;
+			curObs.scientificName = sciNames.get(idx);
+			curObs.comments = comNames.get(idx);
+			curObs.count = speCount.get(idx);
+			metaCamtrap.observations.add(curObs);
+		}
 		if (newDep == true)
 		{
 			metaCamtrap.deployments.add(ourDep);
@@ -2393,11 +2432,12 @@ public class S3ConnectionManager
 
 		// Either replace or add the data
 		Media oldMedia = null;
+		Media curMedia = null;
 		int index = 0;
 		while (index < metaCamtrap.media.size())
 		{
 			// Check for a media match
-			Media curMedia = metaCamtrap.media.get(index);
+			curMedia = metaCamtrap.media.get(index);
 			if (Objects.equals(curMedia.filePath, fileRelativePath))
 			{
 				oldMedia = curMedia;
@@ -2409,6 +2449,29 @@ public class S3ConnectionManager
 		if (index >= metaCamtrap.media.size())
 		{
 			metaCamtrap.media.add(newMeta.media.get(0));
+		}
+		else
+		{
+			// Update deployments (in our situation there's only one deployment)
+			metaCamtrap.deployments = newMeta.deployments;
+
+			// Update the media in case something has changed
+			metaCamtrap.media.set(index, curMedia);
+
+			// Update observations
+			List<Observations>   newObs = new ArrayList<Observations>();
+			for (Observations oneObs : metaCamtrap.observations)
+			{
+				if (!Objects.equals(oldMedia.mediaID, oneObs.mediaID))
+				{
+					newObs.add(oneObs);
+				}
+			}
+			for (Observations oneObs : newMeta.observations)
+			{
+				newObs.add(oneObs);
+			}
+			metaCamtrap.observations = newObs;
 		}
 	}
 

@@ -378,32 +378,36 @@ public class S3QueryExecute
                             break;
 
                         case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
-                            newMedia = S3QueryExecute.filterString(curValue.getOperator(),
+                            newMedia = S3QueryExecute.filterStringArray(curValue.getOperator(),
                                 S3QueryExecute.getStringValuesArray(curValue.getValue()),
                                 caseInsensitive, mediaList, metadata,
                                 (media, curMetadata) -> 
                                 {
+                                    List<String> found = new ArrayList<String>();
+
                                     for (Observations obs: curMetadata.observations)
                                     {
                                         if (obs.mediaID.equals(media.mediaID))
                                         {
-                                            return obs.scientificName;
+                                            found.add(obs.scientificName);
                                         }
                                     }
 
-                                    return null;
+                                    return found;
                                 }
                                 );
                             break;
 
                         case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
-                            newMedia = S3QueryExecute.filterString(curValue.getOperator(),
+                            newMedia = S3QueryExecute.filterStringArray(curValue.getOperator(),
                                 S3QueryExecute.getStringValuesArray(curValue.getValue()),
                                 caseInsensitive, mediaList, metadata,
                                 (media, curMetadata) -> 
                                 {
                                     final String commonNameTag = "[COMMONNAME:";
                                     final String commonNameEndTag = "]";
+
+                                    List<String> found = new ArrayList<String>();
 
                                     for (Observations obs: curMetadata.observations)
                                     {
@@ -415,32 +419,34 @@ public class S3QueryExecute
                                                 int endIndex = obs.comments.indexOf(commonNameEndTag);
                                                 if (endIndex > -1)
                                                 {
-                                                    return obs.comments.substring(commonNameTag.length(), endIndex);
+                                                    found.add(obs.comments.substring(commonNameTag.length(), endIndex));
                                                 }
                                             }
                                         }
                                     }
 
-                                    return null;
+                                    return found;
                                 }
                                 );
                             break;
 
                         case SanimalMetadataFields.A_SPECIES_COUNT:
-                            newMedia = S3QueryExecute.filterInteger(curValue.getOperator(), 
+                            newMedia = S3QueryExecute.filterIntegerArray(curValue.getOperator(), 
                                 S3QueryExecute.getIntegerValuesArray(curValue.getValue()), 
                                 mediaList, metadata,
                                 (media, curMetadata) -> 
                                 {
+                                    List<Integer> found = new ArrayList<Integer>();
+
                                     for (Observations obs: curMetadata.observations)
                                     {
                                         if (obs.mediaID.equals(media.mediaID))
                                         {
-                                            return obs.count;
+                                            found.add(obs.count);
                                         }
                                     }
 
-                                    return null;
+                                    return found;
                                 }
                                 );
                             break;
@@ -642,9 +648,6 @@ public class S3QueryExecute
         if ((values.size() <= 0) || (curMedia.size() <= 0))
             return matches;
 
-        // Get the first value to make some comparisons easier
-        String value = values.get(0);
-
         // Find all matching media
         for (Media med: curMedia)
         {
@@ -656,127 +659,196 @@ public class S3QueryExecute
                 continue;
             }
 
-            if ((operator == S3QueryConditionOperators.EQUAL) || (operator == S3QueryConditionOperators.NUMERIC_EQUAL))
-            {
-                if (caseInsensitive)
-                    if (value.equalsIgnoreCase(curValue))
-                        matches.add(med);
-                else
-                    if (value.equals(curValue))
-                        matches.add(med);
-            }
-            else if ((operator == S3QueryConditionOperators.IN) || (operator == S3QueryConditionOperators.NOT_IN))
-            {
-                boolean matched = false;
-                for (String oneValue: values)
-                {
-                    if (caseInsensitive)
-                    {
-                        if (oneValue.compareToIgnoreCase(curValue) == 0)
-                        {
-                            matched = true;
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        if (oneValue.compareTo(curValue) == 0)
-                        {
-                            matched = true;
-                            break;
-                        }
-                    }
-                }
+            matches.addAll(S3QueryExecute.commonStringMatch(operator, curValue, values, caseInsensitive, med));
 
-                if (matched && (operator == S3QueryConditionOperators.IN))
-                {
-                    matches.add(med);
-                }
-                else if (!matched && (operator == S3QueryConditionOperators.NOT_IN))
-                {
-                    matches.add(med);
-                }
-            }
-            else if ((operator == S3QueryConditionOperators.BETWEEN) || (operator == S3QueryConditionOperators.NOT_BETWEEN))
-            {
-                boolean matched = false;
-                if (values.size() >= 2)
-                {
-                    String first = values.get(0);
-                    String second = values.get(1);
+        }
 
-                    if (caseInsensitive)
-                        if ((first.compareToIgnoreCase(curValue) >= 0) && (second.compareToIgnoreCase(curValue) <= 0))
-                        {
-                            matched = true;
-                            break;
-                        }
-                    else
-                        if ((first.compareTo(curValue) >= 0) && (second.compareTo(curValue) <= 0))
-                        {
-                            matched = true;
-                            break;
-                        }
+        return matches;
+    }
 
-                    if (matched && (operator == S3QueryConditionOperators.BETWEEN))
+    /**
+     * Filters the media list on an array of string values
+     * 
+     * @param operator the comparison operator
+     * @param values the value(s) to compare against
+     * @param caseInsensitive indicator for case insensitive comparisons
+     * @param curMedia the list of media to search
+     * @param metadata the metadata associated with the collection
+     * @param getFilterValue function returning value to compare against
+     * @return a list of matching Media
+     */
+    private static List<Media> filterStringArray(final S3QueryConditionOperators operator, final List<String> values, final boolean caseInsensitive,
+                                                 final List<Media> curMedia, final Camtrap metadata, final BiFunction<Media, Camtrap, List<String>> getFilterValue)
+    {
+        List<Media> matches = new ArrayList<Media>();
+
+        // Check that there is something to work with
+        if ((values.size() <= 0) || (curMedia.size() <= 0))
+            return matches;
+
+        // Find all matching media
+        for (Media med: curMedia)
+        {
+            List<String> curValues = getFilterValue.apply(med, metadata);
+
+            // Skip missing values
+            if (curValues == null || curValues.size() < 1)
+            {
+                continue;
+            }
+
+            Integer oldMatchesSize = matches.size();
+            for (String oneString : curValues)
+            {
+                matches.addAll(S3QueryExecute.commonStringMatch(operator, oneString, values, caseInsensitive, med));
+
+                // If we have a match, go to the next media
+                if (oldMatchesSize < matches.size())
+                {
+                    break;
+                }
+            }
+        }
+
+        return matches;
+    }
+
+   /**
+     * Compares the checkValue string against possible values
+     * 
+     * @param operator the comparison operator
+     * @param checkValue the value to check (the needle)
+     * @param values the value(s) to compare against
+     * @param caseInsensitive indicator for case insensitive comparisons
+     * @param media the associated media
+     * @return a list of matching Media
+     */
+    private static List<Media> commonStringMatch(final S3QueryConditionOperators operator, final String checkValue, final List<String> values,
+                                                 final boolean caseInsensitive, Media media)
+    {
+        List<Media> matches = new ArrayList<Media>();
+
+        // Get the first value to make some comparisons easier
+        String value = values.get(0);
+
+        if ((operator == S3QueryConditionOperators.EQUAL) || (operator == S3QueryConditionOperators.NUMERIC_EQUAL))
+        {
+            if (caseInsensitive)
+                if (value.equalsIgnoreCase(checkValue))
+                    matches.add(media);
+            else
+                if (value.equals(checkValue))
+                    matches.add(media);
+        }
+        else if ((operator == S3QueryConditionOperators.IN) || (operator == S3QueryConditionOperators.NOT_IN))
+        {
+            boolean matched = false;
+            for (String oneValue: values)
+            {
+                if (caseInsensitive)
+                {
+                    if (oneValue.compareToIgnoreCase(checkValue) == 0)
                     {
-                        matches.add(med);
+                        matched = true;
+                        break;
                     }
-                    else if (!matched && (operator == S3QueryConditionOperators.NOT_BETWEEN))
+                }
+                else
+                {
+                    if (oneValue.compareTo(checkValue) == 0)
                     {
-                        matches.add(med);
+                        matched = true;
+                        break;
                     }
                 }
             }
-            else if (operator == S3QueryConditionOperators.NOT_EQUAL)
+
+            if (matched && (operator == S3QueryConditionOperators.IN))
             {
+                matches.add(media);
+            }
+            else if (!matched && (operator == S3QueryConditionOperators.NOT_IN))
+            {
+                matches.add(media);
+            }
+        }
+        else if ((operator == S3QueryConditionOperators.BETWEEN) || (operator == S3QueryConditionOperators.NOT_BETWEEN))
+        {
+            boolean matched = false;
+            if (values.size() >= 2)
+            {
+                String first = values.get(0);
+                String second = values.get(1);
+
                 if (caseInsensitive)
-                    if (!value.equalsIgnoreCase(curValue))
-                        matches.add(med);
+                    if ((first.compareToIgnoreCase(checkValue) >= 0) && (second.compareToIgnoreCase(checkValue) <= 0))
+                    {
+                        matched = true;
+                    }
                 else
-                    if (!value.equals(curValue))
-                            matches.add(med);
+                    if ((first.compareTo(checkValue) >= 0) && (second.compareTo(checkValue) <= 0))
+                    {
+                        matched = true;
+                    }
+
+                if (matched && (operator == S3QueryConditionOperators.BETWEEN))
+                {
+                    matches.add(media);
+                }
+                else if (!matched && (operator == S3QueryConditionOperators.NOT_BETWEEN))
+                {
+                    matches.add(media);
+                }
             }
-            else if ((operator == S3QueryConditionOperators.LESS_THAN) || (operator == S3QueryConditionOperators.NUMERIC_LESS_THAN))
-            {
-                if (caseInsensitive)
-                    if (value.compareToIgnoreCase(curValue) < 0)
-                        matches.add(med);
-                else
-                    if (value.compareTo(curValue) < 0)
-                        matches.add(med);
-            }
-            else if ((operator == S3QueryConditionOperators.GREATER_THAN) || (operator == S3QueryConditionOperators.NUMERIC_GREATER_THAN))
-            {
-                if (caseInsensitive)
-                    if (value.compareToIgnoreCase(curValue) > 0)
-                        matches.add(med);
-                else
-                    if (value.compareTo(curValue) > 0)
-                        matches.add(med);
-            }
-            else if ((operator == S3QueryConditionOperators.LESS_THAN_OR_EQUAL_TO) || (operator == S3QueryConditionOperators.NUMERIC_LESS_THAN_OR_EQUAL_TO))
-            {
-                if (caseInsensitive)
-                    if (value.compareToIgnoreCase(curValue) <= 0)
-                        matches.add(med);
-                else
-                    if (value.compareTo(curValue) <= 0)
-                        matches.add(med);
-            }
-            else if ((operator == S3QueryConditionOperators.GREATER_THAN_OR_EQUAL_TO) || (operator == S3QueryConditionOperators.NUMERIC_GREATER_THAN_OR_EQUAL_TO))
-            {
-                if (caseInsensitive)
-                    if (value.compareToIgnoreCase(curValue) >= 0)
-                        matches.add(med);
-                else
-                    if (value.compareTo(curValue) >= 0)
-                        matches.add(med);
-            }
-            else if (operator == S3QueryConditionOperators.TABLE)
-            {
-                /* noop */
-            }
+        }
+        else if (operator == S3QueryConditionOperators.NOT_EQUAL)
+        {
+            if (caseInsensitive)
+                if (!value.equalsIgnoreCase(checkValue))
+                    matches.add(media);
+            else
+                if (!value.equals(checkValue))
+                        matches.add(media);
+        }
+        else if ((operator == S3QueryConditionOperators.LESS_THAN) || (operator == S3QueryConditionOperators.NUMERIC_LESS_THAN))
+        {
+            if (caseInsensitive)
+                if (value.compareToIgnoreCase(checkValue) < 0)
+                    matches.add(media);
+            else
+                if (value.compareTo(checkValue) < 0)
+                    matches.add(media);
+        }
+        else if ((operator == S3QueryConditionOperators.GREATER_THAN) || (operator == S3QueryConditionOperators.NUMERIC_GREATER_THAN))
+        {
+            if (caseInsensitive)
+                if (value.compareToIgnoreCase(checkValue) > 0)
+                    matches.add(media);
+            else
+                if (value.compareTo(checkValue) > 0)
+                    matches.add(media);
+        }
+        else if ((operator == S3QueryConditionOperators.LESS_THAN_OR_EQUAL_TO) || (operator == S3QueryConditionOperators.NUMERIC_LESS_THAN_OR_EQUAL_TO))
+        {
+            if (caseInsensitive)
+                if (value.compareToIgnoreCase(checkValue) <= 0)
+                    matches.add(media);
+            else
+                if (value.compareTo(checkValue) <= 0)
+                    matches.add(media);
+        }
+        else if ((operator == S3QueryConditionOperators.GREATER_THAN_OR_EQUAL_TO) || (operator == S3QueryConditionOperators.NUMERIC_GREATER_THAN_OR_EQUAL_TO))
+        {
+            if (caseInsensitive)
+                if (value.compareToIgnoreCase(checkValue) >= 0)
+                    matches.add(media);
+            else
+                if (value.compareTo(checkValue) >= 0)
+                    matches.add(media);
+        }
+        else if (operator == S3QueryConditionOperators.TABLE)
+        {
+            /* noop */
         }
 
         return matches;
@@ -924,7 +996,7 @@ public class S3QueryExecute
     }
 
     /**
-     * Filters the media list on an Integer value
+     * Filters the media list on an array of Integer values
      * 
      * @param operator the comparison operator
      * @param values the value(s) to compare against
@@ -933,8 +1005,8 @@ public class S3QueryExecute
      * @param getFilterValue function returning value to compare against
      * @return a list of matching Media
      */
-    private static List<Media> filterInteger(final S3QueryConditionOperators operator, final List<Integer> values, 
-                                             final List<Media> curMedia, final Camtrap metadata, final BiFunction<Media, Camtrap, Integer> getFilterValue)
+    private static List<Media> filterIntegerArray(final S3QueryConditionOperators operator, final List<Integer> values, 
+                                             final List<Media> curMedia, final Camtrap metadata, final BiFunction<Media, Camtrap, List<Integer>> getFilterValue)
     {
         List<Media> matches = new ArrayList<Media>();
 
@@ -947,87 +1019,97 @@ public class S3QueryExecute
 
         for (Media med: curMedia)
         {
-            Integer curValue = getFilterValue.apply(med, metadata);
+            List<Integer> valueList = getFilterValue.apply(med, metadata);
 
             // Skip missing values
-            if (curValue == null)
+            if (valueList == null || valueList.size() < 1)
             {
                 continue;
             }
 
-            if ((operator == S3QueryConditionOperators.EQUAL) || (operator == S3QueryConditionOperators.NUMERIC_EQUAL))
+            Integer oldMatchesSize = matches.size();
+            for (Integer curValue : valueList)
             {
-                if (curValue - value == 0)
-                    matches.add(med);
-            }
-            else if ((operator == S3QueryConditionOperators.IN) || (operator == S3QueryConditionOperators.NOT_IN))
-            {
-                // Find the match and handle the condition after
-                boolean matched = false;
-                for (Integer oneValue: values)
+                if ((operator == S3QueryConditionOperators.EQUAL) || (operator == S3QueryConditionOperators.NUMERIC_EQUAL))
                 {
-                    if (oneValue - curValue == 0)
-                    {
-                        matched = true;
-                        break;
-                    }
+                    if (curValue - value == 0)
+                        matches.add(med);
                 }
-
-                // Handle the condition
-                if (matched && (operator == S3QueryConditionOperators.IN))
-                    matches.add(med);
-                else if (!matched && (operator == S3QueryConditionOperators.NOT_IN))
-                    matches.add(med);
-            }
-            else if ((operator == S3QueryConditionOperators.BETWEEN) || (operator == S3QueryConditionOperators.NOT_BETWEEN))
-            {
-                // Find the match and handle the condition after
-                boolean matched = false;
-                if (values.size() >= 2)
+                else if ((operator == S3QueryConditionOperators.IN) || (operator == S3QueryConditionOperators.NOT_IN))
                 {
-                    Integer first = values.get(0);
-                    Integer second = values.get(1);
-
-                    if ((curValue - first >= 0) && (curValue - second <= 0))
+                    // Find the match and handle the condition after
+                    boolean matched = false;
+                    for (Integer oneValue: values)
                     {
-                        matched = true;
+                        if (oneValue - curValue == 0)
+                        {
+                            matched = true;
+                            break;
+                        }
                     }
 
                     // Handle the condition
-                    if (matched && (operator == S3QueryConditionOperators.BETWEEN))
+                    if (matched && (operator == S3QueryConditionOperators.IN))
                         matches.add(med);
-                    else if (!matched && (operator == S3QueryConditionOperators.NOT_BETWEEN))
+                    else if (!matched && (operator == S3QueryConditionOperators.NOT_IN))
                         matches.add(med);
                 }
-            }
-            else if (operator == S3QueryConditionOperators.NOT_EQUAL)
-            {
-                if (curValue - value != 0)
-                    matches.add(med);
-            }
-            else if ((operator == S3QueryConditionOperators.LESS_THAN) || (operator == S3QueryConditionOperators.NUMERIC_LESS_THAN))
-            {
-                if (curValue - value < 0)
-                    matches.add(med);
-            }
-            else if ((operator == S3QueryConditionOperators.GREATER_THAN) || (operator == S3QueryConditionOperators.NUMERIC_GREATER_THAN))
-            {
-                if (curValue - value > 0)
-                    matches.add(med);
-            }
-            else if ((operator == S3QueryConditionOperators.LESS_THAN_OR_EQUAL_TO) || (operator == S3QueryConditionOperators.NUMERIC_LESS_THAN_OR_EQUAL_TO))
-            {
-                if (curValue - value <= 0)
-                    matches.add(med);
-            }
-            else if ((operator == S3QueryConditionOperators.GREATER_THAN_OR_EQUAL_TO) || (operator == S3QueryConditionOperators.NUMERIC_GREATER_THAN_OR_EQUAL_TO))
-            {
-                if (curValue - value >= 0)
-                    matches.add(med);
-            }
-            else if (operator == S3QueryConditionOperators.TABLE)
-            {
-                /* noop */
+                else if ((operator == S3QueryConditionOperators.BETWEEN) || (operator == S3QueryConditionOperators.NOT_BETWEEN))
+                {
+                    // Find the match and handle the condition after
+                    boolean matched = false;
+                    if (values.size() >= 2)
+                    {
+                        Integer first = values.get(0);
+                        Integer second = values.get(1);
+
+                        if ((curValue - first >= 0) && (curValue - second <= 0))
+                        {
+                            matched = true;
+                        }
+
+                        // Handle the condition
+                        if (matched && (operator == S3QueryConditionOperators.BETWEEN))
+                            matches.add(med);
+                        else if (!matched && (operator == S3QueryConditionOperators.NOT_BETWEEN))
+                            matches.add(med);
+                    }
+                }
+                else if (operator == S3QueryConditionOperators.NOT_EQUAL)
+                {
+                    if (curValue - value != 0)
+                        matches.add(med);
+                }
+                else if ((operator == S3QueryConditionOperators.LESS_THAN) || (operator == S3QueryConditionOperators.NUMERIC_LESS_THAN))
+                {
+                    if (curValue - value < 0)
+                        matches.add(med);
+                }
+                else if ((operator == S3QueryConditionOperators.GREATER_THAN) || (operator == S3QueryConditionOperators.NUMERIC_GREATER_THAN))
+                {
+                    if (curValue - value > 0)
+                        matches.add(med);
+                }
+                else if ((operator == S3QueryConditionOperators.LESS_THAN_OR_EQUAL_TO) || (operator == S3QueryConditionOperators.NUMERIC_LESS_THAN_OR_EQUAL_TO))
+                {
+                    if (curValue - value <= 0)
+                        matches.add(med);
+                }
+                else if ((operator == S3QueryConditionOperators.GREATER_THAN_OR_EQUAL_TO) || (operator == S3QueryConditionOperators.NUMERIC_GREATER_THAN_OR_EQUAL_TO))
+                {
+                    if (curValue - value >= 0)
+                        matches.add(med);
+                }
+                else if (operator == S3QueryConditionOperators.TABLE)
+                {
+                    /* noop */
+                }
+
+                // Stop searching this media when we get a match
+                if (oldMatchesSize < matches.size())
+                {
+                    break;
+                }
             }
         }
 

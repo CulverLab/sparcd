@@ -149,9 +149,11 @@ public class MetadataUtils
 		ImageMetadata metadata = Imaging.getMetadata(imageFile);
 
 		// Grab the tiff metadata to read from, or return null
-		if (metadata instanceof JpegImageMetadata)
+		if (metadata instanceof JpegImageMetadata) {
 			return ((JpegImageMetadata) metadata).getExif();
-		else
+		}
+		else {
 			return null;
+		}
 	}
 }

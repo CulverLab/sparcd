@@ -132,7 +132,7 @@ public final class Deployments
         // Make sure we have enouigh elements to assign
         if (values.length != 23)
         {
-            throw new InvalidParameterException("Missing elements for Captrap Deployment specification");
+            throw new InvalidParameterException("Missing elements for Camtrap Deployment specification");
         }
 
         // Create class instance for returning

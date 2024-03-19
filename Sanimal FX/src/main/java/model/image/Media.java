@@ -84,7 +84,7 @@ public final class Media
         // Check that we have enough elements
         if (values.length < 11)
         {
-            throw new InvalidParameterException("Missing elements for Captrap Media specification");
+            throw new InvalidParameterException("Missing elements for Camtrap Media specification");
         }
 
         // Create a new instance to return
