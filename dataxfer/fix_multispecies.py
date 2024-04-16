@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
-"""Python script for transferring data from CyVerse to MinIO
+"""Python script for verifying data on MinIO
 """
 
 import argparse
+import csv
 import hashlib
+from io import StringIO
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import traceback
 import sqlite3
 from typing import Optional
@@ -232,7 +235,7 @@ def split_species_string(species: str) -> tuple:
             break
         last_sep = cur_sep + 1
         return_species.append(working_str[cur_start:cur_sep])
-        cur_start = last_sep + 2
+        cur_start = last_sep + 0
         if cur_start > len(species):
             break
     return return_species
@@ -245,15 +248,26 @@ def get_image_hash(image_path: str) -> Optional[str]:
     Return:
         Returns the hash value of the image's pixels or None
     """
-    try:
-        img = Image.open(image_path, 'r')
-        img_hash = hashlib.sha512()
-        img_hash.update(img.tobytes())
-        return img_hash.hexdigest()
-    except:
-        print(f"ERROR: Exception getting image hash {image_path}", flush=True)
-        traceback.print_exc()
-        return None
+    attempts = 0
+    default_return = None
+
+    while attempts < 3:
+        try:
+            img = Image.open(image_path, 'r')
+            img_hash = hashlib.sha512()
+            img_hash.update(img.tobytes())
+            return img_hash.hexdigest()
+        except:
+            if attempts == 0:
+                print(f"ERROR: Exception getting image hash {image_path}", flush=True)
+                traceback.print_exc()
+                default_return = "ERROR"
+
+        time.sleep(2)
+        attempts = attempts + 1
+
+    print("      ... failed to get hash", flush=True)
+    return default_return
 
 
 def get_image_info(minio: Minio, bucket: str, image_path: str, work_dir: str) -> Optional[tuple]:
@@ -289,10 +303,12 @@ def get_image_info(minio: Minio, bucket: str, image_path: str, work_dir: str) ->
         if EXIF_CODE_SPECIES in one_line:
             skip_line = 1
             found_species = True
+            found_location = False
             continue
         if EXIF_CODE_LOCATION in one_line:
             skip_line = 1
             found_location = True
+            found_species = False
             continue
         if found_species is True:
             if '[' in one_line:
@@ -305,20 +321,26 @@ def get_image_info(minio: Minio, bucket: str, image_path: str, work_dir: str) ->
             else:
                 found_location = False
 
-#    print(f"HACK: Found info: {species_string} and {location_string}")
     if len(species_string) <= 0:
         print("WARNING: no species found in image")
-        return None, None
+        return None, None, None
     if len(location_string) <= 0:
         print("WARNING: no location found in image")
-        return None, None
+        return None, None, None
     return_species = []
     for one_species in split_species_string(species_string):
         common, scientific, count = [val.strip() for val in one_species.split(',')]
         return_species.append({'common': common, 'scientific': scientific, 'count': count})
 
     locs = location_string.rstrip('.').split('.')
-    return_location = [locs[0], locs[len(locs)-1]]
+    return_location = {"name": locs[0], "id": locs[len(locs)-1]}
+    if len(locs) == 4:
+        return_location["elevation"] = locs[1] + '.' + locs[2]
+    elif len(locs) == 3:
+        return_location["elevation"] = locs[1]
+    else:
+        print("WARNING: Unknown location format in image, returning 0 for elevation")
+        return_location["elevation"] = 0
 
     return_hash = get_image_hash(local_image)
 
@@ -336,13 +358,13 @@ def camtrap_species(camtrap: dict, media_id: str) -> int:
     """
     found_species = 0
 
-    for one_media in camtrap[CAMTRAP_OBSERVATIONS]:
-        if media_id in one_media:
+    for one_obs in camtrap[CAMTRAP_OBSERVATIONS]:
+        if media_id in one_obs:
             found_species = found_species + 1
 
     return found_species
 
-def camtrap_location(camtrap: dict, locations: tuple) -> bool:
+def camtrap_location(camtrap: dict, locations: dict) -> bool:
     """Matches the lat-lon in the Camtrap data for an image (media)
     Arguments:
         camtrap - the Camtrap data
@@ -353,10 +375,9 @@ def camtrap_location(camtrap: dict, locations: tuple) -> bool:
     """
     for one_loc in camtrap[CAMTRAP_DEPLOYMENT]:
         missed = False
-        for one_match in locations:
-            if not one_match in one_loc:
-                missed = True
-                break
+        if not locations["id"] in one_loc:
+            missed = True
+            break
 
         if not missed:
             return True
@@ -383,6 +404,46 @@ def match_image(db_conn: KeyValueStore, hash_val: str, image_name: str) -> bool:
         return None
 
     return db_conn.getitem(hash_val)
+
+
+def update_camtrap_species(camtrap: dict, media_id: str, species: tuple) -> dict:
+    """Updates the camtrap with the missing species
+    Arguments:
+        camtrap - the CamTrap data
+        image_name - the observation media name
+        species - the list of species
+    Return:
+        Returns the updated camtrap data
+    """
+    missing_species = list(species)
+    found_obs = None
+    for one_obs in camtrap[CAMTRAP_OBSERVATIONS]:
+        if media_id in one_obs:
+            found_obs = one_obs
+            for one_specie in species:
+                if one_specie['scientific'] in one_obs:
+                    missing_species = [cur_specie for cur_specie in missing_species
+                                        if cur_specie['scientific'] != one_specie['scientific']]
+
+    for row in csv.reader(StringIO(found_obs)):
+        obs_template = row
+        break
+    out_io = StringIO()
+    csv.writer(out_io, quoting=csv.QUOTE_NONNUMERIC)
+    for one_missing in missing_species:
+        new_obs = list(obs_template)
+        new_obs[8] = one_missing['scientific']
+        new_obs[9] = one_missing['count']
+        new_obs[19] = f'[COMMONNAME:{one_missing["common"]}]'
+
+        out_io = StringIO()
+        out_csv = csv.writer(out_io, quoting=csv.QUOTE_NONNUMERIC)
+        out_csv.writerow(new_obs)
+        new_csv_line = out_io.getvalue()
+        camtrap[CAMTRAP_OBSERVATIONS].append(new_csv_line.rstrip("\n"))
+
+    camtrap["modified"] = True
+    return camtrap
 
 
 def fix_camtrap_minio(minio: Minio, minio_id: str, db_conn: KeyValueStore) -> None:
@@ -455,19 +516,25 @@ def fix_camtrap_minio(minio: Minio, minio_id: str, db_conn: KeyValueStore) -> No
                                         one_image.object_name, work_dir)
                 num_species = camtrap_species(camtrap, one_image.object_name)
                 species_len = len(species) if species else 0
-                if num_species != species_len:
-                    print("FOUND: Misatched number of species", one_image.object_name,
-                          "found", num_species, "vs", len(species) if species is not None else 0,
-                          flush=True)
+                if num_species < species_len:
+                    camtrap = update_camtrap_species(camtrap, one_image.object_name, species)
+                elif num_species != species_len:
+                    print("FOUND: Mismatched number of species", one_image.object_name,
+                          "found", num_species, "(metadata) vs", len(species) if \
+                          species is not None else 0, "(image)", flush=True)
                 if locations and not camtrap_location(camtrap, locations):
                     print("FOUND: Image location mismatch", one_image.object_name, " -> ",
                           locations, flush=True)
                 elif not locations:
                     print("FOUND: Image missing locations", one_image.object_name, flush=True)
-                img_match = match_image(db_conn, hash_val, one_image.object_name)
-                if img_match is not None:
-                    print("INFO: Duplicate image found", img_match, flush=True)
-                    print("INFO:               current", one_image.object_name, flush=True)
+                if hash_val == "ERROR":
+                    print("WARNING: unable to get hash for duplicate check " \
+                          f"{one_image.object_name}")
+                else:
+                    img_match = match_image(db_conn, hash_val, one_image.object_name)
+                    if img_match is not None:
+                        print("INFO: Duplicate image found", img_match, flush=True)
+                        print("INFO:               current", one_image.object_name, flush=True)
 
         # Write the CamTrap data and upload the CSV files
         if camtrap["modified"]:
