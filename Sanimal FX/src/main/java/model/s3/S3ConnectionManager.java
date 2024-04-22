@@ -62,6 +62,8 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
@@ -410,11 +412,34 @@ public class S3ConnectionManager
 	 */
 	public void pushLocalSpecies(List<Species> newSpecies)
 	{
+		String userName = System.getProperty("user.name");
+		Path localSpeciesPath = Paths.get(System.getProperty("user.home"), ".sparcd", SETTINGS_FOLDER, userName);
+		Path localSpecies = Paths.get(localSpeciesPath.toString(), SPECIES_FILE);
+
 		// Convert the species list to JSON format
 		String json = SanimalData.getInstance().getGson().toJson(newSpecies);
 
+		try
+		{
+			File speciesFolder = new File(localSpeciesPath.toString());
+			if (!speciesFolder.exists() || !speciesFolder.isDirectory())
+			{
+				speciesFolder.mkdirs();
+			}
+			Files.writeString(localSpecies, json);
+		}
+		catch (IOException e)
+		{
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"Species file error",
+					"Could not update local file for species list\n" + ExceptionUtils.getStackTrace(e),
+					false);
+		}
 		// Write the species.json file to the server
-		this.writeRemoteFile(ROOT_BUCKET, SPECIES_FILE_PATH, json);
+		//this.writeRemoteFile(ROOT_BUCKET, SPECIES_FILE_PATH, json);
 	}
 
 	/**
@@ -424,12 +449,63 @@ public class S3ConnectionManager
 	 */
 	public List<Species> pullRemoteSpecies()
 	{
-		// Read the contents of the file into a string
-		String fileContents = this.readRemoteFile(ROOT_BUCKET, SPECIES_FILE_PATH);
+		String fileContents = null;
+		boolean saveLocal = false;
+
+		String userName = System.getProperty("user.name");
+		Path localSpeciesPath = Paths.get(System.getProperty("user.home"), ".sparcd", SETTINGS_FOLDER, userName);
+		Path localSpecies = Paths.get(localSpeciesPath.toString(), SPECIES_FILE);
+
+		File inFile = new File(localSpecies.toString());
+		if (inFile.exists() && inFile.isFile())
+		{
+			// Read the contents of the file into a string
+			try
+			{
+				fileContents = Files.readString(localSpecies);
+				if (fileContents == null || fileContents.length() == 0)
+				{
+					saveLocal = true;
+				}
+			}
+			catch (IOException e)
+			{
+				// Pass on exception
+			}
+		}
+		if (fileContents == null)
+		{
+			// Read the contents of the file into a string
+			fileContents = this.readRemoteFile(ROOT_BUCKET, SPECIES_FILE_PATH);
+		}
 
 		// Ensure that we in fact got data back
 		if (fileContents != null)
 		{
+			// Check if we need to save the file locally
+			if (saveLocal == true)
+			{
+				try
+				{
+					File speciesFolder = new File(localSpeciesPath.toString());
+					if (!speciesFolder.exists() || !speciesFolder.isDirectory())
+					{
+						speciesFolder.mkdirs();
+					}
+					Files.writeString(localSpecies, fileContents);
+				}
+				catch (IOException e)
+				{
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"Species file error",
+						"Could not update local file for species list\n" + ExceptionUtils.getStackTrace(e),
+						false);
+				}
+			}
+
 			// Try to parse the JSON string into a list of species
 			try
 			{
