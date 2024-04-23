@@ -2639,39 +2639,40 @@ public class S3ConnectionManager
 	        	// When we have a match, we return that data
 	        	if (med.filePath.compareTo(remotePath) == 0)
 	        	{
-	        		Observations obs = this.findObservation(med, metaData);
 	        		Deployments dep = this.findDeployment(med, metaData);
-
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_SANIMAL, SanimalMetadataFields.A_SANIMAL));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_TIME_TAKEN, 
-									Long.toString(obs.timestamp.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_YEAR_TAKEN, 
-									Long.toString(obs.timestamp.getYear())));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_MONTH_TAKEN, 
-									Long.toString(obs.timestamp.getMonth().getValue())));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_HOUR_TAKEN, 
-									Long.toString(obs.timestamp.getHour())));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_DAY_OF_YEAR_TAKEN, 
-									Long.toString(obs.timestamp.getDayOfYear())));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN, 
-									Long.toString(obs.timestamp.getDayOfWeek().getValue())));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_NAME, dep.locationName));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_ID, dep.locationID));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_LATITUDE, Double.toString(dep.latitude)));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, Double.toString(dep.longitude)));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_ELEVATION, Double.toString(dep.cameraHeight)));
-					String unitsValue = S3MetaDataAndDomainData.generateHashValue(obs.scientificName);
-					imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, obs.scientificName, unitsValue));
-					imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_COMMON_NAME, this.getCommonName(obs.comments), unitsValue));
-					imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_COUNT, Long.toString(obs.count), unitsValue));
-
-					String collectionID = dep.deploymentID;
-					int index = dep.deploymentID.indexOf(":");
-					if (index >= 0)
+	        		for (Observations obs: this.findObservations(med, metaData))
 					{
-						collectionID = dep.deploymentID.substring(0, index);
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_SANIMAL, SanimalMetadataFields.A_SANIMAL));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_TIME_TAKEN, 
+										Long.toString(obs.timestamp.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_YEAR_TAKEN, 
+										Long.toString(obs.timestamp.getYear())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_MONTH_TAKEN, 
+										Long.toString(obs.timestamp.getMonth().getValue())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_HOUR_TAKEN, 
+										Long.toString(obs.timestamp.getHour())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_DAY_OF_YEAR_TAKEN, 
+										Long.toString(obs.timestamp.getDayOfYear())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN, 
+										Long.toString(obs.timestamp.getDayOfWeek().getValue())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_NAME, dep.locationName));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_ID, dep.locationID));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_LATITUDE, Double.toString(dep.latitude)));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, Double.toString(dep.longitude)));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_ELEVATION, Double.toString(dep.cameraHeight)));
+						String unitsValue = S3MetaDataAndDomainData.generateHashValue(obs.scientificName);
+						imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, obs.scientificName, unitsValue));
+						imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_COMMON_NAME, this.getCommonName(obs.comments), unitsValue));
+						imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_COUNT, Long.toString(obs.count), unitsValue));
+
+						String collectionID = dep.deploymentID;
+						int index = dep.deploymentID.indexOf(":");
+						if (index >= 0)
+						{
+							collectionID = dep.deploymentID.substring(0, index);
+						}
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_COLLECTION_ID, collectionID));
 					}
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_COLLECTION_ID, collectionID));
 	        	}
 	        }
 	    }
@@ -2686,17 +2687,18 @@ public class S3ConnectionManager
 	 * @param metadata the complete set of metadata to search
 	 * @return the found observation
 	 */
-	private Observations findObservation(Media med, Camtrap metadata)
+	private List<Observations> findObservations(Media med, Camtrap metadata)
 	{
+		List<Observations> allObs = new ArrayList<Observations>();
 		for (Observations obs: metadata.observations)
 		{
 			if (obs.mediaID.equals(med.mediaID))
 			{
-				return obs;
+				allObs.add(obs);
 			}
 		}
 
-		return null;
+		return allObs;
 	}
 
 	/**
