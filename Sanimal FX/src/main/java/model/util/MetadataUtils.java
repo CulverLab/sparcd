@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Class containing utils for writing & reading metadata
@@ -82,8 +83,29 @@ public class MetadataUtils
 			}
 			if (success == true) 
 			{
-				// Then copy the temporary file over top of the current file to update it
-				FileUtils.forceDelete(imageEntry.getFile());
+				int tryCount = 0;
+				while (tryCount < 3)
+				{
+					// Then copy the temporary file over top of the current file to update it
+					try
+					{
+						FileUtils.forceDelete(imageEntry.getFile());
+						break;
+					}
+					catch (IOException e)
+					{
+						// Ignore errors for now
+					}
+					try
+					{
+						TimeUnit.SECONDS.sleep(1);
+					}
+					catch (InterruptedException e)
+					{
+						// Ignore timeouts exceptions
+					}
+					tryCount++;
+				}
 				FileUtils.moveFile(tempToWriteTo, imageEntry.getFile());
 			}
 		}
