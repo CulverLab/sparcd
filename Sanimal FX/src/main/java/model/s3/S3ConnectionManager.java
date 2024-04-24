@@ -77,6 +77,7 @@ import java.util.concurrent.locks.*;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.security.InvalidParameterException;
 import java.security.NoSuchAlgorithmException;
 
@@ -443,6 +444,73 @@ public class S3ConnectionManager
 	}
 
 	/**
+	 * Returns an updated version of the current species with new species added
+	 * and removed species deleted
+	 *
+	 * @param curSpecies The JSON of the current species list
+	 * @param newSpecies The JSON of the new species list
+	 * @return The updated species JSON. Returns the original curSpecies if an error occurs
+	 */
+	private String updateSpecies(String curSpecies, String newSpecies)
+	{
+		String returnJson = curSpecies;
+		boolean modified = false;
+
+		if (curSpecies != null && newSpecies != null)
+		{
+			try
+			{
+				List<Species> curGson = SanimalData.getInstance().getGson().fromJson(curSpecies, SPECIES_LIST_TYPE);
+				List<Species> newGson = SanimalData.getInstance().getGson().fromJson(newSpecies, SPECIES_LIST_TYPE);
+
+				// Loop through cur species
+				for (int idx = 0; idx < curGson.size(); idx++)
+				{
+					Species oneCur = curGson.get(idx);
+
+					// Find in new
+					OptionalInt result = IntStream.range(0, newGson.size())
+				                .filter(ii -> oneCur.getName().equals(newGson.get(ii).getName()) &&
+				            				  oneCur.getScientificName().equals(newGson.get(ii).getScientificName()))
+				                .findFirst();
+
+					// Remove from new if found and remove from cur is not found
+					if (result.isPresent())
+					{
+						if (result.getAsInt() >= 0 && result.getAsInt() < newGson.size())
+						{
+					   		newGson.remove(result.getAsInt());
+					   	}
+					} else {
+						curGson.remove(idx);
+						modified = true;
+						idx--;		// Adjust idx for item removed
+					}
+				}
+				// Add all unfound species to cur
+				for (Species oneSpecie: newGson)
+				{
+					curGson.add(oneSpecie);
+					modified = true;
+				}
+
+				// If modified, get jSON string
+				if (modified == true)
+				{
+					returnJson = SanimalData.getInstance().getGson().toJson(curGson);
+				}
+			}
+			catch (JsonSyntaxException e)
+			{
+				// Ignore exception and any changes made
+				modified = false;
+			}
+		}
+
+		return (modified == true ? returnJson : curSpecies);
+	}
+
+	/**
 	 * Connects to S3 and downloads the list of the user's species list
 	 *
 	 * @return A list of species stored on the S3 system
@@ -463,25 +531,35 @@ public class S3ConnectionManager
 			try
 			{
 				fileContents = Files.readString(localSpecies);
-				if (fileContents == null || fileContents.length() == 0)
-				{
-					saveLocal = true;
-				}
 			}
 			catch (IOException e)
 			{
-				// Pass on exception
+				// Ignore the exception(s)
 			}
 		}
-		if (fileContents == null)
+
+		// Read the remote contents of the file into a string
+		String remoteContents = this.readRemoteFile(ROOT_BUCKET, SPECIES_FILE_PATH);
+
+		// Check if we're to use the remote contents - no local yet
+		if (fileContents == null || fileContents.length() == 0)
 		{
-			// Read the contents of the file into a string
-			fileContents = this.readRemoteFile(ROOT_BUCKET, SPECIES_FILE_PATH);
+			fileContents = remoteContents;
+			saveLocal = true;
 		}
 
 		// Ensure that we in fact got data back
 		if (fileContents != null)
 		{
+			if (fileContents != remoteContents)
+			{
+				String updatedFileContents = this.updateSpecies(fileContents, remoteContents);
+				if (!updatedFileContents.equals(fileContents))
+				{
+					fileContents = updatedFileContents;
+					saveLocal = true;
+				}
+			}
 			// Check if we need to save the file locally
 			if (saveLocal == true)
 			{
