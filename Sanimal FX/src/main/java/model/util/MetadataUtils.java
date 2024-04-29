@@ -79,6 +79,7 @@ public class MetadataUtils
 			{
 				// And perform the write to the temporary file
 				new ExifRewriter().updateExifMetadataLossless(imageEntry.getFile(), outputStream, outputSet);
+				outputStream.close();
 				success = true;
 			}
 			if (success == true) 
@@ -98,7 +99,7 @@ public class MetadataUtils
 					}
 					try
 					{
-						TimeUnit.SECONDS.sleep(1);
+						Thread.sleep(1000);
 					}
 					catch (InterruptedException e)
 					{
