@@ -238,7 +238,8 @@ public class ImageCollectionListEntryController extends ListCell<ImageCollection
 					TextInputDialog  confirmation = new TextInputDialog();
 					confirmation.initOwner(this.mainPane.getScene().getWindow());
 					confirmation.setTitle("Upload Images");
-					confirmation.setHeaderText("Uploading " + imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count() + " image(s) to " + this.getItem().getName() + ". Enter an optional description for this upload or select cancel to stop the upload");
+					confirmation.setHeaderText("Uploading " + imageDirectory.flattened().filter(imageContainer -> imageContainer instanceof ImageEntry).count() + " image(s) to " + this.getItem().getName() + 
+							". ENTER DESCRIPTION - OR SELECT CANCEL TO STOP THE UPLOAD\n\nMountain Range  - Site Name - No. of Images collected - Date uploaded - Date Collected\n(eg: Santa Rita Mountains - SAN06 - 39 images - uploaded 04-10-2020 - collected 03-28-2020)");
 					Optional<String> result = confirmation.showAndWait();
 
 					// Test the result...
