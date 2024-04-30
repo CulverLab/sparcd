@@ -90,9 +90,13 @@
                             <ListView fx:id="locationListView" onDragDetected="#locationListDrag" VBox.vgrow="ALWAYS" orientation="HORIZONTAL" styleClass="locationList" maxHeight="Infinity" />
                             <FlowPane alignment="CENTER" hgap="5" vgap="10">
                                 <padding>
-                                    <Insets bottom="20" left="5" right="5" top="20" />
+                                    <Insets bottom="20" left="5" right="5" top="5" />
                                 </padding>
                                 <children>
+                                    <FlowPane alignment="CENTER" hgap="5" vgap="10">
+                                        <TextField fx:id="txtLocationsSearch" promptText="Search Locations" HBox.hgrow="ALWAYS" />
+                                        <Button fx:id="btnLoccationsResetSearch" onAction="#resetLocationsSearch" styleClass="resetSearchBtn" HBox.hgrow="NEVER" />
+                                    </FlowPane>
                                     <Label text="See admin to update locations"/>
                                 </children>
                             </FlowPane>

@@ -34,6 +34,13 @@
             <ListView fx:id="collectionListView" styleClass="collectionLvw" VBox.vgrow="ALWAYS"/>
             <FlowPane alignment="CENTER" hgap="5" vgap="10">
                 <padding>
+                    <Insets bottom="5" left="5" right="5" top="20"/>
+                </padding>
+                <TextField fx:id="txtCollectionsSearch" promptText="Search Collections" HBox.hgrow="ALWAYS" />
+                <Button fx:id="btnCollectionsResetSearch" onAction="#resetCollectionsSearch" styleClass="resetSearchBtn" HBox.hgrow="NEVER" />
+            </FlowPane>
+            <FlowPane alignment="CENTER" hgap="5" vgap="10">
+                <padding>
                     <Insets bottom="20" left="5" right="5" top="20"/>
                 </padding>
                 <Button fx:id="btnNewCollection" onAction="#newCollectionPressed" styleClass="newCollectionBtn" text="New Collection"/>

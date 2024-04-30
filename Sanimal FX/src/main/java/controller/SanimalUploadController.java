@@ -46,6 +46,13 @@ public class SanimalUploadController implements Initializable
 	@FXML
 	public ListView<ImageCollection> collectionListView;
 
+	// Search field for collections entry list
+	@FXML
+	public TextField txtCollectionsSearch;
+	// Reset button for the collections search field
+	@FXML
+	public Button btnCollectionsResetSearch;
+
 	// The new and delete collection buttons
 	@FXML
 	public Button btnNewCollection;
@@ -110,8 +117,16 @@ public class SanimalUploadController implements Initializable
 		SortedList<ImageCollection> collections = new SortedList<>(SanimalData.getInstance().getCollectionList());
 		// Set the comparator to be the name of the image collection
 		collections.setComparator(Comparator.comparing(ImageCollection::getName));
+		// We create a local wrapper of the collections list to filter
+		FilteredList<ImageCollection> collectionsFilteredList = new FilteredList<>(collections);
+		// Set the filter to update whenever the collections search text changes
+		collectionsFilteredList.predicateProperty().bind(Bindings.createObjectBinding(() -> (collectionsToFilter ->
+			// Allow any collections with a name or description containing the collections search text
+			(StringUtils.containsIgnoreCase(collectionsToFilter.getName(), this.txtCollectionsSearch.getCharacters()) ||
+					StringUtils.containsIgnoreCase(collectionsToFilter.getDescription(), this.txtCollectionsSearch.getCharacters()))), this.txtCollectionsSearch.textProperty()));
 		// Set the list of items to be the collections
-		this.collectionListView.setItems(SanimalData.getInstance().getCollectionList());
+		this.collectionListView.setItems(collectionsFilteredList);
+//		this.collectionListView.setItems(SanimalData.getInstance().getCollectionList());
 		// Set the cell factory to be our custom cell factory
 		this.collectionListView.setCellFactory(x -> {
 			ImageCollectionListEntryController controller = FXMLLoaderUtils.loadFXML("uploadView/ImageCollectionListEntry.fxml").getController();
@@ -462,6 +477,16 @@ public class SanimalUploadController implements Initializable
 			}
 		}
 		actionEvent.consume();
+	}
+
+	/**
+	 * When we click the X button we want to reset the collections search box
+	 *
+	 * @param actionEvent ignored
+	 */
+	public void resetCollectionsSearch(ActionEvent actionEvent)
+	{
+		this.txtCollectionsSearch.clear();
 	}
 
 	/**

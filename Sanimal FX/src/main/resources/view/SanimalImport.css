@@ -26,7 +26,7 @@
 }
 
 .resetSearchBtn {
-    -fx-graphic: url("../images/importWindow/delete16.png");
+    -fx-graphic: url("../images/importWindow/clear16.png");
 }
 
 .leftBtn:hover {

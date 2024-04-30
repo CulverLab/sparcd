@@ -145,6 +145,13 @@ public class SanimalImportController implements Initializable
 	@FXML
 	public Button btnResetSearch;
 
+	// Search field for locations entry list
+	@FXML
+	public TextField txtLocationsSearch;
+	// Reset button for the locations search field
+	@FXML
+	public Button btnLoccationsResetSearch;
+
 	// The main pane holding everything
 	@FXML
 	public SplitPane mainPane;
@@ -239,8 +246,16 @@ public class SanimalImportController implements Initializable
 		SortedList<Location> locations = new SortedList<>(SanimalData.getInstance().getLocationList());
 		// Set the comparator to be the name of the location
 		locations.setComparator(Comparator.comparing(Location::getName));
+		// We create a local wrapper of the locations list to filter
+		FilteredList<Location> locationsFilteredList = new FilteredList<>(locations);
+		// Set the filter to update whenever the locations search text changes
+		locationsFilteredList.predicateProperty().bind(Bindings.createObjectBinding(() -> (locationsToFilter ->
+			// Allow any locations with a ID or scientific name containing the locations search text
+			(StringUtils.containsIgnoreCase(locationsToFilter.getName(), this.txtLocationsSearch.getCharacters()) ||
+					StringUtils.containsIgnoreCase(locationsToFilter.getId(), this.txtLocationsSearch.getCharacters()))), this.txtLocationsSearch.textProperty()));
 		// Set the items of the location list view to the newly sorted list
-		this.locationListView.setItems(locations);
+		this.locationListView.setItems(locationsFilteredList);
+//		this.locationListView.setItems(locations);
 		// Set the cell factory to be our custom location list cell
 		this.locationListView.setCellFactory(x -> FXMLLoaderUtils.loadFXML("importView/LocationListEntry.fxml").getController());
 		// When we double click the location list view items, we want to edit the location
@@ -414,7 +429,7 @@ public class SanimalImportController implements Initializable
 			if (this.currentlySelectedImage.getValue() != null)
 			{
 				// We don't want to trigger keybindings if we're typing into the search box
-				if (!this.txtSpeciesSearch.isFocused())
+				if (!this.txtSpeciesSearch.isFocused() && !this.txtLocationsSearch.isFocused())
 				{
 					// Filter the species list by correctly key-bound species, and add them to the current image
 					SanimalData.getInstance().getSpeciesList().filtered(boundSpecies -> boundSpecies.getKeyBinding() == event.getCode()).forEach(boundSpecies ->
@@ -1347,6 +1362,16 @@ public class SanimalImportController implements Initializable
 	public void resetSpeciesSearch(ActionEvent actionEvent)
 	{
 		this.txtSpeciesSearch.clear();
+	}
+
+	/**
+	 * When we click the X button we want to reset the locations search box
+	 *
+	 * @param actionEvent ignored
+	 */
+	public void resetLocationsSearch(ActionEvent actionEvent)
+	{
+		this.txtLocationsSearch.clear();
 	}
 
 	/**
