@@ -189,7 +189,7 @@ public class ImageEntry extends ImageContainer
 						else
 						{
 							Location newLocation = new Location(locationName, locationId, locationLatitude, locationLongitude, Double.parseDouble(locationElevation));
-							knownLocations.add(newLocation);
+//							knownLocations.add(newLocation);
 							this.setLocationTaken(newLocation);
 						}
 					}
@@ -262,7 +262,7 @@ public class ImageEntry extends ImageContainer
 								else
 								{
 									Species newSpecies = new Species(speciesName, speciesScientificName);
-									knownSpecies.add(newSpecies);
+//									knownSpecies.add(newSpecies);
 									this.addSpecies(newSpecies, Integer.parseInt(speciesCount));
 								}
 							}
