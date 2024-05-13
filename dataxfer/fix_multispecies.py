@@ -36,36 +36,90 @@ EXIF_CODE_SPECIES = "Exif_0x0228"
 EXIF_CODE_LOCATION = "Exif_0x0229"
 
 
-class KeyValueStore(dict):
+class ImageInfoStore(dict):
     """Manages the SQLite database
     """
     def __init__(self, filename: str=None):
         """Initializer"""
         self.conn = sqlite3.connect(filename)
-        self.conn.execute("CREATE TABLE IF NOT EXISTS kv (key text unique, value text)")
+        self.conn.execute("CREATE TABLE IF NOT EXISTS image_info (id INTEGER PRIMARY KEY, " \
+                          "hash TEXT NOT NULL, collection TEXT NOT NULL, " \
+                          "path_upload TEXT NOT NULL, path_frag TEXT DEFAULT NULL, " \
+                          "name TEXT NOT NULL)")
+        self.conn.execute("CREATE TABLE IF NOT EXISTS species (id INTEGER PRIMARY KEY, " \
+                          "image_fk INTEGER NOT NULL, name TEXT DEFAULT NULL, " \
+                          "count INTEGER DEFAULT NULL, common TEXT DEFAULT NULL, " \
+                          "is_camtrap INTEGER DEFAULT 0, " \
+                          "FOREIGN KEY(image_fk) REFERENCES image_info(id))" )
+        self.conn.execute("CREATE TABLE IF NOT EXISTS locations(id INTEGER PRIMARY KEY, " \
+                          "image_fk INTEGER NOT NULL, loc_id TEXT DEFAULT NULL, name TEXT DEFAULT NULL, " \
+                          "lat REAL DEFAULT NULL, lon REAL DEFAULT NULL, " \
+                          "is_camtrap INTEGER DEFAULT 0, " \
+                          "FOREIGN KEY(image_fk) REFERENCES image_info(id))")
+        self.conn.execute("CREATE INDEX IF NOT EXISTS image_hash_idx on image_info(hash)")
+        self.conn.execute("CREATE INDEX IF NOT EXISTS species_idx on species(image_fk)")
+        self.conn.execute("CREATE INDEX IF NOT EXISTS locations_idx on locations(image_fk)")
 
     def close(self) -> None:
         """Closes the DB"""
         self.conn.commit()
         self.conn.close()
 
-    def contains(self, key: str) -> Optional[bool]:
-        """Searches for key in DB and returns row"""
-        return self.conn.execute('SELECT 1 FROM kv WHERE key = ?', (key,)).fetchone() is not None
+    def contains(self, img_hash: str) -> Optional[bool]:
+        """Searches for hash in DB and returns row"""
+        return self.conn.execute('SELECT 1 FROM image_info WHERE hash = ?',
+                                    (img_hash,)).fetchone() is not None
 
-    def getitem(self, key: str) -> Optional[str]:
-        """Returns the value of the associated key"""
-        item = self.conn.execute('SELECT value FROM kv WHERE key = ?', (key,)).fetchone()
+    def getname(self, img_hash: str) -> Optional[str]:
+        """Returns the name of the associated hash"""
+        item = self.conn.execute('SELECT name FROM image_info WHERE hash = ?',
+                                    (img_hash,)).fetchone()
         if item is None:
             return None
         return item[0]
 
-    def add(self, key: str, value: str) -> str:
+    def add(self, img_hash: str, img_name: str) -> str:
         """Adds a new item to the DB"""
-        item = self.conn.execute('INSERT INTO kv(key, value) VALUES (?,?)', (key, value))
+        item = self.conn.execute('INSERT INTO image_info(hash, name) VALUES (?,?)',
+                                    (img_hash, img_name))
         if item is None:
-            raise KeyError(key)
-        return value
+            raise KeyError(img_hash)
+        return img_name
+
+    def add_image_info(self, img_hash: str, coll_id: str, upload_path: str, path_frag: str,
+                       img_name: str) -> Optional[str]:
+        """Adds a full image entry to the database"""
+        item = self.conn.execute('INSERT INTO image_info(hash, collection, path_upload, ' \
+                                 'path_frag, name) VALUES(?,?,?,?,?)',
+                                 (img_hash, coll_id, upload_path, path_frag, img_name))
+        if item is None:
+            return None
+        return item.lastrowid
+
+    def add_species(self, img_id: str, scientific: str, count: int, common: str,
+                    camtrap: bool=False) -> Optional[str]:
+        """Adds a species and back references it to the unique image ID"""
+        item = self.conn.execute('INSERT INTO species(image_fk, name, count, common, ' \
+                                 'is_camtrap) VALUES(?,?,?,?,?)',
+                                 (img_id, scientific, count, common, camtrap))
+        if item is None:
+            return None
+        return item.lastrowid
+
+    def add_location(self, img_id: str, loc_id: str, loc_name: str, lat: float=None,
+                     lon: float=None, camtrap: bool=False) -> Optional[str]:
+        """Adds location information and back references it to the unique image ID"""
+        if lat is None or lon is None:
+            item = self.conn.execute('INSERT INTO locations(image_fk, loc_id, name, is_camtrap) ' \
+                                     'VALUES(?,?,?,?)', (img_id, loc_id, loc_name, camtrap))
+        else:
+            item = self.conn.execute('INSERT INTO locations(image_fk, loc_id, name, lat, lon, ' \
+                                     'is_camtrap) VALUES(?,?,?,?,?,?)',
+                                    (img_id, loc_id, loc_name, lat, lon, camtrap))
+        if item is None:
+            return None
+        return item.lastrowid
+
 
 
 def get_params() -> tuple:
@@ -79,14 +133,17 @@ def get_params() -> tuple:
     parser.add_argument('-user', required=True,
                         help='Username for minio endpoint')
     parser.add_argument('-pw', required=True, help='Password for minio endpoint')
+    parser.add_argument('-gendb', action='store_true',
+                                help='Generates a database of all images and their information')
     parser.add_argument('uuid_id', type=str,
-                        help='MinIO collection UUID to upload to (use - to skip)')
+                        help='MinIO collection UUID to process (use - (hyphen) to search all)')
 
     args = parser.parse_args()
 
     return args.uuid_id if args.uuid_id != '-' else None, \
            args.user, \
-           args.pw
+           args.pw, \
+           args.gendb
 
 
 def write_error(msg: str) -> None:
@@ -348,6 +405,21 @@ def get_image_info(minio: Minio, bucket: str, image_path: str, work_dir: str) ->
     return return_species, return_location, return_hash
 
 
+def strip_common_name(camtrap_comment: str) -> Optional[str]:
+    """Returns the common name stripped from a CamTrap observation comment
+    Arguments:
+        camtrap_comment - the string to search
+    Returns:
+        Returns the common name if found, otherwise None
+    """
+    if '[COMMONNAME:' in camtrap_comment and ']' in camtrap_comment:
+        start_idx = camtrap_comment.index('[COMMONNAME:') + len('[COMMONNAME:')
+        end_idx = camtrap_comment.index(']', start_idx)
+        return camtrap_comment[start_idx:end_idx]
+
+    return None
+
+
 def camtrap_species(camtrap: dict, media_id: str) -> int:
     """Counts the species in the Camtrap data for an image (media)
     Arguments:
@@ -363,6 +435,30 @@ def camtrap_species(camtrap: dict, media_id: str) -> int:
             found_species = found_species + 1
 
     return found_species
+
+def camtrap_species_info(camtrap: dict, media_id: str) -> Optional[tuple]:
+    """Returns the species names and counts for the specieid media ID
+    Arguments:
+        camtrap - the Camtrap data
+        media_id - the image ID to find species for
+    Return:
+        Returns a tuple containing dicts of species scientific name, count, and common name.
+        eg: ({'scientific': 'Canis lupus familiaris', 'count': 2, 'common': 'Domestic Dog'}, ...)
+    """
+    found_species = []
+
+    for one_obs in camtrap[CAMTRAP_OBSERVATIONS]:
+        if media_id in one_obs:
+            for row in csv.reader(StringIO(one_obs)):
+                obs_template = row
+                new_obs = list(obs_template)
+                found_species.append({'scientific': new_obs[8],
+                                      'count': new_obs[9],
+                                      'common': strip_common_name(new_obs[19])
+                                    })
+
+    return tuple(found_species) if len(found_species) > 0 else None
+
 
 def camtrap_location(camtrap: dict, locations: dict) -> bool:
     """Matches the lat-lon in the Camtrap data for an image (media)
@@ -385,13 +481,35 @@ def camtrap_location(camtrap: dict, locations: dict) -> bool:
     return False
 
 
-def match_image(db_conn: KeyValueStore, hash_val: str, image_name: str) -> bool:
+def camtrap_location_info(camtrap: dict, locations: dict) -> Optional[dict]:
+    """Finds the lat-lon in the Camtrap data for an image (media)
+    Arguments:
+        camtrap - the Camtrap data
+        locations - the location information to match
+    Return:
+        The found location as a dict. 
+        eg: {'id': id, 'name': name, 'lat': -1.111111, 'lon': -2.22222}
+    """
+    for one_loc in camtrap[CAMTRAP_DEPLOYMENT]:
+        missed = False
+        if not locations["id"] in one_loc:
+            missed = True
+            break
+
+        if not missed:
+            for row in csv.reader(StringIO(one_loc)):
+                loc_template = row
+                new_loc = list(loc_template)
+                return {'id': new_loc[1], 'name': new_loc[2], 'lat': new_loc[3], 'lon': new_loc[3]}
+
+    return None
+
+def match_hash(db_conn: ImageInfoStore, hash_val: str) -> bool:
     """Attempts to find the hash value in the database and adds it 
        if its not found
     Arguments:
         db_conn - the working database
         hash_val - the hash value to look up
-        image_name - the name of the image
     Return:
         Returns None if the image already exists in the database and
         the matching image path if not.
@@ -400,10 +518,9 @@ def match_image(db_conn: KeyValueStore, hash_val: str, image_name: str) -> bool:
         found
     """
     if not db_conn.contains(hash_val):
-        db_conn.add(hash_val, image_name)
         return None
 
-    return db_conn.getitem(hash_val)
+    return db_conn.getname(hash_val)
 
 
 def update_camtrap_species(camtrap: dict, media_id: str, species: tuple) -> dict:
@@ -420,10 +537,10 @@ def update_camtrap_species(camtrap: dict, media_id: str, species: tuple) -> dict
     for one_obs in camtrap[CAMTRAP_OBSERVATIONS]:
         if media_id in one_obs:
             found_obs = one_obs
-            for one_specie in species:
-                if one_specie['scientific'] in one_obs:
-                    missing_species = [cur_specie for cur_specie in missing_species
-                                        if cur_specie['scientific'] != one_specie['scientific']]
+            for one_species in species:
+                if one_species['scientific'] in one_obs:
+                    missing_species = [cur_species for cur_species in missing_species
+                                        if cur_species['scientific'] != one_species['scientific']]
 
     for row in csv.reader(StringIO(found_obs)):
         obs_template = row
@@ -446,12 +563,48 @@ def update_camtrap_species(camtrap: dict, media_id: str, species: tuple) -> dict
     return camtrap
 
 
-def fix_camtrap_minio(minio: Minio, minio_id: str, db_conn: KeyValueStore) -> None:
+def update_image_info(db_conn: ImageInfoStore, minio_id: str, image_hash: str, image_base_path: str,
+                      image_path: str, species: tuple, location: dict, cam_species: tuple,
+                      cam_location: dict) -> None:
+    """Updates the database with the image information
+    Arguments:
+        db_conn - the database
+        minio_id - the collection ID on MinIO to upload to
+        image_hash - the hash of the image pixel data
+        image_base_path - the base path of the image on MinIO
+        image_path - the path to the image on MinIO
+        species - species information from the image
+        location - the location from the image
+        cam_species - the species stored in the camtrap data
+        cam_location - the location stored in the camtrap data
+    """
+    cur_base_path = image_base_path.rstrip('/')
+    image_dir, image_name = os.path.split(image_path)
+    if not image_dir.startswith(cur_base_path):
+        raise ValueError(f'Image path does not start with the base folder name "{image_dir}" "{cur_base_path}"')
+    image_path_part = image_dir[:len(cur_base_path)].rstrip('/').lstrip('/')
+    new_id = db_conn.add_image_info(image_hash, minio_id, cur_base_path,
+                                    image_path_part, image_name)
+    for one_species in species:
+        db_conn.add_species(new_id, one_species['scientific'], one_species['count'],
+                            one_species['common'], camtrap=False)
+    db_conn.add_location(new_id, location['id'], location['name'], camtrap=False)
+    for one_species in cam_species:
+        db_conn.add_species(new_id, one_species['scientific'], one_species['count'],
+                            one_species['common'], camtrap=True)
+    db_conn.add_location(new_id, cam_location['id'], cam_location['name'], cam_location['lat'],
+                         cam_location['lon'], camtrap=True)
+    #db_conn.add_duplicates(new_id, image_hash)
+
+
+def fix_camtrap_minio(minio: Minio, minio_id: str, db_conn: ImageInfoStore,
+                      db_image_data: bool = False) -> None:
     """Performs the fixes to CamTrap
     Arguments:
         minio - the MinIO client instance to use
         minio_id - the collection ID on MinIO to upload to
-        db_conn - the key-value database
+        db_conn - the database
+        db_image_data - store image data in database
     """
     dest_bucket = "sparcd-" + minio_id
     dest_coll_base = os.path.join("Collections", minio_id)
@@ -531,10 +684,19 @@ def fix_camtrap_minio(minio: Minio, minio_id: str, db_conn: KeyValueStore) -> No
                     print("WARNING: unable to get hash for duplicate check " \
                           f"{one_image.object_name}")
                 else:
-                    img_match = match_image(db_conn, hash_val, one_image.object_name)
+                    img_match = match_hash(db_conn, hash_val)
                     if img_match is not None:
                         print("INFO: Duplicate image found", img_match, flush=True)
                         print("INFO:               current", one_image.object_name, flush=True)
+                    else:
+                        if db_image_data is True:
+                            update_image_info(db_conn, minio_id, hash_val, base_image_dir,
+                                        one_image.object_name,
+                                        species, locations,
+                                        camtrap_species_info(camtrap, one_image.object_name),
+                                        camtrap_location_info(camtrap, locations))
+                        else:
+                            db_conn.add(hash_val, one_image.object_name)
 
         # Write the CamTrap data and upload the CSV files
         if camtrap["modified"]:
@@ -550,13 +712,15 @@ def fix_camtrap_minio(minio: Minio, minio_id: str, db_conn: KeyValueStore) -> No
         shutil.rmtree(work_dir)
 
 
-def process_images(minio_id: str, user: str, pw: str) -> None:
+def process_images(minio_id: str, user: str, pw: str, gendb: bool = False) -> None:
     # pylint: disable=invalid-name
     """Fixes CamTrap data on MinIO
     Arguments:
         minio_id - (optional) corresponding MinIO collection ID to upload to
         user - username for MinIO endpoint
         pw - password for MinIO endpoint
+        gendb - generate a database in user's home folder of images, their
+                hash, and other information
     """
 
     # Create the MinIO Client instance
@@ -566,9 +730,15 @@ def process_images(minio_id: str, user: str, pw: str) -> None:
     # Print out what we're doing
     print(f"MinIO endpoint is {MINIO_ENDPOINT}", flush=True)
 
-    # Get a temporary SQLite folder to work within
-    work_dir = tempfile.mkdtemp(prefix="sparcd_sqlite_")
-    sqlite_instance = KeyValueStore(os.path.join(work_dir, "sparcd.sqlite"))
+    # Get the SQLite database to work within
+    if gendb is True:
+        work_dir = os.path.expanduser("~")
+    else:
+        work_dir = tempfile.mkdtemp(prefix="sparcd_sqlite_")
+    sqlite_db_filename = os.path.join(work_dir, "sparcd.sqlite")
+    if gendb is True and os.path.exists(sqlite_db_filename):
+        os.remove(sqlite_db_filename)
+    sqlite_instance = ImageInfoStore(sqlite_db_filename)
 
     if minio_id is None:
         minio_ids = get_sparcd_ids(minio)
@@ -577,16 +747,17 @@ def process_images(minio_id: str, user: str, pw: str) -> None:
 
     for one_id in minio_ids:
         print("Processing ID " + one_id, flush=True)
-        fix_camtrap_minio(minio, one_id, sqlite_instance)
+        fix_camtrap_minio(minio, one_id, sqlite_instance, gendb)
 
-    # Clean up the temporary folder
-    print(f" ... removing sqlite folder {work_dir}", flush=True)
+    # Clean up the temporary folder when we're not generating a DB
     sqlite_instance.close()
-    shutil.rmtree(work_dir)
+    if gendb is not True:
+        print(f" ... removing sqlite folder {work_dir}", flush=True)
+        shutil.rmtree(work_dir)
 
     print("Done", flush=True)
 
 
 if __name__ == '__main__':
-    m_minio_id, m_user, m_pw = get_params()
-    process_images(m_minio_id, m_user, m_pw)
+    m_minio_id, m_user, m_pw, m_gen_db = get_params()
+    process_images(m_minio_id, m_user, m_pw, m_gen_db)
