@@ -3,6 +3,7 @@
 """
 
 import argparse
+import concurrent.futures
 import csv
 import hashlib
 from io import StringIO
@@ -14,7 +15,7 @@ import tempfile
 import time
 import traceback
 import sqlite3
-from typing import Optional
+from typing import Optional, Union
 from minio import Minio, S3Error
 from PIL import Image
 
@@ -41,7 +42,9 @@ class ImageInfoStore(dict):
     """
     def __init__(self, filename: str=None):
         """Initializer"""
-        self.conn = sqlite3.connect(filename)
+        self.filename = filename
+
+        self.conn = sqlite3.connect(filename, timeout=60)
         self.conn.execute("CREATE TABLE IF NOT EXISTS image_info (id INTEGER PRIMARY KEY, " \
                           "hash TEXT NOT NULL, collection TEXT NOT NULL, " \
                           "path_upload TEXT NOT NULL, path_frag TEXT DEFAULT NULL, " \
@@ -52,13 +55,14 @@ class ImageInfoStore(dict):
                           "is_camtrap INTEGER DEFAULT 0, " \
                           "FOREIGN KEY(image_fk) REFERENCES image_info(id))" )
         self.conn.execute("CREATE TABLE IF NOT EXISTS locations(id INTEGER PRIMARY KEY, " \
-                          "image_fk INTEGER NOT NULL, loc_id TEXT DEFAULT NULL, name TEXT DEFAULT NULL, " \
-                          "lat REAL DEFAULT NULL, lon REAL DEFAULT NULL, " \
-                          "is_camtrap INTEGER DEFAULT 0, " \
+                          "image_fk INTEGER NOT NULL, loc_id TEXT DEFAULT NULL, " \
+                          "name TEXT DEFAULT NULL, lat REAL DEFAULT NULL, " \
+                          "lon REAL DEFAULT NULL, is_camtrap INTEGER DEFAULT 0, " \
                           "FOREIGN KEY(image_fk) REFERENCES image_info(id))")
         self.conn.execute("CREATE INDEX IF NOT EXISTS image_hash_idx on image_info(hash)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS species_idx on species(image_fk)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS locations_idx on locations(image_fk)")
+        self.conn.commit()
 
     def close(self) -> None:
         """Closes the DB"""
@@ -67,8 +71,9 @@ class ImageInfoStore(dict):
 
     def contains(self, img_hash: str) -> Optional[bool]:
         """Searches for hash in DB and returns row"""
-        return self.conn.execute('SELECT 1 FROM image_info WHERE hash = ?',
-                                    (img_hash,)).fetchone() is not None
+        item = self.conn.execute('SELECT 1 FROM image_info WHERE hash = ?',
+                                    (img_hash,)).fetchone()
+        return item is not None
 
     def getname(self, img_hash: str) -> Optional[str]:
         """Returns the name of the associated hash"""
@@ -84,6 +89,7 @@ class ImageInfoStore(dict):
                                     (img_hash, img_name))
         if item is None:
             raise KeyError(img_hash)
+        self.conn.commit()
         return img_name
 
     def add_image_info(self, img_hash: str, coll_id: str, upload_path: str, path_frag: str,
@@ -94,6 +100,7 @@ class ImageInfoStore(dict):
                                  (img_hash, coll_id, upload_path, path_frag, img_name))
         if item is None:
             return None
+        self.conn.commit()
         return item.lastrowid
 
     def add_species(self, img_id: str, scientific: str, count: int, common: str,
@@ -104,6 +111,7 @@ class ImageInfoStore(dict):
                                  (img_id, scientific, count, common, camtrap))
         if item is None:
             return None
+        self.conn.commit()
         return item.lastrowid
 
     def add_location(self, img_id: str, loc_id: str, loc_name: str, lat: float=None,
@@ -118,6 +126,7 @@ class ImageInfoStore(dict):
                                     (img_id, loc_id, loc_name, lat, lon, camtrap))
         if item is None:
             return None
+        self.conn.commit()
         return item.lastrowid
 
 
@@ -341,7 +350,7 @@ def get_image_info(minio: Minio, bucket: str, image_path: str, work_dir: str) ->
 
     download_minio_files(minio, bucket, (image_path,), work_dir)
     if not os.path.exists(local_image):
-        print("MinIO download failed for image {image_path} to {local_image}")
+        print("MinIO download failed for image {image_path} to {local_image}", flush=True)
         return None
 
     cmd = ["exiftool", "-U", "-v3", local_image]
@@ -379,10 +388,10 @@ def get_image_info(minio: Minio, bucket: str, image_path: str, work_dir: str) ->
                 found_location = False
 
     if len(species_string) <= 0:
-        print("WARNING: no species found in image")
+        print("WARNING: no species found in image", flush=True)
         return None, None, None
     if len(location_string) <= 0:
-        print("WARNING: no location found in image")
+        print("WARNING: no location found in image", flush=True)
         return None, None, None
     return_species = []
     for one_species in split_species_string(species_string):
@@ -396,12 +405,12 @@ def get_image_info(minio: Minio, bucket: str, image_path: str, work_dir: str) ->
     elif len(locs) == 3:
         return_location["elevation"] = locs[1]
     else:
-        print("WARNING: Unknown location format in image, returning 0 for elevation")
+        print("WARNING: Unknown location format in image, returning 0 for elevation", flush=True)
         return_location["elevation"] = 0
 
     return_hash = get_image_hash(local_image)
 
-#    print(f"HACK: Species: {return_species} Location: {return_location}")
+#    print(f"HACK: Species: {return_species} Location: {return_location}", flush=True)
     return return_species, return_location, return_hash
 
 
@@ -581,7 +590,8 @@ def update_image_info(db_conn: ImageInfoStore, minio_id: str, image_hash: str, i
     cur_base_path = image_base_path.rstrip('/')
     image_dir, image_name = os.path.split(image_path)
     if not image_dir.startswith(cur_base_path):
-        raise ValueError(f'Image path does not start with the base folder name "{image_dir}" "{cur_base_path}"')
+        raise ValueError('Image path does not start with the base folder name ' \
+                         f'"{image_dir}" "{cur_base_path}"')
     image_path_part = image_dir[:len(cur_base_path)].rstrip('/').lstrip('/')
     new_id = db_conn.add_image_info(image_hash, minio_id, cur_base_path,
                                     image_path_part, image_name)
@@ -617,99 +627,131 @@ def fix_camtrap_minio(minio: Minio, minio_id: str, db_conn: ImageInfoStore,
 
     # List MinIO subpaths under Uploads folder
     dest_uploads_folder = os.path.join(dest_coll_base, "Uploads/")
- #   print(f"HACK: checking MinIO path '{dest_uploads_folder}'")
-    for one_result in minio.list_objects(dest_bucket, dest_uploads_folder):
-        if not one_result.is_dir:
-            continue
-        if one_result.object_name == dest_uploads_folder:
-            continue
+ #   print(f"HACK: checking MinIO path '{dest_uploads_folder}'", flush=True)
+    if sqlite3.threadsafety >= 1:
+        thread_db = db_conn if sqlite3.threadsafety == 3 else db_conn.filename
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            cur_futures = {executor.submit(fix_camtrap_thread, minio, minio_id,
+                                        thread_db, dest_bucket, one_result.object_name,
+                                        db_image_data):
+                one_result for one_result in minio.list_objects(dest_bucket, dest_uploads_folder)}
 
-        # Get a temporary folder to work within
-        work_dir = tempfile.mkdtemp(prefix="sparcd_")
-
-        dest_uploads_base = one_result.object_name
-
-        # Get the deployments.csv, media.csv, and observations.csv files, and load them
-        print(f" ... pulling camtrap files from '{dest_uploads_base}' to '{work_dir}'", flush=True)
-        download_minio_files(minio, dest_bucket,
-                         [os.path.join(dest_uploads_base, fn) for fn in MINIO_CAMTRAP_FILES],
-                         work_dir)
-        camtrap = load_camtrap(work_dir)
-
-        # Check lat-lon
-        if len(camtrap[CAMTRAP_DEPLOYMENT]) > 0 and camtrap[CAMTRAP_DEPLOYMENT][0] and \
-           len(camtrap[CAMTRAP_DEPLOYMENT][0]) > 0:
-            dep_info = camtrap[CAMTRAP_DEPLOYMENT][0].split(",")
-            lat = int(float(dep_info[3].strip('"')))
-            lon = int(float(dep_info[4].strip('"')))
-            if lat == 0 or lon == 0:
-                print(f"FOUND: Lat-Lon values are not valid (missing integer portion)" \
-                      f" {dep_info[3]}  {dep_info[4]}")
-            if lat < -122 or lat > -100:
-                print(f"FOUND: Lat-Lon values are not valid (Lon out of bounds) {dep_info[3]}" \
-                      f"  {dep_info[4]}")
-            if lon < 30 or lon > 40:
-                print(f"FOUND: Lat-Lon values are not valid (Lat out of bounds) {dep_info[3]}" \
-                      f"  {dep_info[4]}")
-        else:
-            print(f"FOUND: Missing Deployment data {camtrap[CAMTRAP_DEPLOYMENT]}")
-            continue
-
-        # Loop through the images
-        print(f"HACK: Pulling image folders from {dest_uploads_base}", flush=True)
-        for one_upload in minio.list_objects(dest_bucket, dest_uploads_base):
-            if not one_upload.is_dir:
+            for future in concurrent.futures.as_completed(cur_futures):
+                try:
+                    _ = future.result()
+                except Exception as exc:
+                    print(f'Generated an exception: {exc}', flush=True)
+    else:
+        for one_result in minio.list_objects(dest_bucket, dest_uploads_folder):
+            if not one_result.is_dir:
                 continue
-            base_image_dir = one_upload.object_name
-            for one_image in minio.list_objects(dest_bucket, base_image_dir):
-                if one_image.is_dir:
-                    print(f"WARNING: FOUND SUBFOLDER: {one_image.object_name}", flush=True)
-                    continue
-                species, locations, hash_val = get_image_info(minio, dest_bucket,
-                                        one_image.object_name, work_dir)
-                num_species = camtrap_species(camtrap, one_image.object_name)
-                species_len = len(species) if species else 0
-                if num_species < species_len:
-                    camtrap = update_camtrap_species(camtrap, one_image.object_name, species)
-                elif num_species != species_len:
-                    print("FOUND: Mismatched number of species", one_image.object_name,
-                          "found", num_species, "(metadata) vs", len(species) if \
-                          species is not None else 0, "(image)", flush=True)
-                if locations and not camtrap_location(camtrap, locations):
-                    print("FOUND: Image location mismatch", one_image.object_name, " -> ",
-                          locations, flush=True)
-                elif not locations:
-                    print("FOUND: Image missing locations", one_image.object_name, flush=True)
-                if hash_val == "ERROR":
-                    print("WARNING: unable to get hash for duplicate check " \
-                          f"{one_image.object_name}")
-                else:
-                    img_match = match_hash(db_conn, hash_val)
-                    if img_match is not None:
-                        print("INFO: Duplicate image found", img_match, flush=True)
-                        print("INFO:               current", one_image.object_name, flush=True)
-                    else:
-                        if db_image_data is True:
-                            update_image_info(db_conn, minio_id, hash_val, base_image_dir,
-                                        one_image.object_name,
-                                        species, locations,
-                                        camtrap_species_info(camtrap, one_image.object_name),
-                                        camtrap_location_info(camtrap, locations))
-                        else:
-                            db_conn.add(hash_val, one_image.object_name)
+            if one_result.object_name == dest_uploads_folder:
+                continue
+            fix_camtrap_thread(minio, minio_id, db_conn, dest_bucket, one_result.object_name,
+                               db_image_data)
 
-        # Write the CamTrap data and upload the CSV files
-        if camtrap["modified"]:
-            print(" ... uploading camtrap files", flush=True)
-            write_camtrap(camtrap, work_dir)
-            upload_local_files([os.path.join(work_dir, fn) for fn in MINIO_CAMTRAP_FILES], minio,
-                           dest_bucket, dest_uploads_base, content_type="text/csv")
+
+def fix_camtrap_thread(minio: Minio, minio_id: str, db_conn: Union[ImageInfoStore | str],
+                       bucket: str, folder_path: str, db_image_data: bool) -> None:
+    """Performs the fixes for one uploaded folder
+    Arguments:
+        minio - the MinIO client instance to use
+        minio_id - the collection ID on MinIO to upload to
+        db_conn - the database instance or database file path
+        bucket - the destination bucket
+        folder_path - the path to the folder to check
+        db_image_data - store image data in database
+    """
+    # Check if we have a database instance or the file name
+    if not isinstance(db_conn, ImageInfoStore):
+        db_conn = ImageInfoStore(db_conn)
+
+    # Get a temporary folder to work within
+    work_dir = tempfile.mkdtemp(prefix="sparcd_")
+
+    dest_uploads_base = folder_path
+
+    # Get the deployments.csv, media.csv, and observations.csv files, and load them
+    print(f" ... pulling camtrap files from '{dest_uploads_base}' to '{work_dir}'", flush=True)
+    download_minio_files(minio, bucket,
+                     [os.path.join(dest_uploads_base, fn) for fn in MINIO_CAMTRAP_FILES],
+                     work_dir)
+    camtrap = load_camtrap(work_dir)
+
+    # Check lat-lon
+    if len(camtrap[CAMTRAP_DEPLOYMENT]) > 0 and camtrap[CAMTRAP_DEPLOYMENT][0] and \
+       len(camtrap[CAMTRAP_DEPLOYMENT][0]) > 0:
+        dep_info = camtrap[CAMTRAP_DEPLOYMENT][0].split(",")
+        lat = int(float(dep_info[3].strip('"')))
+        lon = int(float(dep_info[4].strip('"')))
+        if lat == 0 or lon == 0:
+            print(f"FOUND: Lat-Lon values are not valid (missing integer portion)" \
+                  f" {dep_info[3]}  {dep_info[4]}", flush=True)
+        if lat < -122 or lat > -100:
+            print(f"FOUND: Lat-Lon values are not valid (Lon out of bounds) {dep_info[3]}" \
+                  f"  {dep_info[4]}", flush=True)
+        if lon < 30 or lon > 40:
+            print(f"FOUND: Lat-Lon values are not valid (Lat out of bounds) {dep_info[3]}" \
+                  f"  {dep_info[4]}", flush=True)
+    else:
+        print(f"FOUND: Missing Deployment data {camtrap[CAMTRAP_DEPLOYMENT]}", flush=True)
+        return
+
+    # Loop through the images
+    print(f"HACK: Pulling image folders from {dest_uploads_base}", flush=True)
+    for one_upload in minio.list_objects(bucket, dest_uploads_base):
+        if not one_upload.is_dir:
+            continue
+        base_image_dir = one_upload.object_name
+        for one_image in minio.list_objects(bucket, base_image_dir):
+            if one_image.is_dir:
+                print(f"WARNING: FOUND SUBFOLDER: {one_image.object_name}", flush=True)
+                continue
+            species, locations, hash_val = get_image_info(minio, bucket,
+                                    one_image.object_name, work_dir)
+            num_species = camtrap_species(camtrap, one_image.object_name)
+            species_len = len(species) if species else 0
+            if num_species < species_len:
+                camtrap = update_camtrap_species(camtrap, one_image.object_name, species)
+            elif num_species != species_len:
+                print("FOUND: Mismatched number of species", one_image.object_name,
+                      "found", num_species, "(metadata) vs", len(species) if \
+                      species is not None else 0, "(image)", flush=True)
+            if locations and not camtrap_location(camtrap, locations):
+                print("FOUND: Image location mismatch", one_image.object_name, " -> ",
+                      locations, flush=True)
+            elif not locations:
+                print("FOUND: Image missing locations", one_image.object_name, flush=True)
+            if hash_val == "ERROR":
+                print("WARNING: unable to get hash for duplicate check " \
+                      f"{one_image.object_name}", flush=True)
+            else:
+                img_match = match_hash(db_conn, hash_val)
+                if img_match is not None:
+                    print("INFO: Duplicate image found", img_match, flush=True)
+                    print("INFO:               current", one_image.object_name, flush=True)
+                else:
+                    if db_image_data is True:
+                        update_image_info(db_conn, minio_id, hash_val, base_image_dir,
+                                    one_image.object_name,
+                                    species, locations,
+                                    camtrap_species_info(camtrap, one_image.object_name),
+                                    camtrap_location_info(camtrap, locations))
+                    else:
+                        db_conn.add(hash_val, one_image.object_name)
+
+    # Write the CamTrap data and upload the CSV files
+    if camtrap["modified"]:
+        print(" ... uploading camtrap files", flush=True)
+        write_camtrap(camtrap, work_dir)
+        upload_local_files([os.path.join(work_dir, fn) for fn in MINIO_CAMTRAP_FILES], minio,
+                       bucket, dest_uploads_base, content_type="text/csv")
 #        else:
 #            print(" ... camtrap files not modified - skipping upload", flush=True)
 
-        # Clean up the temporary folder
-        print(f" ... removing working folder {work_dir}", flush=True)
-        shutil.rmtree(work_dir)
+    # Clean up the temporary folder
+    print(f" ... removing working folder {work_dir}", flush=True)
+    shutil.rmtree(work_dir)
 
 
 def process_images(minio_id: str, user: str, pw: str, gendb: bool = False) -> None:
