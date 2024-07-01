@@ -2,7 +2,7 @@ name: "pre-release"
 
 on:
   push:
-    branches: [ Sanimal-No-ES, test-irods-4.2 ]
+    branches: [ Sanimal-No-ES ]
     tags-ignore:
       - "*"
   workflow_dispatch:
@@ -38,10 +38,10 @@ jobs:
       - name: "Checkout source code"
         uses: actions/checkout@v2
 
-      - name: Set up JDK 15
+      - name: Set up JDK 21
         uses: actions/setup-java@v1
         with:
-          java-version: 15
+          java-version: 21
 
       - name: Build with Maven
         run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd-${{ matrix.platform }}.jar
