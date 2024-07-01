@@ -5,7 +5,7 @@ import model.SanimalData;
 import model.analysis.SanimalAnalysisUtils;
 import model.location.Location;
 import model.species.Species;
-import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -177,7 +177,7 @@ public class DirectoryManager
 					ImageEntry imageEntry = imageEntries.get(imageIndex);
 					// Create an archive entry for the image
 					String tarPath = StringUtils.substringAfter(imageEntry.getFile().getAbsolutePath(), topDirectory).replace('\\', '/');
-					ArchiveEntry archiveEntry = tarOut.createArchiveEntry(imageEntry.getFile(), tarPath);
+					TarArchiveEntry archiveEntry = tarOut.createArchiveEntry(imageEntry.getFile(), tarPath);
 					// Put the archive entry into the TAR file
 					tarOut.putArchiveEntry(archiveEntry);
 					// Write all the bytes in the file into the TAR file
@@ -195,7 +195,7 @@ public class DirectoryManager
 				if (tarIndex == 0)
 				{
 					// Create an archive entry for the upload meta file
-					ArchiveEntry archiveEntry = tarOut.createArchiveEntry(directoryMetaJSON, "/UploadMeta.json");
+					TarArchiveEntry archiveEntry = tarOut.createArchiveEntry(directoryMetaJSON, "/UploadMeta.json");
 					// Put the archive entry into the TAR file
 					tarOut.putArchiveEntry(archiveEntry);
 					// Write all the bytes in the file into the TAR file
@@ -205,7 +205,7 @@ public class DirectoryManager
 				}
 
 				// Create an archive entry for the metaCSV file
-				ArchiveEntry archiveEntry = tarOut.createArchiveEntry(tempMetaCSV, "/meta-" + tarIndex.toString() + ".csv");
+				TarArchiveEntry archiveEntry = tarOut.createArchiveEntry(tempMetaCSV, "/meta-" + tarIndex.toString() + ".csv");
 				// Put the archive entry into the TAR file
 				tarOut.putArchiveEntry(archiveEntry);
 				// Write all the bytes in the file into the TAR file

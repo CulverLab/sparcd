@@ -62,6 +62,8 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
@@ -75,6 +77,7 @@ import java.util.concurrent.locks.*;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.security.InvalidParameterException;
 import java.security.NoSuchAlgorithmException;
 
@@ -410,11 +413,101 @@ public class S3ConnectionManager
 	 */
 	public void pushLocalSpecies(List<Species> newSpecies)
 	{
+		String userName = System.getProperty("user.name");
+		Path localSpeciesPath = Paths.get(System.getProperty("user.home"), ".sparcd", SETTINGS_FOLDER, userName);
+		Path localSpecies = Paths.get(localSpeciesPath.toString(), SPECIES_FILE);
+
 		// Convert the species list to JSON format
 		String json = SanimalData.getInstance().getGson().toJson(newSpecies);
 
+		try
+		{
+			File speciesFolder = new File(localSpeciesPath.toString());
+			if (!speciesFolder.exists() || !speciesFolder.isDirectory())
+			{
+				speciesFolder.mkdirs();
+			}
+			Files.writeString(localSpecies, json);
+		}
+		catch (IOException e)
+		{
+			SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.ERROR,
+					null,
+					"Error",
+					"Species file error",
+					"Could not update local file for species list\n" + ExceptionUtils.getStackTrace(e),
+					false);
+		}
 		// Write the species.json file to the server
-		this.writeRemoteFile(ROOT_BUCKET, SPECIES_FILE_PATH, json);
+		//this.writeRemoteFile(ROOT_BUCKET, SPECIES_FILE_PATH, json);
+	}
+
+	/**
+	 * Returns an updated version of the current species with new species added
+	 * and removed species deleted
+	 *
+	 * @param curSpecies The JSON of the current species list
+	 * @param newSpecies The JSON of the new species list
+	 * @return The updated species JSON. Returns the original curSpecies if an error occurs
+	 */
+	private String updateSpecies(String curSpecies, String newSpecies)
+	{
+		String returnJson = curSpecies;
+		boolean modified = false;
+
+		if (curSpecies != null && newSpecies != null)
+		{
+			try
+			{
+				List<Species> curGson = SanimalData.getInstance().getGson().fromJson(curSpecies, SPECIES_LIST_TYPE);
+				List<Species> newGson = SanimalData.getInstance().getGson().fromJson(newSpecies, SPECIES_LIST_TYPE);
+
+				// Loop through cur species
+				for (int idx = 0; idx < curGson.size(); idx++)
+				{
+					Species oneCur = curGson.get(idx);
+
+					// Find in new
+					OptionalInt result = IntStream.range(0, newGson.size())
+				                .filter(ii -> oneCur.getName().equals(newGson.get(ii).getName()) &&
+				            				  oneCur.getScientificName().equals(newGson.get(ii).getScientificName()))
+				                .findFirst();
+
+					// Remove from new if found and remove from cur is not found
+					if (result.isPresent())
+					{
+						if (result.getAsInt() >= 0 && result.getAsInt() < newGson.size())
+						{
+					   		newGson.remove(result.getAsInt());
+					   	}
+					} else {
+						curGson.remove(idx);
+						modified = true;
+						idx--;		// Adjust idx for item removed
+					}
+				}
+				// Add all unfound species to cur
+				for (Species oneSpecie: newGson)
+				{
+					curGson.add(oneSpecie);
+					modified = true;
+				}
+
+				// If modified, get jSON string
+				if (modified == true)
+				{
+					returnJson = SanimalData.getInstance().getGson().toJson(curGson);
+				}
+			}
+			catch (JsonSyntaxException e)
+			{
+				// Ignore exception and any changes made
+				modified = false;
+			}
+		}
+
+		return (modified == true ? returnJson : curSpecies);
 	}
 
 	/**
@@ -424,12 +517,73 @@ public class S3ConnectionManager
 	 */
 	public List<Species> pullRemoteSpecies()
 	{
-		// Read the contents of the file into a string
-		String fileContents = this.readRemoteFile(ROOT_BUCKET, SPECIES_FILE_PATH);
+		String fileContents = null;
+		boolean saveLocal = false;
+
+		String userName = System.getProperty("user.name");
+		Path localSpeciesPath = Paths.get(System.getProperty("user.home"), ".sparcd", SETTINGS_FOLDER, userName);
+		Path localSpecies = Paths.get(localSpeciesPath.toString(), SPECIES_FILE);
+
+		File inFile = new File(localSpecies.toString());
+		if (inFile.exists() && inFile.isFile())
+		{
+			// Read the contents of the file into a string
+			try
+			{
+				fileContents = Files.readString(localSpecies);
+			}
+			catch (IOException e)
+			{
+				// Ignore the exception(s)
+			}
+		}
+
+		// Read the remote contents of the file into a string
+		String remoteContents = this.readRemoteFile(ROOT_BUCKET, SPECIES_FILE_PATH);
+
+		// Check if we're to use the remote contents - no local yet
+		if (fileContents == null || fileContents.length() == 0)
+		{
+			fileContents = remoteContents;
+			saveLocal = true;
+		}
 
 		// Ensure that we in fact got data back
 		if (fileContents != null)
 		{
+			if (fileContents != remoteContents)
+			{
+				String updatedFileContents = this.updateSpecies(fileContents, remoteContents);
+				if (!updatedFileContents.equals(fileContents))
+				{
+					fileContents = updatedFileContents;
+					saveLocal = true;
+				}
+			}
+			// Check if we need to save the file locally
+			if (saveLocal == true)
+			{
+				try
+				{
+					File speciesFolder = new File(localSpeciesPath.toString());
+					if (!speciesFolder.exists() || !speciesFolder.isDirectory())
+					{
+						speciesFolder.mkdirs();
+					}
+					Files.writeString(localSpecies, fileContents);
+				}
+				catch (IOException e)
+				{
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.ERROR,
+						null,
+						"Error",
+						"Species file error",
+						"Could not update local file for species list\n" + ExceptionUtils.getStackTrace(e),
+						false);
+				}
+			}
+
 			// Try to parse the JSON string into a list of species
 			try
 			{
@@ -1590,7 +1744,8 @@ public class S3ConnectionManager
                     }
                     catch (Exception e)
                     {
-                        System.out.println("EXCEPtION:");
+                        System.out.println("EXCEPTION:");
+                        e.printStackTrace(System.out);
                     }
                     return curReturns;
                 });
@@ -2274,6 +2429,9 @@ public class S3ConnectionManager
 		Double locLon = null;
 		Double locHeight = null;
 		String deploymentID = null;
+		List<String> sciNames = new ArrayList<String>();
+		List<String> comNames = new ArrayList<String>();
+		List<Integer> speCount = new ArrayList<Integer>();
 
 		obs.mediaID = med.mediaID;
 		for (MetaData oneMeta: imageMetadata)
@@ -2315,13 +2473,34 @@ public class S3ConnectionManager
 					locHeight = Double.parseDouble(oneMeta.getValue());
 					break;
 				case SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME:
-					obs.scientificName = oneMeta.getValue();
+					{
+						Integer idx =  Integer.parseInt(oneMeta.getUnit());
+						while (sciNames.size() < idx + 1)
+						{
+							sciNames.add(null);
+						}
+						sciNames.set(idx, oneMeta.getValue());
+					}
 					break;
 				case SanimalMetadataFields.A_SPECIES_COMMON_NAME:
-					obs.comments = "[COMMONNAME:" + oneMeta.getValue() + "]";
+					{
+						Integer idx =  Integer.parseInt(oneMeta.getUnit());
+						while (comNames.size() < idx + 1)
+						{
+							comNames.add(null);
+						}
+						comNames.set(idx, "[COMMONNAME:" + oneMeta.getValue() + "]");
+					}
 					break;
 				case SanimalMetadataFields.A_SPECIES_COUNT:
-					obs.count = Integer.parseInt(oneMeta.getValue());
+					{
+						Integer idx =  Integer.parseInt(oneMeta.getUnit());
+						while (speCount.size() < idx + 1)
+						{
+							speCount.add(-1);
+						}
+						speCount.set(idx, Integer.parseInt(oneMeta.getValue()));
+					}
 					break;
 				case SanimalMetadataFields.A_COLLECTION_ID:
 					deploymentID = oneMeta.getValue();
@@ -2337,6 +2516,10 @@ public class S3ConnectionManager
 		if ((locLat == null) || (locLon == null))
 		{
 			throw new InvalidParameterException("Missing location lat-lon for Camtrap metadata");
+		}
+		if (sciNames.size() != comNames.size() || comNames.size() != speCount.size())
+		{
+			throw new InvalidParameterException("Unequal number of species scientific and common names, with counts");
 		}
 
 		// Look for a deployment that matches our LocationID
@@ -2370,7 +2553,17 @@ public class S3ConnectionManager
 
 		// Add new items to the Camtrap metadata store
 		metaCamtrap.media.add(med);
-		metaCamtrap.observations.add(obs);
+		for (Integer idx = 0; idx < sciNames.size(); idx++)
+		{
+			Observations curObs = new Observations();
+			curObs.deploymentID = obs.deploymentID;
+			curObs.mediaID = obs.mediaID;
+			curObs.timestamp = obs.timestamp;
+			curObs.scientificName = sciNames.get(idx);
+			curObs.comments = comNames.get(idx);
+			curObs.count = speCount.get(idx);
+			metaCamtrap.observations.add(curObs);
+		}
 		if (newDep == true)
 		{
 			metaCamtrap.deployments.add(ourDep);
@@ -2393,11 +2586,12 @@ public class S3ConnectionManager
 
 		// Either replace or add the data
 		Media oldMedia = null;
+		Media curMedia = null;
 		int index = 0;
 		while (index < metaCamtrap.media.size())
 		{
 			// Check for a media match
-			Media curMedia = metaCamtrap.media.get(index);
+			curMedia = metaCamtrap.media.get(index);
 			if (Objects.equals(curMedia.filePath, fileRelativePath))
 			{
 				oldMedia = curMedia;
@@ -2409,6 +2603,29 @@ public class S3ConnectionManager
 		if (index >= metaCamtrap.media.size())
 		{
 			metaCamtrap.media.add(newMeta.media.get(0));
+		}
+		else
+		{
+			// Update deployments (in our situation there's only one deployment)
+			metaCamtrap.deployments = newMeta.deployments;
+
+			// Update the media in case something has changed
+			metaCamtrap.media.set(index, curMedia);
+
+			// Update observations
+			List<Observations>   newObs = new ArrayList<Observations>();
+			for (Observations oneObs : metaCamtrap.observations)
+			{
+				if (!Objects.equals(oldMedia.mediaID, oneObs.mediaID))
+				{
+					newObs.add(oneObs);
+				}
+			}
+			for (Observations oneObs : newMeta.observations)
+			{
+				newObs.add(oneObs);
+			}
+			metaCamtrap.observations = newObs;
 		}
 	}
 
@@ -2500,39 +2717,40 @@ public class S3ConnectionManager
 	        	// When we have a match, we return that data
 	        	if (med.filePath.compareTo(remotePath) == 0)
 	        	{
-	        		Observations obs = this.findObservation(med, metaData);
 	        		Deployments dep = this.findDeployment(med, metaData);
-
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_SANIMAL, SanimalMetadataFields.A_SANIMAL));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_TIME_TAKEN, 
-									Long.toString(obs.timestamp.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_YEAR_TAKEN, 
-									Long.toString(obs.timestamp.getYear())));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_MONTH_TAKEN, 
-									Long.toString(obs.timestamp.getMonth().getValue())));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_HOUR_TAKEN, 
-									Long.toString(obs.timestamp.getHour())));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_DAY_OF_YEAR_TAKEN, 
-									Long.toString(obs.timestamp.getDayOfYear())));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN, 
-									Long.toString(obs.timestamp.getDayOfWeek().getValue())));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_NAME, dep.locationName));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_ID, dep.locationID));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_LATITUDE, Double.toString(dep.latitude)));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, Double.toString(dep.longitude)));
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_ELEVATION, Double.toString(dep.cameraHeight)));
-					String unitsValue = S3MetaDataAndDomainData.generateHashValue(obs.scientificName);
-					imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, obs.scientificName, unitsValue));
-					imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_COMMON_NAME, this.getCommonName(obs.comments), unitsValue));
-					imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_COUNT, Long.toString(obs.count), unitsValue));
-
-					String collectionID = dep.deploymentID;
-					int index = dep.deploymentID.indexOf(":");
-					if (index >= 0)
+	        		for (Observations obs: this.findObservations(med, metaData))
 					{
-						collectionID = dep.deploymentID.substring(0, index);
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_SANIMAL, SanimalMetadataFields.A_SANIMAL));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_TIME_TAKEN, 
+										Long.toString(obs.timestamp.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_YEAR_TAKEN, 
+										Long.toString(obs.timestamp.getYear())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_MONTH_TAKEN, 
+										Long.toString(obs.timestamp.getMonth().getValue())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_HOUR_TAKEN, 
+										Long.toString(obs.timestamp.getHour())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_DAY_OF_YEAR_TAKEN, 
+										Long.toString(obs.timestamp.getDayOfYear())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_DATE_DAY_OF_WEEK_TAKEN, 
+										Long.toString(obs.timestamp.getDayOfWeek().getValue())));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_NAME, dep.locationName));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_ID, dep.locationID));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_LATITUDE, Double.toString(dep.latitude)));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_LONGITUDE, Double.toString(dep.longitude)));
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_LOCATION_ELEVATION, Double.toString(dep.cameraHeight)));
+						String unitsValue = S3MetaDataAndDomainData.generateHashValue(obs.scientificName);
+						imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_SCIENTIFIC_NAME, obs.scientificName, unitsValue));
+						imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_COMMON_NAME, this.getCommonName(obs.comments), unitsValue));
+						imageMetaData.add(S3MetaDataAndDomainData.instanceWithUnits(SanimalMetadataFields.A_SPECIES_COUNT, Long.toString(obs.count), unitsValue));
+
+						String collectionID = dep.deploymentID;
+						int index = dep.deploymentID.indexOf(":");
+						if (index >= 0)
+						{
+							collectionID = dep.deploymentID.substring(0, index);
+						}
+						imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_COLLECTION_ID, collectionID));
 					}
-					imageMetaData.add(S3MetaDataAndDomainData.instance(SanimalMetadataFields.A_COLLECTION_ID, collectionID));
 	        	}
 	        }
 	    }
@@ -2547,17 +2765,18 @@ public class S3ConnectionManager
 	 * @param metadata the complete set of metadata to search
 	 * @return the found observation
 	 */
-	private Observations findObservation(Media med, Camtrap metadata)
+	private List<Observations> findObservations(Media med, Camtrap metadata)
 	{
+		List<Observations> allObs = new ArrayList<Observations>();
 		for (Observations obs: metadata.observations)
 		{
 			if (obs.mediaID.equals(med.mediaID))
 			{
-				return obs;
+				allObs.add(obs);
 			}
 		}
 
-		return null;
+		return allObs;
 	}
 
 	/**

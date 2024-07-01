@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Class containing utils for writing & reading metadata
@@ -73,12 +74,39 @@ public class MetadataUtils
 		// Then we create an output stream to that file
 		if (tempToWriteTo.exists())
 		{
+			boolean success = false;
 			try (OutputStream outputStream = new FileOutputStream(tempToWriteTo))
 			{
 				// And perform the write to the temporary file
 				new ExifRewriter().updateExifMetadataLossless(imageEntry.getFile(), outputStream, outputSet);
-				// Then copy the temporary file over top of the current file to update it
-				FileUtils.forceDelete(imageEntry.getFile());
+				outputStream.close();
+				success = true;
+			}
+			if (success == true) 
+			{
+				int tryCount = 0;
+				while (tryCount < 3)
+				{
+					// Then copy the temporary file over top of the current file to update it
+					try
+					{
+						FileUtils.forceDelete(imageEntry.getFile());
+						break;
+					}
+					catch (IOException e)
+					{
+						// Ignore errors for now
+					}
+					try
+					{
+						Thread.sleep(1000);
+					}
+					catch (InterruptedException e)
+					{
+						// Ignore timeouts exceptions
+					}
+					tryCount++;
+				}
 				FileUtils.moveFile(tempToWriteTo, imageEntry.getFile());
 			}
 		}
@@ -144,9 +172,11 @@ public class MetadataUtils
 		ImageMetadata metadata = Imaging.getMetadata(imageFile);
 
 		// Grab the tiff metadata to read from, or return null
-		if (metadata instanceof JpegImageMetadata)
+		if (metadata instanceof JpegImageMetadata) {
 			return ((JpegImageMetadata) metadata).getExif();
-		else
+		}
+		else {
 			return null;
+		}
 	}
 }

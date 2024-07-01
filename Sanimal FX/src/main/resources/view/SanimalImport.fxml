@@ -30,9 +30,7 @@
                         <Insets bottom="20" left="5" right="5" top="20" />
                     </padding>
                     <children>
-                        <Button mnemonicParsing="false" onAction="#addNewSpecies" styleClass="addBtn" text="New Species" />
-                        <Button mnemonicParsing="false" onAction="#editCurrentSpecies" styleClass="editBtn" text="Edit" />
-                        <Button mnemonicParsing="false" onAction="#deleteCurrentSpecies" styleClass="deleteBtn" text="Delete" />
+                        <Label text="See admin to update species"/>
                     </children>
                 </FlowPane>
             </children>
@@ -92,12 +90,14 @@
                             <ListView fx:id="locationListView" onDragDetected="#locationListDrag" VBox.vgrow="ALWAYS" orientation="HORIZONTAL" styleClass="locationList" maxHeight="Infinity" />
                             <FlowPane alignment="CENTER" hgap="5" vgap="10">
                                 <padding>
-                                    <Insets bottom="20" left="5" right="5" top="20" />
+                                    <Insets bottom="20" left="5" right="5" top="5" />
                                 </padding>
                                 <children>
-                                    <Button mnemonicParsing="false" onAction="#addNewLocation" styleClass="addBtn" text="New Location" />
-                                    <Button mnemonicParsing="false" onAction="#editCurrentLocation" styleClass="editBtn" text="Edit" />
-                                    <Button mnemonicParsing="false" onAction="#deleteCurrentLocation" styleClass="deleteBtn" text="Delete" />
+                                    <FlowPane alignment="CENTER" hgap="5" vgap="10">
+                                        <TextField fx:id="txtLocationsSearch" promptText="Search Locations" HBox.hgrow="ALWAYS" />
+                                        <Button fx:id="btnLoccationsResetSearch" onAction="#resetLocationsSearch" styleClass="resetSearchBtn" HBox.hgrow="NEVER" />
+                                    </FlowPane>
+                                    <Label text="See admin to update locations"/>
                                 </children>
                             </FlowPane>
                         </children>

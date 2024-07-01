@@ -51,7 +51,7 @@ public class SettingsData
 		this.drSandersonDirectoryCompatibility.setValue(otherSettings.getDrSandersonDirectoryCompatibility());
 		this.drSandersonOutput.setValue(otherSettings.getDrSandersonOutput());
 		this.automaticNextImage.setValue(otherSettings.getAutomaticNextImage());
-		this.backgroundImageLoading.setValue(otherSettings.getBackgroundImageLoading());
+		this.backgroundImageLoading.setValue(false);//setValue(otherSettings.getBackgroundImageLoading());
 	}
 
 	/**
@@ -66,7 +66,7 @@ public class SettingsData
 		settingList.add(new CustomPropertyItem<>("Dr. Sanderson's Directory Compatibility: ", "Options", "Gives the option to read a directory in Dr. Jim Sanderson's format and automatically tag it", drSandersonDirectoryCompatibility, Boolean.class));
 		settingList.add(new CustomPropertyItem<>("Show Dr. Sanderson's Output Replicas: ", "Options", "Gives the option to see Dr. Jim Sanderson's Output.txt and AllPictures.txt replicas when querying", drSandersonOutput, Boolean.class));
 		settingList.add(new CustomPropertyItem<>("Automatically Select Next Image: ", "Options", "Automatically select the next image after tagging one with species", automaticNextImage, Boolean.class));
-		settingList.add(new CustomPropertyItem<>("Background Image Loading: ", "Options", "Load images in the background when selecting them, useful for slow hard drives or SD cards", backgroundImageLoading, Boolean.class));
+		//settingList.add(new CustomPropertyItem<>("Background Image Loading: ", "Options", "Load images in the background when selecting them, useful for slow hard drives or SD cards", backgroundImageLoading, Boolean.class));
 	}
 
 	/**
@@ -411,12 +411,12 @@ public class SettingsData
 
 	public void setBackgroundImageLoading(boolean backgroundImageLoading)
 	{
-		this.backgroundImageLoading.set(backgroundImageLoading);
+		this.backgroundImageLoading.set(false); //set(backgroundImageLoading);
 	}
 
 	public boolean getBackgroundImageLoading()
 	{
-		return backgroundImageLoading.get();
+		return false; // backgroundImageLoading.get();
 	}
 
 	public BooleanProperty backgroundImageLoadingProperty()

@@ -10,6 +10,10 @@
     -fx-graphic: url("../images/uploadWindow/delete16.png");
 }
 
+.resetSearchBtn {
+    -fx-graphic: url("../images/uploadWindow/clear16.png");
+}
+
 .uploadBtn {
     -fx-graphic: url("../images/uploadWindow/uploadIcon16.png");
 }

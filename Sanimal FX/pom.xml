@@ -106,7 +106,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-imaging</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0-alpha3</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.fxmisc.easybind/easybind -->
         <dependency>
@@ -172,7 +172,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.21</version>
+            <version>1.26.1</version>
         </dependency>
         <!-- Allows for a map control -->
         <dependency>
