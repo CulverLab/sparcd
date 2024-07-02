@@ -41,4 +41,4 @@ jobs:
           draft: false
           prerelease: false
           fail_on_unmatched_files: true
-          tag_name: latest_${{ env.NOW }}
+          tag_name: latest
