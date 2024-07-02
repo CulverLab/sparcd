@@ -47,16 +47,15 @@ jobs:
         run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd-${{ matrix.platform }}.jar
 
       - name: Upload release assets
-        uses: actions/upload-release-asset@v1
+        uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
-          # This is how it will be named on the release page. Put whatever name
-          # you like, remember that they need to be different for each platform.
-          asset_name: sparcd-${{ matrix.platform }}.jar
+          # This is how it will be labeled on the release page.
+          default_release_name: sparcd-release
           # The path to the file you want to upload.
-          asset_path: sparcd-${{ matrix.platform }}.jar
-          # probably you will need to change it, but most likely you are
-          # uploading a binary file
-          asset_content_type: application/java-archive
+          file: sparcd-${{ matrix.platform }}.jar
+          # This is a release
+          prerelease: false
+          # Noisy output
+          verbose: true

@@ -52,14 +52,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          #upload_url: ${{ needs.create_release.outputs.upload_url }}
-          # This is how it will be named on the release page. Put whatever name
-          # you like, remember that they need to be different for each platform.
-          default_release_name: sparcd-prerelease.jar
+          # This is how it will be labeled on the release page.
+          default_release_name: sparcd-prerelease
           # The path to the file you want to upload.
           file: sparcd-${{ matrix.platform }}.jar
-          # probably you will need to change it, but most likely you are
-          # uploading a binary file
-          #asset_content_type: application/java-archive
+          # This is a prerelease
           prerelease: true
+          # Noisy output
           verbose: true
