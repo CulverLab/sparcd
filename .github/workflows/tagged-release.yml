@@ -7,26 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  create_release:
-    name: Create release
-    runs-on: ubuntu-latest
-    # Note this. We are going to use that in further jobs.
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-    steps:
-      - name: Create release
-        id: create_release
-        uses: softprops/action-gh-release@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: latest
-          name: Release Build
-          draft: false
-          prerelease: false
 
   gh_tagged_release:
-    needs: create_release
     strategy:
       fail-fast: false
       matrix:
@@ -56,18 +38,4 @@ jobs:
           draft: false
           prerelease: false
           fail_on_unmatched_files: true
-
-#        uses: xresloader/upload-to-github-release@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          # This is how it will be labeled on the release page.
-#          default_release_name: Release Build
-#          # The path to the file you want to upload.
-#          file: sparcd-${{ matrix.platform }}.jar
-#          # This is a release
-#          prerelease: false
-#          # Noisy output
-#          verbose: true
-#          # Overwrite existing items
-#          overwrite: true
+          tag_name: latest
