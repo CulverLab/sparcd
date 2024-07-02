@@ -22,7 +22,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: prerelease
-          name: Development Build
+          name: Prerelease Build
           draft: true
           prerelease: true
 
