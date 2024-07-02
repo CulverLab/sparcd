@@ -42,3 +42,4 @@ jobs:
           prerelease: false
           fail_on_unmatched_files: true
           tag_name: latest
+          make_latest: true
