@@ -56,6 +56,6 @@ jobs:
           # The path to the file you want to upload.
           file: sparcd-${{ matrix.platform }}.jar
           # This is a release
-          prerelease: false
+          #prerelease: false
           # Noisy output
           verbose: true
