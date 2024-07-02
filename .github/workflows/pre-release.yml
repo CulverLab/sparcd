@@ -2,9 +2,8 @@ name: "pre-release"
 
 on:
   push:
-    branches: [ Sanimal-No-ES ]
-    tags-ignore:
-      - "*"
+    tags:
+      - "v*"
   workflow_dispatch:
 
 jobs:
@@ -21,7 +20,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: pre-release
+          tag_name: prerelease
           release_name: Development Build
           draft: true
           prerelease: true
