@@ -52,10 +52,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # This is how it will be labeled on the release page.
-          default_release_name: sparcd-release
+          default_release_name: Release Build
           # The path to the file you want to upload.
           file: sparcd-${{ matrix.platform }}.jar
           # This is a release
-          #prerelease: false
+          prerelease: false
           # Noisy output
           verbose: true
