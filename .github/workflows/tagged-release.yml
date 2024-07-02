@@ -53,8 +53,8 @@ jobs:
         with:
           name: Release Build
           files: sparcd-${{ matrix.platform }}.jar
-          draft: true
-          prerelease: true
+          draft: false
+          prerelease: false
           fail_on_unmatched_files: true
 
 #        uses: xresloader/upload-to-github-release@v1

@@ -48,17 +48,27 @@ jobs:
         run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd-${{ matrix.platform }}.jar
 
       - name: Upload release assets
-        uses: xresloader/upload-to-github-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # This is how it will be labeled on the release page.
-          default_release_name: Prerelease Build
-          # The path to the file you want to upload.
-          file: sparcd-${{ matrix.platform }}.jar
-          # This is a prerelease
+          name: Prerelease Build
+          files: sparcd-${{ matrix.platform }}.jar
+          draft: true
           prerelease: true
-          # Noisy output
-          verbose: true
-          # Overwrite existing items
-          overwrite: true
+          fail_on_unmatched_files: true
+
+#        uses: xresloader/upload-to-github-release@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          # This is how it will be labeled on the release page.
+#          default_release_name: Prerelease Build
+#          # The path to the file you want to upload.
+#          file: sparcd-${{ matrix.platform }}.jar
+#          # This is a prerelease
+#          prerelease: true
+#          # Noisy output
+#          verbose: true
+#          # Overwrite existing items
+#          overwrite: true
