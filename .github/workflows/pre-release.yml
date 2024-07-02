@@ -2,8 +2,9 @@ name: "pre-release"
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [ Sanimal-No-ES ]
+    tags-ignore:
+      - "*"
   workflow_dispatch:
 
 jobs:
