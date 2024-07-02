@@ -17,12 +17,12 @@ jobs:
     steps:
       - name: Create release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: prerelease
-          release_name: Development Build
+          name: Development Build
           draft: true
           prerelease: true
 
@@ -48,16 +48,18 @@ jobs:
         run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd-${{ matrix.platform }}.jar
 
       - name: Upload release assets
-        uses: softprops/action-gh-release@v2
+        uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          #upload_url: ${{ needs.create_release.outputs.upload_url }}
           # This is how it will be named on the release page. Put whatever name
           # you like, remember that they need to be different for each platform.
-          asset_name: sparcd-${{ matrix.platform }}-prerelease.jar
+          default_release_name: sparcd-${{ matrix.platform }}-prerelease.jar
           # The path to the file you want to upload.
-          asset_path: sparcd-${{ matrix.platform }}.jar
+          file: sparcd-${{ matrix.platform }}.jar
           # probably you will need to change it, but most likely you are
           # uploading a binary file
-          asset_content_type: application/java-archive
+          #asset_content_type: application/java-archive
+          prerelease: true
+          verbose: true
