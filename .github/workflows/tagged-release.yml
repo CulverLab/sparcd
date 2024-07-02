@@ -28,14 +28,17 @@ jobs:
       - name: Build with Maven
         run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd-${{ matrix.platform }}.jar
 
+      - name: set date env var
+        run: echo "NOW=$(date +'%Y.%m.%d')" >> $GITHUB_ENV
+
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: Release Build
+          name: Release Build ${{ end.NOW }}
           files: sparcd-${{ matrix.platform }}.jar
           draft: false
           prerelease: false
           fail_on_unmatched_files: true
-          tag_name: latest
+          tag_name: latest_${{ env.NOW }}
