@@ -60,3 +60,5 @@ jobs:
           prerelease: true
           # Noisy output
           verbose: true
+          # Overwrite existing items
+          overwrite: true
