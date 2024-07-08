@@ -563,7 +563,7 @@ def camtrap_location_info(camtrap: dict, locations: dict) -> Optional[dict]:
             for row in csv.reader(StringIO(one_loc)):
                 loc_template = row
                 new_loc = list(loc_template)
-                return {'id': new_loc[1], 'name': new_loc[2], 'lat': new_loc[3], 'lon': new_loc[3]}
+                return {'id': new_loc[1], 'name': new_loc[2], 'lat': new_loc[3], 'lon': new_loc[4]}
 
     return None
 
