@@ -1223,6 +1223,15 @@ public class S3ConnectionManager
 					delFile.delete();
 
 				}
+
+				// Showw success
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.INFORMATION,
+					null,
+					"Success",
+					"Your upload has finished",
+					"Your images have been uploaded to S3!",
+					false);
 			}
 		}
 		catch (IOException e)
@@ -1324,6 +1333,15 @@ public class S3ConnectionManager
 					String remoteFilePath = String.join("/", uploadPath, FilenameUtils.getName(oneFile));
 					this.uploadFile(collectionBucket, remoteFilePath, oneFile);
 				}
+
+				// Showw success
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.INFORMATION,
+					null,
+					"Success",
+					"Your update has finished",
+					"Your images have been updated to S3!",
+					false);
 			}
 		}
 		catch (Exception e)
