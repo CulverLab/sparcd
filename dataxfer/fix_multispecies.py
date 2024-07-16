@@ -750,7 +750,7 @@ def fix_camtrap_minio(minio: Minio, minio_id: str, db_conn: ImageInfoStore,
     if sqlite3.threadsafety >= 1 and db_image_data:
         print("HACK: Multi-threaded", flush=True)
         sqlite_files = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             cur_futures = {executor.submit(fix_camtrap_thread, minio, minio_id,
                                         db_conn.filename, dest_bucket, one_result.object_name,
                                         db_image_data):
@@ -802,17 +802,17 @@ def fix_camtrap_thread(minio: Minio, minio_id: str, db_conn: Union[ImageInfoStor
     Returns:
         Returns the name of the SQLite database file written to
     """
+    dest_uploads_base = folder_path
+
     # Check if we have a database instance or the file name
     if not isinstance(db_conn, ImageInfoStore):
         db_filename = tempfile.mkstemp(suffix='.sqlite',
                                        prefix='tsparcd', dir=os.path.dirname(db_conn))[1]
-        print("HACK:", db_filename, flush=True)
+        print('Database: \"', db_filename, '\" for \"', dest_uploads_base, '\"', flush=True)
         db_conn = ImageInfoStore(db_filename)
 
     # Get a temporary folder to work within
     work_dir = tempfile.mkdtemp(prefix="sparcd_")
-
-    dest_uploads_base = folder_path
 
     # Get the deployments.csv, media.csv, and observations.csv files, and load them
     print(f" ... pulling camtrap files from '{dest_uploads_base}' to '{work_dir}'", flush=True)
