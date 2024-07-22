@@ -12,6 +12,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -83,6 +84,14 @@ public class SanimalAnalysisController implements Initializable
 	@FXML
 	public MaskerPane mpnQuerying;
 
+	// The Vbox with the query cancel parameters, used to hide the cancel query button
+	@FXML
+	public VBox vbxQueryCancel;
+
+	// The cancel query button
+	@FXML
+	public Button btnCancelQuery;
+
 	///
 	/// FXML bound fields end
 	///
@@ -91,6 +100,8 @@ public class SanimalAnalysisController implements Initializable
 
 	private Image standardArrow = new Image("/images/analysisWindow/arrowDivider.png");
 	private Image highlightedArrow = new Image("/images/analysisWindow/arrowDividerSelected.png");
+
+	private boolean queryCancelled = false;
 
 	/**
 	 * Initialize sets up the analysis window and bindings
@@ -136,6 +147,7 @@ public class SanimalAnalysisController implements Initializable
 		this.lvwFilters.setItems(SanimalData.getInstance().getQueryEngine().getQueryFilters());
 
 		this.mpnQuerying.setVisible(false);
+		this.vbxQueryCancel.setVisible(false);
 	}
 
 	/**
@@ -145,7 +157,10 @@ public class SanimalAnalysisController implements Initializable
 	 */
 	public void query(ActionEvent actionEvent)
 	{
+		this.queryCancelled = false;
+
 		this.mpnQuerying.setVisible(true);
+		this.vbxQueryCancel.setVisible(true);
 
 		// Default 60s event interval
 		Integer eventInterval = 60;
@@ -181,16 +196,21 @@ public class SanimalAnalysisController implements Initializable
 			List<String> cloudAbsolutePaths = queryTask.getValue();
 
 			// Ask the user if they would like to continue to part 2 of the query where we retrieve metadata. This takes a while
-			Optional<ButtonType> buttonTypeOpt = SanimalData.getInstance().getErrorDisplay().showPopup(
-					Alert.AlertType.CONFIRMATION,
-					this.lvwFilters.getScene().getWindow(),
-					"Query Count",
-					null,
-					"This query will return " + cloudAbsolutePaths.size() + " results at approximately 6 results per second, continue?",
-					true);
+			Optional<ButtonType> buttonTypeOpt = null;
 
-			// If they press OK, query, otherwise just jump out
-			if (buttonTypeOpt.isPresent() && buttonTypeOpt.get() == ButtonType.OK)
+			if (this.queryCancelled == false)
+			{
+				buttonTypeOpt = SanimalData.getInstance().getErrorDisplay().showPopup(
+						Alert.AlertType.CONFIRMATION,
+						this.lvwFilters.getScene().getWindow(),
+						"Query Count",
+						null,
+						"This query will return " + cloudAbsolutePaths.size() + " results at approximately 6 results per second, continue?",
+						true);
+			}
+
+			// If not cancelled and they press OK, then query, otherwise just jump out
+			if (this.queryCancelled == false && buttonTypeOpt.isPresent() && buttonTypeOpt.get() == ButtonType.OK)
 			{
 				// Create a second task to perform the next query
 				Task<List<ImageEntry>> queryImageTask = new ErrorTask<List<ImageEntry>>()
@@ -213,7 +233,13 @@ public class SanimalAnalysisController implements Initializable
 					visDrSandersonController.visualize(dataAnalyzer);
 					visCSVController.visualize(dataAnalyzer);
 					visDownloadController.visualize(dataAnalyzer);
+	
+					// Hide the loading graphic
+					this.btnCancelQuery.setDisable(false);
+					this.btnCancelQuery.setGraphic(null);
+					// Hide the panes
 					this.mpnQuerying.setVisible(false);
+					this.vbxQueryCancel.setVisible(false);
 				});
 
 				// Execute the second query
@@ -221,12 +247,31 @@ public class SanimalAnalysisController implements Initializable
 			}
 			else
 			{
+				// Hide the loading graphic
+				this.btnCancelQuery.setDisable(false);
+				this.btnCancelQuery.setGraphic(null);
+				// Hide the panes
 				this.mpnQuerying.setVisible(false);
+				this.vbxQueryCancel.setVisible(false);
 			}
 
 		});
 		SanimalData.getInstance().getSanimalExecutor().getQueuedExecutor().addTask(queryTask);
 
+		actionEvent.consume();
+	}
+
+	/**
+	 * Called when the cancel query button is pressed
+	 *
+	 * @param actionEvent consumed
+	 */
+	public void queryCancel(ActionEvent actionEvent)
+	{
+		SanimalData.getInstance().getConnectionManager().cancelQuery();
+		this.queryCancelled = true;
+		this.btnCancelQuery.setGraphic(new ImageView(new Image("/images/mainMenu/loading.gif", 26, 26, true, true)));
+		this.btnCancelQuery.setDisable(true);
 		actionEvent.consume();
 	}
 

@@ -37,9 +37,6 @@ public class SanimalHomeController implements Initializable
 	// The credits button
 	@FXML
 	public Button btnCredits;
-	// The logout button to disconnect from the Cloud
-	@FXML
-	public Button btnLogout;
 	// The exit button to close the program
 	@FXML
 	public Button btnExit;
@@ -78,7 +75,6 @@ public class SanimalHomeController implements Initializable
 		// Hide the logout button and text when not logged in
 		this.lblUsername.visibleProperty().bind(loggedIn);
 		this.btnCredits.visibleProperty().bind(loggedIn);
-		this.btnLogout.visibleProperty().bind(loggedIn);
 		this.btnExit.visibleProperty().bind(loggedIn);
 	}
 

@@ -10,8 +10,10 @@ import model.s3.ImageCollection;
 import model.SanimalData;
 
 import org.apache.commons.io.FilenameUtils;
+import java.lang.InterruptedException;
 import java.util.function.BiFunction;
 import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.List;
@@ -26,6 +28,8 @@ public class S3QueryExecute
 {
     // The number of significant digits to use when comparing locations
     private static Double LOCATION_DECIMAL_MAX_DIFFERENCE = 0.00001;
+    // Semaphore used to cancel queries
+    private static final Semaphore cancelQuery = new Semaphore(1, true);
 
     /**
      * Performs the query to filter collections and images
@@ -34,7 +38,7 @@ public class S3QueryExecute
      * @param collections the list of collections to check
      * @return the result set of found images
      */
-    public static S3QueryResultSet executeQuery(S3QueryBuilder queryBuilder, final List<ImageCollection> collections) throws  InterruptedException, ExecutionException
+    public static S3QueryResultSet executeQuery(S3QueryBuilder queryBuilder, final List<ImageCollection> collections) throws InterruptedException, ExecutionException
     {
         S3QueryResultSet resultSet = new S3QueryResultSet();
         List<S3QueryBuilderCondition> conditions = queryBuilder.getConditions();
@@ -72,11 +76,21 @@ public class S3QueryExecute
                         res.matches = matches;
                         allMatches.add(res);
                     }
+
+                    if (S3QueryExecute.cancelQuery.availablePermits() == 0)
+                    {
+                        break;
+                    }
                 }
 
                 return allMatches;
             }
             );
+
+            if (S3QueryExecute.cancelQuery.availablePermits() == 0)
+            {
+                throw new InterruptedException();
+            }                    
 
             allFutures.add(queryFuture);
         }
@@ -1398,5 +1412,35 @@ public class S3QueryExecute
         }
 
         return valueList;
+    }
+
+    /**
+     * Cancels the current query
+     */
+    public static void cancelQuery()
+    {
+        // Set the semaphore to cancel the query if it's not set already
+        S3QueryExecute.cancelQuery.tryAcquire();
+    }
+
+    /**
+     * Clears the canceling of queries
+     */
+    public static void clearCancelQuery()
+    {
+        // Set the semaphore to cancel the query
+        if (S3QueryExecute.cancelQuery.availablePermits() == 0)
+        {
+            S3QueryExecute.cancelQuery.release();
+        }
+    }
+
+    /**
+     * Returns whether the query has been cancelled
+     */
+    public static boolean hasCancelQuery()
+    {
+        // Set the semaphore to cancel the query
+        return S3QueryExecute.cancelQuery.availablePermits() == 0;
     }
 }

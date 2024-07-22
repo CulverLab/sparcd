@@ -100,7 +100,7 @@
         <dependency>
             <groupId>org.jfxtras</groupId>
             <artifactId>jfxtras-controls</artifactId>
-            <version>11.0-r1-SNAPSHOT</version>
+            <version>17-r1</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-imaging -->
         <dependency>
@@ -112,13 +112,13 @@
         <dependency>
             <groupId>org.fxmisc.easybind</groupId>
             <artifactId>easybind</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.0.3</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.controlsfx/controlsfx -->
          <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
-            <version>12.0.0-SNAPSHOT</version>
+            <version>11.2.1</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/commons-validator/commons-validator -->
         <dependency>
