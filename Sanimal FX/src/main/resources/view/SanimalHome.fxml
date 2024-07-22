@@ -38,11 +38,6 @@
                         <Insets left="20" top="220" />
                     </StackPane.margin>
                 </Button>
-                <Button fx:id="btnLogout" minWidth="130" onAction="#logoutPressed" styleClass="logoutBtn" text="Logout" StackPane.alignment="TOP_LEFT">
-                    <StackPane.margin>
-                        <Insets left="20" top="270" />
-                    </StackPane.margin>
-                </Button>
                 <Button fx:id="btnExit" minWidth="130" onAction="#exitPressed" styleClass="exitBtn" text="Exit" StackPane.alignment="TOP_LEFT">
                     <StackPane.margin>
                         <Insets left="20" top="320" />
