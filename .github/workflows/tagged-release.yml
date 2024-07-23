@@ -29,7 +29,12 @@ jobs:
         run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd-${{ matrix.platform }}.jar
 
       - name: set date env var
+        if: ${{ matrix.platform != 'windows-latest' }}
         run: echo "NOW=$(date +'%Y.%m.%d')" >> $GITHUB_ENV
+
+      - name: set date env var (Windows)
+        if: ${{ matrix.platform == 'windows-latest' }}
+        run: $NOW=& Get-Date -format yyyy.MM.dd; echo "NOW=$NOW" >> $env:GITHUB_ENV
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
@@ -41,5 +46,6 @@ jobs:
           draft: false
           prerelease: false
           fail_on_unmatched_files: true
-          tag_name: latest
+          tag_name: Release-Build-${{ env.NOW }}
           make_latest: true
+
