@@ -1223,6 +1223,15 @@ public class S3ConnectionManager
 					delFile.delete();
 
 				}
+
+				// Showw success
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.INFORMATION,
+					null,
+					"Success",
+					"Your upload has finished",
+					"Your images have been uploaded to S3!",
+					false);
 			}
 		}
 		catch (IOException e)
@@ -1324,6 +1333,15 @@ public class S3ConnectionManager
 					String remoteFilePath = String.join("/", uploadPath, FilenameUtils.getName(oneFile));
 					this.uploadFile(collectionBucket, remoteFilePath, oneFile);
 				}
+
+				// Showw success
+				SanimalData.getInstance().getErrorDisplay().showPopup(
+					Alert.AlertType.INFORMATION,
+					null,
+					"Success",
+					"Your update has finished",
+					"Your images have been updated to S3!",
+					false);
 			}
 		}
 		catch (Exception e)
@@ -1391,6 +1409,11 @@ public class S3ConnectionManager
 									"Could not read the upload metadata for the upload " + folder + "!\n" + ExceptionUtils.getStackTrace(e),
 									false);
 						}
+					}
+
+					if (S3QueryExecute.hasCancelQuery() == true)
+					{
+						break;
 					}
 				}
 			}
@@ -1486,6 +1509,10 @@ public class S3ConnectionManager
 	{
 		try
 		{
+			// Clear any previous query cancel request
+			S3QueryExecute.clearCancelQuery();
+
+			// Go through the queries
     		List<String> collFilterIDs = queryBuilder.getCollectionIDs();
     		List<CompletableFuture<Void>> allFutures = new ArrayList<CompletableFuture<Void>>();
     		long collFilterIDLen = collFilterIDs.size();
@@ -1497,9 +1524,16 @@ public class S3ConnectionManager
                     if (loadColl)
                     {
                         CompletableFuture<Void> getFuture = CompletableFuture.supplyAsync(() -> {
-                            DoubleProperty progress = new SimpleDoubleProperty(0.0);
-                            this.retrieveAndInsertUploadList(oneCollection, progress);
-                            oneCollection.setUploadsWereSynced(true);
+                        	if (S3QueryExecute.hasCancelQuery() == false)
+                        	{
+	                            DoubleProperty progress = new SimpleDoubleProperty(0.0);
+	                            this.retrieveAndInsertUploadList(oneCollection, progress);
+	                            if (S3QueryExecute.hasCancelQuery() == false)
+	                            {
+	                            	// Only set this if the query was not cancelled before we finished
+	                            	oneCollection.setUploadsWereSynced(true);
+	                            }
+	                        }
                             return null;
                         }
                         );
@@ -1508,13 +1542,27 @@ public class S3ConnectionManager
 	            }
 			}
 
+			// Don't continue if query was cancelled
+			if (S3QueryExecute.hasCancelQuery() == true)
+			{
+				return Collections.emptyList();
+			}
+
 			if (allFutures.size() > 0)
 			{
 			    CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(allFutures.toArray(new CompletableFuture[allFutures.size()]));
 			    combinedFuture.get();
 			}
 
-			S3QueryResultSet resultSet = S3QueryExecute.executeQuery(queryBuilder.build(), collections);
+			S3QueryResultSet resultSet = null;
+			try
+			{
+				resultSet = S3QueryExecute.executeQuery(queryBuilder.build(), collections);
+			}
+			catch (InterruptedException e)
+			{
+				// This exception is caused by the user cancelling the query, do nothing
+			}
 
 			List<String> matchingFilePaths = new ArrayList<>();
 			
@@ -1547,6 +1595,14 @@ public class S3ConnectionManager
 		}
 
 		return Collections.emptyList();
+	}
+
+	/**
+	 * Cancels the outstanding query
+	 */
+	public void cancelQuery()
+	{
+		S3QueryExecute.cancelQuery();
 	}
 
 	/**

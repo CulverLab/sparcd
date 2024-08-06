@@ -79,4 +79,14 @@
         </items>
     </SplitPane>
     <MaskerPane fx:id="mpnQuerying" text="Performing Query..." progressVisible="true"/>
+    <VBox fx:id="vbxQueryCancel" spacing="5" alignment="CENTER">
+        <Button fx:id="btnCancelQuery" onAction="#queryCancel" VBox.vgrow="NEVER" text="Cancel">
+            <font>
+                <Font size="16"/>
+            </font>
+            <VBox.margin>
+                <Insets top="200"/>
+            </VBox.margin>
+        </Button>
+    </VBox>
 </StackPane>
