@@ -180,6 +180,8 @@ class ImageInfoStore(dict):
 
         other_db.close(True)
         other_db1.close(True)
+        other_db = None
+        other_db1 = None
         print(f'HACK: processed {row_count} rows from {other_db_filename}', flush=True)
 
 
@@ -846,6 +848,7 @@ def fix_camtrap_thread(minio: Minio, minio_id: str, db_conn: Union[ImageInfoStor
         return_filename = db_conn.filename
         if db_filename is not None:
             db_conn.close(True)
+            db_conn = None
         return return_filename
 
     # Loop through the images
@@ -902,6 +905,9 @@ def fix_camtrap_thread(minio: Minio, minio_id: str, db_conn: Union[ImageInfoStor
                         except sqlite3.OperationalError:
                             time.sleep(2)
                             if attempt == 2:
+                                if db_filename is not None:
+                                    db_conn.close(True)
+                                    db_conn = None
                                 raise
 
     # Write the CamTrap data and upload the CSV files
@@ -919,6 +925,7 @@ def fix_camtrap_thread(minio: Minio, minio_id: str, db_conn: Union[ImageInfoStor
     return_filename = db_conn.filename
     if db_filename is not None:
         db_conn.close(True)
+        db_conn = None
     return return_filename
 
 
