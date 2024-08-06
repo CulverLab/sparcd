@@ -68,10 +68,12 @@ class ImageInfoStore(dict):
         self.conn.execute("CREATE INDEX IF NOT EXISTS locations_idx on locations(image_fk)")
         self.conn.commit()
 
-    def close(self) -> None:
+    def close(self, clear_conn: bool=False) -> None:
         """Closes the DB"""
         self.conn.commit()
         self.conn.close()
+        if clear_conn:
+            self.conn = None
 
     def contains(self, img_hash: str) -> Optional[bool]:
         """Searches for hash in DB and returns row"""
@@ -176,8 +178,8 @@ class ImageInfoStore(dict):
             self.conn.commit()
             row_count += 1
 
-        other_db.close()
-        other_db1.close()
+        other_db.close(True)
+        other_db1.close(True)
         print(f'HACK: processed {row_count} rows from {other_db_filename}', flush=True)
 
 
@@ -805,6 +807,7 @@ def fix_camtrap_thread(minio: Minio, minio_id: str, db_conn: Union[ImageInfoStor
     dest_uploads_base = folder_path
 
     # Check if we have a database instance or the file name
+    db_filename = None
     if not isinstance(db_conn, ImageInfoStore):
         db_filename = tempfile.mkstemp(suffix='.sqlite',
                                        prefix='tsparcd', dir=os.path.dirname(db_conn))[1]
@@ -840,19 +843,24 @@ def fix_camtrap_thread(minio: Minio, minio_id: str, db_conn: Union[ImageInfoStor
         print(f"FOUND: Missing Deployment data {camtrap[CAMTRAP_DEPLOYMENT]}", flush=True)
         print(f" ... removing working folder {work_dir}", flush=True)
         remove_work_dir(work_dir)
-        return db_conn.filename
+        return_filename = db_conn.filename
+        if db_filename is not None:
+            db_conn.close(True)
+        return return_filename
 
     # Loop through the images
     print(f"HACK: Pulling image folders from {dest_uploads_base}", flush=True)
     search_folders = [dest_uploads_base]
     for cur_folder in search_folders:
-        for one_upload in minio.list_objects(bucket, dest_uploads_base):
+        print(f"HACK: CURRENT FOLDER: {cur_folder}", flush=True)
+        for one_upload in minio.list_objects(bucket, cur_folder):
             if not one_upload.is_dir:
                 continue
             base_image_dir = one_upload.object_name
             for one_image in minio.list_objects(bucket, base_image_dir):
                 if one_image.is_dir:
                     print(f"WARNING: FOUND SUBFOLDER: {one_image.object_name}", flush=True)
+                    # pylint: disable=modified-iterating-list
                     search_folders.append(one_upload.object_name)
                     continue
                 species, locations, hash_val = get_image_info(minio, bucket,
@@ -908,7 +916,10 @@ def fix_camtrap_thread(minio: Minio, minio_id: str, db_conn: Union[ImageInfoStor
     # Clean up the temporary folder
     print(f" ... removing working folder {work_dir}", flush=True)
     remove_work_dir(work_dir)
-    return db_conn.filename
+    return_filename = db_conn.filename
+    if db_filename is not None:
+        db_conn.close(True)
+    return return_filename
 
 
 def process_images(minio_id: str, user: str, pw: str, gendb: bool = False) -> None:
@@ -950,7 +961,7 @@ def process_images(minio_id: str, user: str, pw: str, gendb: bool = False) -> No
 
     # Finish the database
     sqlite_instance.add_indexes()
-    sqlite_instance.close()
+    sqlite_instance.close(True)
 
     # Clean up the temporary folder when we're not generating a DB
     if gendb is not True:
