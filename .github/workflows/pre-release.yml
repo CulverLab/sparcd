@@ -2,40 +2,61 @@ name: "pre-release"
 
 on:
   push:
-    branches: [ Sanimal-No-ES ]
+    branches: [ Sanimal-No-ES, test-irods-4.2 ]
     tags-ignore:
       - "*"
   workflow_dispatch:
 
 jobs:
+  create_release:
+    name: Create release
+    runs-on: ubuntu-latest
+    # Note this. We are going to use that in further jobs.
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: pre-release
+          release_name: Development Build
+          draft: true
+          prerelease: true
 
   gh_pre_release:
+    needs: create_release
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, windows-latest, macos-latest]
+        platform: [ubuntu-latest, windows-latest, macos-latest, macOS-14-Arm64]
 
     runs-on: ${{ matrix.platform }}
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - name: Set up JDK 15
+        uses: actions/setup-java@v1
         with:
-          distribution: 'oracle'
-          java-version: 21
+          java-version: 15
 
       - name: Build with Maven
         run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd-${{ matrix.platform }}.jar
 
-      - name: Upload prerelease assets
-        uses: softprops/action-gh-release@v2
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: Prerelease Build
-          files: sparcd-${{ matrix.platform }}.jar
-          draft: true
-          prerelease: true
-          fail_on_unmatched_files: true
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          # This is how it will be named on the release page. Put whatever name
+          # you like, remember that they need to be different for each platform.
+          asset_name: sparcd-${{ matrix.platform }}-prerelease.jar
+          # The path to the file you want to upload.
+          asset_path: sparcd-${{ matrix.platform }}.jar
+          # probably you will need to change it, but most likely you are
+          # uploading a binary file
+          asset_content_type: application/java-archive
