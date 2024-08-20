@@ -180,8 +180,8 @@ class ImageInfoStore(dict):
 
         other_db.close(True)
         other_db1.close(True)
-        other_db = None
-        other_db1 = None
+        del other_db
+        del other_db1
         print(f'HACK: processed {row_count} rows from {other_db_filename}', flush=True)
 
 
@@ -372,17 +372,23 @@ def get_image_hash(image_path: str) -> Optional[str]:
     default_return = None
 
     while attempts < 3:
+        img = None
         try:
             img = Image.open(image_path, 'r')
             img_hash = hashlib.sha512()
             img_hash.update(img.tobytes())
             img.close()
+            del img
             return img_hash.hexdigest()
         except:
             if attempts == 0:
                 print(f"ERROR: Exception getting image hash {image_path}", flush=True)
                 #traceback.print_exc()
                 default_return = "ERROR"
+
+        if img:
+            img.close()
+            del img
 
         time.sleep(2)
         attempts = attempts + 1
@@ -445,9 +451,11 @@ def get_image_info(minio: Minio, bucket: str, image_path: str, work_dir: str) ->
                 found_location = False
 
     if len(species_string) <= 0:
+        del res
         print("WARNING: no species found in image", flush=True)
         return None, None, return_hash
     if len(location_string) <= 0:
+        del res
         print("WARNING: no location found in image", flush=True)
         return None, None, return_hash
     return_species = []
@@ -466,6 +474,7 @@ def get_image_info(minio: Minio, bucket: str, image_path: str, work_dir: str) ->
         return_location["elevation"] = 0
 
 #    print(f"HACK: Species: {return_species} Location: {return_location}", flush=True)
+    del res
     return return_species, return_location, return_hash
 
 
@@ -811,9 +820,10 @@ def fix_camtrap_thread(minio: Minio, minio_id: str, db_conn: Union[ImageInfoStor
     # Check if we have a database instance or the file name
     db_filename = None
     if not isinstance(db_conn, ImageInfoStore):
-        db_filename = tempfile.mkstemp(suffix='.sqlite',
-                                       prefix='tsparcd', dir=os.path.dirname(db_conn))[1]
-        print('Database: \"', db_filename, '\" for \"', dest_uploads_base, '\"', flush=True)
+        db_fh, db_filename = tempfile.mkstemp(suffix='.sqlite',
+                                       prefix='tsparcd', dir=os.path.dirname(db_conn))
+        os.close(db_fh)
+        print(f'Database: \"{db_filename}\" for \"{dest_uploads_base}\"', flush=True)
         db_conn = ImageInfoStore(db_filename)
 
     # Get a temporary folder to work within
@@ -848,7 +858,7 @@ def fix_camtrap_thread(minio: Minio, minio_id: str, db_conn: Union[ImageInfoStor
         return_filename = db_conn.filename
         if db_filename is not None:
             db_conn.close(True)
-            db_conn = None
+            del db_conn
         return return_filename
 
     # Loop through the images
@@ -907,7 +917,7 @@ def fix_camtrap_thread(minio: Minio, minio_id: str, db_conn: Union[ImageInfoStor
                             if attempt == 2:
                                 if db_filename is not None:
                                     db_conn.close(True)
-                                    db_conn = None
+                                    del db_conn
                                 raise
 
     # Write the CamTrap data and upload the CSV files
@@ -925,7 +935,7 @@ def fix_camtrap_thread(minio: Minio, minio_id: str, db_conn: Union[ImageInfoStor
     return_filename = db_conn.filename
     if db_filename is not None:
         db_conn.close(True)
-        db_conn = None
+        del db_conn
     return return_filename
 
 
