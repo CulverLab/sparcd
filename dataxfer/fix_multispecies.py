@@ -416,8 +416,13 @@ def get_image_info(minio: Minio, bucket: str, image_path: str, work_dir: str) ->
 
     return_hash = get_image_hash(local_image)
 
-    cmd = ["exiftool", "-U", "-v3", local_image]
-    res = subprocess.run(cmd, capture_output=True, check=True)
+    try:
+        cmd = ["exiftool", "-U", "-v3", local_image]
+        res = subprocess.run(cmd, capture_output=True, check=True)
+    except subprocess.CalledProcessError as ex:
+        print(f'ERROR: Exception getting exif information on image {local_image}', flush=True)
+        print(f'       {ex}', flush=True)
+        return None, None, return_hash
 
     skip_line = 0
     found_species = False
