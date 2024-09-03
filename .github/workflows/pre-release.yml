@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, windows-latest, macos-latest]
+        platform: [ubuntu-latest, windows-latest, macos-latest, macos-14]
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -27,7 +27,12 @@ jobs:
           java-version: 21
 
       - name: Build with Maven
+        if: ${{ matrix.platform != 'macos-14' }}
         run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd-${{ matrix.platform }}.jar
+
+      - name: Build with Maven Mac Silicon
+        if: ${{ matrix.platform == 'macos-14' }}
+        run: cd "Sanimal FX" && mvn -U -Denv=MacSilicon compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd-MacSilicon.jar
 
       - name: Upload prerelease assets
         uses: softprops/action-gh-release@v2
