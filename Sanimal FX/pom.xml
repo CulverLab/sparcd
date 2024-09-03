@@ -24,14 +24,22 @@
             <properties>
                 <javafx-controls.version>16</javafx-controls.version>
                 <javafx-fxml.version>16</javafx-fxml.version>
+                <javafx-graphics.version>16</javafx-graphics.version>
             </properties>
         </profile>
         <profile>
             <!-- Enable by using "-DMacSilicon" on Maven command line -->
             <id>MacSilicon</id>
+            <activation>
+                <property>
+                    <name>env</name>
+                    <value>MacSilicon</value>
+                </property>
+            </activation>
             <properties>
                 <javafx-controls.version>17.0.2</javafx-controls.version>
                 <javafx-fxml.version>17.0.2</javafx-fxml.version>
+                <javafx-graphics.version>17.0.2</javafx-graphics.version>
             </properties>
         </profile>
     </profiles>
@@ -114,8 +122,8 @@
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics </artifactId>
-            <version>16</version>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${javafx-graphics.version}</version>
         </dependency>
         <!-- JFXtras to get a time picker -->
         <dependency>
