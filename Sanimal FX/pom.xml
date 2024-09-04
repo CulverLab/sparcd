@@ -28,12 +28,12 @@
             </properties>
         </profile>
         <profile>
-            <!-- Enable by using "-DMacSilicon" on Maven command line -->
-            <id>MacSilicon</id>
+            <!-- Enable by using "-Denv=AppleSilicon" on Maven command line -->
+            <id>AppleSilicon</id>
             <activation>
                 <property>
                     <name>env</name>
-                    <value>MacSilicon</value>
+                    <value>AppleSilicon</value>
                 </property>
             </activation>
             <properties>

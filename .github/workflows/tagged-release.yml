@@ -12,7 +12,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, windows-latest, macos-latest]
+        platform: [ubuntu-latest, windows-latest, macos-latest, macos-14]
+        include:
+          - platform: ubuntu-latest
+            jar_file_name: sparcd-ubuntu-latest.jar
+          - platform: windows-latest
+            jar_file_name: sparcd-windows-latest.jar
+          - platform: macos-latest
+            jar_file_name: macos-latest.jar
+          - platform: macos-14
+            jar_file_name: sparcd-AppleSilicon.jar
+            extra_maven_flags: -Denv=AppleSilicon
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -26,7 +36,7 @@ jobs:
           java-version: 21
 
       - name: Build with Maven
-        run: cd "Sanimal FX" && mvn -U compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../sparcd-${{ matrix.platform }}.jar
+        run: cd "Sanimal FX" && mvn -U ${{ extra_maven_flags }} compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../${{ matrix.jar_file_name }}
 
       - name: set date env var
         if: ${{ matrix.platform != 'windows-latest' }}
@@ -42,7 +52,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: Release Build ${{ env.NOW }}
-          files: sparcd-${{ matrix.platform }}.jar
+          files: ${{ matrix.jar_file_name }}
           draft: false
           prerelease: false
           fail_on_unmatched_files: true
