@@ -36,7 +36,7 @@ jobs:
           java-version: 21
 
       - name: Build with Maven
-        run: cd "Sanimal FX" && mvn -U ${{ extra_maven_flags }} compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../${{ matrix.jar_file_name }}
+        run: cd "Sanimal FX" && mvn -U ${{ matrix.extra_maven_flags }} compile package && mv target/SanimalFX-1.0-SNAPSHOT-jar-with-dependencies.jar ../${{ matrix.jar_file_name }}
 
       - name: set date env var
         if: ${{ matrix.platform != 'windows-latest' }}
