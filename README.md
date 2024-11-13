@@ -52,31 +52,31 @@ java -jar '<directory>/Sanimal FX/target/SanimalFX-1.0-SNAPSHOT-jar-with-depende
 
 ### Login - This screen is used to log into your account.
 
-![login screen](https://rawgit.com/DavidM1A2/Sanimal/master/screenshots/login.PNG)
+![login screen](https://github.com/CulverLab/sparcd/blob/Sanimal-No-ES/screenshots/login.PNG)
 
 ### Home - This tab is used to credit developers and provide an exit button.
 
-![home tab](https://rawgit.com/DavidM1A2/Sanimal/master/screenshots/home.PNG)
+![home tab](https://github.com/CulverLab/sparcd/blob/Sanimal-No-ES/screenshots/home.PNG)
 
 ### Import - This tab is used to tag images with metadata.
 
-![import tab](https://rawgit.com/DavidM1A2/Sanimal/master/screenshots/import.PNG)
+![import tab](https://github.com/CulverLab/sparcd/blob/Sanimal-No-ES/screenshots/import.PNG)
 
 ### Collections - This tab is used to show collections and upload images.
 
-![collections tab](https://rawgit.com/DavidM1A2/Sanimal/master/screenshots/collections.PNG)
+![collections tab](https://github.com/CulverLab/sparcd/blob/Sanimal-No-ES/screenshots/collections.PNG)
 
 ### Analyze/Query - This tab is used to query uploaded image data.
 
-![query tab](https://rawgit.com/DavidM1A2/Sanimal/master/screenshots/query.PNG)
+![query tab](https://github.com/CulverLab/sparcd/blob/Sanimal-No-ES/screenshots/query.PNG)
 
 ### Map - This tab is used to display all locations on an interactive map.
 
-![map tab](https://rawgit.com/DavidM1A2/Sanimal/master/screenshots/map.PNG)
+![map tab](https://github.com/CulverLab/sparcd/blob/Sanimal-No-ES/screenshots/map.PNG)
 
 ### Setings - This tab is used to change program settings.
 
-![settings tab](https://rawgit.com/DavidM1A2/Sanimal/master/screenshots/settings.PNG)
+![settings tab](https://github.com/CulverLab/sparcd/blob/Sanimal-No-ES/screenshots/settings.PNG)
 
 ## Built With
 
