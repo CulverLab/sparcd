@@ -1,7 +1,7 @@
 # Scientific Photo Analysis for Research & Conservation database (SPARCd), known during development as Scientific Animal Image Analysis (SANIMAL)
 
 SPARC'd is a program developed for the University of Arizona's Jaguar and Ocelot Monitoring Project at the Wild Cat Research and Conservation Center, School of Natural Resources and the Environment Department.
-* **It allows users to tag camera trap image data, transfer it onto a database, and then query it.*
+* **It allows users to tag camera trap image data, transfer it onto a database, and then query it.**
 
 ## Getting Started
 
@@ -9,22 +9,20 @@ Clone the repository and build it using maven. All dependencies will be automati
 
 ### Prerequisites
 
-Java 15:<br />
-https://www.oracle.com/java/technologies/javase/jdk15-archive-downloads.html<br />
+Java 21:<br />
+https://www.oracle.com/java/technologies/downloads/#java21<br />
 Maven:<br />
 https://maven.apache.org/install.html
 
 ### Prebuilt executable
 
-If you want to run the software without needing to build from source, prebuilt executables can be found in the [Version History directory](https://github.com/CulverLab/sparcd/tree/master/Version%20History)<br>
+If you want to run the software without needing to build from source, prebuilt executables can be downloaded from our main website's [download](https://www.wildcatresearch.arizona.edu/downloadsparcd) page<br>
 
-Sanimal X.Y.Z.jar is the original legacy software written in Swing which was the predecessor to SanimalFX.<br>
-Sanimal FX X.Y.jar is the current latest build of Sanimal FX including all dependencies.<br>
 <br>
-Executables are executed with:
+Executables are executed with (replace 'sparcd-X-Y.jar' with the name of the file you downloaded):
 
 ```
-java -jar 'Sanimal FX X.Y.jar' 
+java -jar 'sparcd-X-Y.jar' 
 ```
 
 ### Build from Source
@@ -32,7 +30,7 @@ java -jar 'Sanimal FX X.Y.jar'
 Clone the github repository into a directory:
 
 ```
-git clone https://github.com/DavidM1A2/Sanimal <directory>
+git clone https://github.com/CulverLab/sparcd.git <directory>
 ```
 
 Build the project into an executable JAR file to run:
