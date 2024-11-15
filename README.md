@@ -72,7 +72,7 @@ java -jar '<directory>/Sanimal FX/target/SanimalFX-1.0-SNAPSHOT-jar-with-depende
 
 ![map tab](https://github.com/CulverLab/sparcd/blob/Sanimal-No-ES/screenshots/map.PNG)
 
-### Setings - This tab is used to change program settings.
+### Settings - This tab is used to change program settings.
 
 ![settings tab](https://github.com/CulverLab/sparcd/blob/Sanimal-No-ES/screenshots/settings.PNG)
 
