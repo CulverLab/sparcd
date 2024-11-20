@@ -1,0 +1,10 @@
+{
+  "dateFormat": "ISO",
+  "timeFormat": "Time24Hour",
+  "locationFormat": "UTM",
+  "distanceUnits": "Feet",
+  "drSandersonDirectoryCompatibility": false,
+  "drSandersonOutput": true,
+  "automaticNextImage": true,
+  "backgroundImageLoading": false
+}
