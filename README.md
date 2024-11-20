@@ -100,7 +100,7 @@ After the files are created, you can modify their contents to best suit your nee
 
 * [Maven](https://maven.apache.org/) - Dependency Management
 
-* This Beta Version of “SPARC’d”  is being developed by University of Arizona School of Natural Resources and the Environment (SNRE) and CyVerse. 
+* This version of “SPARC’d”  is being developed by University of Arizona School of Natural Resources and the Environment (SNRE) and CyVerse. 
 
 ## Authors
 
