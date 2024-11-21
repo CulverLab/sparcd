@@ -60,6 +60,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.DoubleProperty;
 import java.io.*;
 import java.lang.reflect.Type;
+import java.lang.RuntimeException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -86,10 +87,12 @@ import java.security.NoSuchAlgorithmException;
  */
 public class S3ConnectionManager
 {
-	// String of our base folder
-	private static final String ROOT_BUCKET = "sparcd";
 	// Prefix of all sparcd buckets
 	private static final String BUCKET_PREFIX = "sparcd-";
+	// String of our settings folder
+	private static final String SETTINGS_BUCKET_PREFIX = BUCKET_PREFIX + "settings";
+	// String for legacy settings bucket name
+	private static final String LEGACY_SETTINGS_BUCKET = "sparcd";
 	// The name of the collections folder
 	private static final String COLLECTIONS_FOLDER_NAME = "Collections";
 	// The name of the Uploads folder
@@ -114,6 +117,8 @@ public class S3ConnectionManager
 	private static final String COLLECTIONS_PERMISSIONS_FILE = "permissions.json";
 	// Name of the Upload JSON file
 	private static final String UPLOAD_JSON_FILE = "UploadMeta.json";
+	// The number of tries to make when trying to create a settings bucket
+	private static final int SETTINGS_BUCKET_CREATE_TRIES = 5;
 
 	// The type used to serialize a list of locations through Gson
 	private static final Type LOCATION_LIST_TYPE = new TypeToken<ArrayList<Location>>()
@@ -132,6 +137,9 @@ public class S3ConnectionManager
 	private static final String FOLDER_TIMESTAMP_FORMAT = "uuuu.MM.dd.HH.mm.ss";
 
 	private AmazonS3 s3Client; //authenticatedAccount;
+
+	// Root bucket name variable
+	private String settingsBucket = null;
 
 	// Retry waiting variables
 	private int retryWaitIndex = 0;
@@ -182,10 +190,12 @@ public class S3ConnectionManager
                 .build();
 
             // Do something to ensure we can connect
-			if (this.bucketExists(ROOT_BUCKET) == false)
-			{
-				// We're OK if an exception isn't thrown, or the bucket exists
-			}
+            List<String> foundBuckets = this.getAllBuckets(SETTINGS_BUCKET_PREFIX, null);
+            // We're OK if an exception wasn't thrown
+            if (foundBuckets.size() > 0)
+            {
+            	this.settingsBucket = foundBuckets.get(0);
+            }
 		}
 		// If the authentication failed, print a message, and logout in case the login partially completed
 		// Not really sure how this happens, probably if the server incorrectly responds or is down
@@ -212,20 +222,35 @@ public class S3ConnectionManager
 	{
 		try
 		{
-			// If the main Sanimal directory does not exist yet, create it
-			if (this.bucketExists(ROOT_BUCKET) == false)
+			// Get the settings bucket name
+			if (this.settingsBucket == null)
 			{
-				Bucket root_bucket = this.s3Client.createBucket(ROOT_BUCKET);
+				List<String> foundBuckets = this.getAllBuckets(LEGACY_SETTINGS_BUCKET, null);
+
+				for (String oneBucket: foundBuckets)
+				{
+					if (oneBucket.equals(LEGACY_SETTINGS_BUCKET))
+					{
+						this.settingsBucket = LEGACY_SETTINGS_BUCKET;
+					}
+				}
+
+				if (this.settingsBucket == null)
+				{
+					// Create the settings bucket since it wasn't found in constructor or as legacy
+					Bucket newBucket = this.createSettingsBucket();
+					this.settingsBucket = newBucket.getName();
+				}
 			}
 
 			// Create a subfolder containing all settings that the sanimal program stores
-			if (!this.folderExists(ROOT_BUCKET, SETTINGS_FOLDER))
+			if (!this.folderExists(this.settingsBucket, SETTINGS_FOLDER))
 			{
-				this.createFolder(ROOT_BUCKET, SETTINGS_FOLDER);
+				this.createFolder(this.settingsBucket, SETTINGS_FOLDER);
 			}
 
 			// If we don't have a default species.json file, put a default one onto the storage location
-			if (!this.objectExists(ROOT_BUCKET, SPECIES_FILE_PATH))
+			if (!this.objectExists(this.settingsBucket, SPECIES_FILE_PATH))
 			{
 				// Pull the default species.json file
 				try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/" + SPECIES_FILE));
@@ -234,7 +259,7 @@ public class S3ConnectionManager
 					// Read the Json file
 					String json = fileReader.lines().collect(Collectors.joining("\n"));
 					// Write it to the directory
-					this.writeRemoteFile(ROOT_BUCKET, SPECIES_FILE_PATH, json);
+					this.writeRemoteFile(this.settingsBucket, SPECIES_FILE_PATH, json);
 				}
 				catch (IOException e)
 				{
@@ -249,7 +274,7 @@ public class S3ConnectionManager
 			}
 
 			// If we don't have a default locations.json file, put a default one onto the storage location
-			if (!this.objectExists(ROOT_BUCKET, LOCATION_FILE_PATH))
+			if (!this.objectExists(this.settingsBucket, LOCATION_FILE_PATH))
 			{
 				// Pull the default locations.json file
 				try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/" + LOCATION_FILE));
@@ -258,7 +283,7 @@ public class S3ConnectionManager
 					// Read the Json file
 					String json = fileReader.lines().collect(Collectors.joining("\n"));
 					// Write it to the directory
-					this.writeRemoteFile(ROOT_BUCKET, LOCATION_FILE_PATH, json);
+					this.writeRemoteFile(this.settingsBucket, LOCATION_FILE_PATH, json);
 				}
 				catch (IOException e)
 				{
@@ -273,7 +298,7 @@ public class S3ConnectionManager
 			}
 
 			// If we don't have a default settings.json file, put a default one onto the storage location
-			if (!this.objectExists(ROOT_BUCKET, SETTINGS_FILE_PATH))
+			if (!this.objectExists(this.settingsBucket, SETTINGS_FILE_PATH))
 			{
 				// Pull the default settings.json file
 				try (InputStreamReader inputStreamReader = new InputStreamReader(this.getClass().getResourceAsStream("/" + SETTINGS_FILE));
@@ -282,7 +307,7 @@ public class S3ConnectionManager
 					// Read the Json file
 					String json = fileReader.lines().collect(Collectors.joining("\n"));
 					// Write it to the directory
-					this.writeRemoteFile(ROOT_BUCKET, SETTINGS_FILE_PATH, json);
+					this.writeRemoteFile(this.settingsBucket, SETTINGS_FILE_PATH, json);
 				}
 				catch (IOException e)
 				{
@@ -319,7 +344,7 @@ public class S3ConnectionManager
 		String json = SanimalData.getInstance().getGson().toJson(settingsData);
 
 		// Write the settings.json file to the server
-		this.writeRemoteFile(ROOT_BUCKET, SETTINGS_FILE_PATH, json);
+		this.writeRemoteFile(this.settingsBucket, SETTINGS_FILE_PATH, json);
 	}
 
 	/**
@@ -330,7 +355,7 @@ public class S3ConnectionManager
 	public SettingsData pullRemoteSettings()
 	{
 		// Read the contents of the file into a string
-		String fileContents = this.readRemoteFile(ROOT_BUCKET, SETTINGS_FILE_PATH);
+		String fileContents = this.readRemoteFile(this.settingsBucket, SETTINGS_FILE_PATH);
 
 		// Ensure that we in fact got data back
 		if (fileContents != null)
@@ -368,7 +393,7 @@ public class S3ConnectionManager
 		String json = SanimalData.getInstance().getGson().toJson(newLocations);
 
 		// Write the locations.json file to the server
-		this.writeRemoteFile(ROOT_BUCKET, LOCATION_FILE_PATH, json);
+		this.writeRemoteFile(this.settingsBucket, LOCATION_FILE_PATH, json);
 	}
 
 	/**
@@ -379,7 +404,7 @@ public class S3ConnectionManager
 	public List<Location> pullRemoteLocations()
 	{
 		// Read the contents of the file into a string
-		String fileContents = this.readRemoteFile(ROOT_BUCKET, LOCATION_FILE_PATH);
+		String fileContents = this.readRemoteFile(this.settingsBucket, LOCATION_FILE_PATH);
 
 		// Ensure that we in fact got data back
 		if (fileContents != null)
@@ -440,7 +465,7 @@ public class S3ConnectionManager
 					false);
 		}
 		// Write the species.json file to the server
-		//this.writeRemoteFile(ROOT_BUCKET, SPECIES_FILE_PATH, json);
+		//this.writeRemoteFile(this.settingsBucket, SPECIES_FILE_PATH, json);
 	}
 
 	/**
@@ -539,7 +564,7 @@ public class S3ConnectionManager
 		}
 
 		// Read the remote contents of the file into a string
-		String remoteContents = this.readRemoteFile(ROOT_BUCKET, SPECIES_FILE_PATH);
+		String remoteContents = this.readRemoteFile(this.settingsBucket, SPECIES_FILE_PATH);
 
 		// Check if we're to use the remote contents - no local yet
 		if (fileContents == null || fileContents.length() == 0)
@@ -614,7 +639,7 @@ public class S3ConnectionManager
 	public List<ImageCollection> pullRemoteCollections()
 	{
 		// Get a list of all sparcd buckets
-		List<String> allBuckets = this.getAllBuckets(BUCKET_PREFIX);
+		List<String> allBuckets = this.getAllBuckets(BUCKET_PREFIX, SETTINGS_BUCKET_PREFIX);
 
 		// Create a list of collections
 		List<ImageCollection> imageCollections = new ArrayList<ImageCollection>();
@@ -853,7 +878,7 @@ public class S3ConnectionManager
 		// If the file is a directory, set the directory permissions
 		if (this.folderExists(bucket, fileName))
 		{
-			objectList = this.listFolderObjects(ROOT_BUCKET, fileName);
+			objectList = this.listFolderObjects(this.settingsBucket, fileName);
 		}
 		else if (this.objectExists(bucket, fileName))
 		{
@@ -911,7 +936,7 @@ public class S3ConnectionManager
 		// Directories are done differently than files, so test this first
 		if (this.folderExists(bucket, objectName))
 		{
-			objectList = this.listFolderObjects(ROOT_BUCKET, objectName);
+			objectList = this.listFolderObjects(this.settingsBucket, objectName);
 		}
 		else if (this.objectExists(bucket, objectName))
 		{
@@ -924,7 +949,7 @@ public class S3ConnectionManager
 			try
 			{
 				// Current set of ACLs
-				AccessControlList acl = this.s3Client.getObjectAcl(ROOT_BUCKET, oneObject);
+				AccessControlList acl = this.s3Client.getObjectAcl(this.settingsBucket, oneObject);
 
 				Owner owner = acl.getOwner();
 
@@ -942,7 +967,7 @@ public class S3ConnectionManager
 				// Update the Object if we changed ACLs
 				if (removedAcl == true)
 				{
-					this.s3Client.setObjectAcl(ROOT_BUCKET, oneObject, acl);
+					this.s3Client.setObjectAcl(this.settingsBucket, oneObject, acl);
 				}
 			}
 			catch (Exception e)
@@ -1923,9 +1948,10 @@ public class S3ConnectionManager
 	 * all buckets are returned.
 	 * 
 	 * @param prefix the optional filter for bucket names
+	 * @param prefixExclude optional prefix to exclude
 	 * @return the list of found buckets
 	 */
-	private List<String> getAllBuckets(String prefix)
+	private List<String> getAllBuckets(String prefix, String prefixExclude)
 	{
 		// Get the buckets
 		List<Bucket> buckets = this.s3Client.listBuckets();
@@ -1937,12 +1963,16 @@ public class S3ConnectionManager
 		// Add bucket names to return list
 		for (Bucket oneBucket: buckets)
 		{
-			if (prefixCheck)
+			// Check for prefix exclusion
+			if (prefixExclude != null && oneBucket.getName().startsWith(prefixExclude))
 			{
-				if (!prefixCheck || oneBucket.getName().startsWith(prefix))
-				{
-					returnList.add(oneBucket.getName());
-				}
+				continue;
+			}
+
+			// Check the bucket name
+			if (!prefixCheck || oneBucket.getName().startsWith(prefix))
+			{
+				returnList.add(oneBucket.getName());
 			}
 		}
 
@@ -1968,6 +1998,36 @@ public class S3ConnectionManager
 	private void deleteBucket(String bucket)
 	{
 		this.s3Client.deleteBucket(bucket);
+	}
+
+	/**
+	 * Attempts to create a new settings bucket
+	 * 
+	 * @param bucketPrefix the prefix to add to the bucket
+	 * @return the created bucket
+	 */
+	private Bucket createSettingsBucket()
+	{
+		for (int curTry = 0; curTry < this.SETTINGS_BUCKET_CREATE_TRIES; curTry++)
+		{
+			// Generate a name that fits
+			String bucketName = SETTINGS_BUCKET_PREFIX + "-" + UUID.randomUUID().toString();
+			if (bucketName.length() > 63)
+			{
+				bucketName = bucketName.substring(0, Math.min(bucketName.length(), 63));
+			}
+			// Try creating the new bucket
+			try{
+				Bucket newBucket = this.s3Client.createBucket(bucketName);
+
+				return newBucket;
+
+			} catch (AmazonS3Exception e) {
+                System.err.println(e.getErrorMessage());
+            }
+		}
+
+		throw new RuntimeException("Unable to create settings bucket on remote data store");
 	}
 
 	/**
