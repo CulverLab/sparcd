@@ -112,8 +112,9 @@ After the files are created, you can modify their contents to best suit your nee
 
 * **Co-Principal Investigators** - *Dr. Melanie Culver and Nirav Merchant* 
 * **Technical Advisors** - *Dr. Richard Snodgrass and Dr. Carlos Scheidegger* 
-* **CyVerse Support** - *Dr. Blake Joyce, Tony Edgin, Julian Pistorius and Chris Schnaufer* 
+* **S3 Support** - *Julian Pistorius and Chris Schnaufer* 
 * **Support and Ideas** - *The University of Arizona Jaguar & Ocelot Monitoring Team, The Slovikosky Family*
 
+* **CyVerse Support (legacy)** - *Dr. Blake Joyce, Tony Edgin, Julian Pistorius and Chris Schnaufer* 
 
 
