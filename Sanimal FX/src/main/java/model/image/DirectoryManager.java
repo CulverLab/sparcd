@@ -117,7 +117,12 @@ public class DirectoryManager
 		if (subFiles != null)
 		{
 			// Sort the files by date before processing them further
-			Arrays.sort(subFiles, Comparator.comparingLong(File::lastModified));
+			Arrays.sort(subFiles, new Comparator<File>() {
+										        @Override
+										        public int compare(File f1, File f2) {
+										            return f1.getName().localeCompare(f2.getName());
+										        }
+										    });
 
 			// Get all files in the directory
 			for (File file : subFiles)
