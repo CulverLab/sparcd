@@ -114,6 +114,9 @@ public class DirectoryManager
 
 		if (subFiles != null)
 		{
+			// Sort the files by date before processing them further
+			Arrays.sort(subFiles, Comparitor.comparingLong(File::lastModified));
+
 			// Get all files in the directory
 			for (File file : subFiles)
 			{
