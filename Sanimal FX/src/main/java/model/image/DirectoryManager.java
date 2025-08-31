@@ -16,6 +16,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -114,6 +116,14 @@ public class DirectoryManager
 
 		if (subFiles != null)
 		{
+			// Sort the files by date before processing them further
+			Arrays.sort(subFiles, new Comparator<File>() {
+										        @Override
+										        public int compare(File f1, File f2) {
+										            return f1.getName().compareTo(f2.getName());
+										        }
+										    });
+
 			// Get all files in the directory
 			for (File file : subFiles)
 			{
