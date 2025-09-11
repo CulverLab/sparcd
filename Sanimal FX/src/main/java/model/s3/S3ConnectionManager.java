@@ -2359,9 +2359,10 @@ public class S3ConnectionManager
 
 	    List<String> results = new ArrayList();
 
+	    Boolean isTruncated = false;
 	    do
 	    {
-	    	Boolean isTruncated = objects.isTruncated();
+	    	 isTruncated = objects.isTruncated();
 
 		    // All folders
 		    for (String onePrefix: objects.getCommonPrefixes())
