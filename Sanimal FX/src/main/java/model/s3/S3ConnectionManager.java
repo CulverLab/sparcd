@@ -2359,23 +2359,34 @@ public class S3ConnectionManager
 
 	    List<String> results = new ArrayList();
 
-	    // All folders
-	    for (String onePrefix: objects.getCommonPrefixes())
+	    do
 	    {
-	    	if (onePrefix.endsWith(delimiter))
-	    	{
-	    		results.add(onePrefix.substring(0, onePrefix.length() - 1));
-	    	}
-	    	else
-	    	{
-	    		results.add(onePrefix);
-	    	}
-	    }
-	    // All other objects
-		for (S3ObjectSummary oneSummary: objects.getObjectSummaries())
-		{
-			results.add(oneSummary.getKey());
-		}
+	    	Boolean isTruncated = objects.isTruncated();
+
+		    // All folders
+		    for (String onePrefix: objects.getCommonPrefixes())
+		    {
+		    	if (onePrefix.endsWith(delimiter))
+		    	{
+		    		results.add(onePrefix.substring(0, onePrefix.length() - 1));
+		    	}
+		    	else
+		    	{
+		    		results.add(onePrefix);
+		    	}
+		    }
+		    // All other objects
+			for (S3ObjectSummary oneSummary: objects.getObjectSummaries())
+			{
+				results.add(oneSummary.getKey());
+			}
+
+			if (isTruncated == true)
+			{
+				objects = this.s3Client.listNextBatchOfObjects(objects);
+			}
+
+		} while (isTruncated == true); // Only loop while there is more to get
 
 	    return results;
 	}
