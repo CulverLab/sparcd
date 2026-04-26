@@ -2381,7 +2381,7 @@ public class S3ConnectionManager
 			}
 
 			// Check if there's more to fetch
-			if (isTruncated)
+			if (isTruncated  == true)
 			{
 				objects = this.s3Client.listNextBatchOfObjects(objects);
 			}
